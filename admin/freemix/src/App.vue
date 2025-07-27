@@ -1,49 +1,77 @@
 <template>
-  <!-- 开关位置调整到右上角 -->
-   <n-config-provider 
+  <n-config-provider 
     :theme="isDark ? darkTheme : null" 
     :theme-overrides="themeOverrides"
-    style="width: 100%;height: 100%;"
+    class="config-provider"
   >
-  <div class="theme-switch">
-    <n-switch 
-      v-model:value="isDark" 
-      :rail-style="railStyle"
-      @update:value="toggleTheme"
-    >
-      <template #checked></template>
-      <template #unchecked></template>
-    </n-switch>
-  </div>
+    <!-- 主题切换按钮 -->
+    <div class="theme-switch">
+      <n-tooltip placement="left">
+        <template #trigger>
+          <n-switch 
+            v-model:value="isDark" 
+            :rail-style="railStyle"
+            @update:value="toggleTheme"
+          >
+            <template #icon>
+              <n-icon v-if="isDark" :component="MoonIcon" />
+              <n-icon v-else :component="SunIcon" />
+            </template>
+          </n-switch>
+        </template>
+        {{ isDark ? '深色模式' : '浅色模式' }}
+      </n-tooltip>
+    </div>
 
-  <!-- 主题配置器 -->
-  
-  <n-global-style />
+    <!-- 全局样式 -->
+    <n-global-style />
+    
+    <!-- 消息提供器 -->
     <n-message-provider>
-      <router-view :class="{'dark-theme': isDark, 'light-theme': !isDark}" />
+      <!-- 路由视图 - 应用主题类 -->
+      <router-view :class="themeClass" />
     </n-message-provider>
   </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch,onMounted, type CSSProperties } from 'vue';
+import { ref, computed, onMounted, watch,type CSSProperties, provide } from 'vue';
 import { 
   NConfigProvider, 
   darkTheme, 
   NSwitch,
   NMessageProvider,
   type GlobalThemeOverrides,
-  NGlobalStyle
-
+  NGlobalStyle,
+  NTooltip,
+  NIcon
 } from 'naive-ui';
+import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 
 // 主题状态管理
 const isDark = ref(false);
+
+// 计算主题类
+const themeClass = computed(() => {
+  return isDark.value ? 'dark-theme' : 'light-theme';
+});
 
 // 切换主题并保存状态
 const toggleTheme = (value: boolean) => {
   isDark.value = value;
   localStorage.setItem('theme-dark', JSON.stringify(value));
+  updateBodyTheme();
+};
+
+// 更新body主题类
+const updateBodyTheme = () => {
+  if (isDark.value) {
+    document.body.classList.add('dark-theme');
+    document.body.classList.remove('light-theme');
+  } else {
+    document.body.classList.add('light-theme');
+    document.body.classList.remove('dark-theme');
+  }
 };
 
 // 初始化时读取保存的主题状态
@@ -52,27 +80,65 @@ onMounted(() => {
   if (savedTheme) {
     isDark.value = JSON.parse(savedTheme);
   }
+  updateBodyTheme();
 });
 
 // 主题样式覆盖配置
-const themeOverrides = computed<GlobalThemeOverrides>(() => ({
-  common: {
-    bodyColor: isDark.value ? '#000000' : '#ffffff',
-    // textColorBase: isDark.value ? '#ffffff' : '#000000',
-    // primaryColor: isDark.value ? '#ffffff' : '#000000',
-    // primaryColorHover: isDark.value ? '#ffffff' : '#000000'
-  },
-  Switch: {
-    // ✅ 动态按钮颜色
-    buttonColor: isDark.value ? '#ffffff' : '#000000',
-    // ✅ 激活状态按钮颜色
-    buttonColorActive: isDark.value ? '#ffffff' : '#000000',
-    buttonBoxShadow:isDark.value ? '#000000' : '#ffffff'
-    // ✅ 轨道激活颜色（蓝色系）
-    // railColorActive: isDark.value ? '#ffffff' : '#000000'
+const themeOverrides = computed<GlobalThemeOverrides>(() => {
+  const commonOverrides = {
+    // 统一字体
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    // 统一圆角
+    borderRadius: '8px'
+  };
+  
+  if (isDark.value) {
+    return {
+      ...commonOverrides,
+      common: {
+        ...commonOverrides,
+        bodyColor: '#121212',
+        cardColor: '#1e1e1e',
+        modalColor: '#252525',
+        popoverColor: '#252525',
+        tableColor: '#1e1e1e',
+        textColorBase: '#e0e0e0',
+        borderColor: '#333333',
+        hoverColor: '#2a2a2a',
+        primaryColor: '#8a2be2',
+        primaryColorHover: '#9d45e5',
+        primaryColorPressed: '#7a1fc9',
+        primaryColorSuppl: '#7a1fc9'
+      },
+      Switch: {
+        railColorActive: '#8a2be2'
+      }
+    };
+  } else {
+    return {
+      ...commonOverrides,
+      common: {
+        ...commonOverrides,
+        bodyColor: '#f8f9fa',
+        cardColor: '#ffffff',
+        modalColor: '#ffffff',
+        popoverColor: '#ffffff',
+        tableColor: '#ffffff',
+        textColorBase: '#333333',
+        borderColor: '#e0e0e0',
+        hoverColor: '#f5f5f5',
+        primaryColor: '#8a2be2',
+        primaryColorHover: '#9d45e5',
+        primaryColorPressed: '#7a1fc9',
+        primaryColorSuppl: '#7a1fc9'
+      },
+      Switch: {
+        railColorActive: '#8a2be2'
+      }
+    };
   }
-}));
-
+});
+provide('isDark',isDark)
 // 开关轨道样式
 const railStyle = ({
   focused,
@@ -83,14 +149,18 @@ const railStyle = ({
 }) => {
   const style: CSSProperties = {};
   if (checked) {
-    style.background = '#000000';
-     style.boxShadow = '0 0 0 2px #ffffff';
+    style.background = '#8a2be2';
+    if (focused) style.boxShadow = '0 0 0 2px rgba(138, 43, 226, 0.3)';
   } else {
-    style.background = '#ffffff';
-     style.boxShadow = '0 0 0 2px #000000';
+    style.background = '#e0e0e0';
+    if (focused) style.boxShadow = '0 0 0 2px rgba(224, 224, 224, 0.3)';
   }
   return style;
 };
+
+// 图标组件
+const SunIcon = SunnyOutline;
+const MoonIcon = MoonOutline;
 </script>
 
 <style>
@@ -99,20 +169,29 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   margin: 0;
   padding: 0;
-
   transition: background-color 0.3s, color 0.3s;
 }
 
 /* 明亮主题样式 */
 .light-theme {
-  background-color: #ffffff;
-  color: #000000;
+  --bg-color: #f8f9fa;
+  --text-color: #333333;
+  --card-bg: #ffffff;
+  --border-color: #e0e0e0;
+  
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* 暗黑主题样式 */
 .dark-theme {
-  background-color: #000000;
-  color: #ffffff;
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --card-bg: #1e1e1e;
+  --border-color: #333333;
+  
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* 开关位置样式 */
@@ -121,5 +200,37 @@ body {
   top: 20px;
   right: 20px;
   z-index: 1000;
+  background: var(--card-bg);
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+/* 确保所有Naive UI组件使用主题变量 */
+.n-card {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.n-button {
+  color: var(--text-color) !important;
+}
+
+.n-input {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.n-tabs-tab {
+  color: var(--text-color) !important;
+}
+
+/* 添加平滑过渡 */
+.n-config-provider, 
+.n-config-provider * {
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 </style>

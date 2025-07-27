@@ -12,6 +12,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "axios": "^1.11.0",
+    "chart.js": "^4.5.0",
+    "echarts": "^5.6.0",
     "lucide-vue-next": "^0.525.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.17",
@@ -20,6 +23,7 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.15.32",
+    "@vicons/ionicons5": "^0.13.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vitejs/plugin-vue-jsx": "^5.0.0",
     "@vue/tsconfig": "^0.7.0",
