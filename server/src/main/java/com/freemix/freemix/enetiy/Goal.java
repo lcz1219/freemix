@@ -11,11 +11,13 @@ public class Goal {
     String _id;
     String title;
     String description;
-    String Head;
-    Date endTime;
+    String owner;
+    Date deadline;
     String level;
     String classification;
     int planTime;
+    int progress;
+    String status;
 
 
 }

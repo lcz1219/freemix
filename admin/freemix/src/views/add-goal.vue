@@ -84,11 +84,7 @@
                 </n-form-item>
                 
                 <n-form-item label="截止日期" path="deadline">
-                  <n-date-picker 
-                    v-model:value="goalForm.deadline" 
-                    type="date" 
-                    placeholder="请选择截止日期"
-                  />
+                   <n-date-picker v-model:value="goalForm.deadline" type="date" />
                 </n-form-item>
                 
                 <n-form-item label="优先级" path="priority">
@@ -149,7 +145,7 @@
   </n-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, inject, onMounted, watch } from 'vue';
 import { 
   NLayout,
@@ -173,6 +169,7 @@ import {
   useMessage
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
+import request, { postM,isSuccess } from '@/utils/request'
 
 // 图标组件
 const SunIcon = {
@@ -237,9 +234,10 @@ const formRules = {
     trigger: 'blur'
   },
   deadline: {
-    required: true,
-    message: '请选择截止日期',
-    trigger: 'blur'
+    type: 'number',
+          required: true,
+          trigger: ['blur', 'change'],
+          message: '请输入截止日期'
   },
   priority: {
     required: true,
@@ -264,11 +262,15 @@ const railStyle = ({ focused, checked }) => {
 // 处理表单提交
 const handleSubmit = (e) => {
   e.preventDefault();
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate(async (errors) => {
     if (!errors) {
       message.success('目标创建成功');
       // 这里可以添加实际的提交逻辑
       console.log('提交的表单数据:', goalForm.value);
+       const res= await postM('editGoal',goalForm.value);
+       if(isSuccess(res)){
+        message.success('目标创建成功')
+       }
       // 提交后跳转到主页
       router.push('/home');
     } else {

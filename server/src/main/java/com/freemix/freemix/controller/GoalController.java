@@ -8,10 +8,9 @@ import io.netty.util.internal.StringUtil;
 import org.bson.json.JsonObject;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,12 +20,14 @@ public class GoalController extends BaseController {
     public ApiResponse editGoal(@RequestBody String body){
         Goal goal = JSONObject.parseObject(body, Goal.class);
         Goal one = mongoTemplate.findOne(new Query(Criteria.where("title").is(goal.getTitle())
-                .and("description").is(goal.getDescription()).and("Head").is(goal.getHead())), Goal.class);
+                .and("description").is(goal.getDescription()).and("ower").is(goal.getOwner())), Goal.class);
         if(one != null){
             return ApiResponse.failure("已存在相同的目标");
         }
         if(StringUtil.isNullOrEmpty(goal.get_id())){
             goal.set_id(UUID.randomUUID().toString());
+            goal.setProgress(0);
+            goal.setStatus("in-progress");
 
             mongoTemplate.insert(goal);
         }else {
@@ -35,4 +36,12 @@ public class GoalController extends BaseController {
 
         return ApiResponse.success(body);
     }
+
+@GetMapping("/getGoals/{ower}")
+@CheckToken
+    public ApiResponse getGoals(@PathVariable("ower") String ower){
+    List<Goal> owner = mongoTemplate.find(new Query(Criteria.where("owner").is(ower)), Goal.class);
+    return ApiResponse.success(owner);
+
+}
 }
