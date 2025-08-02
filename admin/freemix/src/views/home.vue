@@ -8,36 +8,7 @@
     </div>
     
     <!-- 顶部导航栏 -->
-    <n-layout-header class="header" bordered>
-      <div class="logo">
-        <div class="logo-icon">
-          <n-icon size="24" color="white">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-              <path d="M18.73,7.05l0,0c-0.25-0.63-0.86-1.04-1.55-1.04c-0.05,0-0.11,0-0.16,0.01c-0.25-0.64-0.87-1.07-1.61-1.07 c-0.1,0-0.19,0.01-0.29,0.03c-0.28-0.64-0.93-1.06-1.7-1.06c-0.85,0-1.58,0.53-1.87,1.3c-0.26-0.05-0.52-0.07-0.78-0.07 c-2.34,0-4.15,2.01-3.9,4.33c-1.56,0.51-2.72,1.95-2.72,3.66c0,1.14,0.51,2.16,1.32,2.83C4.13,15.38,4,15.68,4,16 c0,1.66,1.34,3,3,3h10c2.76,0,5-2.24,5-5c0-2.64-2.05-4.78-4.66-4.96C18.82,9.3,19.11,8.12,18.73,7.05z"/>
-            </svg>
-          </n-icon>
-        </div>
-        <span class="logo-text">目标追踪者</span>
-      </div>
-      
-      <nav class="nav">
-        <n-button text type="primary" class="nav-link active">仪表盘</n-button>
-        <n-button text type="primary" class="nav-link">目标管理</n-button>
-        <n-button text type="primary" class="nav-link">统计数据</n-button>
-        <n-button text type="primary" class="nav-link">设置</n-button>
-      </nav>
-      
-      <div class="header-actions">
-        <!-- <n-button text>
-          <n-icon size="24">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-              <path d="M12.7,16.3c-0.2-0.2-0.2-0.5,0-0.7l2.8-2.8H4.5c-0.3,0-0.5-0.2-0.5-0.5s0.2-0.5,0.5-0.5H15l-2.8-2.8 c-0.2-0.2-0.2-0.5,0-0.7s0.5-0.2,0.7,0l3.5,3.5c0.1,0.1,0.1,0.2,0.1,0.4c0,0.1,0,0.3-0.1,0.4l-3.5,3.5 C13.2,16.4,12.9,16.4,12.7,16.3z"/>
-            </svg>
-          </n-icon>
-        </n-button> -->
-        <n-avatar round size="medium" src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar>
-      </div>
-    </n-layout-header>
+    <NavBar active-tab="dashboard" />
     
     <!-- 主内容区域 -->
     <n-layout-content class="main-content-wrapper">
@@ -121,7 +92,7 @@
         <section class="targets-section">
           <h2 class="section-title">我的目标</h2>
           <div class="target-grid">
-            <n-card v-for="(goal, index) in goals" :key="index" class="target-card">
+            <n-card v-for="(goal, index) in goals" :key="index" class="target-card" @click="showGoalDetail(goal)">
               <div class="card-header">
                 <h3 class="goal-title">{{ goal.title }}</h3>
                 <n-tag :type="goal.status === 'completed' ? 'success' : goal.status === 'expired' ? 'error' : 'warning'">
@@ -134,6 +105,7 @@
                 :percentage="goal.progress"
                 :indicator-placement="'inside'"
                 :height="8"
+                processing
                 :rail-color="'rgba(255, 255, 255, 0.1)'"
                 :fill-color="'linear-gradient(90deg, #8a2be2, #4b0082)'"
               />
@@ -142,11 +114,18 @@
                 <div class="detail-item">
                   <n-icon size="16">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-                      <path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z"/>
-                      <path d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z"/>
+                      <path d="M12,7c-2.8,0-5,2.2-5,5s2.2,5,5,5s5-2.2,5-5S14.8,7,12,7z M12,14.5c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5 s2.5,1.1,2.5,2.5S13.4,14.5,12,14.5z" />
+                      <path d="M12,5c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1s1,0.4,1,1v3C13,4.6,12.6,5,12,5z" />
+                      <path d="M12,19c-0.6,0-1,0.4-1,1v3c0,0.6,0.4,1,1,1s1-0.4,1-1v-3C13,19.4,12.6,19,12,19z" />
+                      <path d="M23,11h-3c-0.6,0-1,0.4-1,1s0.4,1,1,1h3c0.6,0,1-0.4,1-1S23.6,11,23,11z" />
+                      <path d="M4,11H1c-0.6,0-1,0.4-1,1s0.4,1,1,1h3c0.6,0,1-0.4,1-1S4.6,11,4,11z" />
+                      <path d="M18.7,6.3c0.4-0.4,0.4-1,0-1.4l-2.1-2.1c-0.4-0.4-1-0.4-1.4,0s-0.4,1,0,1.4l2.1,2.1C17.7,6.7,18.3,6.7,18.7,6.3z" />
+                      <path d="M5.3,17.7c-0.4,0.4-0.4,1,0,1.4l2.1,2.1c0.4,0.4,1,0.4,1.4,0s0.4-1,0-1.4l-2.1-2.1C6.3,17.3,5.7,17.3,5.3,17.7z" />
+                      <path d="M18.7,17.7c-0.4-0.4-1-0.4-1.4,0l-2.1,2.1c-0.4,0.4-0.4,1,0,1.4s1,0.4,1.4,0l2.1-2.1C19.1,18.7,19.1,18.1,18.7,17.7z" />
+                      <path d="M5.3,6.3c0.4,0.4,1,0.4,1.4,0l2.1-2.1c0.4-0.4,0.4-1,0-1.4s-1-0.4-1.4,0L5.3,4.9C4.9,5.3,4.9,5.9,5.3,6.3z" />
                     </svg>
                   </n-icon>
-                  <span>截止: {{ goal.deadline }}</span>
+                  <span>截止: {{ goal.deadlineString }}</span>
                 </div>
                 <div class="detail-item">
                   <n-icon size="16">
@@ -161,6 +140,15 @@
             </n-card>
           </div>
         </section>
+        
+        <!-- 目标详情模态框 -->
+        <GoalDetail 
+          v-model:show="showDetailModal" 
+          :goal="selectedGoal" 
+          @save="saveGoal"
+          @updateGoal="getGoals"
+        />
+        
          <n-layout-footer class="footer" bordered>
       <p>© 2023 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
     </n-layout-footer>
@@ -175,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject,computed } from 'vue';
 import { 
   NLayout,
   NLayoutHeader,
@@ -202,6 +190,11 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import{useRouter} from'vue-router'
+import  {getMPaths } from '@/utils/request'
+import { useStore } from 'vuex' 
+import NavBar from '@/components/NavBar.vue';
+import GoalDetail from '@/components/GoalDetail.vue';
+// import { log } from 'echarts/types/src/util/log.js';
 
 // 注册 ECharts 组件
 echarts.use([
@@ -214,6 +207,8 @@ echarts.use([
   GraphicComponent,
   CanvasRenderer
 ]);
+
+
 const router = useRouter()
 // 图标组件
 const SunIcon = {
@@ -236,6 +231,23 @@ const MoonIcon = {
     <path d="M9,22c5.5,0,10-4.5,10-10c0-0.8-0.1-1.6-0.3-2.4c-0.1-0.4-0.5-0.7-0.9-0.6c-0.4,0.1-0.7,0.5-0.6,0.9 c0.2,0.7,0.3,1.4,0.3,2.1c0,4.4-3.6,8-8,8s-8-3.6-8-8c0-4.4,3.6-8,8-8c0.7,0,1.3,0.1,2,0.2c0.4,0.1,0.8-0.1,1-0.5 C13.1,2.6,13,2.2,12.6,2C11.7,1.7,10.8,1.6,9.9,1.6C4.4,1.6,0,6,0,11.5C0,17,4.5,22,9,22z" />
   </svg>`
 };
+const formatDate=(goal)=>{
+  // 检查deadline是否存在且为有效日期
+  if (!goal) {
+    
+    return '未设置';
+  }
+  
+  
+  const date = new Date(goal);
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '日期无效';
+  }
+  
+  return `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, '0')}月${date.getDate().toString().padStart(2, '0')}日`;
+}
 
 // 响应式数据
 const darkMode = ref(true);
@@ -248,13 +260,53 @@ const isDark=inject('isDark')
 
 // 目标数据
 const goals = ref([
-  { title: '职业发展', progress: 65, status: 'in-progress', deadline: '2023-12-31', owner: '张三' },
-  { title: '技能提升计划', progress: 80, status: 'in-progress', deadline: '2023-11-15', owner: '李四' },
-  { title: '健身目标', progress: 45, status: 'in-progress', deadline: '2024-02-28', owner: '王五' },
-  { title: '阅读计划', progress: 75, status: 'completed', deadline: '2023-12-20', owner: '赵六' },
-  { title: '学习新语言', progress: 30, status: 'in-progress', deadline: '2024-03-15', owner: '钱七' },
-  { title: '项目交付', progress: 90, status: 'in-progress', deadline: '2023-10-30', owner: '孙八' }
+  // { title: '职业发展', progress: 65, status: 'in-progress', deadline: '2023-12-31', owner: '张三' },
+  // { title: '技能提升计划', progress: 80, status: 'in-progress', deadline: '2023-11-15', owner: '李四' },
+  // { title: '健身目标', progress: 45, status: 'in-progress', deadline: '2024-02-28', owner: '王五' },
+  // { title: '阅读计划', progress: 75, status: 'completed', deadline: '2023-12-20', owner: '赵六' },
+  // { title: '学习新语言', progress: 30, status: 'in-progress', deadline: '2024-03-15', owner: '钱七' },
+  // { title: '项目交付', progress: 90, status: 'in-progress', deadline: '2023-10-30', owner: '孙八' }
 ]);
+const store = useStore();
+
+// 目标详情相关
+const showDetailModal = ref(false);
+const selectedGoal = ref({});
+
+const getGoals=async ()=>{
+  console.log("store.state.user.username",store.state.user.username);
+  
+     const res=  await getMPaths("getGoals",store.state.user.username);
+     goals.value=res.data.data;
+      console.log("goals.value", goals.value);
+     goals.value?.forEach(goal => {
+       goal.deadlineString = formatDate(goal.deadline);
+     });
+    
+     
+     
+}
+
+// 显示目标详情
+const showGoalDetail = (goal) => {
+  // console.log("goal", goal);
+  // goal.deadline = formatDate(goal.deadline);
+  selectedGoal.value = { ...goal };
+  // console.log("selectedGoal.value", selectedGoal.value);
+  
+  showDetailModal.value = true;
+};
+
+// 保存目标
+const saveGoal = (updatedGoal) => {
+  // 这里可以实现保存目标的逻辑
+  console.log('保存目标:', updatedGoal);
+  // 更新本地数据
+  const index = goals.value.findIndex(g => g.id === updatedGoal.id);
+  if (index !== -1) {
+    goals.value[index] = { ...updatedGoal };
+  }
+};
 
 // 开关轨道样式
 const railStyle = ({ focused, checked }) => {
@@ -277,6 +329,7 @@ const addGoal = () => {
 
 // 初始化图表
 onMounted(() => {
+  
   // 进度图表 (ECharts)
   const progressChartInstance = echarts.init(progressChart.value);
   progressChartInstance.setOption({
@@ -447,6 +500,7 @@ onMounted(() => {
       }
     }
   });
+  getGoals()
 });
 </script>
 

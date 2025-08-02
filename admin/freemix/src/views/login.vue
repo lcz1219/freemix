@@ -28,7 +28,9 @@
 import { NCard, NTabs, NTabPane, NForm, NFormItemRow, NInput, NButton, type FormInst,useMessage } from 'naive-ui'
 import { ref } from 'vue';
 import{useRoute,useRouter} from 'vue-router'
-import request, { postM,isSuccess } from '@/utils/request'
+import { postM, isSuccess } from '@/utils/request'
+import { useStore } from 'vuex';
+const store = useStore();
 const route=useRoute();
 const router=useRouter()
 const rules = ref({
@@ -49,8 +51,8 @@ const rules = ref({
         console.log("login,res",res);
         if(isSuccess(res)) {
           
-          
-        localStorage.setItem('token',res.data.data.token);
+          store.commit('saveUser',res.data.data);
+       await localStorage.setItem('token',res.data.data.token);
            message.success('登录成功')
             console.log('登录成功');
           router.push('/home');
@@ -66,7 +68,6 @@ const rules = ref({
     const toRegister=()=>{
         router.replace('/register');
     }
-  
 </script>
 
 

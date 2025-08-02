@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ public class GoalController extends BaseController {
             goal.set_id(UUID.randomUUID().toString());
             goal.setProgress(0);
             goal.setStatus("in-progress");
+
 
             mongoTemplate.insert(goal);
         }else {

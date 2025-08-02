@@ -8,31 +8,7 @@
     </div>
     
     <!-- 顶部导航栏 -->
-    <n-layout-header class="header" bordered>
-      <div class="logo">
-        <div class="logo-icon">
-          <n-icon size="24" color="white">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-              <path d="M18.73,7.05l0,0c-0.25-0.63-0.86-1.04-1.55-1.04c-0.05,0-0.11,0-0.16,0.01c-0.25-0.64-0.87-1.07-1.61-1.07 c-0.1,0-0.19,0.01-0.29,0.03c-0.28-0.64-0.93-1.06-1.7-1.06c-0.85,0-1.58,0.53-1.87,1.3c-0.26-0.05-0.52-0.07-0.78-0.07 c-2.34,0-4.15,2.01-3.9,4.33c-1.56,0.51-2.72,1.95-2.72,3.66c0,1.14,0.51,2.16,1.32,2.83C4.13,15.38,4,15.68,4,16 c0,1.66,1.34,3,3,3h10c2.76,0,5-2.24,5-5c0-2.64-2.05-4.78-4.66-4.96C18.82,9.3,19.11,8.12,18.73,7.05z"/>
-            </svg>
-          </n-icon>
-        </div>
-        <span class="logo-text">目标追踪者</span>
-      </div>
-      
-      <nav class="nav">
-        <n-button text type="primary" class="nav-link" @click="goToHome">仪表盘</n-button>
-        <n-button text type="primary" class="nav-link active">添加目标</n-button>
-        <n-button text type="primary" class="nav-link">统计数据</n-button>
-        <n-button text type="primary" class="nav-link">设置</n-button>
-      </nav>
-      
-      <div class="header-actions">
-        
-        
-        <n-avatar round size="medium" src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar>
-      </div>
-    </n-layout-header>
+    <NavBar active-tab="add-goal" />
     
     <!-- 主内容区域 -->
     <n-layout-content class="main-content-wrapper">
@@ -75,6 +51,14 @@
                     }"
                   />
                 </n-form-item>
+                <n-form-item label="子目标" path="description">
+                  <n-dynamic-input
+                    v-model:value="goalForm.childGoals"
+                    placeholder="请输入子目标"
+                    :min="3"
+                    :max="6"
+                  />
+                </n-form-item>
                 
                 <n-form-item label="负责人" path="owner">
                   <n-input 
@@ -87,11 +71,11 @@
                    <n-date-picker v-model:value="goalForm.deadline" type="date" />
                 </n-form-item>
                 
-                <n-form-item label="优先级" path="priority">
+                <n-form-item label="优先级" path="level">
                   <n-select
-                    v-model:value="goalForm.priority"
+                    v-model:value="goalForm.level"
                     placeholder="请选择优先级"
-                    :options="priorityOptions"
+                    :options="levelOptions"
                   />
                 </n-form-item>
                 
@@ -151,6 +135,7 @@ import {
   NLayout,
   NLayoutHeader,
   NLayoutContent,
+  NDynamicInput,
   NLayoutFooter,
   NButton, 
   NIcon, 
@@ -170,6 +155,7 @@ import {
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import request, { postM,isSuccess } from '@/utils/request'
+import NavBar from '@/components/NavBar.vue';
 
 // 图标组件
 const SunIcon = {
@@ -208,13 +194,14 @@ const goalForm = ref({
   description: '',
   owner: '',
   deadline: null,
-  priority: null,
+  level: null,
+  childGoals:[],
   tags: [],
   estimatedHours: null
 });
 
 // 优先级选项
-const priorityOptions = [
+const levelOptions = [
   { label: '低', value: 'low' },
   { label: '中', value: 'medium' },
   { label: '高', value: 'high' },
@@ -239,7 +226,7 @@ const formRules = {
           trigger: ['blur', 'change'],
           message: '请输入截止日期'
   },
-  priority: {
+  level: {
     required: true,
     message: '请选择优先级',
     trigger: 'change'
@@ -265,6 +252,16 @@ const handleSubmit = (e) => {
   formRef.value?.validate(async (errors) => {
     if (!errors) {
       message.success('目标创建成功');
+      const childGoalEndList=[];
+      goalForm.value.childGoals.forEach((childGoal) => {
+        const data={};
+        data.message=childGoal
+        data.finish=false;
+        data.finishTime='';
+       childGoalEndList.push(data);
+
+      })
+      goalForm.value.childGoals=childGoalEndList;
       // 这里可以添加实际的提交逻辑
       console.log('提交的表单数据:', goalForm.value);
        const res= await postM('editGoal',goalForm.value);
@@ -278,6 +275,10 @@ const handleSubmit = (e) => {
     }
   });
 };
+const testlog = () => { 
+  console.log("test");
+  
+};
 
 // 重置表单
 const handleReset = () => {
@@ -286,7 +287,7 @@ const handleReset = () => {
     description: '',
     owner: '',
     deadline: null,
-    priority: null,
+    level: null,
     tags: [],
     estimatedHours: null
   };
@@ -306,6 +307,9 @@ onMounted(() => {
 // 监听主题变化
 watch(isDark, (newVal) => {
   darkMode.value = newVal;
+});
+defineExpose({
+  testlog
 });
 </script>
 
