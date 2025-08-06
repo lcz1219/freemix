@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vite build",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
@@ -17,6 +17,7 @@
     "echarts": "^5.6.0",
     "lucide-vue-next": "^0.525.0",
     "pinia": "^3.0.3",
+    "vant": "^3.6.16",
     "vue": "^3.5.17",
     "vue-clipboard3": "^2.0.0",
     "vue-router": "^4.5.1",

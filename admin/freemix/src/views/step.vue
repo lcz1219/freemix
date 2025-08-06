@@ -21,6 +21,8 @@
 
 <script setup lang="ts">
 import type { StepsProps } from 'naive-ui'
+import  { NStep,NSteps,NSpace } from 'naive-ui'
+
 import { defineComponent, ref, defineProps, onUpdated } from 'vue'
 
  const props=defineProps({

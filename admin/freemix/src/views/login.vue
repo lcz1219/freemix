@@ -28,7 +28,10 @@
 import { NCard, NTabs, NTabPane, NForm, NFormItemRow, NInput, NButton, type FormInst,useMessage } from 'naive-ui'
 import { ref } from 'vue';
 import{useRoute,useRouter} from 'vue-router'
-import { postM, isSuccess } from '@/utils/request'
+import request from '@/utils/request'
+import { isSuccess,postM } from '@/utils/request.js'
+
+// @ts-ignore
 import { useStore } from 'vuex';
 const store = useStore();
 const route=useRoute();

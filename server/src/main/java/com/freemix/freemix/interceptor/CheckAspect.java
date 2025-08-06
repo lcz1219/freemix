@@ -48,7 +48,7 @@ public class CheckAspect  {
         // 2. 获取Token（支持多种方式）
         String token = getTokenFromRequest(request);
         if(!token.equals(tokenRedis)){
-            return ApiResponse.failure("token不正确，请重新登录");
+            return ApiResponse.failure("token不正确");
         }
 
         // 4. Token有效，继续执行业务逻辑

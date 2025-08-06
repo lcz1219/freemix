@@ -26,7 +26,7 @@
         type="primary" 
         class="nav-link" 
         :class="{ active: activeTab === 'goalmanagement' }"
-        
+        @click="goTo('/goal-management')"
       >
         {{  '目标管理' }}
       </n-button>
@@ -51,27 +51,82 @@
     </nav>
     
     <div class="header-actions">
+      <!-- 主题切换按钮 -->
+      <div class="theme-switch" v-if="!isMobileDevice">
+        <n-tooltip placement="bottom">
+          <template #trigger>
+            <n-switch 
+              v-model:value="isDark" 
+              :rail-style="railStyle"
+              @update:value="toggleTheme"
+              size="small"
+            >
+              <template #icon>
+                <n-icon v-if="isDark" :component="MoonIcon" :size="14" />
+                <n-icon v-else :component="SunIcon" :size="14" />
+              </template>
+            </n-switch>
+          </template>
+          <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
+        </n-tooltip>
+      </div>
+      
       <n-avatar round size="medium" src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar>
     </div>
   </n-layout-header>
 </template>
 
 <script setup>
-import { NLayoutHeader, NIcon, NButton, NAvatar } from 'naive-ui'
-import { useRouter } from 'vue-router'
+import { ref, inject, onMounted } from 'vue';
+import { NLayoutHeader, NIcon, NButton, NAvatar, NSwitch, NTooltip } from 'naive-ui';
+import { useRouter } from 'vue-router';
+import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
+import { isMobile } from '@/utils/device.js';
 
 const props = defineProps({
   activeTab: {
     type: String,
     default: 'dashboard'
   }
-})
+});
 
-const router = useRouter()
+// 检查是否为移动设备
+const isMobileDevice = ref(isMobile());
+
+// 注入主题变量
+const isDark = inject('isDark', ref(false));
+const toggleTheme = inject('toggleTheme', () => {});
+
+// 图标组件
+const SunIcon = SunnyOutline;
+const MoonIcon = MoonOutline;
+
+// 路由
+const router = useRouter();
+
+// 开关轨道样式
+const railStyle = ({ focused, checked }) => {
+  const style = {};
+  if (checked) {
+    style.background = '#8a2be2';
+    if (focused) style.boxShadow = '0 0 0 2px #d0305040';
+  } else {
+    style.background = '#2080f0';
+    if (focused) style.boxShadow = '0 0 0 2px #2080f040';
+  }
+  return style;
+};
 
 const goTo = (path) => {
-  router.push(path)
-}
+  // 检查用户是否已登录
+  const token = localStorage.getItem('token');
+  if (!token && path !== '/login' && path !== '/register') {
+    router.push('/login');
+    return;
+  }
+  
+  router.push(path);
+};
 </script>
 
 <style scoped>

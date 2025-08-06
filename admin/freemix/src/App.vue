@@ -19,7 +19,7 @@
             </template>
           </n-switch>
         </template>
-        {{ isDark ? '深色模式' : '浅色模式' }}
+        <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
       </n-tooltip>
     </div>
 
@@ -138,7 +138,8 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
     };
   }
 });
-provide('isDark',isDark)
+provide('isDark', isDark)
+provide('toggleTheme', toggleTheme)
 // 开关轨道样式
 const railStyle = ({
   focused,
@@ -232,5 +233,47 @@ body {
 .n-config-provider, 
 .n-config-provider * {
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* 全局滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(164, 160, 170, 0.26);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(137, 43, 226, 0);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+/* 亮色模式下的全局滚动条样式 */
+.light-theme ::-webkit-scrollbar-thumb {
+  background-color: rgba(138, 43, 226, 0.3);
+}
+
+.light-theme ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(138, 43, 226, 0.5);
+}
+
+.light-theme ::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+body {
+  overflow-y: auto;
 }
 </style>

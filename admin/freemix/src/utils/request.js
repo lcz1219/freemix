@@ -4,17 +4,26 @@ import store from '../stores/index.js';
 import router from '../router/index.js';
 
 const request = axios.create({
-  baseURL: 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'http://8.134.84.105' : 'http://localhost:5173',
   headers: {
     'Content-Type': 'application/json'
   },
 });
 
 // 添加请求拦截器，动态设置token
+const NO_AUTH_PATHS = ['/login', '/register'];
+
 request.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const needsAuth = !NO_AUTH_PATHS.some(path => 
+      config.url.endsWith(path) // 精确匹配路径结尾
+    );
+    
+    if (needsAuth) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return Promise.reject(new Error('缺少认证Token'));
+      }
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -55,8 +64,12 @@ const getMPaths=async function(val,data){
       if(res.data.code==200){
         return true
       }else{
+        if(res.data.msg=='token不正确'){
+          store.dispatch('logout')
+        }
         return false
       }
  }
 
-export {request,postM,getM,getMPaths,isSuccess};
+export default request;
+export {postM,getM,getMPaths,isSuccess};

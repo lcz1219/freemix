@@ -1,4 +1,5 @@
 import { createStore } from 'vuex';
+import router from '../router';
 
 
 export default createStore({
@@ -20,6 +21,7 @@ export default createStore({
       // 从 localStorage 中移除用户信息
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      router.push('/login');
     }
   },
   actions: {                  // 异步操作

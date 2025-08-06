@@ -54,17 +54,27 @@
                 <n-form-item label="子目标" path="description">
                   <n-dynamic-input
                     v-model:value="goalForm.childGoals"
-                    placeholder="请输入子目标"
+                    placeholder="每一步小目标都是成功的开始🏅"
                     :min="3"
                     :max="6"
                   />
                 </n-form-item>
                 
                 <n-form-item label="负责人" path="owner">
-                  <n-input 
+                  <!-- <n-input 
                     v-model:value="goalForm.owner" 
                     placeholder="请输入负责人姓名"
-                  />
+                  /> -->
+                  <n-popselect
+              v-model:value="goalForm.owner"
+              :options="owerOptions"
+              size="medium"
+              scrollable
+            >
+            <n-button style="margin-right: 8px">
+              {{ goalForm.owner || '请选择负责人' }}
+            </n-button>
+          </n-popselect>
                 </n-form-item>
                 
                 <n-form-item label="截止日期" path="deadline">
@@ -148,20 +158,30 @@ import {
   NDatePicker,
   NSelect,
   NDynamicTags,
+  NPopselect,
   NRow,
   NCol,
   NAvatar,
   useMessage
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import request, { postM,isSuccess } from '@/utils/request'
+import request, { postM, isSuccess, getM } from '@/utils/request'
 import NavBar from '@/components/NavBar.vue';
+import type { FormRules, FormItemRule } from 'naive-ui'
+import type { FormInst } from 'naive-ui'
 
+const owerOptions=ref([]);
+const getOwerList=async ()=>{
+  const res=await getM('getOwerList');
+  if(isSuccess(res)){
+    owerOptions.value=res.data.data
+  }
+}
 // 图标组件
 const SunIcon = {
   template: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
     <path d="M12,7c-2.8,0-5,2.2-5,5s2.2,5,5,5s5-2.2,5-5S14.8,7,12,7z M12,14.5c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5 s2.5,1.1,2.5,2.5S13.4,14.5,12,14.5z" />
-    <path d="M12,5c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1s1,0.4,1,1v3C13,4.6,12.6,5,12,5z" />
+    <path d="M12,5c-0.6,0-1,0.4-1,1v3c0,0.6,0.4,1,1,1s1-0.4,1-1v-3C13,4.6,12.6,5,12,5z" />
     <path d="M12,19c-0.6,0-1,0.4-1,1v3c0,0.6,0.4,1,1,1s1-0.4,1-1v-3C13,19.4,12.6,19,12,19z" />
     <path d="M23,11h-3c-0.6,0-1,0.4-1,1s0.4,1,1,1h3c0.6,0,1-0.4,1-1S23.6,11,23,11z" />
     <path d="M4,11H1c-0.6,0-1,0.4-1,1s0.4,1,1,1h3c0.6,0,1-0.4,1-1S4.6,11,4,11z" />
@@ -184,7 +204,7 @@ const isDark = inject('isDark', ref(true));
 
 // 响应式数据
 const darkMode = ref(true);
-const formRef = ref(null);
+const formRef = ref<FormInst | null>(null)
 const message = useMessage();
 const router = useRouter();
 
@@ -195,10 +215,10 @@ const goalForm = ref({
   owner: '',
   deadline: null,
   level: null,
-  childGoals:[],
-  tags: [],
-  estimatedHours: null
-});
+  childGoals: [] as Array<{message: string; finish: boolean; finishTime: string}>,
+  tags: [] as string[],
+  estimatedHours: null,
+})
 
 // 优先级选项
 const levelOptions = [
@@ -208,11 +228,11 @@ const levelOptions = [
   { label: '紧急', value: 'urgent' }
 ];
 
-// 表单验证规则
-const formRules = {
+// 表单规则
+const formRules: FormRules = {
   title: {
     required: true,
-    message: '请输入目标标题',
+    message: '请输入标题',
     trigger: 'blur'
   },
   owner: {
@@ -221,21 +241,21 @@ const formRules = {
     trigger: 'blur'
   },
   deadline: {
-    type: 'number',
-          required: true,
-          trigger: ['blur', 'change'],
-          message: '请输入截止日期'
+    type: 'date',
+    required: true,
+    trigger: ['blur', 'change'],
+    message: '请选择截止日期'
   },
   level: {
     required: true,
-    message: '请选择优先级',
-    trigger: 'change'
+    trigger: 'blur',
+    message: '请选择优先级'
   }
-};
+}
 
 // 开关轨道样式
-const railStyle = ({ focused, checked }) => {
-  const style = {};
+const railStyle = ({ focused, checked }: { focused: boolean; checked: boolean }) => {
+  const style: { background?: string; boxShadow?: string } = {};
   if (checked) {
     style.background = '#8a2be2';
     if (focused) style.boxShadow = '0 0 0 2px #d0305040';
@@ -247,11 +267,11 @@ const railStyle = ({ focused, checked }) => {
 };
 
 // 处理表单提交
-const handleSubmit = (e) => {
+const handleSubmit = (e: Event) => {
   e.preventDefault();
   formRef.value?.validate(async (errors) => {
     if (!errors) {
-      message.success('目标创建成功');
+      // message.success('目标创建成功');
       const childGoalEndList=[];
       goalForm.value.childGoals.forEach((childGoal) => {
         const data={};
@@ -271,7 +291,7 @@ const handleSubmit = (e) => {
       // 提交后跳转到主页
       router.push('/home');
     } else {
-      message.error('请检查表单信息');
+      message.error('请填写完整信息');
     }
   });
 };
@@ -281,18 +301,23 @@ const testlog = () => {
 };
 
 // 重置表单
-const handleReset = () => {
+const resetForm = () => {
   goalForm.value = {
     title: '',
     description: '',
     owner: '',
     deadline: null,
     level: null,
-    tags: [],
-    estimatedHours: null
-  };
-  message.info('表单已重置');
-};
+    childGoals: [] as Array<{message: string; finish: boolean; finishTime: string}>,
+    tags: [] as string[],
+    estimatedHours: null,
+  }
+}
+
+// 处理重置按钮点击事件
+const handleReset = () => {
+  resetForm();
+}
 
 // 跳转到主页
 const goToHome = () => {
@@ -302,6 +327,7 @@ const goToHome = () => {
 // 初始化
 onMounted(() => {
   darkMode.value = isDark.value;
+  getOwerList()
 });
 
 // 监听主题变化
@@ -431,25 +457,29 @@ defineExpose({
 }
 
 .main-content-wrapper {
-  height: calc(100vh - 160px); /* 减去头部和底部的高度 */
+  height: calc(100vh - 160px);
   overflow-y: auto;
 }
 
 /* 滚动条样式 - Webkit内核浏览器 */
 .main-content-wrapper::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.5);
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  background-color: rgba(138, 43, 226, 0.4);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.main-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(138, 43, 226, 0.7);
 }
 
 .main-content-wrapper::-webkit-scrollbar-track {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  background-color: transparent;
+  border-radius: 3px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-corner {
@@ -461,8 +491,12 @@ defineExpose({
   background-color: rgba(138, 43, 226, 0.3);
 }
 
+.home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(138, 43, 226, 0.5);
+}
+
 .home-container-light .main-content-wrapper::-webkit-scrollbar-track {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: transparent;
 }
 
 .main-content {
