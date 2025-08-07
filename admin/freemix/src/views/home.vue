@@ -784,7 +784,7 @@ const getGoals = async () => {
 
   const res = await getMPaths("getGoals", store.state.user.username);
   if(isSuccess(res)){
-goals.value = res.data.data;
+ goals.value = res.data.data;
   console.log("goals.value", goals.value);
   goals.value?.forEach(goal => {
     goal.deadlineString = formatDate(goal.deadline);

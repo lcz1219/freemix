@@ -33,6 +33,11 @@ public class GoalController extends BaseController {
 
             mongoTemplate.insert(goal);
         }else {
+
+            if (goal.getProgress()==100){
+                goal.setStatus("completed");
+            }
+
             mongoTemplate.save(goal);
         }
 

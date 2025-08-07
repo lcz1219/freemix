@@ -5,25 +5,19 @@
       <n-space>
         <n-button quaternary circle @click="copyGoal">
           <template #icon>
-           <n-icon :component="Copy">
-              
-            </n-icon>
+           <n-icon :component="Copy" />
           </template>
         </n-button>
         <n-button quaternary circle @click="editGoal" v-if="!isEditing">
           <template #icon>
             
-             <n-icon :component="Pencil">
-              
-            </n-icon>
+             <n-icon :component="Pencil" />
           </template>
         </n-button>
         <n-button quaternary circle @click="()=>isEditing=false" v-else>
           <template #icon>
             
-             <n-icon :component="Eye">
-              
-            </n-icon>
+             <n-icon :component="Eye" />
           </template>
         </n-button>
       </n-space>
@@ -238,7 +232,7 @@ const statusOptions = [
 // 子目标表格列定义
 const subGoalColumns = [
   { title: '子目标', key: 'title' },
-  { title: '进度', key: 'progress', render: (row) => `${row.progress}%` }
+  { title: '进度', key: 'progress', render: (row) => h('div', {}, `${row.progress}%`) }
 ];
 
 // 可编辑子目标表格列定义
@@ -249,13 +243,13 @@ const editableSubGoalColumns = [
     title: '操作',
     key: 'finish',
     render: (row, index) => {
-      return h(NButton, {
-        size: 'small',
-        disabled: row.finish ,
-        onClick: () => finishChild(index)
-      }, { default: () => '完成'
-
-       });
+      return h('div', {}, [
+        h(NButton, {
+          size: 'small',
+          disabled: row.finish,
+          onClick: () => finishChild(index)
+        }, { default: () => '完成' })
+      ]);
     }
   }
 ];
