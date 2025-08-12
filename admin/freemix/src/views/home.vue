@@ -58,15 +58,15 @@
             <div class="stats-container">
               <div class="stat-item">
                 <div class="stat-value">{{ goalIngCount }}</div>
-                <div class="stat-label">进行中</div>
+                <div :class="checkThemebyStat">进行中</div>
               </div>
               <div class="stat-item">
                 <div class="stat-value" style="color: #00c9a7;">{{ goalFinishCount }}</div>
-                <div class="stat-label">已完成</div>
+                <div :class="checkThemebyStat">已完成</div>
               </div>
               <div class="stat-item">
                 <div class="stat-value" style="color: #ff6b6b;">{{ goalExpireCount }}</div>
-                <div class="stat-label">已过期</div>
+                <div :class="checkThemebyStat">已过期</div>
               </div>
             </div>
 
@@ -116,10 +116,10 @@
               </div>
 
               <n-progress type="line" :percentage="goal.progress" :indicator-placement="'inside'" :height="8" processing
-                :rail-color="'rgba(255, 255, 255, 0.1)'" :fill-color="'linear-gradient(90deg, #8a2be2, #4b0082)'" />
+                :rail-color="isDark?'rgba(255, 255, 255, 0.1)':'rgb(235 235 235)'" :fill-color="'linear-gradient(90deg, #8a2be2, #4b0082)'" />
 
               <div class="goal-details">
-                <div class="detail-item">
+                <div :class="checkThemebyDetail">
                   <n-icon size="16">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
                       fill="currentColor">
@@ -141,7 +141,7 @@
                   </n-icon>
                   <span>截止: {{ goal.deadlineString }}</span>
                 </div>
-                <div class="detail-item">
+                <div :class="checkThemebyDetail">
                   <n-icon size="16">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
                       fill="currentColor">
@@ -559,12 +559,12 @@
           </template>
         </n-modal>
 
-        <n-layout-footer class="footer" bordered>
+        <!-- <n-layout-footer class="footer" bordered>
           <p>© 2023 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
-        </n-layout-footer>
+        </n-layout-footer> -->
       </div>
     </n-layout-content>
-
+   
     <!-- 页脚 -->
     <n-layout-footer class="footer" bordered>
       <p>© 2023 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
@@ -573,7 +573,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed, h } from 'vue';
+import { ref, onMounted, inject, computed,watch, h } from 'vue';
 import {
   NLayout,
   NLayoutHeader,
@@ -633,6 +633,13 @@ const detailViewImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=5";
 const overviewChartImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=6";
 const trendChartImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=7";
 const eisenhowerMatrixImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=9";
+
+const checkThemebyDetail=computed(()=>{
+ return isDark.value?'detail-item':'detail-item-light'
+})
+const checkThemebyStat=computed(()=>{
+ return isDark.value?'stat-label':'stat-label-light'
+})
 const checktype=(val)=>{
     switch(val.tags[0]){
       case '学习':
@@ -1013,7 +1020,7 @@ onMounted(async () => {
   });
 
   // 趋势图表
-  new Chart(trendChart.value, {
+   new Chart(trendChart.value, {
     type: 'line',
     data: {
       labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月','11月', '12月'],
@@ -1040,17 +1047,17 @@ onMounted(async () => {
             display: false
           },
           ticks: {
-            color: 'rgba(255, 255, 255, 0.6)'
+            color: 'grey'
           }
         },
         y: {
           min: 0,
           max: 100,
           grid: {
-            color: 'rgba(255, 255, 255, 0.05)'
+            color: isDark.value ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
           },
           ticks: {
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: 'grey',
             callback: function (value) {
               return value + '%';
             }
@@ -1184,7 +1191,7 @@ onMounted(async () => {
 
 
 .main-content-wrapper {
-  height: calc(100vh - 160px);
+  height: calc(100vh - 100px);
   /* 减去头部和底部的高度 */
   overflow-y: auto;
 }
@@ -1342,6 +1349,10 @@ onMounted(async () => {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
 }
+.stat-label-light {
+  font-size: 14px;
+  color: black;
+}
 
 .chart-container {
   position: relative;
@@ -1349,6 +1360,7 @@ onMounted(async () => {
   width: 100%;
   margin-top: 20px;
 }
+
 
 .targets-section {
   margin-top: 40px;
@@ -1420,12 +1432,19 @@ onMounted(async () => {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
 }
+.detail-item-light {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  /* color: rgba(255, 255, 255, 0.7); */
+}
 
 .footer {
   text-align: center;
-  padding: 40px 0;
-  margin-top: 60px;
-  color: rgba(255, 255, 255, 0.5);
+  /* padding: 40px 0; */
+  /* margin-top: 60px; */
+  color: rgba(11, 1, 1, 0.5);
   font-size: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }

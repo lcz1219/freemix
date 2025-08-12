@@ -11,6 +11,9 @@ import MobileLogin from '@/views/mobile-login.vue'
 import MobileRegister from '@/views/mobile-register.vue'
 import MobileHome from '@/views/mobile-home.vue'
 import MobileAddGoal from '@/views/mobile-add-goal.vue'
+import MobileSettings from '@/views/mobile-settings.vue'
+import MobileStatistics from '@/views/mobile-statistics.vue'
+
 import { isMobile } from '@/utils/device.js'
 
 // 根据设备类型选择组件
@@ -48,12 +51,12 @@ const routes: RouteRecordRaw[] = [
   { 
     path: '/statistics', 
     name: 'Statistics', 
-    component: getComponent(Statistics, Statistics) 
+    component: getComponent(Statistics, MobileStatistics) 
   },
   { 
     path: '/settings', 
     name: 'Settings', 
-    component: getComponent(Settings, Settings) 
+    component: getComponent(Settings, MobileSettings) 
   }
 ]
 

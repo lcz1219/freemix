@@ -4,8 +4,9 @@
     :theme-overrides="themeOverrides"
     class="config-provider"
   >
+  <van-config-provider :theme="isDark?'dark':'light'">
     <!-- 主题切换按钮 -->
-    <div class="theme-switch">
+    <div class="theme-switch"  v-if="!isMobileDevice">
       <n-tooltip placement="left">
         <template #trigger>
           <n-switch 
@@ -30,12 +31,18 @@
     <n-message-provider>
       <!-- 路由视图 - 应用主题类 -->
       <router-view :class="themeClass" />
+      
+      <!-- 移动端浮动导航组件 -->
+      <MobileFloatingNav v-if="isMobileDevice" />
     </n-message-provider>
+    </van-config-provider>
   </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch,type CSSProperties, provide } from 'vue';
+import { isMobile } from '@/utils/device.js'
+import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { 
   NConfigProvider, 
   darkTheme, 
@@ -47,14 +54,28 @@ import {
   NIcon
 } from 'naive-ui';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
+import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 
 // 主题状态管理
 const isDark = ref(false);
+const isMobileDevice = isMobile(); // 调用函数获取是否为移动端
+
+// 路由信息
+const route = useRoute();
+const router = useRouter();
+
+
 
 // 计算主题类
 const themeClass = computed(() => {
   return isDark.value ? 'dark-theme' : 'light-theme';
 });
+
+// 导航到指定路径
+const navigateTo = (path: string) => {
+  showNavigation.value = false;
+  router.push(path);
+};
 
 // 切换主题并保存状态
 const toggleTheme = (value: boolean) => {
@@ -94,7 +115,6 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
   
   if (isDark.value) {
     return {
-      ...commonOverrides,
       common: {
         ...commonOverrides,
         bodyColor: '#121212',
@@ -116,7 +136,6 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
     };
   } else {
     return {
-      ...commonOverrides,
       common: {
         ...commonOverrides,
         bodyColor: '#f8f9fa',
@@ -138,8 +157,8 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
     };
   }
 });
-provide('isDark', isDark)
-provide('toggleTheme', toggleTheme)
+provide('isDark', isDark);
+provide('toggleTheme', toggleTheme);
 // 开关轨道样式
 const railStyle = ({
   focused,
@@ -207,6 +226,7 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-color);
 }
+
 
 /* 确保所有Naive UI组件使用主题变量 */
 .n-card {

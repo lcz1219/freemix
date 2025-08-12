@@ -12,12 +12,14 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.11.0",
     "chart.js": "^4.5.0",
     "echarts": "^5.6.0",
+    "element-plus": "^2.10.6",
     "lucide-vue-next": "^0.525.0",
     "pinia": "^3.0.3",
-    "vant": "^3.6.16",
+    "vant": "^4.9.21",
     "vue": "^3.5.17",
     "vue-clipboard3": "^2.0.0",
     "vue-router": "^4.5.1",

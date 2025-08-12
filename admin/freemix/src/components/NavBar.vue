@@ -51,26 +51,6 @@
     </nav>
     
     <div class="header-actions">
-      <!-- 主题切换按钮 -->
-      <div class="theme-switch" v-if="!isMobileDevice">
-        <n-tooltip placement="bottom">
-          <template #trigger>
-            <n-switch 
-              v-model:value="isDark" 
-              :rail-style="railStyle"
-              @update:value="toggleTheme"
-              size="small"
-            >
-              <template #icon>
-                <n-icon v-if="isDark" :component="MoonIcon" :size="14" />
-                <n-icon v-else :component="SunIcon" :size="14" />
-              </template>
-            </n-switch>
-          </template>
-          <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
-        </n-tooltip>
-      </div>
-      
       <n-avatar round size="medium" src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar>
     </div>
   </n-layout-header>
@@ -78,10 +58,18 @@
 
 <script setup>
 import { ref, inject, onMounted } from 'vue';
-import { NLayoutHeader, NIcon, NButton, NAvatar, NSwitch, NTooltip } from 'naive-ui';
+import { NLayoutHeader, NIcon, NButton, NAvatar } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
+import {
+  Check,
+  Delete,
+  Edit,
+  FullScreen,
+  Rank,
+  Search,
+  Star,
+} from '@element-plus/icons-vue'
 
 const props = defineProps({
   activeTab: {
@@ -89,7 +77,16 @@ const props = defineProps({
     default: 'dashboard'
   }
 });
-
+const onFullescreen = () => {
+  fullscreen
+    .toggle()
+    .then(() => {
+      //todo
+    })
+    .catch((err) => {
+      ElMessage.error('不支持全屏')
+    })
+}
 // 检查是否为移动设备
 const isMobileDevice = ref(isMobile());
 
@@ -132,60 +129,76 @@ const goTo = (path) => {
 <style scoped>
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  background-color: rgba(30, 30, 40, 0.6);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 24px;
-  font-weight: 700;
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #8a2be2, #4b0082);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logo-text {
-  background: linear-gradient(to right, #8a2be2, #4b0082);
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(to right, #fff, #8a2be2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .nav {
   display: flex;
-  gap: 20px;
+  gap: 24px;
 }
 
 .nav-link {
   font-size: 16px;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
   position: relative;
+  padding: 8px 0;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+}
+
+.nav-link.active {
+  color: #ffffff;
 }
 
 .nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: 0;
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #8a2be2, #4b0082);
+  background: linear-gradient(to right, #8a2be2, #00c9a7);
+  border-radius: 1px;
 }
 
 .header-actions {
   display: flex;
-  gap: 15px;
   align-items: center;
+  gap: 16px;
 }
 </style>

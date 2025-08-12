@@ -41,7 +41,7 @@
                   </template>
                   添加新目标
                 </n-button>
-                
+
                 <n-button @click="refreshGoals">
                   <template #icon>
                     <n-icon>
@@ -71,13 +71,8 @@
                   </template>
                 </n-input>
 
-                <n-select 
-                  v-model:value="statusFilter" 
-                  :options="statusOptions" 
-                  clearable 
-                  placeholder="状态筛选"
-                  style="width: 120px;"
-                />
+                <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
+                  style="width: 120px;" />
               </n-space>
             </n-space>
           </n-card>
@@ -88,38 +83,170 @@
           <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
             <div class="card-header">
               <n-icon size="28" color="#8a2be2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-                  <path d="M21,11.5c0,1.7-1.3,3-3,3s-3-1.3-3-3c0-0.5,0.1-0.9,0.3-1.3l-2-1.2C13.1,10.4,13,10.7,13,11c0,1.7,1.3,3,3,3 s3-1.3,3-3c0-0.7-0.3-1.4-0.7-2H21V11.5z"/>
-                  <path d="M9,14C7.3,14,6,15.3,6,17s1.3,3,3,3s3-1.3,3-3s-1.3-3-3-3z M9,18c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S9.6,18,9,18 z"/>
-                  <path d="M6,7C4.3,7,3,8.3,3,10s1.3,3,3,3s3-1.3,3-3S7.7,7,6,7z M6,11c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S6.6,11,6,11z"/>
-                  <path d="M18,4c-1.7,0-3,1.3-3,3s1.3,3,3,3s3-1.3,3-3S19.7,4,18,4z M18,8c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S18.6,8,18,8z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                  fill="currentColor">
+                  <path
+                    d="M21,11.5c0,1.7-1.3,3-3,3s-3-1.3-3-3c0-0.5,0.1-0.9,0.3-1.3l-2-1.2C13.1,10.4,13,10.7,13,11c0,1.7,1.3,3,3,3 s3-1.3,3-3c0-0.7-0.3-1.4-0.7-2H21V11.5z" />
+                  <path
+                    d="M9,14C7.3,14,6,15.3,6,17s1.3,3,3,3s3-1.3,3-3s-1.3-3-3-3z M9,18c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S9.6,18,9,18 z" />
+                  <path
+                    d="M6,7C4.3,7,3,8.3,3,10s1.3,3,3,3s3-1.3,3-3S7.7,7,6,7z M6,11c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S6.6,11,6,11z" />
+                  <path
+                    d="M18,4c-1.7,0-3,1.3-3,3s1.3,3,3,3s3-1.3,3-3S19.7,4,18,4z M18,8c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S18.6,8,18,8z" />
                 </svg>
               </n-icon>
               <h2 class="card-title">我的目标</h2>
             </div>
 
-            <n-data-table
-              :columns="columns"
-              :data="filteredGoals"
-              :loading="loading"
-              :pagination="pagination"
-              :bordered="false"
-              :single-line="false"
-              striped
-              @update:sorter="handleSorterChange"
-            />
+            <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'" style="width: 100%">
+              <el-table-column type="expand">
+                <template #default="props">
+                  <div class="expanded-content-wrapper">
+                    <n-collapse>
+                      <n-collapse-item v-for="(childGoal, index) in props.row.childGoals" :key="index" :name="index"
+                        class="child-goal-collapse-item">
+                        <template #header>
+                          <div class="child-goal-header">
+                            <div class="child-goal-title">
+                              <n-ellipsis style="max-width: 300px">
+                                {{ childGoal.message }}
+                              </n-ellipsis>
+                            </div>
+                            <div class="child-goal-status">
+                              <n-tag :type="childGoal.finish ? 'success' : 'warning'" size="small">
+                                {{ childGoal.finish ? '已完成' : '进行中' }}
+                              </n-tag>
+                            </div>
+                          </div>
+                        </template>
+
+                        <div class="child-goal-details">
+                          <div class="child-goal-info-row">
+                            <!-- <div class="info-item">
+                              <n-icon size="16" class="info-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                              </n-icon>
+                              <span v-if="childGoal.description">{{ childGoal.description }}</span>
+                              <span v-else class="no-description">暂无描述</span>
+                            </div> -->
+
+                            <div class="info-item">
+                              <n-icon size="16" class="info-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                                  fill="currentColor">
+                                  <path
+                                    d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                </svg>
+                              </n-icon>
+                              <span>完成日期: {{ formatDate(childGoal.finishDate) }}</span>
+                              <div>
+
+                              </div>
+                              <n-button v-if="!childGoal.finish" type="primary" size="small"
+                                @click="finishChildGoal(props.row, index)">
+                                标记为完成
+                              </n-button>
+                              <n-button v-else type="tertiary" size="small"
+                                @click="unfinishChildGoal(props.row, index)">
+                                取消完成
+                              </n-button>
+                            </div>
+                          </div>
+
+                          <div class="child-goal-actions">
+
+                          </div>
+                        </div>
+                      </n-collapse-item>
+
+                      <n-collapse-item name="summary" class="summary-collapse-item">
+                        <template #header>
+                          <div class="summary-header">
+                            <n-icon size="18">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                                fill="currentColor">
+                                <path
+                                  d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z" />
+                                <path
+                                  d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z" />
+                              </svg>
+                            </n-icon>
+                            <span class="summary-title">子目标汇总</span>
+                          </div>
+                        </template>
+
+                        <div class="summary-content">
+                          <div class="summary-stats">
+                            <div class="stat-item">
+                              <div class="stat-value">{{ props.row.childGoals ? props.row.childGoals.length : 0 }}</div>
+                              <div class="stat-label">总计</div>
+                            </div>
+                            <div class="stat-item">
+                              <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
+                                props.row.childGoals.filter((c: any) => c.finish).length : 0 }}</div>
+                              <div class="stat-label">已完成</div>
+                            </div>
+                            <div class="stat-item">
+                              <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
+                                props.row.childGoals.filter((c: any) => !c.finish).length : 0 }}</div>
+                              <div class="stat-label">未完成</div>
+                            </div>
+                          </div>
+
+                          <n-progress type="line" :percentage="props.row.childGoals && props.row.childGoals.length > 0
+                            ? Math.round(props.row.childGoals.filter((c: any) => c.finish).length / props.row.childGoals.length * 100)
+                            : 0" :indicator-placement="'inside'" :processing="true"
+                            :color="getProgressColor(props.row)" />
+                        </div>
+                      </n-collapse-item>
+                    </n-collapse>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="目标名称" prop="title" />
+              <el-table-column label="负责人" prop="owner" />
+              <el-table-column label="截止日期" prop="deadlineString" />
+              <el-table-column label="进度">
+                <template #default="scope">
+                  <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress" :stroke-width="10"
+                    :color="getStatusColor(scope.row.status)"
+                    :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
+                </template>
+              </el-table-column>
+              <el-table-column label="状态">
+                <template #default="scope">
+                  <n-tag :type="getStatusTagType(scope.row.status)">
+                    {{ getStatusLabel(scope.row.status) }}
+                  </n-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作">
+                <template #default="scope">
+                  <n-button type="warning" circle secondary strong @click="viewGoalDetail(scope.row)"
+                    style="margin-right: 10px;">
+                    <n-icon size="20">
+                      <EyeSharp />
+                    </n-icon>
+
+                  </n-button>
+                  <n-button type="primary" circle secondary strong @click="editGoal(scope.row)">
+
+                    <n-icon size="20">
+                      <PencilOutline />
+                    </n-icon>
+                  </n-button>
+                </template>
+              </el-table-column>
+            </el-table>
           </n-card>
         </section>
       </div>
     </n-layout-content>
 
     <!-- 目标详情模态框 -->
-    <GoalDetail 
-      v-model:show="showDetailModal" 
-      :goal="selectedGoal" 
-      @save="saveGoal" 
-      @updateGoal="refreshGoals" 
-    />
+    <GoalDetail v-model:show="showDetailModal" :goal="selectedGoal" @save="saveGoal" @updateGoal="refreshGoals" />
 
     <!-- 底部 -->
     <n-layout-footer class="footer" bordered>
@@ -129,8 +256,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, h } from 'vue';
-import { 
+import { ref, computed, onMounted, inject } from 'vue';
+import {
   NLayout,
   NLayoutHeader,
   NLayoutContent,
@@ -138,16 +265,22 @@ import {
   NCard,
   NButton,
   NIcon,
-  NDataTable,
   NSpace,
   NInput,
   NSelect,
-  useMessage
+  NTag,
+  NProgress,
+  NCollapse,
+  NCollapseItem,
+  useMessage,
+  NEllipsis
 } from 'naive-ui';
+import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plus';
 import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
-import { getMPaths, isSuccess } from '@/utils/request';
+import { getMPaths, isSuccess, postM } from '@/utils/request';
+import { EyeSharp, PencilOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
 
@@ -181,123 +314,153 @@ const pagination = {
   pageSize: 10
 };
 
-// 表格列定义
-const columns: DataTableColumns<any> = [
-  {
-    title: '目标名称',
-    key: 'title',
-    sorter: 'default',
-    render(row) {
-      return h('span', { style: { fontWeight: '500' } }, row.title);
-    }
-  },
-  {
-    title: '负责人',
-    key: 'owner',
-    sorter: 'default'
-  },
-  {
-    title: '截止日期',
-    key: 'deadlineString',
-    sorter: 'default',
-    render(row) {
-      return h('div', {}, formatDate(row.deadline));
-    }
-  },
-  {
-    title: '进度',
-    key: 'progress',
-    sorter: 'default',
-    render(row) {
-      return h('div', {}, [
-        h('n-progress', {
-          type: 'line',
-          percentage: row.progress,
-          indicatorPlacement: 'inside',
-          processing: row.status === 'in-progress',
-          color: row.status === 'completed' ? '#00c9a7' : row.status === 'expired' ? '#ff6b6b' : '#8a2be2'
-        })
-      ]);
-    }
-  },
-  {
-    title: '状态',
-    key: 'status',
-    sorter: 'default',
-    render(row) {
-      const statusMap = {
-        'in-progress': { label: '进行中', type: 'info' },
-        'completed': { label: '已完成', type: 'success' },
-        'expired': { label: '已过期', type: 'error' }
-      };
-      
-      const statusInfo = statusMap[row.status as keyof typeof statusMap] || { label: '未知', type: 'default' };
-      
-      return h('div', {}, [
-        h('n-tag', {
-          type: statusInfo.type,
-          size: 'small'
-        }, {
-          default: () => statusInfo.label
-        })
-      ]);
-    }
-  },
-  {
-    title: '操作',
-    key: 'actions',
-    render(row) {
-      return h('div', {}, [
-        h(NSpace, {}, {
-          default: () => [
-            h(NButton, {
-              size: 'small',
-              type: 'primary',
-              ghost: true,
-              onClick: () => viewGoalDetail(row)
-            }, { default: () => '查看' }),
-            h(NButton, {
-              size: 'small',
-              type: 'info',
-              ghost: true,
-              onClick: () => editGoal(row)
-            }, { default: () => '编辑' })
-          ]
-        })
-      ]);
-    }
+// 获取状态标签类型
+const getStatusTagType = (status: string) => {
+  switch (status) {
+    case 'completed':
+      return 'success';
+    case 'in-progress':
+      return 'warning';
+    case 'expired':
+      return 'error';
+    default:
+      return 'info';
   }
-];
+};
+
+// 获取状态标签文本
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'completed':
+      return '已完成';
+    case 'in-progress':
+      return '进行中';
+    case 'expired':
+      return '已过期';
+    default:
+      return '未知';
+  }
+};
+
+// 获取状态对应的颜色
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'completed':
+      return '#00c9a7'; // 绿色
+    case 'in-progress':
+      return '#8a2be2'; // 紫色
+    case 'expired':
+      return '#ff6b6b'; // 红色
+    default:
+      return '#409eff'; // 蓝色
+  }
+};
+
+// 获取进度条颜色
+const getProgressColor = (goal: any) => {
+  if (!goal.childGoals || goal.childGoals.length === 0) return '#8a2be2';
+
+  const finishedCount = goal.childGoals.filter((c: any) => c.finish).length;
+  const progress = Math.round(finishedCount / goal.childGoals.length * 100);
+
+  if (progress === 100) return '#00c9a7';
+  if (progress >= 50) return '#8a2be2';
+  return '#409eff';
+};
+
+// 标记子目标为完成
+const finishChildGoal = async (goal: any, index: number) => {
+  try {
+    const updatedGoal = { ...goal };
+    updatedGoal.childGoals[index].finish = true;
+    updatedGoal.childGoals[index].finishDate = new Date();
+    // 更新进度
+    const finishedCount = updatedGoal.childGoals.filter((c: any) => c.finish).length;
+    updatedGoal.progress = Math.round(finishedCount / updatedGoal.childGoals.length * 100);
+
+    // 如果所有子目标都完成了，更新目标状态
+    if (finishedCount === updatedGoal.childGoals.length) {
+      updatedGoal.status = 'completed';
+    }
+
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      message.success('子目标已完成');
+      // 更新本地数据
+      const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
+      if (goalIndex !== -1) {
+        goals.value[goalIndex] = updatedGoal;
+      }
+    } else {
+      message.error('更新失败');
+    }
+  } catch (error) {
+    message.error('操作失败');
+    console.error(error);
+  }
+};
+
+// 取消子目标完成状态
+const unfinishChildGoal = async (goal: any, index: number) => {
+  try {
+    const updatedGoal = { ...goal };
+    updatedGoal.childGoals[index].finish = false;
+
+    // 更新进度
+    const finishedCount = updatedGoal.childGoals.filter((c: any) => c.finish).length;
+    updatedGoal.progress = Math.round(finishedCount / updatedGoal.childGoals.length * 100);
+
+    // 如果之前是完成状态，现在需要改为进行中
+    if (updatedGoal.status === 'completed') {
+      updatedGoal.status = 'in-progress';
+    }
+
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      message.success('已取消完成状态');
+      // 更新本地数据
+      const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
+      if (goalIndex !== -1) {
+        goals.value[goalIndex] = updatedGoal;
+      }
+    } else {
+      message.error('更新失败');
+    }
+  } catch (error) {
+    message.error('操作失败');
+    console.error(error);
+  }
+};
 
 // 筛选后的目标列表
 const filteredGoals = computed(() => {
   let result = [...goals.value];
-  
+
   // 搜索过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    result = result.filter(goal => 
-      goal.title.toLowerCase().includes(query) || 
+    result = result.filter(goal =>
+      goal.title.toLowerCase().includes(query) ||
       goal.description.toLowerCase().includes(query) ||
       goal.owner.toLowerCase().includes(query)
     );
   }
-  
+
   // 状态过滤
   if (statusFilter.value) {
     result = result.filter(goal => goal.status === statusFilter.value);
   }
-  
+
   return result;
 });
 
 // 格式化日期
 const formatDate = (dateString: string) => {
   if (!dateString) return '未设置';
-  
+
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '日期无效';
-  
+
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -440,7 +603,8 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.hero-title, .hero-title-light {
+.hero-title,
+.hero-title-light {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 10px;
@@ -454,7 +618,8 @@ onMounted(() => {
   color: #000000;
 }
 
-.hero-subtitle, .hero-subtitle-light {
+.hero-subtitle,
+.hero-subtitle-light {
   font-size: 16px;
   opacity: 0.8;
 }
@@ -471,7 +636,8 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.feature-card, .feature-card-light {
+.feature-card,
+.feature-card-light {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -549,5 +715,268 @@ onMounted(() => {
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
   background: rgba(138, 43, 226, 0.5);
+}
+
+/* Element UI 表格主题适配 */
+.el-table-dark {
+  --el-table-border-color: rgba(255, 255, 255, 0.05);
+  --el-table-bg-color: rgba(30, 30, 40, 0.6);
+  --el-table-tr-bg-color: rgba(30, 30, 40, 0.6);
+  --el-table-header-bg-color: rgba(40, 40, 50, 0.8);
+  --el-table-text-color: #ffffff;
+  --el-table-header-text-color: #ffffff;
+  --el-table-row-hover-bg-color: rgba(50, 50, 60, 0.8);
+  --el-table-current-row-bg-color: rgba(40, 40, 50, 0.8);
+}
+
+.el-table-dark.el-table {
+  background-color: rgba(30, 30, 40, 0.6);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+}
+
+.el-table-dark .el-table__header-wrapper {
+  background-color: rgba(40, 40, 50, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.el-table-dark .el-table__body-wrapper {
+  background-color: rgba(30, 30, 40, 0.6);
+}
+
+.el-table-dark .el-table__cell {
+  background-color: transparent;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.el-table-dark .el-table__row.hover-row td {
+  background-color: rgba(50, 50, 60, 0.8);
+}
+
+.el-table-dark .el-table__row.current-row td {
+  background-color: rgba(40, 40, 50, 0.8);
+}
+
+.el-table-dark .el-table__inner-wrapper::before {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+:deep(.el-table-dark .el-table__expanded-cell) {
+  background-color: rgba(30, 30, 40, 0.6) !important;
+}
+
+.el-table-dark .el-table__inner-wrapper {
+  background-color: transparent;
+}
+
+.el-table-light {
+  --el-table-border-color: rgba(0, 0, 0, 0.1);
+  --el-table-bg-color: rgba(255, 255, 255, 0.8);
+  --el-table-tr-bg-color: rgba(255, 255, 255, 0.8);
+  --el-table-header-bg-color: rgba(245, 245, 245, 0.9);
+  --el-table-text-color: #000000;
+  --el-table-header-text-color: #000000;
+  --el-table-row-hover-bg-color: rgba(235, 235, 235, 0.9);
+  --el-table-current-row-bg-color: rgba(245, 245, 245, 0.9);
+}
+
+.el-table-light.el-table {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.el-table-light .el-table__header-wrapper {
+  background-color: rgba(245, 245, 245, 0.9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.el-table-light .el-table__body-wrapper {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.el-table-light .el-table__cell {
+  background-color: transparent;
+  color: #000000;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.el-table-light .el-table__row.hover-row td {
+  background-color: rgba(235, 235, 235, 0.9);
+}
+
+:deep(.el-table-light .el-table__expanded-cell) {
+  background-color: rgba(235, 235, 235, 0.9) !important;
+}
+
+.el-table-light .el-table__row.current-row td {
+  background-color: rgba(245, 245, 245, 0.9);
+}
+
+.el-table-light .el-table__inner-wrapper::before {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.el-table-light .el-table__inner-wrapper {
+  background-color: transparent;
+}
+
+.expanded-content {
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.home-container-light .expanded-content {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.expanded-content p {
+  margin: 5px 0;
+}
+
+/* .tag-dark {
+  color: white;
+}
+
+.tag-light {
+  color: black;
+} */
+
+/* 子目标展开区域样式 */
+.expanded-content-wrapper {
+  padding: 1px 1px;
+  background: rgb(30, 30, 40);
+  border-radius: 8px;
+  margin: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.home-container-light .expanded-content-wrapper {
+  background: linear-gradient(rgba(138, 43, 226, 0.03), rgba(138, 43, 226, 0.03));
+  background-color: rgba(255, 255, 255, 0.214);
+}
+
+.child-goal-collapse-item {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.child-goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.child-goal-title {
+  font-weight: 500;
+  font-size: 14px;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.child-goal-status {
+  flex-shrink: 0;
+}
+
+.child-goal-details {
+  padding: 16px 0;
+}
+
+.child-goal-info-row {
+  margin-bottom: 16px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.info-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.no-description {
+  color: #999;
+  font-style: italic;
+}
+
+.child-goal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.summary-collapse-item {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: none;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.summary-title {
+  font-size: 14px;
+}
+
+.summary-content {
+  padding: 16px 0;
+}
+
+.summary-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.n-collapse-item :deep(.n-collapse-item__header) {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.home-container-light .n-collapse-item :deep(.n-collapse-item__header) {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.n-collapse-item :deep(.n-collapse-item__content-wrapper) {
+  background-color: transparent;
+}
+
+.n-collapse-item :deep(.n-collapse-item__content-inner) {
+  padding: 0 16px 16px 16px;
 }
 </style>
