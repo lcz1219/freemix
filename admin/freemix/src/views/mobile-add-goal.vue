@@ -1,5 +1,5 @@
 <template>
-  <n-layout :native-scrollbar="true" :class="isDark ? 'mobile-add-goal dark' : 'mobile-add-goal light'">
+  <n-layout :native-scrollbar="true" :class="isDark ? 'mobile-add-goal dark' : 'mobile-add-goal light'" style="touch-action: manipulation;">
     <!-- 装饰背景元素 -->
     <div class="background-elements">
       <div class="gradient-circle blue"></div>
@@ -64,37 +64,65 @@
             </n-form-item>
             
             <n-form-item label="负责人" path="owner">
-              <n-input 
-                v-model:value="goalForm.owner" 
-                placeholder="请输入负责人姓名"
+              <van-field
+                v-model="goalForm.owner"
+                is-link
+                readonly
+                name="owner"
+                label="负责人"
+                placeholder="请选择负责人"
+                @click="openOwener"
               />
             </n-form-item>
             
             <n-form-item label="截止日期" path="deadline">
-              <n-date-picker 
-                v-model:value="goalForm.deadline" 
-                type="date" 
-                style="width: 100%"
+              <van-field
+                v-model="formattedDeadline"
+                is-link
+                readonly
+                name="deadline"
+                label="截止日期"
+                placeholder="请选择截止日期"
+                @click="showDatePicker = true"
               />
             </n-form-item>
             
             <n-form-item label="优先级" path="level">
-              <n-select 
+              <!-- <n-select 
                 v-model:value="goalForm.level" 
                 :options="levelOptions" 
                 placeholder="请选择优先级"
+              /> -->
+               <van-field
+                v-model="goalForm.level"
+                is-link
+                readonly
+                name="level"
+                label="请选择优先级"
+                placeholder="请选择优先级"
+                @click="showOwnerLevel = true"
               />
+               
             </n-form-item>
             
             <n-form-item label="状态" path="status">
-              <n-select 
+              <!-- <n-select 
                 v-model:value="goalForm.status" 
                 :options="statusOptions" 
                 placeholder="请选择状态"
+              /> -->
+               <van-field
+                v-model="goalForm.status"
+                is-link
+                readonly
+                name="status"
+                label="请选择状态"
+                placeholder="请选择状态"
+                @click="showOwnerStatus = true"
               />
             </n-form-item>
             
-            <n-form-item label="进度" path="progress">
+            <!-- <n-form-item label="进度" path="progress">
               <n-slider 
                 v-model:value="goalForm.progress" 
                 :max="100" 
@@ -102,7 +130,7 @@
                 :step="1"
               />
               <div class="progress-text">{{ goalForm.progress }}%</div>
-            </n-form-item>
+            </n-form-item> -->
             
             <n-form-item label="标签" path="tags">
               <n-dynamic-tags 
@@ -110,14 +138,7 @@
                 :max="5"
               />
             </n-form-item>
-             <n-button 
-        type="primary" 
-        block 
-        size="large"
-        @click="onClickRight"
-      >
-        保存目标
-      </n-button>
+           
           </n-form>
         </n-card>
       </div>
@@ -125,16 +146,50 @@
     </n-layout-content>
     
     <!-- 底部固定保存按钮 -->
-    <n-layout-footer bordered class="mobile-footer">
-    
-    </n-layout-footer>
-  </n-layout>
+  
+</n-layout>
+
+<!-- 负责人选择器 -->
+<van-popup v-model:show="showOwnerPicker" round position="bottom">
+  <van-picker
+    :columns="owerOptions"
+    @confirm="onConfirmOwner"
+    @cancel="showOwnerPicker = false"
+  />
+</van-popup>
+<van-popup v-model:show="showOwnerLevel" round position="bottom">
+  <van-picker
+    :columns="levelOptions"
+    @confirm="onConfirmLevel"
+    @cancel="showOwnerLevel = false"
+  />
+</van-popup>
+<van-popup v-model:show="showOwnerStatus" round position="bottom">
+  <van-picker
+    :columns="statusOptions"
+    @confirm="onConfirmStatus"
+    @cancel="showOwnerStatus = false"
+  />
+</van-popup>
+
+<!-- 日期选择器 -->
+<van-popup v-model:show="showDatePicker" round position="bottom">
+  <van-date-picker
+    :model-value="currentDateArray"
+    :min-date="minDate"
+    :max-date="maxDate"
+    @confirm="onConfirmDate"
+    @cancel="showDatePicker = false"
+  />
+</van-popup>
 </template>
 
 <script setup>
-import { ref, reactive, inject } from 'vue';
+import { ref, reactive, inject,computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+
+
 import { 
   NLayout, 
   NLayoutHeader, 
@@ -153,7 +208,7 @@ import {
   NDynamicInput,
   useMessage
 } from 'naive-ui';
-import { postM, isSuccess } from '@/utils/request';
+import { postM,getM, isSuccess } from '@/utils/request';
 
 const router = useRouter();
 const store = useStore();
@@ -161,13 +216,49 @@ const isDark = inject('isDark', ref(false));
 const message = useMessage();
 const formRef = ref(null);
 
+// 弹窗控制
+const showOwnerPicker = ref(false);
+const showDatePicker = ref(false);
+const showOwnerLevel = ref(false);
+const showOwnerStatus = ref(false);
+
+// 日期范围
+const minDate = new Date(2020, 0, 1);
+const maxDate = new Date(2025, 5, 1);
+const currentDate = computed(() => {
+  // 如果已有选择的日期，则使用该日期，否则使用当前日期
+  if (goalForm.deadline) {
+    return new Date(goalForm.deadline);
+  }
+  return new Date();
+});
+const openOwener=async ()=>{
+  await getOwerList()
+  showOwnerPicker.value = true;
+}
+
+const currentDateArray = computed(() => {
+  // 为 van-date-picker 提供正确的数组格式值 [year, month, day]
+  const date = currentDate.value;
+  return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+});
+
+// 格式化显示的日期
+const formattedDeadline = computed(() => {
+  if (goalForm.deadline) {
+    const date = new Date(goalForm.deadline);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+  return '';
+});
+
 // 表单数据
 const goalForm = reactive({
   title: '',
   description: '',
-  childGoals: [{ value: '' }],
+  childGoals: [],
   owner: '',
-  deadline: null,
+  deadline: null, // 初始化为null而不是空数组
   level: '',
   status: '',
   progress: 0,
@@ -190,18 +281,46 @@ const formRules = {
 
 // 选择器选项
 const levelOptions = [
-  { label: '低', value: 'low' },
-  { label: '中', value: 'medium' },
-  { label: '高', value: 'high' },
-  { label: '紧急', value: 'urgent' }
+  { text: '低', value: 'low' },
+  { text: '中', value: 'medium' },
+  { text: '高', value: 'high' },
+  { text: '紧急', value: 'urgent' }
 ];
+const owerOptions = ref([]);
+const getOwerList=async ()=>{
+  const res=await getM('getOwerList');
+  if(isSuccess(res)){
+    owerOptions.value=res.data.data
+  }
+}
 
 const statusOptions = [
-  { label: '未开始', value: 'not-started' },
-  { label: '进行中', value: 'in-progress' },
-  { label: '已完成', value: 'completed' },
-  { label: '已暂停', value: 'paused' }
+  { text: '未开始', value: 'not-started' },
+  { text: '进行中', value: 'in-progress' },
+  { text: '已完成', value: 'completed' },
+  { text: '已暂停', value: 'paused' }
 ];
+
+// 日期确认处理函数
+const onConfirmDate = ({ selectedValues }) => {
+  const [year, month, day] = selectedValues;
+  goalForm.deadline = new Date(year, month - 1, day).getTime();
+  showDatePicker.value = false;
+};
+const onConfirmLevel = ({ selectedOptions }) => {
+  goalForm.level = selectedOptions[0]?.text || '';
+  showOwnerLevel.value = false;
+};
+const onConfirmStatus = ({ selectedOptions }) => {
+  goalForm.status = selectedOptions[0]?.text || '';
+  showOwnerStatus.value = false;
+};
+
+// 负责人确认处理函数
+const onConfirmOwner = ({ selectedOptions }) => {
+  goalForm.owner = selectedOptions[0]?.text || '';
+  showOwnerPicker.value = false;
+};
 
 // 方法
 const onClickLeft = () => {

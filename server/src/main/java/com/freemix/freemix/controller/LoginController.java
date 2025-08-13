@@ -57,7 +57,7 @@ public class LoginController {
         Set<JSONObject> collect = users.stream().map(e -> {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("value", e.getUsername());
-            jsonObject.put("label", e.getUsername());
+            jsonObject.put("text", e.getUsername());
             return jsonObject;
         }).collect(Collectors.toSet());
 
