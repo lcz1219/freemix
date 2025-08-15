@@ -49,27 +49,31 @@
         设置
       </n-button>
     </nav>
-    
+  
     <div class="header-actions">
-      <n-avatar round size="medium" src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar>
+      
+     
+    <n-dropdown animated :options="options" trigger="click" @select="handleSelect" :loading="logoutLoading">
+    <n-button><n-icon>
+      <Settings />
+    </n-icon></n-button>
+  </n-dropdown>
+    
+   
+      
+      
     </div>
+      <n-avatar round size="medium" src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar>
   </n-layout-header>
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from 'vue';
-import { NLayoutHeader, NIcon, NButton, NAvatar } from 'naive-ui';
+import { ref, inject, onMounted, render } from 'vue';
+import { NLayoutHeader, NIcon, NButton, NAvatar, NSwitch, NTooltip,NPopselect,NDropdown,useMessage } from 'naive-ui';
 import { useRouter } from 'vue-router';
+import { SunnyOutline, MoonOutline,Settings } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
-import {
-  Check,
-  Delete,
-  Edit,
-  FullScreen,
-  Rank,
-  Search,
-  Star,
-} from '@element-plus/icons-vue'
+import { useStore } from 'vuex';
 
 const props = defineProps({
   activeTab: {
@@ -77,16 +81,44 @@ const props = defineProps({
     default: 'dashboard'
   }
 });
-const onFullescreen = () => {
-  fullscreen
-    .toggle()
-    .then(() => {
-      //todo
-    })
-    .catch((err) => {
-      ElMessage.error('不支持全屏')
-    })
+const message = useMessage();
+const selectValue = ref('');
+const options = [
+  {
+    label: '退出登录',
+    key: 'logout',
+    props: {
+      type: 'error'
+    }
+  },
+  
+];
+const store = useStore();
+const logoutLoading = ref(false);
+const handleSelect=(key)=>{
+  console.log(key);
+  
+    if (key === 'logout') {
+    logout();
+  }
 }
+const logout = () => {
+  try {
+    logoutLoading.value = true;
+  store.dispatch('logout');
+  message.success('已退出登录');
+  router.push('/login');
+  } catch (error) {
+    console.log(error);
+    
+    logoutLoading.value = false;
+    message.error('退出登录失败，请稍后重试');
+  }
+  
+  finally {
+    logoutLoading.value = false;
+  }
+};
 // 检查是否为移动设备
 const isMobileDevice = ref(isMobile());
 
@@ -129,76 +161,60 @@ const goTo = (path) => {
 <style scoped>
 .header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 64px;
-  background-color: rgba(30, 30, 40, 0.6);
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 12px;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .logo-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #8a2be2, #4b0082);
   border-radius: 8px;
-  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logo-text {
-  font-size: 20px;
-  font-weight: 700;
-  background: linear-gradient(to right, #fff, #8a2be2);
+  background: linear-gradient(to right, #8a2be2, #4b0082);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .nav {
   display: flex;
-  gap: 24px;
+  gap: 20px;
 }
 
 .nav-link {
   font-size: 16px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  transition: all 0.3s ease;
   position: relative;
-  padding: 8px 0;
-}
-
-.nav-link:hover {
-  color: #ffffff;
-}
-
-.nav-link.active {
-  color: #ffffff;
 }
 
 .nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -8px;
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(to right, #8a2be2, #00c9a7);
-  border-radius: 1px;
+  background: linear-gradient(90deg, #8a2be2, #4b0082);
 }
 
 .header-actions {
   display: flex;
+  gap: 15px;
   align-items: center;
-  gap: 16px;
 }
 </style>

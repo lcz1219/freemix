@@ -21,6 +21,7 @@
               placeholder="请输入用户名"
               size="large"
               clearable
+              @blur="loadCaptcha"
             >
               <template #prefix>
                 <n-icon :component="PersonOutline" />
@@ -40,6 +41,31 @@
                 <n-icon :component="LockClosedOutline" />
               </template>
             </n-input>
+          </n-form-item>
+          
+          <n-form-item label="验证码" path="captcha">
+            <div class="captcha-container">
+              <n-input 
+                v-model:value="user.captcha" 
+                placeholder="请输入验证码"
+                size="large"
+                maxlength="4"
+              >
+                <template #prefix>
+                  <n-icon :component="ShieldCheckmarkOutline" />
+                </template>
+              </n-input>
+              <img 
+                v-if="captchaImage" 
+                :src="captchaImage" 
+                alt="验证码" 
+                class="captcha-image"
+                @click="loadCaptcha"
+              />
+              <div v-else class="captcha-placeholder" @click="loadCaptcha">
+                <n-icon :component="RefreshOutline" />
+              </div>
+            </div>
           </n-form-item>
           
           <n-button 
@@ -81,8 +107,8 @@ import {
   NIcon,
   useMessage
 } from 'naive-ui';
-import { PersonOutline, LockClosedOutline } from '@vicons/ionicons5';
-import { postM, isSuccess } from '@/utils/request.js';
+import { PersonOutline, LockClosedOutline, ShieldCheckmarkOutline, RefreshOutline } from '@vicons/ionicons5';
+import { postM, getM, isSuccess } from '@/utils/request.js';
 
 const router = useRouter();
 const store = useStore();
@@ -95,8 +121,9 @@ const isDark = ref(false);
 const formRef = ref();
 
 // 用户数据
-const user = ref({ username: '', password: '' });
+const user = ref({ username: '', password: '', captcha: '' });
 const loading = ref(false);
+const captchaImage = ref('');
 
 // 表单验证规则
 const rules = {
@@ -108,6 +135,11 @@ const rules = {
   password: {
     required: true,
     message: '请输入密码',
+    trigger: 'blur'
+  },
+  captcha: {
+    required: true,
+    message: '请输入验证码',
     trigger: 'blur'
   }
 };
@@ -127,9 +159,13 @@ const onSubmit = async () => {
       router.push('/home');
     } else {
       message.error(res.data.msg);
+      // 登录失败时刷新验证码
+      await loadCaptcha();
     }
   } catch (error) {
     message.error('登录失败，请稍后重试');
+    // 登录失败时刷新验证码
+    await loadCaptcha();
   } finally {
     loading.value = false;
   }
@@ -138,6 +174,25 @@ const onSubmit = async () => {
 // 跳转到注册页面
 const toRegister = () => {
   router.replace('/register');
+};
+
+// 加载验证码
+const loadCaptcha = async () => {
+  if (!user.value.username) {
+    return;
+  }
+  
+  try {
+    console.log(user.value.username);
+    
+    let username=user.value.username
+    const res = await postM('/captcha',{"username":username});
+    if (isSuccess(res)) {
+      captchaImage.value = res.data.data.image;
+    }
+  } catch (error) {
+    message.error('验证码加载失败：'+error);
+  }
 };
 
 // 初始化主题
@@ -285,5 +340,34 @@ onMounted(() => {
 
 :deep(.n-input__prefix) {
   margin-right: 8px;
+}
+
+.captcha-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.captcha-image {
+  width: 120px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.captcha-placeholder {
+  width: 120px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #d9d9d9;
+}
+
+.captcha-placeholder:hover {
+  background-color: #e6e6e6;
 }
 </style>

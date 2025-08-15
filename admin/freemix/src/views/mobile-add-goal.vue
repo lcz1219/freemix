@@ -1,69 +1,74 @@
 <template>
-  <n-layout :native-scrollbar="true" :class="isDark ? 'mobile-add-goal dark' : 'mobile-add-goal light'" style="touch-action: manipulation;">
-    <!-- 装饰背景元素 -->
-    <div class="background-elements">
-      <div class="gradient-circle blue"></div>
-      <div class="gradient-circle green"></div>
-      <div class="gradient-circle purple"></div>
-    </div>
-
-    <!-- 顶部导航栏 -->
-    <n-layout-header bordered class="mobile-header">
-      <div class="header-content">
-        <n-button quaternary circle @click="onClickLeft">
-          <n-icon size="20">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-              <path d="M20,11H7.8l5.6-5.6L12,4l-8,8l8,8l1.4-1.4L7.8,13H20V11z"/>
-            </svg>
-          </n-icon>
-        </n-button>
-        <h1 class="header-title">添加目标</h1>
-        <n-button quaternary type="primary" @click="onClickRight">
-          保存
-        </n-button>
+  <van-config-provider :theme="isDark ? 'dark' : 'light'">
+    <div :class="isDark ? 'mobile-add-goal dark' : 'mobile-add-goal light'" style="touch-action: manipulation; min-height: 100vh;">
+      <!-- 装饰背景元素 -->
+      <div class="background-elements">
+        <div class="gradient-circle blue"></div>
+        <div class="gradient-circle green"></div>
+        <div class="gradient-circle purple"></div>
       </div>
-    </n-layout-header>
-    
-    <!-- 表单内容 -->
-    <n-layout-content class="main-content-wrapper">
-      <div class="content">
-        <n-card :class="isDark ? 'form-card' : 'form-card-light'">
-          <n-form ref="formRef" :model="goalForm" :rules="formRules">
-            <n-form-item label="目标标题" path="title">
-              <n-input 
-                v-model:value="goalForm.title" 
+
+      <!-- 顶部导航栏 -->
+      <van-nav-bar
+        title="添加目标"
+        left-text="返回"
+        right-text="保存"
+        @click-left="onClickLeft"
+        @click-right="onClickRight"
+      />
+
+      <!-- 表单内容 -->
+      <div class="main-content-wrapper">
+        <div class="content">
+          <van-cell-group :class="isDark ? 'form-card' : 'form-card-light'">
+            <van-form ref="formRef" :model="goalForm">
+              <van-field
+                v-model="goalForm.title"
+                label="目标标题"
                 placeholder="请输入目标标题"
                 maxlength="30"
-                show-count
+                show-word-limit
+                :rules="[{ required: true, message: '请输入目标标题' }]"
               />
-            </n-form-item>
-            
-            <n-form-item label="目标描述" path="description">
-              <n-input 
-                v-model:value="goalForm.description" 
+
+              <van-field
+                v-model="goalForm.description"
+                label="目标描述"
                 placeholder="请输入目标描述"
                 type="textarea"
-                :autosize="{
-                  minRows: 3,
-                  maxRows: 5
-                }"
+                autosize
+                rows="3"
               />
-            </n-form-item>
-            
-            <n-form-item label="子目标" path="childGoals">
-              <n-dynamic-input
-                v-model:value="goalForm.childGoals"
-                placeholder="每一步小目标都是成功的开始🏅"
-                :min="1"
-                :max="10"
-              >
-                <template #create-button-default>
-                  添加子目标
-                </template>
-              </n-dynamic-input>
-            </n-form-item>
-            
-            <n-form-item label="负责人" path="owner">
+
+              <van-field label="子目标" />
+              <div class="child-goals-wrapper">
+                <van-cell-group inset class="child-goals-group">
+                  <van-field
+                    v-for="(childGoal, index) in goalForm.childGoals"
+                    :key="index"
+                    v-model="childGoal.value"
+                    placeholder="每一步小目标都是成功的开始🏅"
+                    class="child-goal-item"
+                  >
+                    <template #right-icon>
+                      <van-icon name="cross" @click="removeChildGoal(index)" />
+                    </template>
+                  </van-field>
+                  <div class="add-child-goal">
+                    <van-button 
+                      v-if="goalForm.childGoals.length < 10" 
+                      size="small" 
+                      plain 
+                      block 
+                      icon="plus" 
+                      @click="addChildGoal"
+                    >
+                      添加子目标
+                    </van-button>
+                  </div>
+                </van-cell-group>
+              </div>
+
               <van-field
                 v-model="goalForm.owner"
                 is-link
@@ -71,11 +76,10 @@
                 name="owner"
                 label="负责人"
                 placeholder="请选择负责人"
+                :rules="[{ required: true, message: '请选择负责人' }]"
                 @click="openOwener"
               />
-            </n-form-item>
-            
-            <n-form-item label="截止日期" path="deadline">
+
               <van-field
                 v-model="formattedDeadline"
                 is-link
@@ -85,135 +89,117 @@
                 placeholder="请选择截止日期"
                 @click="showDatePicker = true"
               />
-            </n-form-item>
-            
-            <n-form-item label="优先级" path="level">
-              <!-- <n-select 
-                v-model:value="goalForm.level" 
-                :options="levelOptions" 
-                placeholder="请选择优先级"
-              /> -->
-               <van-field
+
+              <van-field
                 v-model="goalForm.level"
                 is-link
                 readonly
                 name="level"
-                label="请选择优先级"
+                label="优先级"
                 placeholder="请选择优先级"
                 @click="showOwnerLevel = true"
               />
-               
-            </n-form-item>
-            
-            <n-form-item label="状态" path="status">
-              <!-- <n-select 
-                v-model:value="goalForm.status" 
-                :options="statusOptions" 
-                placeholder="请选择状态"
-              /> -->
-               <van-field
+
+              <van-field
                 v-model="goalForm.status"
                 is-link
                 readonly
                 name="status"
-                label="请选择状态"
+                label="状态"
                 placeholder="请选择状态"
                 @click="showOwnerStatus = true"
               />
-            </n-form-item>
-            
-            <!-- <n-form-item label="进度" path="progress">
-              <n-slider 
-                v-model:value="goalForm.progress" 
-                :max="100" 
-                :min="0"
-                :step="1"
-              />
-              <div class="progress-text">{{ goalForm.progress }}%</div>
-            </n-form-item> -->
-            
-            <n-form-item label="标签" path="tags">
-              <n-dynamic-tags 
-                v-model:value="goalForm.tags" 
-                :max="5"
-              />
-            </n-form-item>
-           
-          </n-form>
-        </n-card>
+
+              <van-field label="标签" />
+              <div class="tags-wrapper">
+                <van-tag 
+                  v-for="(tag, index) in goalForm.tags" 
+                  :key="index" 
+                  class="tag-item"
+                  closeable
+                  @close="removeTag(index)"
+                >
+                  {{ tag }}
+                </van-tag>
+                <div v-if="goalForm.tags.length < 5" class="tag-input-wrapper">
+                  <van-field 
+                    v-model="newTag" 
+                    placeholder="请输入标签" 
+                    class="tag-input"
+                  >
+                    <template #button>
+                      <van-button size="small" type="primary" @click="addTag">添加</van-button>
+                    </template>
+                  </van-field>
+                </div>
+              </div>
+            </van-form>
+          </van-cell-group>
+        </div>
       </div>
-       
-    </n-layout-content>
+    </div>
+
+    <!-- 负责人选择器 -->
+    <van-popup v-model:show="showOwnerPicker" round position="bottom">
+      <van-picker
+        :columns="owerOptions"
+        @confirm="onConfirmOwner"
+        @cancel="showOwnerPicker = false"
+      />
+    </van-popup>
     
-    <!-- 底部固定保存按钮 -->
-  
-</n-layout>
+    <van-popup v-model:show="showOwnerLevel" round position="bottom">
+      <van-picker
+        :columns="levelOptions"
+        @confirm="onConfirmLevel"
+        @cancel="showOwnerLevel = false"
+      />
+    </van-popup>
+    
+    <van-popup v-model:show="showOwnerStatus" round position="bottom">
+      <van-picker
+        :columns="statusOptions"
+        @confirm="onConfirmStatus"
+        @cancel="showOwnerStatus = false"
+      />
+    </van-popup>
 
-<!-- 负责人选择器 -->
-<van-popup v-model:show="showOwnerPicker" round position="bottom">
-  <van-picker
-    :columns="owerOptions"
-    @confirm="onConfirmOwner"
-    @cancel="showOwnerPicker = false"
-  />
-</van-popup>
-<van-popup v-model:show="showOwnerLevel" round position="bottom">
-  <van-picker
-    :columns="levelOptions"
-    @confirm="onConfirmLevel"
-    @cancel="showOwnerLevel = false"
-  />
-</van-popup>
-<van-popup v-model:show="showOwnerStatus" round position="bottom">
-  <van-picker
-    :columns="statusOptions"
-    @confirm="onConfirmStatus"
-    @cancel="showOwnerStatus = false"
-  />
-</van-popup>
-
-<!-- 日期选择器 -->
-<van-popup v-model:show="showDatePicker" round position="bottom">
-  <van-date-picker
-    :model-value="currentDateArray"
-    :min-date="minDate"
-    :max-date="maxDate"
-    @confirm="onConfirmDate"
-    @cancel="showDatePicker = false"
-  />
-</van-popup>
+    <!-- 日期选择器 -->
+    <van-popup v-model:show="showDatePicker" round position="bottom">
+      <van-date-picker
+        :model-value="currentDateArray"
+        :min-date="minDate"
+        :max-date="maxDate"
+        @confirm="onConfirmDate"
+        @cancel="showDatePicker = false"
+      />
+    </van-popup>
+  </van-config-provider>
 </template>
 
 <script setup>
-import { ref, reactive, inject,computed } from 'vue';
+import { ref, reactive, inject, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-
-
 import { 
-  NLayout, 
-  NLayoutHeader, 
-  NLayoutContent, 
-  NLayoutFooter,
-  NButton, 
-  NIcon, 
-  NCard, 
-  NForm, 
-  NFormItem, 
-  NInput, 
-  NDatePicker, 
-  NSelect, 
-  NSlider, 
-  NDynamicTags, 
-  NDynamicInput,
-  useMessage
-} from 'naive-ui';
-import { postM,getM, isSuccess } from '@/utils/request';
+  Form as VanForm,
+  Field as VanField,
+  CellGroup as VanCellGroup,
+  Button as VanButton,
+  NavBar as VanNavBar,
+  Popup as VanPopup,
+  Picker as VanPicker,
+  DatePicker as VanDatePicker,
+  Tag as VanTag,
+  Icon as VanIcon,
+  ConfigProvider as VanConfigProvider,
+  showToast
+} from 'vant';
+import { postM, getM, isSuccess } from '@/utils/request';
 
 const router = useRouter();
 const store = useStore();
 const isDark = inject('isDark', ref(false));
-const message = useMessage();
 const formRef = ref(null);
 
 // 弹窗控制
@@ -222,9 +208,12 @@ const showDatePicker = ref(false);
 const showOwnerLevel = ref(false);
 const showOwnerStatus = ref(false);
 
+// 新增标签输入
+const newTag = ref('');
+
 // 日期范围
 const minDate = new Date(2020, 0, 1);
-const maxDate = new Date(2025, 5, 1);
+const maxDate = new Date(2099, 5, 1);
 const currentDate = computed(() => {
   // 如果已有选择的日期，则使用该日期，否则使用当前日期
   if (goalForm.deadline) {
@@ -232,7 +221,8 @@ const currentDate = computed(() => {
   }
   return new Date();
 });
-const openOwener=async ()=>{
+
+const openOwener = async () => {
   await getOwerList()
   showOwnerPicker.value = true;
 }
@@ -256,7 +246,7 @@ const formattedDeadline = computed(() => {
 const goalForm = reactive({
   title: '',
   description: '',
-  childGoals: [],
+  childGoals: [{ message: '', finish: false, finishTime: '' }], // 初始化时就有一个空的子目标
   owner: '',
   deadline: null, // 初始化为null而不是空数组
   level: '',
@@ -265,18 +255,31 @@ const goalForm = reactive({
   tags: []
 });
 
-// 表单验证规则
-const formRules = {
-  title: {
-    required: true,
-    message: '请输入目标标题',
-    trigger: 'blur'
-  },
-  owner: {
-    required: true,
-    message: '请输入负责人姓名',
-    trigger: 'blur'
+// 添加子目标
+const addChildGoal = () => {
+  if (goalForm.childGoals.length < 10) {
+    goalForm.childGoals.push({ message: '', finish: false, finishTime: '' });
   }
+};
+
+// 删除子目标
+const removeChildGoal = (index) => {
+  if (goalForm.childGoals.length > 1) {
+    goalForm.childGoals.splice(index, 1);
+  }
+};
+
+// 添加标签
+const addTag = () => {
+  if (newTag.value.trim() && goalForm.tags.length < 5) {
+    goalForm.tags.push(newTag.value.trim());
+    newTag.value = '';
+  }
+};
+
+// 删除标签
+const removeTag = (index) => {
+  goalForm.tags.splice(index, 1);
 };
 
 // 选择器选项
@@ -286,11 +289,12 @@ const levelOptions = [
   { text: '高', value: 'high' },
   { text: '紧急', value: 'urgent' }
 ];
+
 const owerOptions = ref([]);
-const getOwerList=async ()=>{
-  const res=await getM('getOwerList');
-  if(isSuccess(res)){
-    owerOptions.value=res.data.data
+const getOwerList = async () => {
+  const res = await getM('getOwerList');
+  if (isSuccess(res)) {
+    owerOptions.value = res.data.data;
   }
 }
 
@@ -307,10 +311,12 @@ const onConfirmDate = ({ selectedValues }) => {
   goalForm.deadline = new Date(year, month - 1, day).getTime();
   showDatePicker.value = false;
 };
+
 const onConfirmLevel = ({ selectedOptions }) => {
   goalForm.level = selectedOptions[0]?.text || '';
   showOwnerLevel.value = false;
 };
+
 const onConfirmStatus = ({ selectedOptions }) => {
   goalForm.status = selectedOptions[0]?.text || '';
   showOwnerStatus.value = false;
@@ -330,14 +336,23 @@ const onClickLeft = () => {
 const onClickRight = async () => {
   // 验证表单
   try {
-    await formRef.value?.validate();
+    // 手动验证必填字段
+    if (!goalForm.title) {
+      showToast('请输入目标标题');
+      return;
+    }
+    
+    if (!goalForm.owner) {
+      showToast('请选择负责人');
+      return;
+    }
     
     // 准备提交的数据
     const submitData = {
       ...goalForm,
       username: store.state.user.username, // 添加当前用户名
-      childGoals: goalForm.childGoals.map(item => ({
-        value: item.value,
+      childGoals: goalForm.childGoals.filter(item => item.value.trim() !== '').map(item => ({
+        message: item.value,
         finish: false
       }))
     };
@@ -345,13 +360,13 @@ const onClickRight = async () => {
     // 调用API保存目标
     const res = await postM('editGoal', submitData);
     if (isSuccess(res)) {
-      message.success('目标保存成功');
+      showToast('目标保存成功');
       router.go(-1);
     } else {
-      message.error(res.data.msg || '保存失败');
+      showToast(res.data.msg || '保存失败');
     }
   } catch (error) {
-    message.error('请检查必填项');
+    showToast('保存失败');
     console.error(error);
   }
 };
@@ -359,7 +374,6 @@ const onClickRight = async () => {
 
 <style scoped>
 .mobile-add-goal {
-  min-height: 100vh;
   position: relative;
   overflow-x: hidden;
   padding-bottom: 60px; /* 为底部导航栏留出空间 */
@@ -415,41 +429,8 @@ const onClickRight = async () => {
   left: 20%;
 }
 
-.mobile-header {
-  background-color: rgba(30, 30, 40, 0.6);
-  backdrop-filter: blur(10px);
-  padding: 10px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.mobile-header.light {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: #ffffff;
-  flex: 1;
-  text-align: center;
-}
-
-.mobile-header.light .header-title {
-  color: #000000;
-}
-
 .main-content-wrapper {
-  height: 100vh; /* 减去顶部和底部导航栏的高度 */
+  height: calc(100vh - 56px); /* 减去顶部导航栏的高度 */
   overflow-y: auto;
   padding-bottom: 20px;
 }
@@ -475,26 +456,36 @@ const onClickRight = async () => {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.progress-text {
-  text-align: right;
-  font-size: 14px;
-  margin-top: 5px;
-  color: #8a2be2;
+.child-goals-wrapper {
+  padding: 0 16px 16px;
 }
 
-.mobile-footer {
-  background-color: rgba(30, 30, 40, 0.6);
-  backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  /* position: fixed; */
-  bottom: 60px; /* 调整位置使其在底部导航栏上方 */
-  width: 100%;
-  z-index: 100;
+.child-goals-group {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.mobile-footer.light {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+.child-goal-item {
+  padding: 8px 0;
+}
+
+.add-child-goal {
+  padding: 8px 0;
+}
+
+.tags-wrapper {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-item {
+  margin-bottom: 4px;
+}
+
+.tag-input-wrapper {
+  margin-top: 8px;
 }
 
 /* 滚动条样式 - Webkit内核浏览器 */
