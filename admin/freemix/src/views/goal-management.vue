@@ -146,7 +146,10 @@
                               </div>
                               <n-button v-if="!childGoal.finish" type="primary" size="small"
                                 @click="finishChildGoal(props.row, index)">
-                                标记为完成
+                                <n-icon>
+                                  <CheckmarkOutline />
+                                </n-icon>
+                                完成
                               </n-button>
                               <n-button v-else type="tertiary" size="small"
                                 @click="unfinishChildGoal(props.row, index)">
@@ -185,12 +188,12 @@
                             </div>
                             <div class="stat-item">
                               <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
-                                props.row.childGoals.filter((c: any) => c.finish).length : 0 }}</div>
+                                props.row.childGoals.filter((c: any) => c.finish).length : 0}}</div>
                               <div class="stat-label">已完成</div>
                             </div>
                             <div class="stat-item">
                               <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
-                                props.row.childGoals.filter((c: any) => !c.finish).length : 0 }}</div>
+                                props.row.childGoals.filter((c: any) => !c.finish).length : 0}}</div>
                               <div class="stat-label">未完成</div>
                             </div>
                           </div>
@@ -222,7 +225,7 @@
                   </n-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="操作">
+              <el-table-column label="操作" align="center">
                 <template #default="scope">
                   <n-button type="warning" circle secondary strong @click="viewGoalDetail(scope.row)"
                     style="margin-right: 10px;">
@@ -280,7 +283,7 @@ import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 import { getMPaths, isSuccess, postM } from '@/utils/request';
-import { EyeSharp, PencilOutline } from '@vicons/ionicons5';
+import { EyeSharp, PencilOutline, CheckmarkOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
 

@@ -6,26 +6,12 @@
   >
   <van-config-provider :theme="isDark?'dark':'light'">
     <!-- 主题切换按钮 -->
-    <div class="theme-switch"  v-if="!isMobileDevice">
-      <n-tooltip placement="left">
-        <template #trigger>
-          <n-switch 
-            v-model:value="isDark" 
-            :rail-style="railStyle"
-            @update:value="toggleTheme"
-          >
-            <template #icon>
-              <n-icon v-if="isDark" :component="MoonIcon" />
-              <n-icon v-else :component="SunIcon" />
-            </template>
-          </n-switch>
-        </template>
-        <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
-      </n-tooltip>
-    </div>
+    
 
     <!-- 全局样式 -->
     <n-global-style />
+    <n-dialog-provider>
+      <n-loading-bar-provider>
     
     <!-- 消息提供器 -->
     <n-message-provider>
@@ -35,6 +21,8 @@
       <!-- 移动端浮动导航组件 -->
       <MobileFloatingNav v-if="isMobileDevice" />
     </n-message-provider>
+    </n-loading-bar-provider>
+    </n-dialog-provider>
     </van-config-provider>
   </n-config-provider>
 </template>
@@ -50,9 +38,12 @@ import {
   NMessageProvider,
   type GlobalThemeOverrides,
   NGlobalStyle,
+  NDialogProvider,
+  NLoadingBarProvider,
   NTooltip,
   NIcon
 } from 'naive-ui';
+import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 

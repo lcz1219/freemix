@@ -11,6 +11,12 @@
                 placeholder="请输入用户名"
               />
             </n-form-item>
+            <n-form-item label="中文名" path="chinesename">
+              <n-input 
+                v-model:value="formData.chinesename" 
+                placeholder="请输入中文名"
+              />
+            </n-form-item>
   
             <n-form-item label="邮箱" path="email">
               <n-input 
@@ -49,13 +55,13 @@
           </n-form>
           <n-form  :model="formData"  v-if="currentStep==2">
             <n-form-item label="安全问题一" >
-              <n-select v-model:value="formData.saveQuestionOne" :options="options" :placeholder="''"/>
+              <n-select v-model:value="formData.saveQuestionOne" :options="options" placeholder="请选择安全问题"/>
               
             </n-form-item>
             <n-form-item>
               <n-input 
                 v-model:value="formData.saveAnOne"
-                :placeholder="''"
+                :placeholder="'请输入答案'"
               />
             </n-form-item>
   
@@ -74,7 +80,7 @@
           </n-form>
           <n-form  :model="formData"  v-if="currentStep==3">
             <n-form-item label="安全问题二" >
-              <n-select v-model:value="formData.saveQuestionTwice" :options="options" :placeholder="''"/>
+              <n-select v-model:value="formData.saveQuestionTwice" :options="options" :placeholder="'请选择安全问题'"/>
               
             </n-form-item>
             <n-form-item>
@@ -99,7 +105,7 @@
           </n-form>
           <n-form  :model="formData"  v-if="currentStep==4">
             <n-form-item label="安全问题三" >
-              <n-select v-model:value="formData.saveQuestionThree" :options="options" :placeholder="''"/>
+              <n-select v-model:value="formData.saveQuestionThree" :options="options" :placeholder="'请选择安全问题'"/>
               
             </n-form-item>
             <n-form-item>

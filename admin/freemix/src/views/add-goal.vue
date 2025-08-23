@@ -57,7 +57,12 @@
                     placeholder="每一步小目标都是成功的开始🏅"
                     :min="3"
                     :max="6"
-                  />
+                    show-sort-button
+                  >
+                <template #create-button-default>
+                       添加子目标开启成功的步伐
+                </template>
+                </n-dynamic-input>
                 </n-form-item>
                 
                 <n-form-item label="负责人" path="owner">
@@ -78,7 +83,7 @@
                 </n-form-item>
                 
                 <n-form-item label="截止日期" path="deadline">
-                   <n-date-picker v-model:value="goalForm.deadline" type="date" />
+                   <n-date-picker clearable v-model:value="goalForm.deadline" type="date" />
                 </n-form-item>
                 
                 <n-form-item label="优先级" path="level">
@@ -169,11 +174,16 @@ import request, { postM, isSuccess, getM } from '@/utils/request'
 import NavBar from '@/components/NavBar.vue';
 import type { FormRules, FormItemRule } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
+import {Add} from '@vicons/ionicons5'
 
 const owerOptions=ref([]);
 const getOwerList=async ()=>{
   const res=await getM('getOwerList');
   if(isSuccess(res)){
+    res.data.data.forEach((e: any[])=>{
+     e['label']=e['text']
+    })
+   
     owerOptions.value=res.data.data
   }
 }

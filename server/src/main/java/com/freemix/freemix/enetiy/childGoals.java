@@ -4,11 +4,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class childGoals {
+    String _id;
     String message;
+
     boolean finish;
+
     @JsonFormat(timezone = "YYYY-MM-DD")
     Date finishDate;
+//    String description;
+    private List<childGoals> childGoals;
 }

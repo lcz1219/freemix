@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
     String id;
     String username;
+    String chinesename;
     String email;
     String password;
     String saveQuestionOne;
@@ -17,5 +18,7 @@ public class User {
     String saveQuestionThree;
     String saveAnThree;
     String token;
+    String avatarUrl;
+    String fashionTitle;
 
 }

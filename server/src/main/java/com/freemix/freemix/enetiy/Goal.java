@@ -23,5 +23,7 @@ public class Goal {
     int progress;
     String status;
 
+    boolean finish;
+
 
 }

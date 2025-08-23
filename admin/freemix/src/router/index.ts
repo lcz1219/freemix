@@ -21,7 +21,17 @@ const getComponent = (desktopComponent: any, mobileComponent: any) => {
   return isMobile() ? mobileComponent : desktopComponent
 }
 
-const routes: RouteRecordRaw[] = [
+const routes = [
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/home.vue'),
+  },
+  {
+    path: '/goal-structure',
+    name: 'GoalStructure',
+    component: () => import('@/views/goal-structure.vue'),
+  },
   { 
     path: '/login', 
     component: getComponent(Login, MobileLogin),

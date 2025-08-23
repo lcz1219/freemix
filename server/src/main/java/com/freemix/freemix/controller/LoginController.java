@@ -64,9 +64,9 @@ public class LoginController {
         if(usernameFromDB == null){
             return ApiResponse.failure("登录失败");
         }
-        user.setToken(UUID.randomUUID().toString());
-        redisTemplate.opsForValue().set("token", user.getToken(),60, TimeUnit.MINUTES);
-        return ApiResponse.success(user);
+        usernameFromDB.setToken(UUID.randomUUID().toString());
+        redisTemplate.opsForValue().set("token", usernameFromDB.getToken(),60, TimeUnit.MINUTES);
+        return ApiResponse.success(usernameFromDB);
     }
     
     @PostMapping("/captcha")
@@ -99,4 +99,13 @@ public class LoginController {
 
         return ApiResponse.success(collect);
     }
+    @PostMapping("/edituserinfo")
+    @CheckToken
+    public ApiResponse editUserInfo(@RequestBody  String body){
+        User user = JSONObject.parseObject(body, User.class);
+        mongoTemplate.save(user);
+
+        return ApiResponse.success(user);
+    }
+
 }
