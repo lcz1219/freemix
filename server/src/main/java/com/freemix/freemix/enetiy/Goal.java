@@ -22,7 +22,9 @@ public class Goal {
     int planTime;
     int progress;
     String status;
-
+    Integer del;
+    long deltime;
+    Boolean disRecover;
     boolean finish;
 
 

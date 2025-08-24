@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.json.JsonObject;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
@@ -58,11 +59,45 @@ public class GoalController extends BaseController {
 
         return ApiResponse.success(body);
     }
+    @PostMapping("/deleteGoal")
+@CheckToken
+    public ApiResponse deleteGoal(@RequestBody String body){
+    JSONObject bodyJson = JSONObject.parseObject(body);
+        Goal goal = JSONObject.parseObject(bodyJson.getString("row"), Goal.class);
+        log.info("deleteGoal {}", goal);
+        goal.setDel(1);
+        goal.setDeltime(System.currentTimeMillis());
+        mongoTemplate.save(goal);
+        return ApiResponse.success(body);
+    }
+    @GetMapping("/recycle/{ower}")
+    @CheckToken
+    public ApiResponse recycle(@PathVariable("ower") String ower){
+
+        List<Goal> owner = mongoTemplate.find(new Query(Criteria.where("owner").is(ower).and("del").is(1)), Goal.class);
+        owner.stream().forEach(goal -> {
+            if(goal.getProgress()==100){
+                goal.setFinish(true);
+            }else {
+                goal.setFinish(false);
+            }
+            if(System.currentTimeMillis()>goal.getDeadline().getTime()){
+                goal.setStatus("expired");
+
+
+//           editGoal(goal.toString());
+            }
+            if(goal.getDeltime()!=0L&&System.currentTimeMillis()-goal.getDeltime()>30*24*60*60*1000L){
+                goal.setDisRecover(true);
+            }
+        });
+        return ApiResponse.success(owner);
+    }
 
 @GetMapping("/getGoals/{ower}")
 @CheckToken
     public ApiResponse getGoals(@PathVariable("ower") String ower){
-    List<Goal> owner = mongoTemplate.find(new Query(Criteria.where("owner").is(ower)), Goal.class);
+    List<Goal> owner = mongoTemplate.find(new Query(Criteria.where("owner").is(ower).and("del").ne(1)), Goal.class);
     owner.stream().forEach(goal -> {
         if(goal.getProgress()==100){
             goal.setFinish(true);

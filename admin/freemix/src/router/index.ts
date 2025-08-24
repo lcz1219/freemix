@@ -32,6 +32,11 @@ const routes = [
     name: 'GoalStructure',
     component: () => import('@/views/goal-structure.vue'),
   },
+  {
+    path: '/recycle',
+    name: 'recycle',
+    component: () => import('@/views/recycle.vue'),
+  },
   { 
     path: '/login', 
     component: getComponent(Login, MobileLogin),

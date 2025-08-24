@@ -240,6 +240,12 @@
                       <PencilOutline />
                     </n-icon>
                   </n-button>
+                  <n-button type="primary" circle secondary strong @click="deleteGoal(scope.row)">
+
+                    <n-icon size="20">
+                      <ArchiveOutline />
+                    </n-icon>
+                  </n-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -253,7 +259,7 @@
 
     <!-- 底部 -->
     <n-layout-footer class="footer" bordered>
-      <p>© 2023 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
+      <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
     </n-layout-footer>
   </n-layout>
 </template>
@@ -283,7 +289,7 @@ import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 import { getMPaths, isSuccess, postM } from '@/utils/request';
-import { EyeSharp, PencilOutline, CheckmarkOutline } from '@vicons/ionicons5';
+import { EyeSharp, PencilOutline, CheckmarkOutline,ArchiveOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
 
@@ -304,7 +310,15 @@ const selectedGoal = ref({});
 // 筛选和搜索
 const searchQuery = ref('');
 const statusFilter = ref<string | null>(null);
+ const deleteGoal=(row)=>{
 
+  postM('deleteGoal',{row}).then((res)=>{
+    if(isSuccess(res)){
+      message.success('删除成功');
+      refreshGoals();
+    }
+  })
+ }
 // 状态筛选选项
 const statusOptions = [
   { label: '进行中', value: 'in-progress' },

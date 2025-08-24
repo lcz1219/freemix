@@ -97,7 +97,7 @@
 import { ref, inject, onMounted, render, h, computed,watch } from 'vue';
 import { NLayoutHeader, NIcon, NButton, NAvatar, useDialog, NSwitch, NTooltip, NPopselect, NText, NDropdown, useMessage, NInput, useLoadingBar } from 'naive-ui';
 import { useRouter, useRoute } from 'vue-router';
-import { SunnyOutline, MoonOutline, Settings, LogInOutline, LogIn, PersonCircle,Podium,Analytics,ClipboardSharp,Desktop } from '@vicons/ionicons5';
+import { SunnyOutline, MoonOutline, Settings, LogInOutline, LogIn,GitCompareOutline, PersonCircle,Podium,Analytics,ClipboardSharp,Desktop } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
 import upload from './upload.vue';
@@ -222,6 +222,11 @@ const IconLogout = () => {
 const IconSetting = () => {
   return h(NButton, { onClick: () => { loading(); router.push("/settings");loadingfinish() }, style: 'width:100%' }, { default: () => [h(NIcon, null, { default: () => h(Settings) }), '个人设置'] })
 }
+const IconRecycle = () => {
+  return h(NButton,
+   { onClick: () => { loading(); router.push("/recycle");loadingfinish() }, style: 'width:100%' },
+    { default: () => [h(NIcon, null, { default: () => h(GitCompareOutline) }), '回收站'] })
+}
 const options = [
   {
     key: 'header',
@@ -247,6 +252,14 @@ const options = [
       type: 'error'
     },
     render: IconSetting
+  },
+  {
+    type: 'render',
+    key: 'recycle',
+    props: {
+      type: 'error'
+    },
+    render: IconRecycle
   },
 
 ];
