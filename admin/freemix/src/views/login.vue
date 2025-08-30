@@ -65,7 +65,7 @@
     <div v-else-if="loginStep === '2fa-bind'" class="two-factor-auth-section">
       <h3>设置双因素认证</h3>
       <p>请完成双因素认证绑定以提升账户安全性：</p>
-      <TwoFactorAuth :userId="tempUserData.userId" parent="login" @update:router="updateTwoFactorAuth" />
+      <TwoFactorAuth :userId="tempUserData.id" parent="login" @update:router="updateTwoFactorAuth" />
       <n-button quaternary @click="backToLogin">
         返回登录
       </n-button>
