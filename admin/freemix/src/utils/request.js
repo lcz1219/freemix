@@ -11,7 +11,7 @@ const request = axios.create({
 });
 
 // 添加请求拦截器，动态设置token
-const NO_AUTH_PATHS = ['/login', '/register', '/captcha', '/file/upload'];
+const NO_AUTH_PATHS = ['/login', '/register', '/captcha','/enable2fa', '/file/upload','/verify2fa'];
 
 request.interceptors.request.use(
   config => {

@@ -104,12 +104,7 @@ public class GoalController extends BaseController {
         }else {
             goal.setFinish(false);
         }
-       if(System.currentTimeMillis()>goal.getDeadline().getTime()){
-           goal.setStatus("expired");
 
-
-//           editGoal(goal.toString());
-       }
     });
     return ApiResponse.success(owner);
 

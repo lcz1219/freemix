@@ -190,7 +190,7 @@
 
     <!-- 底部 -->
     <n-layout-footer class="footer" bordered>
-      <p>© 2023 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
+      <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
     </n-layout-footer>
   </n-layout>
 </template>

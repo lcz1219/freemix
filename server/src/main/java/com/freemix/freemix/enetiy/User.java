@@ -20,5 +20,17 @@ public class User {
     String token;
     String avatarUrl;
     String fashionTitle;
+    
+    // Google Authenticator 双因素认证字段
+    boolean twoFactorEnabled = false;  // 是否启用2FA
 
+    public boolean isTwoFactorEnabled() {
+        return twoFactorEnabled;
+    }
+
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    String secretKey;  // Google Authenticator密钥
 }

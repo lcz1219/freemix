@@ -5,11 +5,15 @@ import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.ApiResponse;
 import com.freemix.freemix.util.CaptchaUtil;
+import com.freemix.freemix.util.GoogleAuthenticatorUtil;
 import io.lettuce.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController("")
 public class LoginController {
     @Autowired
@@ -44,12 +49,16 @@ public class LoginController {
         String username = jsonObject.getString("username");
         String password = jsonObject.getString("password");
         String captcha = jsonObject.getString("captcha");
+        String totpCode = jsonObject.getString("totpCode"); // Google Authenticator验证码
         
         // 验证验证码
         String captchaKey = "captcha_" + username;
         String storedCaptcha = (String) redisTemplate.opsForValue().get(captchaKey);
-        if (storedCaptcha == null || !storedCaptcha.equalsIgnoreCase(captcha)) {
-            return ApiResponse.failure("验证码错误");
+        if(StringUtils.isEmpty(totpCode)){
+
+            if (storedCaptcha == null || !storedCaptcha.equalsIgnoreCase(captcha)) {
+                return ApiResponse.failure("验证码错误");
+            }
         }
         
         // 验证成功后删除验证码
@@ -59,14 +68,38 @@ public class LoginController {
         user.setUsername(username);
         user.setPassword(password);
         
-        User usernameFromDB = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())
+        User userFromDB = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())
                 .and("password").is(user.getPassword())), User.class);
-        if(usernameFromDB == null){
+        if(userFromDB == null){
             return ApiResponse.failure("登录失败");
         }
-        usernameFromDB.setToken(UUID.randomUUID().toString());
-        redisTemplate.opsForValue().set("token", usernameFromDB.getToken(),60, TimeUnit.MINUTES);
-        return ApiResponse.success(usernameFromDB);
+        
+        // 如果用户启用了2FA，则验证TOTP代码
+////        if (userFromDB.isTwoFactorEnabled()) {
+//            if (totpCode == null || totpCode.isEmpty()) {
+//                // 如果需要2FA但未提供TOTP代码，则返回特殊响应
+//                JSONObject result = new JSONObject();
+//                result.put("secretKey",userFromDB.getSecretKey());
+//                result.put("require2FA", true);
+//                result.put("userId", userFromDB.getId());
+//                return ApiResponse.success(result, "需要输入双因素认证码");
+//            }
+
+//            // 验证TOTP代码
+//            if (!GoogleAuthenticatorUtil.verifyCode(userFromDB.getSecretKey(), Long.parseLong(totpCode))) {
+//                return ApiResponse.failure("双因素认证码错误");
+//            }
+//        }
+        
+        userFromDB.setToken(UUID.randomUUID().toString());
+        redisTemplate.opsForValue().set("token", userFromDB.getToken(),60, TimeUnit.MINUTES);
+        // 更新用户信息
+        mongoTemplate.findAndModify(
+            new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),
+            new Update().set("token", userFromDB.getToken()),
+            User.class
+        );
+        return ApiResponse.success(userFromDB);
     }
     
     @PostMapping("/captcha")
@@ -84,6 +117,95 @@ public class LoginController {
         result.put("captchaId", captchaKey);
         
         return ApiResponse.success(result);
+    }
+    
+    /**
+     * 启用双因素认证
+     */
+    @PostMapping("/enable2fa")
+//    @CheckToken
+    public ApiResponse enable2FA(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String userId = jsonObject.getString("userId");
+        
+        User user = mongoTemplate.findById(userId, User.class);
+        if (user == null) {
+            return ApiResponse.failure("用户不存在");
+        }
+        
+        // 如果用户已经有密钥且已启用2FA，直接返回现有信息
+        if (user.isTwoFactorEnabled()&& user.getSecretKey() != null && !user.getSecretKey().isEmpty()) {
+            JSONObject result = new JSONObject();
+            result.put("secretKey", user.getSecretKey());
+            result.put("qrCodeUrl", GoogleAuthenticatorUtil.getQRCodeUrl(user.getSecretKey(), user.getUsername(), "FreeMix"));
+            return ApiResponse.success(result);
+        }
+        
+        // 生成新的密钥
+        String secretKey = GoogleAuthenticatorUtil.generateSecretKey(user.getUsername()).substring(0,16);
+//        user.setSecretKey(secretKey);
+        // 注意：此时不要立即设置为启用，等验证通过后再启用
+        
+        // 更新数据库
+//        mongoTemplate.save(user);
+        
+        // 返回密钥和二维码URL
+        JSONObject result = new JSONObject();
+        result.put("secretKey", secretKey);
+        String freeMix = GoogleAuthenticatorUtil.getQRCodeUrl(secretKey, user.getUsername(), "FreeMix");
+//        log.info("freeMix: {}", freeMix);
+//        String string = freeMix.substring(0, 60);
+        result.put("qrCodeUrl",freeMix );
+        
+        return ApiResponse.success(result);
+    }
+    
+    /**
+     * 验证并启用双因素认证
+     */
+    @PostMapping("/verify2fa")
+//    @CheckToken
+    public ApiResponse verify2FA(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String userId = jsonObject.getString("userId");
+        String secretKey = jsonObject.getString("secretKey");
+        long totpCode = jsonObject.getLongValue("totpCode");
+        
+        User user = mongoTemplate.findById(userId, User.class);
+        if (user == null) {
+            return ApiResponse.failure("用户不存在");
+        }
+        user.setSecretKey(secretKey);
+        // 验证TOTP代码
+        if (GoogleAuthenticatorUtil.verifyCode(user.getSecretKey(), totpCode)) {
+            user.setTwoFactorEnabled(true);
+
+            mongoTemplate.save(user);
+            return ApiResponse.success(user, "双因素认证已启用");
+        } else {
+            return ApiResponse.failure("验证码错误");
+        }
+    }
+    
+    /**
+     * 禁用双因素认证
+     */
+    @PostMapping("/disable2fa")
+    @CheckToken
+    public ApiResponse disable2FA(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String userId = jsonObject.getString("userId");
+        
+        User user = mongoTemplate.findById(userId, User.class);
+        if (user == null) {
+            return ApiResponse.failure("用户不存在");
+        }
+        
+        user.setTwoFactorEnabled(false);
+        // 注意：保留secretKey以便用户以后重新启用
+        mongoTemplate.save(user);
+        
+        return ApiResponse.success(null, "双因素认证已禁用");
     }
     
     @GetMapping("/getOwerList")

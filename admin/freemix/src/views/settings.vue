@@ -13,6 +13,20 @@
 
       <!-- 设置内容 -->
       <div class="settings-content">
+          <div class="settings-section">
+          <h2>安全设置</h2>
+          <div class="settings-card">
+            <TwoFactorAuth 
+            :parent="'settings'"
+              :initial-enabled="securitySettings.twoFactorEnabled"
+              @update:enabled="onTwoFactorUpdate"
+            />
+            
+            <div class="form-actions">
+              <button @click="saveSecuritySettings" class="btn primary">保存安全设置</button>
+            </div>
+          </div>
+        </div>
         <div class="settings-section">
           <h2>个人资料</h2>
           <div class="settings-card">
@@ -68,7 +82,7 @@
           </div>
         </div>
         
-        <div class="settings-section">
+        <!-- <div class="settings-section">
           <h2>通知设置</h2>
           <div class="settings-card">
             <div class="checkbox-group">
@@ -117,9 +131,9 @@
               <button @click="saveNotifications" class="btn primary">保存通知设置</button>
             </div>
           </div>
-        </div>
+        </div> -->
         
-        <div class="settings-section">
+        <!-- <div class="settings-section">
           <h2>主题设置</h2>
           <div class="settings-card">
             <div class="form-group">
@@ -170,29 +184,13 @@
               <button @click="saveTheme" class="btn primary">保存主题设置</button>
             </div>
           </div>
-        </div>
+        </div> -->
         
-        <div class="settings-section">
-          <h2>数据管理</h2>
-          <div class="settings-card">
-            <div class="button-group">
-              <button @click="exportData" class="btn">导出数据</button>
-              <button @click="importData" class="btn">导入数据</button>
-              <button @click="clearAllData" class="btn danger">清空所有数据</button>
-            </div>
-          </div>
-        </div>
+       
         
-        <div class="settings-section">
-          <h2>账户安全</h2>
-          <div class="settings-card">
-            <div class="button-group">
-              <button @click="changePassword" class="btn">修改密码</button>
-              <button @click="manageSessions" class="btn">管理登录会话</button>
-              <button @click="logout" class="btn danger">退出登录</button>
-            </div>
-          </div>
-        </div>
+       
+        
+       
       </div>
     </div>
   </div>
@@ -202,8 +200,13 @@
 import { ref, inject, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
+import TwoFactorAuth from '@/components/TwoFactorAuth.vue';
+// @ts-ignore - 忽略vuex声明文件错误
 import { useStore } from 'vuex';
-import { useMessage } from 'naive-ui';
+// @ts-ignore - 忽略qrcode声明文件错误
+import QRCode from 'qrcode'
+import { useMessage,NQrCode } from 'naive-ui';
+import { postM, isSuccess } from '@/utils/request.js';
 
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
@@ -254,6 +257,16 @@ const themeSettings = ref({
   animationsEnabled: true
 });
 
+// 安全设置
+const securitySettings = ref({
+  twoFactorEnabled: false
+});
+
+// 处理双因素认证状态更新
+const onTwoFactorUpdate = (enabled: boolean) => {
+  securitySettings.value.twoFactorEnabled = enabled;
+};
+
 // 保存个人资料
 const saveProfile = () => {
   // 这里应该调用API保存用户资料
@@ -275,12 +288,22 @@ const saveTheme = () => {
   
   // 应用主题设置
   if (themeSettings.value.mode === 'dark') {
-    toggleTheme(true);
+    // @ts-ignore
+    toggleTheme();
+    isDark.value = true;
   } else if (themeSettings.value.mode === 'light') {
-    toggleTheme(false);
+    // @ts-ignore
+    toggleTheme();
+    isDark.value = false;
   }
   
   message.success('主题设置已保存');
+};
+
+
+// 保存安全设置
+const saveSecuritySettings = () => {
+  message.success('安全设置已保存');
 };
 
 // 导出数据
@@ -337,21 +360,71 @@ const initUserData = () => {
     profileForm.value.name = user.name || '';
     profileForm.value.position = user.position || '';
     profileForm.value.bio = user.bio || '';
+    
+    // 初始化双因素认证状态
+    securitySettings.value.twoFactorEnabled = user.twoFactorEnabled || false;
+    // 通过组件内部维护hasTwoFactorEnabled和isTwoFactorVerified状态
+    // TwoFactorAuth组件会自己处理这些状态
   }
 };
+ 
+  
 
 // 初始化
 onMounted(() => {
   initUserData();
+  
 });
 </script>
 
 <style scoped>
+/* 强制滚动样式 */
 .settings-container {
   min-height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
+/* .main-content {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: calc(100vh - 80px);
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+} */
+
+/* 自定义滚动条样式 */
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.settings-container.dark .main-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-container.dark .main-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.settings-container.dark .main-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
 .settings-container.dark {
   background-color: #0f0f13;
   color: #ffffff;
@@ -364,8 +437,10 @@ onMounted(() => {
 
 .main-content {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* max-width: 1200px; */
+  /* margin: 0 auto; */
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
 .page-header {
@@ -383,11 +458,18 @@ onMounted(() => {
   font-size: 16px;
   opacity: 0.8;
 }
+:deep .n-qr-code{
+  padding: 0% !important;
+}
 
 .settings-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  /* 将Grid布局改为简单的垂直堆叠布局 */
+  display: flex;
+  flex-direction: column;
   gap: 20px;
+  padding-bottom: 40px;
+  padding-left: 20%;
+  padding-right: 20%;
 }
 
 .settings-section h2 {
@@ -478,6 +560,7 @@ onMounted(() => {
 .radio-group {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap; /* 允许换行 */
 }
 
 .radio-label {
@@ -538,6 +621,36 @@ onMounted(() => {
   color: white;
 }
 
+.qr-code-section {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.settings-container.dark .qr-code-section {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.qr-code {
+  max-width: 200px;
+  height: auto;
+}
+
+.verification-success {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: rgba(82, 196, 26, 0.1);
+}
+
+/* 确保在小屏幕上也能正常显示 */
 @media (max-width: 768px) {
   .main-content {
     padding: 15px;
@@ -545,6 +658,7 @@ onMounted(() => {
   
   .settings-content {
     grid-template-columns: 1fr;
+    gap: 15px;
   }
   
   .page-header h1 {
@@ -553,6 +667,11 @@ onMounted(() => {
   
   .settings-section h2 {
     font-size: 20px;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 </style>

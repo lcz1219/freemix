@@ -68,6 +68,20 @@
             </div>
           </n-form-item>
           
+          <!-- Google Authenticator 验证码输入框 -->
+          <n-form-item v-if="show2FA" label="双因素认证码" path="totpCode">
+            <n-input 
+              v-model:value="user.totpCode" 
+              placeholder="请输入Google Authenticator验证码"
+              size="large"
+              maxlength="6"
+            >
+              <template #prefix>
+                <n-icon :component="LockClosedOutline" />
+              </template>
+            </n-input>
+          </n-form-item>
+          
           <n-button 
             type="primary" 
             size="large" 
@@ -121,9 +135,11 @@ const isDark = ref(false);
 const formRef = ref();
 
 // 用户数据
-const user = ref({ username: '', password: '', captcha: '' });
+const user = ref({ username: '', password: '', captcha: '', totpCode: '' });
 const loading = ref(false);
 const captchaImage = ref('');
+const show2FA = ref(false); // 是否显示2FA输入框
+const userId = ref(''); // 存储用户ID用于2FA验证
 
 // 表单验证规则
 const rules = {
@@ -141,6 +157,12 @@ const rules = {
     required: true,
     message: '请输入验证码',
     trigger: 'blur'
+  },
+  totpCode: {
+    required: true,
+    message: '请输入双因素认证码',
+    trigger: 'blur',
+    len: 6
   }
 };
 
@@ -151,21 +173,45 @@ const onSubmit = async () => {
   try {
     await formRef.value?.validate();
     
-    const res = await postM('login', user.value);
+    // 准备登录数据
+    const loginData = {
+      username: user.value.username,
+      password: user.value.password,
+      captcha: user.value.captcha
+    };
+    
+    // 如果需要2FA，则添加TOTP代码
+    if (show2FA.value) {
+      loginData.totpCode = user.value.totpCode;
+    }
+    
+    const res = await postM('login', loginData);
     if (isSuccess(res)) {
-      store.commit('saveUser', res.data.data);
-      localStorage.setItem('token', res.data.data.token);
-      message.success('登录成功');
-      router.push('/home');
+      // 检查是否需要2FA验证
+      if (res.data.msg === "需要输入双因素认证码") {
+        show2FA.value = true;
+        userId.value = res.data.data.userId;
+        message.info('请输入Google Authenticator验证码');
+      } else {
+        // 登录成功
+        store.commit('saveUser', res.data.data);
+        localStorage.setItem('token', res.data.data.token);
+        message.success('登录成功');
+        router.push('/home');
+      }
     } else {
       message.error(res.data.msg);
       // 登录失败时刷新验证码
       await loadCaptcha();
+      // 清空TOTP代码
+      user.value.totpCode = '';
     }
   } catch (error) {
     message.error('登录失败，请稍后重试');
     // 登录失败时刷新验证码
     await loadCaptcha();
+    // 清空TOTP代码
+    user.value.totpCode = '';
   } finally {
     loading.value = false;
   }

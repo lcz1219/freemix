@@ -1,5 +1,5 @@
 <template>
-  <n-layout :native-scrollbar="true" :class="isDark ? 'mobile-settings dark' : 'mobile-settings light'">
+  <n-layout :native-scrollbar="true" class="mobile-settings" :class="isDark ? 'dark' : 'light'">
     <!-- 装饰背景元素 -->
     <div class="background-elements">
       <div class="gradient-circle blue"></div>
@@ -156,6 +156,45 @@
           </n-card>
         </section>
         
+        <!-- 安全设置 -->
+        <section class="settings-section">
+          <n-card :class="isDark ? 'settings-card' : 'settings-card-light'">
+            <h2 class="section-title">安全设置</h2>
+            
+            <n-space vertical>
+              <n-checkbox v-model:checked="securitySettings.twoFactorEnabled" @update:checked="toggleTwoFactorAuth">
+                启用双因素认证 (Google Authenticator)
+              </n-checkbox>
+              
+              <div v-if="securitySettings.twoFactorEnabled && !isTwoFactorVerified" class="qr-code-section">
+                <p>请使用 Google Authenticator 应用扫描以下二维码：</p>
+                <div class="qr-code-container">
+                  <img :src="qrCodeUrl" alt="QR Code" class="qr-code" v-if="qrCodeUrl" />
+                  <p v-else>正在生成二维码...</p>
+                </div>
+                <p>或者手动输入密钥: <strong>{{ secretKey }}</strong></p>
+                <div class="form-group">
+                  <label class="form-label">验证码</label>
+                  <n-input 
+                    v-model:value="totpCode" 
+                    placeholder="输入6位验证码"
+                    maxlength="6"
+                  />
+                  <n-button type="primary" @click="verifyTwoFactorAuth" style="margin-top: 10px;">验证并启用</n-button>
+                </div>
+              </div>
+              
+              <div v-if="securitySettings.twoFactorEnabled && isTwoFactorVerified" class="verification-success">
+                <p style="color: #52c41a;">✓ 双因素认证已启用</p>
+              </div>
+              
+              <div v-if="!securitySettings.twoFactorEnabled && hasTwoFactorEnabled" class="verification-success">
+                <p style="color: #ff4d4f;">✗ 双因素认证已禁用</p>
+              </div>
+            </n-space>
+          </n-card>
+        </section>
+        
         <!-- 数据管理 -->
         <section class="settings-section">
           <n-card :class="isDark ? 'settings-card' : 'settings-card-light'">
@@ -245,6 +284,17 @@ const themeSettings = ref({
   animations: true
 });
 
+// 安全设置
+const securitySettings = ref({
+  twoFactorEnabled: false
+});
+
+const totpCode = ref('');
+const qrCodeUrl = ref('');
+const secretKey = ref('');
+const isTwoFactorVerified = ref(false);
+const hasTwoFactorEnabled = ref(false);
+
 // 方法
 const goBack = () => {
   router.go(-1);
@@ -262,6 +312,76 @@ const saveProfile = async () => {
   } catch (error) {
     message.error('保存失败');
     console.error(error);
+  }
+};
+
+// 切换双因素认证
+const toggleTwoFactorAuth = async (enabled) => {
+  if (enabled) {
+    try {
+      // 启用双因素认证
+      const res = await postM('enable2fa', {
+        userId: store.state.user.id
+      });
+      
+      if (isSuccess(res)) {
+        qrCodeUrl.value = res.data.data.qrCodeUrl;
+        secretKey.value = res.data.data.secretKey;
+        isTwoFactorVerified.value = false;
+        hasTwoFactorEnabled.value = true;
+      } else {
+        message.error(res.data.msg);
+        securitySettings.value.twoFactorEnabled = false;
+      }
+    } catch (error) {
+      message.error('启用双因素认证失败');
+      securitySettings.value.twoFactorEnabled = false;
+    }
+  } else {
+    try {
+      // 禁用双因素认证
+      const res = await postM('disable2fa', {
+        userId: store.state.user.id
+      });
+      
+      if (isSuccess(res)) {
+        isTwoFactorVerified.value = false;
+        qrCodeUrl.value = '';
+        secretKey.value = '';
+        hasTwoFactorEnabled.value = false;
+        message.success('双因素认证已禁用');
+      } else {
+        message.error(res.data.msg);
+        securitySettings.value.twoFactorEnabled = true;
+      }
+    } catch (error) {
+      message.error('禁用双因素认证失败');
+      securitySettings.value.twoFactorEnabled = true;
+    }
+  }
+};
+
+// 验证双因素认证
+const verifyTwoFactorAuth = async () => {
+  if (!totpCode.value || totpCode.value.length !== 6) {
+    message.error('请输入6位验证码');
+    return;
+  }
+  
+  try {
+    const res = await postM('verify2fa', {
+      userId: store.state.user.id,
+      totpCode: totpCode.value
+    });
+    
+    if (isSuccess(res)) {
+      isTwoFactorVerified.value = true;
+      message.success('双因素认证已启用');
+    } else {
+      message.error(res.data.msg);
+    }
+  } catch (error) {
+    message.error('验证失败');
   }
 };
 
@@ -305,6 +425,13 @@ const getUserProfile = async () => {
         position: userData.position || '',
         bio: userData.bio || ''
       };
+      
+      // 初始化双因素认证状态
+      securitySettings.value.twoFactorEnabled = userData.twoFactorEnabled || false;
+      hasTwoFactorEnabled.value = userData.twoFactorEnabled || false;
+      if (userData.twoFactorEnabled) {
+        isTwoFactorVerified.value = true;
+      }
     } else {
       message.error('获取用户资料失败');
     }
@@ -418,7 +545,7 @@ onMounted(() => {
 }
 
 .main-content-wrapper {
-  height: 100vh; /* 减去顶部和底部导航栏的高度 */
+  height: calc(100vh - 60px); /* 减去顶部导航栏的高度 */
   overflow-y: auto;
 }
 
@@ -538,6 +665,35 @@ onMounted(() => {
 .form-actions {
   margin-top: 20px;
   text-align: center;
+}
+
+.qr-code-section {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .qr-code-section {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.qr-code {
+  max-width: 200px;
+  height: auto;
+}
+
+.verification-success {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: rgba(82, 196, 26, 0.1);
 }
 
 /* 滚动条样式 - Webkit内核浏览器 */
