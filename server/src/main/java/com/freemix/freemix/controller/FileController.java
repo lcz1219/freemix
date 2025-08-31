@@ -23,7 +23,7 @@ public class FileController extends BaseController {
     private static final String FILE_STORAGE_PATH = System.getProperty("user.dir") + File.separator + "file";
     
     /**
-     * 上传文件
+     * 上传头像文件
      * @param file 上传的文件
      * @return 上传结果
      */
@@ -68,6 +68,60 @@ public class FileController extends BaseController {
 
             // 返回成功响应，包含文件名
             return ApiResponse.success(uniqueFilename, "文件上传成功");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiResponse.failure("文件上传失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 通用文件上传（不修改用户头像）
+     * @param file 上传的文件
+     * @return 上传结果，包含文件路径
+     */
+    @PostMapping("/upload-file")
+    public ApiResponse uploadGeneralFile(@RequestParam("file") MultipartFile file) {
+        // 检查文件是否为空
+        if (file.isEmpty()) {
+            return ApiResponse.failure("文件不能为空");
+        }
+        
+        try {
+            // 创建文件存储目录（如果不存在）
+            File storageDir = new File(FILE_STORAGE_PATH);
+            if (!storageDir.exists()) {
+                storageDir.mkdirs();
+            }
+            
+            // 获取原始文件名
+            String originalFilename = file.getOriginalFilename();
+            if (!StringUtils.hasText(originalFilename)) {
+                return ApiResponse.failure("文件名不能为空");
+            }
+            
+            // 生成唯一文件名
+            String fileExtension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+            
+            // 构建文件存储路径
+            Path filePath = Paths.get(FILE_STORAGE_PATH,uniqueFilename);
+            
+            // 保存文件
+            file.transferTo(filePath);
+            
+            // 返回成功响应，包含文件路径
+            String fileUrl = "/file/" + uniqueFilename;
+            String name = file.getName();
+            JSONObject object=new JSONObject();
+            object.put("name", uniqueFilename);
+            object.put("originalFilename",originalFilename);
+            object.put("fileUrl", fileUrl);
+            object.put("id",uniqueFilename);
+
+            return ApiResponse.success(object, "文件上传成功");
         } catch (IOException e) {
             e.printStackTrace();
             return ApiResponse.failure("文件上传失败: " + e.getMessage());

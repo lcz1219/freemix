@@ -166,15 +166,18 @@ const updateTwoFactorAuth = async (val,secretKeyval) => {
     
     tempUserData.value.secretKey=secretKeyval
     // 方法2：将每个字符转为数字
-    totpCode.value = charArray.map(char => Number(char));
+    totpCode.value = await charArray.map(char => Number(char));
     console.log("tot",totpCode.value);
     
-  verifyTwoFactorAuth();
+     verifyTwoFactorAuth();
 };
 // 验证双因素认证码
 const verifyTwoFactorAuth = async () => {
   // 检查验证码是否完整
-  if (!totpCode.value || totpCode.value.filter(Boolean).length !== 6) {
+  if (!totpCode.value ) {
+    console.log(!totpCode.value);
+    console.log(totpCode.value.filter(Boolean).length !== 6);
+    
     message.error('请输入完整的6位验证码');
     return;
   }
@@ -186,7 +189,7 @@ const verifyTwoFactorAuth = async () => {
     
     // 发送验证请求
     const res = await postM('verify2fa', {
-      userId: tempUserData.value.userId,
+      userId: tempUserData.value.id,
       totpCode: code,
       secretKey: tempUserData.value.secretKey
     });

@@ -7,6 +7,7 @@ import AddGoal from '@/views/add-goal.vue'
 import GoalManagement from '@/views/goal-management.vue'
 import Statistics from '@/views/statistics.vue'
 import Settings from '@/views/settings.vue'
+import LoginLog from '@/views/login-log.vue'
 import MobileLogin from '@/views/mobile-login.vue'
 import MobileRegister from '@/views/mobile-register.vue'
 import MobileHome from '@/views/mobile-home.vue'
@@ -72,6 +73,11 @@ const routes = [
     path: '/settings', 
     name: 'Settings', 
     component: getComponent(Settings, MobileSettings) 
+  },
+  { 
+    path: '/login-log', 
+    name: 'LoginLog', 
+    component: getComponent(LoginLog, LoginLog) 
   }
 ]
 

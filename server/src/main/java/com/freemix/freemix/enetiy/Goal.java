@@ -5,6 +5,7 @@ import lombok.Data;
 import org.json.JSONObject;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class Goal {
     String status;
     Integer del;
     long deltime;
+    List fileList;
     Boolean disRecover;
     boolean finish;
 

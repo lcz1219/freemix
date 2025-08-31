@@ -83,6 +83,19 @@
           <n-input v-model:value="editForm.description" placeholder="请输入目标描述" type="textarea"
             :autosize="{ minRows: 3, maxRows: 5 }" />
         </n-form-item>
+        <n-form-item label="文件上传" path="description">
+           <!-- <n-button type="primary" @click="() => fileupload = true">上传文件</n-button> -->
+                      <!-- <n-modal v-model:show="fileupload" title="文件上传" preset="card" draggable -->
+                        <!-- :style="{ width: '800px' }"> -->
+<!-- :fileList="goalForm.fileList" -->
+                        <GeneralUpload @uploadSuccess="fileChange" 
+                        @fileRemove="fileChange"
+                        @uploadError="handleFileUploadError"
+                        
+                         :fileList="editForm.fileList"
+                         />
+                      <!-- </n-modal> -->
+        </n-form-item>
 
         <n-form-item label="负责人" path="owner">
           <n-input v-model:value="editForm.owner" placeholder="请输入负责人姓名" />
@@ -132,6 +145,8 @@
 </template>
 
 <script setup>
+import GeneralUpload from '@/components/GeneralUpload.vue';
+
 import { ref, computed, watch,h } from 'vue';
 import { Pencil, Copy,Eye } from '@vicons/ionicons5';
 import { postM,isSuccess } from '@/utils/request'
@@ -165,6 +180,7 @@ const props = defineProps({
     default: false
   }
 });
+const fileupload=ref(false);
 
 
 const emit = defineEmits(['update:show', 'update:goal', 'save']);
@@ -180,7 +196,11 @@ const showModal = computed({
 
 const isEditing = ref(false);
 const formRef = ref(null);
-
+const fileChange = (file) => {
+  console.log("fileChange",file);
+  editForm.value.fileList=file; // 保存文件路径
+  // fileupload.value = false; // 关闭模态框
+}
 // 编辑表单数据
 const editForm = ref({ ...props.goal });
 

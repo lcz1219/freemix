@@ -1,142 +1,129 @@
 <template>
-  <n-layout :native-scrollbar="true" :class="isDark?'home-container':'home-container-light'">
+  <n-layout :native-scrollbar="true" :class="isDark ? 'home-container' : 'home-container-light'">
     <!-- 装饰背景元素 -->
     <div class="background-elements">
       <div class="gradient-circle blue"></div>
       <div class="gradient-circle green"></div>
       <div class="gradient-circle purple"></div>
     </div>
-    
+
     <!-- 顶部导航栏 -->
     <NavBar active-tab="add-goal" />
-    
+
     <!-- 主内容区域 -->
     <n-layout-content class="main-content-wrapper">
       <div class="main-content">
         <div class="content-wrapper">
           <!-- 页面标题 -->
           <section class="page-header">
-            <h1 :class="isDark?'hero-title':'hero-title-light'">添加新目标</h1>
-            <p :class="isDark?'hero-subtitle':'hero-subtitle-light'">设定一个新目标，开始您的成功之旅</p>
+            <h1 :class="isDark ? 'hero-title' : 'hero-title-light'">添加新目标</h1>
+            <p :class="isDark ? 'hero-subtitle' : 'hero-subtitle-light'">设定一个新目标，开始您的成功之旅</p>
           </section>
-          
+
           <!-- 添加目标表单 -->
           <section class="form-section">
             <n-card class="form-card">
-              <n-form
-                ref="formRef"
-                :model="goalForm"
-                :rules="formRules"
-                label-placement="left"
-                label-width="120"
-                require-mark-placement="right-hanging"
-              >
-                <n-form-item label="目标标题" path="title">
-                  <n-input 
-                    v-model:value="goalForm.title" 
-                    placeholder="请输入目标标题"
-                    maxlength="30"
-                    show-count
-                  />
-                </n-form-item>
-                
-                <n-form-item label="目标描述" path="description">
-                  <n-input 
-                    v-model:value="goalForm.description" 
-                    placeholder="请输入目标描述"
-                    type="textarea"
-                    :autosize="{
-                      minRows: 3,
-                      maxRows: 5
-                    }"
-                  />
-                </n-form-item>
-                <n-form-item label="子目标" path="description">
-                  <n-dynamic-input
-                    v-model:value="goalForm.childGoals"
-                    placeholder="每一步小目标都是成功的开始🏅"
-                    :min="3"
-                    :max="6"
-                    show-sort-button
-                  >
-                <template #create-button-default>
-                       添加子目标开启成功的步伐
-                </template>
-                </n-dynamic-input>
-                </n-form-item>
-                
-                <n-form-item label="负责人" path="owner">
-                  <!-- <n-input 
+              <n-form ref="formRef" :model="goalForm" :rules="formRules" label-placement="left" label-width="120"
+                require-mark-placement="right-hanging">
+                <n-grid :gutter="24">
+                  <n-gi :span="12">
+                    <n-form-item label="目标标题" path="title">
+                      <n-input v-model:value="goalForm.title" placeholder="请输入目标标题" maxlength="30" show-count />
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="24">
+                    <n-form-item label="目标描述" path="description">
+                      <n-input v-model:value="goalForm.description" placeholder="请输入目标描述" type="textarea" :autosize="{
+                        minRows: 3,
+                        maxRows: 5
+                      }" />
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="24">
+                    <n-form-item label="子目标" path="description">
+                      <n-dynamic-input v-model:value="goalForm.childGoals" placeholder="每一步小目标都是成功的开始🏅" :min="3"
+                        :max="6" show-sort-button>
+                        <template #create-button-default>
+                          添加子目标开启成功的步伐
+                        </template>
+                      </n-dynamic-input>
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="24">
+                    <n-form-item label="文件上传" path="description">
+                      <!-- <n-button type="primary" @click="() => fileupload = true">上传文件</n-button> -->
+                      <!-- <n-modal v-model:show="fileupload" title="文件上传" preset="card" draggable -->
+                        <!-- :style="{ width: '800px' }"> -->
+<!-- :fileList="goalForm.fileList" -->
+                        <GeneralUpload @uploadSuccess="fileChange" 
+                        @fileRemove="fileChange"
+                        @uploadError="handleFileUploadError"
+                        
+                         :fileList="goalForm.fileList"
+                         />
+                      <!-- </n-modal> -->
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="12">
+                    <n-form-item label="负责人" path="owner">
+                      <!-- <n-input 
                     v-model:value="goalForm.owner" 
                     placeholder="请输入负责人姓名"
                   /> -->
-                  <n-popselect
-              v-model:value="goalForm.owner"
-              :options="owerOptions"
-              size="medium"
-              scrollable
-            >
-            <n-button style="margin-right: 8px">
-              {{ goalForm.owner || '请选择负责人' }}
-            </n-button>
-          </n-popselect>
-                </n-form-item>
-                
-                <n-form-item label="截止日期" path="deadline">
-                   <n-date-picker clearable v-model:value="goalForm.deadline" type="date" />
-                </n-form-item>
-                
-                <n-form-item label="优先级" path="level">
-                  <n-select
-                    v-model:value="goalForm.level"
-                    placeholder="请选择优先级"
-                    :options="levelOptions"
-                  />
-                </n-form-item>
-                
-                <n-form-item label="分类标签" path="tags">
-                  <n-dynamic-tags v-model:value="goalForm.tags" />
-                </n-form-item>
-                
-                <n-form-item label="预计工时" path="estimatedHours">
-                  <n-input-number 
-                    v-model:value="goalForm.estimatedHours" 
-                    placeholder="请输入预计工时"
-                    :min="1"
-                    :max="1000"
-                  >
-                    <template #suffix>
-                      小时
-                    </template>
-                  </n-input-number>
-                </n-form-item>
-                
-                <n-row :gutter="[0, 24]">
-                  <n-col :span="24">
-                    <div style="display: flex; justify-content: flex-end">
-                      <n-button 
-                        type="tertiary" 
-                        @click="handleReset"
-                        style="margin-right: 10px"
-                      >
-                        重置
-                      </n-button>
-                      <n-button 
-                        type="primary" 
-                        @click="handleSubmit"
-                      >
-                        创建目标
-                      </n-button>
-                    </div>
-                  </n-col>
-                </n-row>
+                      <n-popselect v-model:value="goalForm.owner" :options="owerOptions" size="medium" scrollable>
+                        <n-button style="margin-right: 8px">
+                          {{ goalForm.owner || '请选择负责人' }}
+                        </n-button>
+                      </n-popselect>
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="12">
+                    <n-form-item label="截止日期" path="deadline">
+                      <n-date-picker clearable v-model:value="goalForm.deadline" type="date" />
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="12">
+                    <n-form-item label="优先级" path="level">
+                      <n-select v-model:value="goalForm.level" placeholder="请选择优先级" :options="levelOptions" />
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="12">
+                    <n-form-item label="分类标签" path="tags">
+                      <n-dynamic-tags v-model:value="goalForm.tags" />
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="12">
+                    <n-form-item label="预计工时" path="estimatedHours">
+                      <n-input-number v-model:value="goalForm.estimatedHours" placeholder="请输入预计工时" :min="1"
+                        :max="1000">
+                        <template #suffix>
+                          小时
+                        </template>
+                      </n-input-number>
+                    </n-form-item>
+                  </n-gi>
+                  <n-gi :span="24">
+                    <n-row :gutter="[0, 24]">
+                      <n-col :span="24">
+                        <div style="display: flex; justify-content: flex-end">
+                          <n-button type="tertiary" @click="handleReset" style="margin-right: 10px">
+                            重置
+                          </n-button>
+                          <n-button type="primary" @click="handleSubmit">
+                            创建目标
+                          </n-button>
+                        </div>
+                      </n-col>
+                    </n-row>
+                  </n-gi>
+                </n-grid>
               </n-form>
             </n-card>
           </section>
         </div>
       </div>
     </n-layout-content>
-    
+
     <!-- 页脚 -->
     <n-layout-footer class="footer" bordered>
       <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
@@ -146,22 +133,24 @@
 
 <script setup lang="ts">
 import { ref, inject, onMounted, watch } from 'vue';
-import { 
+import {
   NLayout,
   NLayoutHeader,
   NLayoutContent,
   NDynamicInput,
   NLayoutFooter,
-  NButton, 
-  NIcon, 
-  NSwitch, 
-  NCard, 
+  NButton,
+  NIcon,
+  NSwitch,
+  NCard,
   NForm,
   NFormItem,
   NInput,
   NInputNumber,
   NDatePicker,
+  NGrid, NGi,
   NSelect,
+  NModal,
   NDynamicTags,
   NPopselect,
   NRow,
@@ -174,17 +163,20 @@ import request, { postM, isSuccess, getM } from '@/utils/request'
 import NavBar from '@/components/NavBar.vue';
 import type { FormRules, FormItemRule } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
-import {Add} from '@vicons/ionicons5'
+import { Add } from '@vicons/ionicons5'
+// @ts-ignore
+import GeneralUpload from '@/components/GeneralUpload.vue';
 
-const owerOptions=ref([]);
-const getOwerList=async ()=>{
-  const res=await getM('getOwerList');
-  if(isSuccess(res)){
-    res.data.data.forEach((e: any[])=>{
-     e['label']=e['text']
+const owerOptions = ref([]);
+const fileupload = ref(false);
+const getOwerList = async () => {
+  const res = await getM('getOwerList');
+  if (isSuccess(res)) {
+    res.data.data.forEach((e: any[]) => {
+      e['label'] = e['text']
     })
-   
-    owerOptions.value=res.data.data
+
+    owerOptions.value = res.data.data
   }
 }
 // 图标组件
@@ -225,9 +217,10 @@ const goalForm = ref({
   owner: '',
   deadline: null,
   level: null,
-  childGoals: [] as Array<{message: string; finish: boolean; finishTime: string}>,
+  childGoals: [] as Array<{ message: string; finish: boolean; finishTime: string }>,
   tags: [] as string[],
   estimatedHours: null,
+  fileList: [], // 存储上传的文件路径
 })
 
 // 优先级选项
@@ -282,22 +275,22 @@ const handleSubmit = (e: Event) => {
   formRef.value?.validate(async (errors) => {
     if (!errors) {
       // message.success('目标创建成功');
-      const childGoalEndList=[];
+      const childGoalEndList = [];
       goalForm.value.childGoals.forEach((childGoal) => {
-        const data={};
-        data.message=childGoal
-        data.finish=false;
-        data.finishTime='';
-       childGoalEndList.push(data);
+        const data = {};
+        data.message = childGoal
+        data.finish = false;
+        data.finishTime = '';
+        childGoalEndList.push(data);
 
       })
-      goalForm.value.childGoals=childGoalEndList;
+      goalForm.value.childGoals = childGoalEndList;
       // 这里可以添加实际的提交逻辑
       console.log('提交的表单数据:', goalForm.value);
-       const res= await postM('editGoal',goalForm.value);
-       if(isSuccess(res)){
+      const res = await postM('editGoal', goalForm.value);
+      if (isSuccess(res)) {
         message.success('目标创建成功')
-       }
+      }
       // 提交后跳转到主页
       router.push('/home');
     } else {
@@ -305,10 +298,22 @@ const handleSubmit = (e: Event) => {
     }
   });
 };
-const testlog = () => { 
+const testlog = () => {
   console.log("test");
-  
+
 };
+
+// 文件上传成功处理
+const fileChange = (file) => {
+  console.log("fileChange",file);
+  goalForm.value.fileList=file; // 保存文件路径
+  // fileupload.value = false; // 关闭模态框
+}
+
+// 文件上传失败处理
+const handleFileUploadError = (errorMsg: string) => {
+  message.error(`文件上传失败: ${errorMsg}`);
+}
 
 // 重置表单
 const resetForm = () => {
@@ -318,9 +323,10 @@ const resetForm = () => {
     owner: '',
     deadline: null,
     level: null,
-    childGoals: [] as Array<{message: string; finish: boolean; finishTime: string}>,
+    childGoals: [] as Array<{ message: string; finish: boolean; finishTime: string }>,
     tags: [] as string[],
     estimatedHours: null,
+    fileUrl: '',
   }
 }
 

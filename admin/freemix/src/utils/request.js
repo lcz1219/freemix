@@ -93,7 +93,7 @@ const getMPaths=async function(val,data){
       }
  }
 
-// 文件上传函数
+// 头像文件上传函数
 const uploadFile = async function(file,user) {
   const formData = new FormData();
   formData.append('file', file);
@@ -111,5 +111,22 @@ const uploadFile = async function(file,user) {
   }
 }
 
+// 通用文件上传函数
+const uploadGeneralFile = async function(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const res = await fileRequest.post('/freemix/file/upload-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return res;
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export default request;
-export { postM, getM, getMPaths, isSuccess, uploadFile,baseURL };
+export { postM, getM, getMPaths, isSuccess, uploadFile, uploadGeneralFile, baseURL };

@@ -207,6 +207,12 @@ const disableTwoFactorAuth = async () => {
 
 // 验证双因素认证
 const verifyTwoFactorAuth = async (): Promise<void> => {
+   if(props.parent=='login'){
+        console.log('登录成功');
+        emit('update:router',totpCode.value,secretKey.value);
+        // router.push('/home');
+        return;
+      }
   if (!totpCode.value || totpCode.value.length !== 6 || !/^\d+$/.test(totpCode.value)) {
     message.error('请输入有效的6位数字验证码');
     return;
@@ -220,12 +226,7 @@ const verifyTwoFactorAuth = async (): Promise<void> => {
     });
     
     if (isSuccess(res)) {
-      if(props.parent=='login'){
-        console.log('登录成功');
-        emit('update:router',totpCode.value,secretKey.value);
-        // router.push('/home');
-        return;
-      }
+     
       isTwoFactorVerified.value = true;
       message.success('双因素认证已启用');
     } else {

@@ -2,11 +2,15 @@ package com.freemix.freemix.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
+import com.freemix.freemix.enetiy.LoginLog;
 import com.freemix.freemix.enetiy.User;
+import com.freemix.freemix.service.LoginLogService;
 import com.freemix.freemix.util.ApiResponse;
 import com.freemix.freemix.util.CaptchaUtil;
 import com.freemix.freemix.util.GoogleAuthenticatorUtil;
+import com.freemix.freemix.util.LoginLogUtil;
 import io.lettuce.core.json.JsonObject;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,10 @@ public class LoginController {
     MongoTemplate mongoTemplate;
     @Autowired
     RedisTemplate redisTemplate;
+    @Autowired
+    LoginLogService loginLogService;
+    @Autowired
+    HttpServletRequest request;
     
     @PostMapping("/register")
     public ApiResponse register(@RequestBody  String body){
@@ -45,36 +53,62 @@ public class LoginController {
     
     @PostMapping("/login")
     public ApiResponse login(@RequestBody  String body){
+        // 初始化登录日志对象
+        LoginLog loginLog = new LoginLog();
+        
+        // 获取请求信息
+        String userAgent = request.getHeader("User-Agent");
+        String ipAddress = LoginLogUtil.getClientIp(request);
+        
+        // 设置日志基本信息
+        loginLog.setIpAddress(ipAddress);
+        loginLog.setUserAgent(userAgent);
+        loginLog.setDeviceType(LoginLogUtil.getDeviceType(userAgent));
+        loginLog.setBrowser(LoginLogUtil.getBrowser(userAgent));
+        loginLog.setOs(LoginLogUtil.getOperatingSystem(userAgent));
+        
         JSONObject jsonObject = JSONObject.parseObject(body);
         String username = jsonObject.getString("username");
         String password = jsonObject.getString("password");
         String captcha = jsonObject.getString("captcha");
         String totpCode = jsonObject.getString("totpCode"); // Google Authenticator验证码
         
-        // 验证验证码
-        String captchaKey = "captcha_" + username;
-        String storedCaptcha = (String) redisTemplate.opsForValue().get(captchaKey);
-        if(StringUtils.isEmpty(totpCode)){
-
-            if (storedCaptcha == null || !storedCaptcha.equalsIgnoreCase(captcha)) {
-                return ApiResponse.failure("验证码错误");
+        // 设置用户名
+        loginLog.setUsername(username);
+        
+        try {
+            // 验证验证码
+            String captchaKey = "captcha_" + username;
+            String storedCaptcha = (String) redisTemplate.opsForValue().get(captchaKey);
+            if(StringUtils.isEmpty(totpCode)){
+                if (storedCaptcha == null || !storedCaptcha.equalsIgnoreCase(captcha)) {
+                    loginLog.setLoginSuccess(false);
+                    loginLog.setErrorMessage("验证码错误");
+                    loginLogService.saveLoginLog(loginLog);
+                    return ApiResponse.failure("验证码错误");
+                }
             }
-        }
-        
-        // 验证成功后删除验证码
-        redisTemplate.delete(captchaKey);
-        
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(password);
-        
-        User userFromDB = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())
-                .and("password").is(user.getPassword())), User.class);
-        if(userFromDB == null){
-            return ApiResponse.failure("登录失败");
-        }
-        
-        // 如果用户启用了2FA，则验证TOTP代码
+            
+            // 验证成功后删除验证码
+            redisTemplate.delete(captchaKey);
+            
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(password);
+            
+            User userFromDB = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())
+                    .and("password").is(user.getPassword())), User.class);
+            if(userFromDB == null){
+                loginLog.setLoginSuccess(false);
+                loginLog.setErrorMessage("用户名或密码错误");
+                loginLogService.saveLoginLog(loginLog);
+                return ApiResponse.failure("登录失败");
+            }
+            
+            // 设置用户ID
+            loginLog.setUserId(userFromDB.getId());
+            
+            // 如果用户启用了2FA，则验证TOTP代码
 ////        if (userFromDB.isTwoFactorEnabled()) {
 //            if (totpCode == null || totpCode.isEmpty()) {
 //                // 如果需要2FA但未提供TOTP代码，则返回特殊响应
@@ -87,19 +121,35 @@ public class LoginController {
 
 //            // 验证TOTP代码
 //            if (!GoogleAuthenticatorUtil.verifyCode(userFromDB.getSecretKey(), Long.parseLong(totpCode))) {
+//                loginLog.setLoginSuccess(false);
+//                loginLog.setErrorMessage("双因素认证码错误");
+//                loginLogService.saveLoginLog(loginLog);
 //                return ApiResponse.failure("双因素认证码错误");
 //            }
 //        }
-        
-        userFromDB.setToken(UUID.randomUUID().toString());
-        redisTemplate.opsForValue().set("token", userFromDB.getToken(),60, TimeUnit.MINUTES);
-        // 更新用户信息
-        mongoTemplate.findAndModify(
-            new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),
-            new Update().set("token", userFromDB.getToken()),
-            User.class
-        );
-        return ApiResponse.success(userFromDB);
+            
+            userFromDB.setToken(UUID.randomUUID().toString());
+            redisTemplate.opsForValue().set("token", userFromDB.getToken(),60, TimeUnit.MINUTES);
+            // 更新用户信息
+            mongoTemplate.findAndModify(
+                new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),
+                new Update().set("token", userFromDB.getToken()),
+                User.class
+            );
+            
+            // 登录成功，更新日志状态
+            loginLog.setLoginSuccess(true);
+            loginLogService.saveLoginLog(loginLog);
+            
+            return ApiResponse.success(userFromDB);
+        } catch (Exception e) {
+            // 捕获其他异常
+            loginLog.setLoginSuccess(false);
+            loginLog.setErrorMessage("登录过程中发生错误: " + e.getMessage());
+            loginLogService.saveLoginLog(loginLog);
+            log.error("登录异常: {}", e.getMessage(), e);
+            return ApiResponse.failure("登录失败，请稍后重试");
+        }
     }
     
     @PostMapping("/captcha")
