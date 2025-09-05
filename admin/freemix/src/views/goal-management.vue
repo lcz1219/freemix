@@ -159,7 +159,20 @@
                           </div>
 
                           <div class="child-goal-actions">
-
+                            <!-- 文件上传按钮 -->
+                            <n-button v-if="!childGoal.finish" type="info" size="small" ghost @click="showChildGoalUpload(props.row, index)">
+                              <n-icon>
+                                <CloudUploadOutline />
+                              </n-icon>
+                              上传文件
+                            </n-button>
+                            <!-- 查看文件按钮 -->
+                            <n-button v-if="childGoal.fileList && childGoal.fileList.length > 0" type="info" size="small" ghost @click="viewChildGoalFiles(childGoal)">
+                              <n-icon>
+                                <DocumentTextOutline />
+                              </n-icon>
+                              查看文件
+                            </n-button>
                           </div>
                         </div>
                       </n-collapse-item>
@@ -257,6 +270,62 @@
     <!-- 目标详情模态框 -->
     <GoalDetail v-model:show="showDetailModal" :goal="selectedGoal" @save="saveGoal" @updateGoal="refreshGoals" />
 
+    <!-- 子目标文件上传模态框 -->
+    <n-modal v-model:show="showChildGoalUploadModal" preset="card" style="max-width: 600px" title="上传文件" :mask-closable="false">
+      <GeneralUpload ref="childGoalUploadRef" :file-list="currentChildGoalFiles" @uploadSuccess="handleChildGoalFileUploadSuccess" @fileRemove="handleChildGoalFileRemove" />
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="closeChildGoalUploadModal">取消</n-button>
+          <n-button type="primary" @click="saveChildGoalFiles">保存</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <!-- 子目标文件查看模态框 -->
+    <n-modal v-model:show="showChildGoalFilesModal" preset="card" style="max-width: 600px" title="查看文件" :mask-closable="true">
+      <div v-if="viewChildGoalFilesList.length > 0">
+        <n-list>
+          <n-list-item v-for="(file, index) in viewChildGoalFilesList" :key="index">
+            <n-thing>
+              <template #description >
+                <div style="display: flex; justify-content: space-between;padding: 5px;">
+                  <div>
+                <n-text>{{ file.originalFilename || file.name || '未命名文件' }}</n-text>
+                </div>
+                <div>
+                 <n-space>
+                  <n-button size="tiny" type="primary" @click="downloadFile(file)">
+                    <template #icon>
+                      <n-icon>
+                        <CloudDownloadOutline />
+                      </n-icon>
+                    </template>
+                    下载
+                  </n-button>
+                  <n-button size="tiny" type="error" @click="removeChildGoalFile(file)">
+                    <template #icon>
+                      <n-icon>
+                        <TrashOutline />
+                      </n-icon>
+                    </template>
+                    删除
+                  </n-button>
+                </n-space>
+                </div>
+                </div>
+              </template>
+              <!-- <template #description>
+               
+              </template> -->
+            </n-thing>
+          </n-list-item>
+        </n-list>
+      </div>
+      <div v-else>
+        <n-empty description="暂无文件" />
+      </div>
+    </n-modal>
+
     <!-- 底部 -->
     <n-layout-footer class="footer" bordered>
       <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
@@ -282,14 +351,21 @@ import {
   NCollapse,
   NCollapseItem,
   useMessage,
-  NEllipsis
+  NEllipsis,
+  NModal,
+  NList,
+  NListItem,
+  NThing,
+  NText,
+  NEmpty
 } from 'naive-ui';
 import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plus';
 import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
-import { getMPaths, isSuccess, postM } from '@/utils/request';
-import { EyeSharp, PencilOutline, CheckmarkOutline,ArchiveOutline } from '@vicons/ionicons5';
+import GeneralUpload from '@/components/GeneralUpload.vue';
+import request, { postM, getMPaths, isSuccess, baseURL } from '@/utils/request';
+import { EyeSharp, PencilOutline, CheckmarkOutline,ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
 
@@ -305,7 +381,16 @@ const message = useMessage();
 const goals = ref<any[]>([]);
 const loading = ref(false);
 const showDetailModal = ref(false);
-const selectedGoal = ref({});
+const selectedGoal = ref<any>({});
+
+// 子目标文件上传相关状态
+const showChildGoalUploadModal = ref(false);
+const showChildGoalFilesModal = ref(false);
+const currentChildGoal = ref<any>(null);
+const currentChildGoalIndex = ref(-1);
+const currentChildGoalFiles = ref<any[]>([]);
+const viewChildGoalFilesList = ref<any[]>([]);
+const childGoalUploadRef = ref<any>(null);
 
 // 筛选和搜索
 const searchQuery = ref('');
@@ -404,10 +489,12 @@ const finishChildGoal = async (goal: any, index: number) => {
     if (isSuccess(res)) {
       message.success('子目标已完成');
       // 更新本地数据
-      const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
-      if (goalIndex !== -1) {
-        goals.value[goalIndex] = updatedGoal;
-      }
+      // const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
+      // if (goalIndex !== -1) {
+      //   goals.value[goalIndex] = updatedGoal;
+      // }
+      getGoals()
+      
     } else {
       message.error('更新失败');
     }
@@ -436,10 +523,11 @@ const unfinishChildGoal = async (goal: any, index: number) => {
     if (isSuccess(res)) {
       message.success('已取消完成状态');
       // 更新本地数据
-      const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
-      if (goalIndex !== -1) {
-        goals.value[goalIndex] = updatedGoal;
-      }
+      // const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
+      // if (goalIndex !== -1) {
+      //   goals.value[goalIndex] = updatedGoal;
+      // }
+      getGoals()
     } else {
       message.error('更新失败');
     }
@@ -543,6 +631,163 @@ const handleSorterChange = (sorter: any) => {
   console.log('排序器变化:', sorter);
 };
 
+// 显示子目标文件上传模态框
+const showChildGoalUpload = (goal: any, index: number): void => {
+  currentChildGoal.value = goal;
+  currentChildGoalIndex.value = index;
+  
+  // 初始化文件列表
+  if (goal.childGoals && goal.childGoals[index] && goal.childGoals[index].fileList) {
+    currentChildGoalFiles.value = [...goal.childGoals[index].fileList];
+  } else {
+    currentChildGoalFiles.value = [];
+  }
+  
+  showChildGoalUploadModal.value = true;
+};
+
+// 关闭子目标文件上传模态框
+const closeChildGoalUploadModal = (): void => {
+  showChildGoalUploadModal.value = false;
+  currentChildGoal.value = null;
+  currentChildGoalIndex.value = -1;
+  currentChildGoalFiles.value = [];
+};
+
+// 处理子目标文件上传成功
+const handleChildGoalFileUploadSuccess = (files: any[]): void => {
+  currentChildGoalFiles.value = files;
+};
+
+// 处理子目标文件删除
+const handleChildGoalFileRemove = (files: any[]): void => {
+  currentChildGoalFiles.value = files;
+};
+
+// 保存子目标文件
+const saveChildGoalFiles = async (): Promise<void> => {
+  if (!currentChildGoal.value || currentChildGoalIndex.value === -1) {
+    message.error('保存失败，请重试');
+    return;
+  }
+  
+  try {
+    // 创建目标副本
+    const updatedGoal = { ...currentChildGoal.value };
+    
+    // 确保子目标存在
+    if (!updatedGoal.childGoals) {
+      updatedGoal.childGoals = [];
+    }
+    
+    // 确保当前子目标存在
+    if (!updatedGoal.childGoals[currentChildGoalIndex.value]) {
+      updatedGoal.childGoals[currentChildGoalIndex.value] = {};
+    }
+    
+    // 更新子目标的文件列表
+    updatedGoal.childGoals[currentChildGoalIndex.value].fileList = [...currentChildGoalFiles.value];
+    
+    // 保存到服务器
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      message.success('文件保存成功');
+      
+      // 更新本地数据
+     getGoals()
+      
+      // 关闭模态框
+      closeChildGoalUploadModal();
+    } else {
+      message.error('保存失败，请重试');
+    }
+  } catch (error) {
+    message.error('保存失败，请重试');
+    console.error(error);
+  }
+};
+
+// 查看子目标文件
+const viewChildGoalFiles = (childGoal: any): void => {
+  // 获取子目标的文件列表
+  if (childGoal.fileList && childGoal.fileList.length > 0) {
+    viewChildGoalFilesList.value = [...childGoal.fileList];
+  } else {
+    viewChildGoalFilesList.value = [];
+  }
+  
+  showChildGoalFilesModal.value = true;
+};
+
+// 下载文件
+const downloadFile = (file: any): void => {
+  if (!file) return;
+  
+  const fileName = file.name || file.originalFilename;
+  const url = file.url || file.fileUrl || `${baseURL()}/file/${fileName}`;
+  
+  // 创建一个隐藏的a标签来下载文件
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName || 'download';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+// 删除子目标文件
+const removeChildGoalFile = async (file: any): Promise<void> => {
+  if (!file || !currentChildGoal.value || currentChildGoalIndex.value === -1) return;
+  
+  try {
+    // 创建目标副本
+    const updatedGoal = { ...currentChildGoal.value };
+    
+    // 确保子目标存在
+    if (!updatedGoal.childGoals) {
+      updatedGoal.childGoals = [];
+    }
+    
+    // 确保当前子目标存在
+    if (!updatedGoal.childGoals[currentChildGoalIndex.value]) {
+      updatedGoal.childGoals[currentChildGoalIndex.value] = {};
+    }
+    
+    // 获取当前子目标的文件列表
+    const fileList = updatedGoal.childGoals[currentChildGoalIndex.value].fileList || [];
+    
+    // 从文件列表中删除指定文件
+    const updatedFileList = fileList.filter((f: any) => {
+      const fileId = f.id || f.name;
+      const targetFileId = file.id || file.name;
+      return fileId !== targetFileId;
+    });
+    
+    // 更新子目标的文件列表
+    updatedGoal.childGoals[currentChildGoalIndex.value].fileList = updatedFileList;
+    
+    // 保存到服务器
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      message.success('文件删除成功');
+      
+      // 更新本地数据
+      const goalIndex = goals.value.findIndex((g: any) => g.id === updatedGoal.id);
+      if (goalIndex !== -1) {
+        goals.value[goalIndex] = updatedGoal;
+      }
+      
+      // 更新查看文件列表
+      viewChildGoalFilesList.value = updatedFileList;
+    } else {
+      message.error('删除失败，请重试');
+    }
+  } catch (error) {
+    message.error('删除失败，请重试');
+    console.error(error);
+  }
+};
+
 // 初始化
 onMounted(() => {
   getGoals();
@@ -614,6 +859,107 @@ onMounted(() => {
 
 .main-content {
   padding: 20px 40px;
+}
+
+/* 子目标操作区域样式 */
+.child-goal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+/* 子目标详情区域样式 */
+.child-goal-details {
+  padding: 12px 0;
+}
+
+/* 子目标信息行样式 */
+.child-goal-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 子目标头部样式 */
+.child-goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* 子目标标题样式 */
+.child-goal-title {
+  flex: 1;
+}
+
+/* 子目标状态样式 */
+.child-goal-status {
+  margin-left: 12px;
+}
+
+/* 展开内容包装器样式 */
+.expanded-content-wrapper {
+  padding: 16px;
+  background-color: var(--n-color-modal);
+  border-radius: 8px;
+}
+
+/* 子目标折叠项样式 */
+.child-goal-collapse-item {
+  margin-bottom: 8px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* 汇总折叠项样式 */
+.summary-collapse-item {
+  margin-top: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* 汇总头部样式 */
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 汇总标题样式 */
+.summary-title {
+  font-weight: 500;
+}
+
+/* 汇总内容样式 */
+.summary-content {
+  padding: 16px 0;
+}
+
+/* 汇总统计样式 */
+.summary-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+}
+
+/* 统计项样式 */
+.stat-item {
+  text-align: center;
+}
+
+/* 统计值样式 */
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+/* 统计标签样式 */
+.stat-label {
+  font-size: 14px;
+  color: var(--n-text-color-3);
 }
 
 .page-header {

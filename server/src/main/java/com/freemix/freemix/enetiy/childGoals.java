@@ -17,4 +17,8 @@ public class childGoals {
     Date finishDate;
 //    String description;
     private List<childGoals> childGoals;
+    
+    // 存储子目标相关的文件列表
+    List fileList;
+
 }

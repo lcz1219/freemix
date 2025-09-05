@@ -1,5 +1,5 @@
 <template>
-  <n-modal v-model:show="showModal" preset="card" :style="{ width: '800px',height:'600px',overflow: 'auto'}" title="目标详情" :bordered="false"
+  <n-modal v-model:show="showModal" preset="card" :style="{ width: '80%',height:'85vh',overflow: 'auto', maxHeight: '90vh'}" title="目标详情" :bordered="false"
     :segmented="{ content: true, footer: 'soft' }" draggable :on-after-leave="closeModal" >
     <template #header-extra>
       <n-space>
@@ -23,48 +23,115 @@
       </n-space>
     </template>
 
-    <div v-if="!isEditing">
-      <n-descriptions label-placement="left" :column="1" bordered>
-        <n-descriptions-item label="目标标题">
-          {{ goal.title }}
-        </n-descriptions-item>
-        <n-descriptions-item label="目标描述">
-          {{ goal.description }}
-        </n-descriptions-item>
-        <n-descriptions-item label="负责人">
-          {{ goal.owner }}
-        </n-descriptions-item>
-        <n-descriptions-item label="截止日期">
-          {{ goal.deadlineString }}
-        </n-descriptions-item>
-        <n-descriptions-item label="优先级">
-          <n-tag :type="getPriorityType(goal.level)">
-            {{ getPriorityText(goal.level) }}
-          </n-tag>
-        </n-descriptions-item>
-        <n-descriptions-item label="状态">
-          <n-tag :type="getStatusType(goal.status)">
-            {{ getStatusText(goal.status) }}
-          </n-tag>
-        </n-descriptions-item>
-        <n-descriptions-item label="进度">
-          <n-progress type="circle" status="success" :percentage="isEditing ? editForm.progress : goal.progress" processing/>
-          <!-- <n-progress type="line" :percentage="goal.progress" :indicator-placement="'inside'" :height="20"
-            :rail-color="'rgba(255, 255, 255, 0.1)'" :fill-color="'linear-gradient(90deg, #8a2be2, #4b0082)'" processing /> -->
-        </n-descriptions-item>
-        <n-descriptions-item label="标签">
-          <n-space>
-            <n-tag v-for="tag in goal.tags" :key="tag" type="primary">
-              {{ tag }}
-            </n-tag>
-          </n-space>
-        </n-descriptions-item>
-      </n-descriptions>
-
-      <n-space v-if="goal.subGoals && goal.subGoals.length" vertical>
-        <h3>子目标</h3>
-        <n-data-table :columns="subGoalColumns" :data="goal.subGoals" :pagination="false" />
-      </n-space>
+    <div v-if="!isEditing" class="view-mode-container">
+      <n-card class="goal-card" :bordered="false">
+        <n-space vertical size="large">
+          <!-- 标题区域 -->
+          <div class="goal-header">
+            <n-h2 style="margin: 0;">{{ goal.title }}</n-h2>
+            <n-space align="center">
+              <n-avatar circle size="small" />
+              <n-text depth="3">{{ goal.owner }}</n-text>
+            </n-space>
+          </div>
+          
+          <!-- 描述区域 -->
+          <n-p v-if="goal.description" class="goal-description">
+            {{ goal.description }}
+          </n-p>
+          
+          <!-- 元信息区域 -->
+          <n-grid :cols="3" :x-gap="17" responsive="screen">
+            <n-grid-item>
+              <div class="meta-item">
+                <n-text depth="3" class="meta-label">截止日期</n-text>
+                <n-space align="center">
+                  <n-icon :component="CalendarOutline" color="#18a058" />
+                  <n-text>{{ goal.deadlineString }}</n-text>
+                </n-space>
+              </div>
+            </n-grid-item>
+            
+            <n-grid-item>
+              <div class="meta-item">
+                <n-text depth="3" class="meta-label">优先级</n-text>
+                <n-tag :type="getPriorityType(goal.level)" :bordered="false">
+                  {{ getPriorityText(goal.level) }}
+                </n-tag>
+              </div>
+            </n-grid-item>
+            
+            <n-grid-item>
+              <div class="meta-item">
+                <n-text depth="3" class="meta-label">状态</n-text>
+                <n-tag :type="getStatusType(goal.status)" :bordered="false">
+                  {{ getStatusText(goal.status) }}
+                </n-tag>
+              </div>
+            </n-grid-item>
+            
+            <n-grid-item :span="3">
+              <div class="meta-item">
+                <n-text depth="3" class="meta-label">进度</n-text>
+                <n-space vertical :size="8">
+                  <n-progress type="line" status="success" :percentage="goal.progress" :indicator-placement="'inside'" :height="24" processing />
+                  <n-text style="text-align: center; font-weight: 500;">{{ goal.progress }}%</n-text>
+                </n-space>
+              </div>
+            </n-grid-item>
+          </n-grid>
+          
+          <!-- 标签区域 -->
+          <div v-if="goal.tags && goal.tags.length > 0" class="meta-item">
+            <n-text depth="3" class="meta-label">标签</n-text>
+            <n-space>
+              <n-tag v-for="tag in goal.tags" :key="tag" type="primary" :bordered="false" round>
+                {{ tag }}
+              </n-tag>
+            </n-space>
+          </div>
+          
+          <!-- 文件区域 -->
+          <div v-if="goal.fileList && goal.fileList.length > 0" class="files-section">
+            <n-text depth="3" class="meta-label">目标文件</n-text>
+            <n-list hoverable clickable>
+              <n-list-item v-for="(file, index) in goal.fileList" :key="index">
+                <n-thing :title="file.originalFilename || file.name || '未命名文件'">
+                  <template #header-extra>
+                    <n-space>
+                      <n-tag v-if="file.size" type="info" size="small" :bordered="false">
+                        {{ formatFileSize(file.size) }}
+                      </n-tag>
+                      <n-button size="tiny" type="primary" text @click="getDownloadUrl(file)">
+                        <template #icon>
+                          <n-icon :component="CloudDownloadSharp" />
+                        </template>
+                      </n-button>
+                    </n-space>
+                  </template>
+                </n-thing>
+              </n-list-item>
+            </n-list>
+          </div>
+          
+          <!-- 子目标区域 -->
+          <div v-if="goal.childGoals && goal.childGoals.length" class="subgoals-section">
+            <div class="section-header">
+              <n-h3 style="margin: 0;">子目标</n-h3>
+              <n-tag type="info" :bordered="false">{{ goal.childGoals.length }}个子目标</n-tag>
+            </div>
+            <n-data-table 
+              :columns="subGoalColumns" 
+              :data="goal.childGoals" 
+              :pagination="false"
+              :striped="true"
+              :single-line="false"
+              class="subgoals-table"
+              :max-height="300"
+            />
+          </div>
+        </n-space>
+      </n-card>
     </div>
 
     <div v-else>
@@ -142,14 +209,99 @@
       </n-space>
     </template>
   </n-modal>
+  
+  <!-- 子目标文件上传模态框 -->
+  <n-modal v-model:show="showChildGoalUploadModal" preset="card" :style="{ width: '600px' }" title="上传子目标文件" draggable>
+    <div v-if="currentChildGoalIndex !== -1">
+      <p style="margin-bottom: 16px;">为子目标 "{{ editForm.childGoals[currentChildGoalIndex]?editForm.childGoals[currentChildGoalIndex].message:'' }}" 上传相关文件：</p>
+      <GeneralUpload 
+        @uploadSuccess="handleChildGoalFileChange"
+        @fileRemove="handleChildGoalFileChange"
+        @uploadError="handleFileUploadError"
+        :fileList="childGoalFiles[currentChildGoalIndex] || []"
+      />
+    </div>
+    <template #footer>
+      <n-space justify="end">
+        <n-button @click="showChildGoalUploadModal = false">
+          取消
+        </n-button>
+        <n-button type="primary" @click="saveChildGoalFiles">
+          保存文件
+        </n-button>
+      </n-space>
+    </template>
+  </n-modal>
+  
+  <!-- 子目标文件查看模态框 -->
+  <n-modal v-model:show="showChildGoalFilesModal" preset="card" :style="{ width: '700px' }" title="子目标文件" draggable>
+    <div v-if="viewChildGoalIndex !== -1">
+      <p style="margin-bottom: 16px; font-weight: bold;">
+        子目标: "{{ isEditing ? (editForm.childGoals[viewChildGoalIndex] ? editForm.childGoals[viewChildGoalIndex].message : '') : (props.goal.childGoals && props.goal.childGoals[viewChildGoalIndex] ? props.goal.childGoals[viewChildGoalIndex].message : '') }}"
+      </p>
+      
+      <div v-if="viewChildGoalFilesList.length > 0">
+        <n-list hoverable clickable>
+          <n-list-item v-for="(file, index) in viewChildGoalFilesList" :key="index">
+            <n-thing :title="file.originalFilename || file.name || '未命名文件'">
+              <template #header-extra>
+                <n-space>
+                  <n-button 
+                    type="primary" 
+                    size="small" 
+                    tag="a" 
+                    :href="file.url || file.fileUrl || `${baseURL()}/file/${file.name}`" 
+                    target="_blank"
+                  >
+                    <n-icon size="16">
+                      <Eye />
+                    </n-icon>
+                  </n-button>
+                  <n-button 
+                    type="primary" 
+                    size="small"
+                    @click="getDownloadUrl(file)"
+                  >
+                    <n-icon size="16">
+                      <CloudDownloadSharp />
+                    </n-icon>
+                  </n-button>
+                </n-space>
+              </template>
+              <template #description>
+                <n-space>
+                  <n-tag v-if="file.size" type="info" size="small">
+                    {{ formatFileSize(file.size) }}
+                  </n-tag>
+                  <n-tag v-if="file.status" :type="file.status === 'finished' ? 'success' : 'warning'" size="small">
+                    {{ file.status === 'finished' ? '上传完成' : '上传中' }}
+                  </n-tag>
+                </n-space>
+              </template>
+            </n-thing>
+          </n-list-item>
+        </n-list>
+      </div>
+      
+      <n-empty v-else description="该子目标暂无文件" />
+    </div>
+    
+    <template #footer>
+      <n-space justify="end">
+        <n-button @click="showChildGoalFilesModal = false">
+          关闭
+        </n-button>
+      </n-space>
+    </template>
+  </n-modal>
 </template>
 
 <script setup>
 import GeneralUpload from '@/components/GeneralUpload.vue';
 
 import { ref, computed, watch,h } from 'vue';
-import { Pencil, Copy,Eye } from '@vicons/ionicons5';
-import { postM,isSuccess } from '@/utils/request'
+import { Pencil, Copy,Eye,CloudDownloadSharp } from '@vicons/ionicons5';
+import { postM,isSuccess, baseURL } from '@/utils/request'
 import { 
   NModal, 
   NButton, 
@@ -167,6 +319,10 @@ import {
   NSlider, 
   NDynamicTags, 
   NDataTable, 
+  NList, 
+  NListItem, 
+  NThing, 
+  NEmpty, 
   useMessage 
 } from 'naive-ui';
 
@@ -182,7 +338,37 @@ const props = defineProps({
 });
 const fileupload=ref(false);
 
-
+const getDownloadUrl = (file) => {
+  console.log("生成下载URL:", file);
+  if (!file) {
+    return void 0;
+  }
+  
+  // 对于本地文件对象，创建下载链接
+  if (file.file instanceof File) {
+    const url = URL.createObjectURL(file.file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.originalFilename || file.file.name || '未命名文件';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return;
+  }
+  
+  // 对于已上传的文件，使用name生成下载URL
+  const downloadUrl = file.url || file.fileUrl || `${baseURL()}/file/${file.name}`;
+  console.log("生成下载URL:", downloadUrl);
+  
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = file.originalFilename || file.name || '未命名文件';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 const emit = defineEmits(['update:show', 'update:goal', 'save']);
 
 const message = useMessage();
@@ -198,8 +384,17 @@ const isEditing = ref(false);
 const formRef = ref(null);
 const fileChange = (file) => {
   console.log("fileChange",file);
-  editForm.value.fileList=file; // 保存文件路径
-  // fileupload.value = false; // 关闭模态框
+  // 深拷贝editForm以避免直接修改引用
+  let tmpEdit = JSON.parse(JSON.stringify(editForm.value));
+  // 确保fileList字段存在
+  if (!tmpEdit.fileList) {
+    tmpEdit.fileList = [];
+  }
+  // 更新文件列表
+  tmpEdit.fileList = file;
+  // 更新editForm
+  editForm.value = tmpEdit;
+  console.log("更新后的文件列表:", editForm.value.fileList);
 }
 // 编辑表单数据
 const editForm = ref({ ...props.goal });
@@ -251,8 +446,46 @@ const statusOptions = [
 
 // 子目标表格列定义
 const subGoalColumns = [
-  { title: '子目标', key: 'title' },
-  { title: '进度', key: 'progress', render: (row) => h('div', {}, `${row.progress}%`) }
+  { title: '子目标', key: 'message' },
+  { 
+    title: '文件', 
+    key: 'fileList', 
+    render: (row, index) => {
+      // 检查是否有文件，同时兼容fileList和files字段
+      const files = row.fileList || row.files || [];
+      if (files.length > 0) {
+        return h('div', {}, [
+          // 显示文件数量
+          h(NTag, { type: 'info', size: 'small' }, {
+            default: () => `${files.length}个文件`
+          }),
+          // 显示文件列表（直接展示，无需点击查看）
+          h('div', { style: { marginTop: '8px' } }, [
+            files.map((file, idx) => {
+              const fileName = file.originalFilename || file.name || '未命名文件';
+              return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', marginBottom: '4px' } }, [
+                h('a', {
+                  href: file.url || file.fileUrl || `${baseURL()}/file/${file.name}`,
+                  target: '_blank',
+                  style: { color: '#1890ff', marginRight: '8px', fontSize: '12px' }
+                }, fileName),
+                h(NButton, {
+                  size: 'tiny',
+                  type: 'primary',
+                  text: true,
+                  onClick: () => getDownloadUrl(file)
+                }, {
+                  default: () => h(NIcon, { size: 14 }, { default: () => h(CloudDownloadSharp) })
+                })
+              ]);
+            })
+          ])
+        ]);
+      } else {
+        return h('span', { style: { color: '#999' } }, '无文件');
+      }
+    }
+  }
 ];
 
 // 可编辑子目标表格列定义
@@ -260,29 +493,161 @@ const editableSubGoalColumns = [
   { title: '子目标', key: 'message' },
   // { title: '进度', key: 'progress' },
   {
+    title: '文件',
+    key: 'fileList',
+    render: (row, index) => {
+      // 检查是否有文件，同时兼容fileList和files字段
+      const files = row.fileList || row.files || [];
+      if (files.length > 0) {
+        return h('div', {}, [
+          // 显示文件数量
+          h(NTag, { type: 'info', size: 'small' }, {
+            default: () => `${files.length}个文件`
+          }),
+          // 显示文件列表（直接展示，无需点击查看）
+          h('div', { style: { marginTop: '8px' } }, [
+            files.map((file, idx) => {
+              const fileName = file.originalFilename || file.name || '未命名文件';
+              return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', marginBottom: '4px' } }, [
+                h('a', {
+                  href: file.url || file.fileUrl || `${baseURL()}/file/${file.name}`,
+                  target: '_blank',
+                  style: { color: '#1890ff', marginRight: '8px', fontSize: '12px' }
+                }, fileName),
+                h(NButton, {
+                  size: 'tiny',
+                  type: 'primary',
+                  text: true,
+                  onClick: () => getDownloadUrl(file)
+                }, {
+                  default: () => h(NIcon, { size: 14 }, { default: () => h(CloudDownloadSharp) })
+                })
+              ]);
+            })
+          ])
+        ]);
+      } else {
+        return h('span', { style: { color: '#999' } }, '无文件');
+      }
+    }
+  },
+  {
     title: '操作',
     key: 'finish',
     render: (row, index) => {
-      return h('div', {}, [
-        h(NButton, {
-          size: 'small',
-          disabled: row.finish,
-          onClick: () => finishChild(index)
-        }, { default: () => '完成' })
-      ]);
+      return h(NButton, {
+        size: 'small',
+        disabled: row.finish,
+        onClick: () => finishChild(index)
+      }, { default: () => '完成' });
     }
   }
 ];
+// 子目标文件上传相关状态
+const showChildGoalUploadModal = ref(false);
+const currentChildGoalIndex = ref(-1);
+const childGoalFiles = ref({}); // 存储每个子目标的文件列表
+
+// 子目标文件查看相关状态
+const showChildGoalFilesModal = ref(false);
+const viewChildGoalIndex = ref(-1);
+const viewChildGoalFilesList = ref([]); // 存储要查看的子目标文件列表
+
 const finishChild=(index)=>{
-  // console.log("editForm.value.childGoals",editForm.value.childGoals[index]);
+  // 先标记子目标为完成
   let tmpEdit=JSON.parse(JSON.stringify(editForm.value));
-  tmpEdit.childGoals[index].finish = true;
-  let finishCount=tmpEdit.childGoals.filter(childGoal => childGoal.finish).length;
-  // console.log("finishCount",finishCount);
   
-  tmpEdit.progress=Math.round(finishCount/tmpEdit.childGoals.length*100);
-  // console.log("editForm.value.progress",tmpEdit.progress);
-  editForm.value={...tmpEdit};
+  // 确保子目标存在
+  if (tmpEdit.childGoals && tmpEdit.childGoals[index]) {
+    tmpEdit.childGoals[index].finish = true;
+    
+    // 初始化该子目标的文件列表（如果不存在）
+    if (!tmpEdit.childGoals[index].fileList) {
+      tmpEdit.childGoals[index].fileList = [];
+    }
+    
+    let finishCount=tmpEdit.childGoals.filter(childGoal => childGoal.finish).length;
+    tmpEdit.progress=Math.round(finishCount/tmpEdit.childGoals.length*100);
+    
+    // 更新editForm
+    editForm.value = tmpEdit;
+    
+    // 弹出文件上传模态框
+    currentChildGoalIndex.value = index;
+    
+    // 如果该子目标已有文件，加载到上传组件
+    if (editForm.value.childGoals[index].fileList && editForm.value.childGoals[index].fileList.length > 0) {
+      // 深拷贝文件列表以避免引用问题
+      childGoalFiles.value[index] = JSON.parse(JSON.stringify(editForm.value.childGoals[index].fileList));
+    } else {
+      childGoalFiles.value[index] = [];
+    }
+    
+    console.log("子目标完成，初始化文件列表:", index, childGoalFiles.value[index]);
+    showChildGoalUploadModal.value = true;
+  } else {
+    message.error('找不到对应的子目标');
+  }
+}
+
+// 处理子目标文件上传成功
+const handleChildGoalFileChange = (files) => {
+  if (currentChildGoalIndex.value !== -1) {
+    // 深拷贝文件列表以避免引用问题
+    childGoalFiles.value[currentChildGoalIndex.value] = JSON.parse(JSON.stringify(files));
+    console.log("子目标文件更新:", currentChildGoalIndex.value, childGoalFiles.value[currentChildGoalIndex.value]);
+  }
+}
+
+// 查看子目标文件（编辑模式）
+const viewChildGoalFiles = (index) => {
+  if (editForm.value.childGoals && editForm.value.childGoals[index]) {
+    viewChildGoalIndex.value = index;
+    // 深拷贝文件列表以避免引用问题
+    viewChildGoalFilesList.value = JSON.parse(JSON.stringify(
+      editForm.value.childGoals[index].fileList || []
+    ));
+    showChildGoalFilesModal.value = true;
+  }
+}
+
+// 查看子目标文件（查看模式）
+const viewChildGoalFilesInViewMode = (index) => {
+  if (props.goal.childGoals && props.goal.childGoals[index]) {
+    viewChildGoalIndex.value = index;
+    // 深拷贝文件列表以避免引用问题
+    viewChildGoalFilesList.value = JSON.parse(JSON.stringify(
+      props.goal.childGoals[index].fileList || []
+    ));
+    showChildGoalFilesModal.value = true;
+  }
+}
+
+// 保存子目标文件
+const saveChildGoalFiles = () => {
+  if (currentChildGoalIndex.value !== -1) {
+    let tmpEdit=JSON.parse(JSON.stringify(editForm.value));
+    // 确保子目标存在且fileList字段存在
+    if (tmpEdit.childGoals && tmpEdit.childGoals[currentChildGoalIndex.value]) {
+      if (!tmpEdit.childGoals[currentChildGoalIndex.value].fileList) {
+        tmpEdit.childGoals[currentChildGoalIndex.value].fileList = [];
+      }
+      // 确保使用fileList字段来存储子目标的文件列表，与后端实体类保持一致
+      tmpEdit.childGoals[currentChildGoalIndex.value].fileList = 
+        childGoalFiles.value[currentChildGoalIndex.value] || [];
+      
+      // 更新editForm
+      editForm.value = tmpEdit;
+      
+      console.log("保存子目标文件:", currentChildGoalIndex.value, 
+        editForm.value.childGoals[currentChildGoalIndex.value].fileList);
+      saveGoal('no')
+      message.success('子目标文件已保存');
+    } else {
+      message.error('找不到对应的子目标');
+    }
+    showChildGoalUploadModal.value = false;
+  }
 }
 
 // 获取优先级文本
@@ -316,6 +681,14 @@ const getStatusType = (status) => {
     case 'expired': return 'error';
     default: return 'default';
   }
+};
+
+// 格式化文件大小
+const formatFileSize = (bytes) => {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  else return (bytes / 1048576).toFixed(1) + ' MB';
 };
 
 // 复制目标
@@ -361,15 +734,36 @@ const removeSubGoal = (index) => {
 };
 
 // 保存目标
-const saveGoal = async () => {
+const saveGoal = async (val) => {
   const valid = await formRef.value?.validate();
   if (valid) {
-   const res= await postM('editGoal', editForm.value);
-       if(isSuccess(res)){
-        message.success('目标创建成功')
+    // 确保fileList字段存在且格式正确
+    let saveData = JSON.parse(JSON.stringify(editForm.value));
+    
+    // 确保主目标的文件列表存在
+    if (!saveData.fileList) {
+      saveData.fileList = [];
+    }
+    
+    // 确保子目标的文件列表存在
+    if (saveData.childGoals) {
+      saveData.childGoals.forEach(child => {
+        if (!child.fileList) {
+          child.fileList = [];
+        }
+      });
+    }
+    
+    console.log('保存数据:', saveData);
+    const res = await postM('editGoal', saveData);
+    if(isSuccess(res)){
+      message.success('目标保存成功')
+      if(val!='no'){
+
         showModal.value=false
-        emit('updateGoal');
-       }
+      }
+      emit('updateGoal');
+    }
   }
 };
 
@@ -381,13 +775,158 @@ const closeModal = () => {
 };
 
 // 监听目标数据变化
-watch(() => props.goal, (newGoal) => {
-  editForm.value = { ...newGoal };
-}, { deep: true });
+  watch(() => props.goal, (newGoal) => {
+    // 深拷贝目标数据
+    let goalData = JSON.parse(JSON.stringify(newGoal));
+    
+    // 确保主目标的文件列表存在
+    if (!goalData.fileList) {
+      goalData.fileList = [];
+    }
+    
+    // 确保子目标的文件列表存在
+    if (goalData.childGoals) {
+      goalData.childGoals.forEach(child => {
+        if (!child.fileList) {
+          child.fileList = [];
+        }
+      });
+    }
+    
+    editForm.value = goalData;
+  }, { deep: true });
 </script>
 
 <style scoped>
 .mt-2 {
   margin-top: 8px;
+}
+
+.goal-card {
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.goal-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--n-border-color);
+}
+
+.goal-description {
+  color: var(--n-text-color-2);
+  line-height: 1.6;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: var(--n-color-modal);
+  transition: all 0.2s ease;
+}
+
+.meta-item:hover {
+  background-color: var(--n-color-hover);
+}
+
+.meta-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--n-text-color-3);
+}
+
+.files-section, .subgoals-section {
+  margin-top: 16px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--n-border-color);
+}
+
+.subgoals-table {
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.subgoals-table .n-data-table-th) {
+  background-color: var(--n-color-target);
+  font-weight: 600;
+}
+
+:deep(.subgoals-table .n-data-table-tr:hover) {
+  background-color: var(--n-color-hover);
+}
+
+:deep(.n-list-item) {
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  margin-bottom: 4px;
+}
+
+:deep(.n-list-item:hover) {
+  background-color: var(--n-color-hover);
+}
+
+:deep(.n-thing-main__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.n-thing-header__title) {
+  font-weight: 500;
+}
+
+:deep(.n-progress-content) {
+  font-weight: 500;
+}
+
+:deep(.n-data-table-td) {
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .goal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  :deep(.n-grid) {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .meta-item {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .goal-header {
+    align-items: stretch;
+  }
+  
+  :deep(.n-space) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>
