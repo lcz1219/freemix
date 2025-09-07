@@ -206,6 +206,8 @@ import {
   NIcon,
   NGrid,
   NGridItem,
+  NTag,
+  NProgress,
   NDataTable
 } from 'naive-ui';
 import * as echarts from 'echarts';
@@ -260,7 +262,7 @@ const columns: DataTableColumns<any> = [
     sorter: 'default',
     render(row) {
       return h('div', {}, [
-        h('n-progress', {
+        h(NProgress, {
           type: 'line',
           percentage: row.progress,
           indicatorPlacement: 'inside',
@@ -284,7 +286,7 @@ const columns: DataTableColumns<any> = [
       const statusInfo = statusMap[row.status as keyof typeof statusMap] || { label: '未知', type: 'default' };
       
       return h('div', {}, [
-        h('n-tag', {
+        h(NTag, {
           type: statusInfo.type,
           size: 'small'
         }, {
