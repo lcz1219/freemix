@@ -369,10 +369,14 @@ const renderLabel = (goal) => {
     });
 
   }
-  return h('span', null, [goal.title, goal.finish ?
-   h('span', { style: 'color:#5acea7' }, '(已完成)') :goal.status=='expired'?
-   h('span', { style: 'color:#e98b8b' }, `(未完成 ${count}/${total})`):
-  h('span', { style: 'color:#e6c260' }, `(未完成 ${count}/${total})`)])
+  
+  return h('div', { style: 'display: flex; flex-direction: column; width: 100%;' }, [
+    h('div', { style: 'font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;' }, goal.title),
+    h('div', { style: 'font-size: 12px;' }, goal.finish ?
+      h('span', { style: 'color:#5acea7' }, '(已完成)') : goal.status=='expired'?
+      h('span', { style: 'color:#e98b8b' }, `(未完成 ${count}/${total})`):
+      h('span', { style: 'color:#e6c260' }, `(未完成 ${count}/${total})`))
+  ])
 
 }
 
@@ -645,6 +649,19 @@ const toggleTheme = () => {
 :deep .lf-menu li {
   color: #ffffff !important;
   background-color: #000 !important;
+}
+
+/* 优化菜单项宽度，确保长标题有足够空间显示 */
+:deep .n-menu-item-content {
+  min-width: 220px !important;
+  max-width: 300px !important;
+  padding: 8px 12px !important;
+}
+
+/* 优化菜单项内容布局 */
+:deep .n-menu-item-content__label {
+  width: 100% !important;
+  overflow: hidden !important;
 }
 
 /* 设置菜单项悬停效果 */
