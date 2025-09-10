@@ -41,45 +41,41 @@
           </n-p>
           
           <!-- 元信息区域 -->
-          <n-grid :cols="3" :x-gap="17" responsive="screen">
-            <n-grid-item>
-              <div class="meta-item">
-                <n-text depth="3" class="meta-label">截止日期</n-text>
-                <n-space align="center">
-                  <n-icon :component="CalendarOutline" color="#18a058" />
-                  <n-text>{{ goal.deadlineString }}</n-text>
-                </n-space>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <n-text depth="3" class="meta-label">截止日期</n-text>
+              <div class="meta-content">
+                <n-icon :component="CalendarOutline" color="#18a058" />
+                <n-text>{{ goal.deadlineString }}</n-text>
               </div>
-            </n-grid-item>
+            </div>
             
-            <n-grid-item>
-              <div class="meta-item">
-                <n-text depth="3" class="meta-label">优先级</n-text>
+            <div class="meta-item">
+              <n-text depth="3" class="meta-label">优先级</n-text>
+              <div class="meta-content">
                 <n-tag :type="getPriorityType(goal.level)" :bordered="false">
                   {{ getPriorityText(goal.level) }}
                 </n-tag>
               </div>
-            </n-grid-item>
+            </div>
             
-            <n-grid-item>
-              <div class="meta-item">
-                <n-text depth="3" class="meta-label">状态</n-text>
+            <div class="meta-item">
+              <n-text depth="3" class="meta-label">状态</n-text>
+              <div class="meta-content">
                 <n-tag :type="getStatusType(goal.status)" :bordered="false">
                   {{ getStatusText(goal.status) }}
                 </n-tag>
               </div>
-            </n-grid-item>
+            </div>
             
-            <n-grid-item :span="3">
-              <div class="meta-item">
-                <n-text depth="3" class="meta-label">进度</n-text>
-                <n-space vertical :size="8">
-                  <n-progress type="line" status="success" :percentage="goal.progress" :indicator-placement="'inside'" :height="24" processing />
-                  <n-text style="text-align: center; font-weight: 500;">{{ goal.progress }}%</n-text>
-                </n-space>
+            <div class="meta-item progress-item">
+              <n-text depth="3" class="meta-label">进度</n-text>
+              <div class="meta-content">
+                <n-progress type="line" status="success" :percentage="goal.progress" :indicator-placement="'inside'" :height="24" processing />
+                <n-text class="progress-text">{{ goal.progress }}%</n-text>
               </div>
-            </n-grid-item>
-          </n-grid>
+            </div>
+          </div>
           
           <!-- 标签区域 -->
           <div v-if="goal.tags && goal.tags.length > 0" class="meta-item">
@@ -300,7 +296,7 @@
 import GeneralUpload from '@/components/GeneralUpload.vue';
 
 import { ref, computed, watch,h } from 'vue';
-import { Pencil, Copy,Eye,CloudDownloadSharp } from '@vicons/ionicons5';
+import { Pencil, Copy,Eye,CloudDownloadSharp,CalendarOutline,AlertCircleOutline,CheckmarkCircleOutline,BarChartOutline,TimeOutline,FlagOutline,CheckboxOutline,TrendingUpOutline } from '@vicons/ionicons5';
 import { postM,isSuccess, baseURL } from '@/utils/request'
 import { 
   NModal, 
@@ -827,14 +823,82 @@ const closeModal = () => {
   padding: 8px 0;
 }
 
+.meta-card {
+  margin-bottom: 16px;
+}
+
+.meta-item-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  height: 100%;
+}
+
+.meta-item-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.date-card {
+  background: linear-gradient(135deg, rgba(24, 160, 88, 0.05) 0%, rgba(24, 160, 88, 0.1) 100%);
+  border-left: 4px solid #18a058;
+}
+
+.priority-card {
+  background: linear-gradient(135deg, rgba(240, 160, 32, 0.05) 0%, rgba(240, 160, 32, 0.1) 100%);
+  border-left: 4px solid #f0a020;
+}
+
+.status-card {
+  background: linear-gradient(135deg, rgba(24, 160, 88, 0.05) 0%, rgba(24, 160, 88, 0.1) 100%);
+  border-left: 4px solid #18a058;
+}
+
+.progress-card {
+  background: linear-gradient(135deg, rgba(24, 160, 88, 0.05) 0%, rgba(24, 160, 88, 0.1) 100%);
+  border-left: 4px solid #18a058;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 16px 0;
+}
+
 .meta-item {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 16px;
+  border-radius: 8px;
   background-color: var(--n-color-modal);
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.meta-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.meta-content .n-icon {
+  flex-shrink: 0;
+}
+
+.progress-item .meta-content {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.progress-text {
+  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .meta-item:hover {
@@ -914,8 +978,21 @@ const closeModal = () => {
     grid-template-columns: 1fr !important;
   }
   
+  .meta-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
   .meta-item {
-    padding: 8px;
+    padding: 12px;
+  }
+  
+  .meta-item-card {
+    border-radius: 8px;
+  }
+  
+  .date-card, .priority-card, .status-card, .progress-card {
+    border-left-width: 3px;
   }
 }
 
