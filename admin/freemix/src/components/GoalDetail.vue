@@ -393,7 +393,46 @@ const fileChange = (file) => {
   console.log("更新后的文件列表:", editForm.value.fileList);
 }
 // 编辑表单数据
-const editForm = ref({ ...props.goal });
+const editForm = ref({});
+
+// 初始化表单数据
+const initFormData = () => {
+  // 深拷贝目标数据
+  let goalData = JSON.parse(JSON.stringify(props.goal));
+  
+  // 处理日期数据，确保日期格式正确
+  if (props.goal.deadline) {
+    if (typeof props.goal.deadline === 'number') {
+      // 如果是时间戳，转换为Date对象
+      goalData.deadline = new Date(props.goal.deadline);
+    } else if (typeof props.goal.deadline === 'string') {
+      // 如果是字符串，尝试转换为Date对象
+      const date = new Date(props.goal.deadline);
+      if (!isNaN(date.getTime())) {
+        goalData.deadline = date;
+      }
+    }
+  }
+  
+  // 确保主目标的文件列表存在
+  if (!goalData.fileList) {
+    goalData.fileList = [];
+  }
+  
+  // 确保子目标的文件列表存在
+  if (goalData.childGoals) {
+    goalData.childGoals.forEach(child => {
+      if (!child.fileList) {
+        child.fileList = [];
+      }
+    });
+  }
+  
+  editForm.value = goalData;
+};
+
+// 初始化表单数据
+initFormData();
 
 // 表单验证规则
 const formRules = {
@@ -408,10 +447,32 @@ const formRules = {
     trigger: 'blur'
   },
   deadline: {
-    // type: 'number',
-          required: true,
-          trigger: ['blur', 'change'],
-          message: '请输入截止日期'
+    required: true,
+    trigger: ['blur', 'change'],
+    validator: (rule, value) => {
+      // 如果值为空、null或undefined
+      if (!value) {
+        return new Error('请输入截止日期');
+      }
+      
+      // 检查是否为有效的日期对象
+      if (value instanceof Date) {
+        return !isNaN(value.getTime()) ? true : new Error('请输入有效的截止日期');
+      }
+      
+      // 检查是否为有效的时间戳
+      if (typeof value === 'number') {
+        return !isNaN(value) ? true : new Error('请输入有效的截止日期');
+      }
+      
+      // 检查是否为有效的日期字符串
+      if (typeof value === 'string') {
+        const date = new Date(value);
+        return !isNaN(date.getTime()) ? true : new Error('请输入有效的截止日期');
+      }
+      
+      return new Error('请输入有效的截止日期');
+    }
   },
   level: {
     required: true,
@@ -765,32 +826,16 @@ const saveGoal = async (val) => {
 
 // 关闭模态框
 const closeModal = () => {
-  showModal.value = false;
-  isEditing.value = false;
-  editForm.value = {...props.goal};
+  // 重置表单数据
+  initFormData();
+  emit('update:show', false);
 };
 
 // 监听目标数据变化
-  watch(() => props.goal, (newGoal) => {
-    // 深拷贝目标数据
-    let goalData = JSON.parse(JSON.stringify(newGoal));
-    
-    // 确保主目标的文件列表存在
-    if (!goalData.fileList) {
-      goalData.fileList = [];
-    }
-    
-    // 确保子目标的文件列表存在
-    if (goalData.childGoals) {
-      goalData.childGoals.forEach(child => {
-        if (!child.fileList) {
-          child.fileList = [];
-        }
-      });
-    }
-    
-    editForm.value = goalData;
-  }, { deep: true });
+watch(() => props.goal, (newGoal) => {
+  // 重新初始化表单数据
+  initFormData();
+}, { deep: true });
 </script>
 
 <style scoped>

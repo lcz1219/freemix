@@ -48,6 +48,11 @@ public class GoalController extends BaseController {
 
             mongoTemplate.insert(goal);
         }else {
+        if(System.currentTimeMillis()>goal.getDeadline().getTime()){
+            goal.setStatus("expired");
+        }else{
+            goal.setStatus("in-progress");
+        }
 
             if (goal.getProgress()==100){
                 goal.setStatus("completed");
