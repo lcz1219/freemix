@@ -138,58 +138,73 @@
     :style="{ width: '800px',height:'800px' }"> -->
       <n-form ref="formRef" :model="editForm" :rules="formRules" label-placement="left" label-width="120"
         require-mark-placement="right-hanging" >
-        <n-form-item label="目标标题" path="title">
-          <n-input v-model:value="editForm.title" placeholder="请输入目标标题" maxlength="30" show-count />
-        </n-form-item>
-
-        <n-form-item label="目标描述" path="description">
-          <n-input v-model:value="editForm.description" placeholder="请输入目标描述" type="textarea"
-            :autosize="{ minRows: 3, maxRows: 5 }" />
-        </n-form-item>
-        <n-form-item label="文件上传" path="description">
-           <!-- <n-button type="primary" @click="() => fileupload = true">上传文件</n-button> -->
-                      <!-- <n-modal v-model:show="fileupload" title="文件上传" preset="card" draggable -->
-                        <!-- :style="{ width: '800px' }"> -->
-<!-- :fileList="goalForm.fileList" -->
-                        <GeneralUpload @uploadSuccess="fileChange" 
-                        @fileRemove="fileChange"
-                        @uploadError="handleFileUploadError"
-                        
-                         :fileList="editForm.fileList"
-                         />
-                      <!-- </n-modal> -->
-        </n-form-item>
-
-        <n-form-item label="负责人" path="owner">
-          <n-input v-model:value="editForm.owner" placeholder="请输入负责人姓名" />
-        </n-form-item>
-
-        <n-form-item label="截止日期" path="deadline">
-          <n-date-picker v-model:value="editForm.deadline" type="date" />
-        </n-form-item>
-
-        <n-form-item label="优先级" path="priority">
-          <n-select v-model:value="editForm.level" :options="priorityOptions" />
-        </n-form-item>
-
-        <n-form-item label="状态" path="status">
-          <n-select v-model:value="editForm.status" :options="statusOptions" />
-        </n-form-item>
-
-        <n-form-item label="进度" path="progress">
-         <n-progress type="circle" status="success" :percentage="editForm.progress" processing/>
-        </n-form-item>
-
-        <n-form-item label="标签" path="tags">
-          <n-dynamic-tags v-model:value="editForm.tags" />
-        </n-form-item>
-
-        <n-form-item label="子目标" path="subGoals">
-          <n-data-table :columns="editableSubGoalColumns" :data="editForm.childGoals" :pagination="false" />
-          <!-- <n-button @click="addSubGoal" class="mt-2">
-            添加子目标
-          </n-button> -->
-        </n-form-item>
+        <n-grid :gutter="24">
+          <n-gi :span="12">
+            <n-form-item label="目标标题" path="title">
+              <n-input v-model:value="editForm.title" placeholder="请输入目标标题" maxlength="30" show-count />
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="目标描述" path="description">
+              <n-input v-model:value="editForm.description" placeholder="请输入目标描述" type="textarea"
+                :autosize="{ minRows: 3, maxRows: 5 }" />
+            </n-form-item>
+          </n-gi>
+         
+          <n-gi :span="12">
+            <n-form-item label="负责人" path="owner">
+              <n-input v-model:value="editForm.owner" placeholder="请输入负责人姓名" />
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="截止日期" path="deadline">
+              <n-date-picker v-model:value="editForm.deadline" type="date" />
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="优先级" path="priority">
+              <n-select v-model:value="editForm.level" :options="priorityOptions" />
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="状态" path="status">
+              <n-select v-model:value="editForm.status" :options="statusOptions" />
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="进度" path="progress">
+             <n-progress type="circle" status="success" :percentage="editForm.progress" processing/>
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="标签" path="tags">
+              <n-dynamic-tags v-model:value="editForm.tags" />
+            </n-form-item>
+          </n-gi>
+           <n-gi :span="24">
+            <n-form-item label="文件上传" path="description">
+               <!-- <n-button type="primary" @click="() => fileupload = true">上传文件</n-button> -->
+                          <!-- <n-modal v-model:show="fileupload" title="文件上传" preset="card" draggable -->
+                            <!-- :style="{ width: '800px' }"> -->
+    <!-- :fileList="goalForm.fileList" -->
+                            <GeneralUpload @uploadSuccess="fileChange" 
+                            @fileRemove="fileChange"
+                            @uploadError="handleFileUploadError"
+                            
+                             :fileList="editForm.fileList"
+                             />
+                          <!-- </n-modal> -->
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="24">
+            <n-form-item label="子目标" path="subGoals">
+              <n-data-table :columns="editableSubGoalColumns" :data="editForm.childGoals" :pagination="false" />
+              <!-- <n-button @click="addSubGoal" class="mt-2">
+                添加子目标
+              </n-button> -->
+            </n-form-item>
+          </n-gi>
+        </n-grid>
       </n-form>
       <!-- </n-modal> -->
     </div>
@@ -319,6 +334,8 @@ import {
   NListItem, 
   NThing, 
   NEmpty, 
+  NGrid,
+  NGi,
   useMessage 
 } from 'naive-ui';
 
