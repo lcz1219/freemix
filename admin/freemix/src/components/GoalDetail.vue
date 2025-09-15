@@ -30,7 +30,7 @@
           <div class="goal-header">
             <n-h2 style="margin: 0;">{{ goal.title }}</n-h2>
             <n-space align="center">
-              <n-avatar circle size="small" />
+              <n-avatar circle size="small" :src="avatarUrl" />
               <n-text depth="3">{{ goal.owner }}</n-text>
             </n-space>
           </div>
@@ -199,9 +199,6 @@
           <n-gi :span="24">
             <n-form-item label="子目标" path="subGoals">
               <n-data-table :columns="editableSubGoalColumns" :data="editForm.childGoals" :pagination="false" />
-              <!-- <n-button @click="addSubGoal" class="mt-2">
-                添加子目标
-              </n-button> -->
             </n-form-item>
           </n-gi>
         </n-grid>
@@ -310,7 +307,7 @@
 <script setup>
 import GeneralUpload from '@/components/GeneralUpload.vue';
 
-import { ref, computed, watch,h } from 'vue';
+import { ref, computed, watch,h,onMounted } from 'vue';
 import { Pencil, Copy,Eye,CloudDownloadSharp,CalendarOutline,AlertCircleOutline,CheckmarkCircleOutline,BarChartOutline,TimeOutline,FlagOutline,CheckboxOutline,TrendingUpOutline } from '@vicons/ionicons5';
 import { postM,isSuccess, baseURL } from '@/utils/request'
 import { 
@@ -336,8 +333,16 @@ import {
   NEmpty, 
   NGrid,
   NGi,
+  NH2,
+  NH3,
+  NP,
+  NText,
+  NAvatar,
+  NCard,
   useMessage 
 } from 'naive-ui';
+import { useStore } from 'vuex';
+const store = useStore();
 
 const props = defineProps({
   goal: {
@@ -350,7 +355,18 @@ const props = defineProps({
   }
 });
 const fileupload=ref(false);
+const avatarUrl = ref('');
+onMounted(() => {
+  const saveAvatarUrl = store.state.user.avatarUrl;
+  console.log('saveAvatarUrl', saveAvatarUrl);
 
+  if (saveAvatarUrl) {
+    avatarUrl.value = `${baseURL()}${saveAvatarUrl}`;
+  } else {
+    // 默认头像
+    avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';
+  }
+});
 const getDownloadUrl = (file) => {
   console.log("生成下载URL:", file);
   if (!file) {
@@ -436,16 +452,30 @@ const initFormData = () => {
     goalData.fileList = [];
   }
   
-  // 确保子目标的文件列表存在
-  if (goalData.childGoals) {
-    goalData.childGoals.forEach(child => {
-      if (!child.fileList) {
-        child.fileList = [];
-      }
-    });
+  // 确保子目标数组存在
+  if (!goalData.childGoals) {
+    goalData.childGoals = [];
   }
   
+  // 确保子目标的文件列表存在
+  goalData.childGoals.forEach(child => {
+    if (!child.fileList) {
+      child.fileList = [];
+    }
+    // 确保finish字段存在
+    if (typeof child.finish === 'undefined') {
+      child.finish = false;
+    }
+  });
+  
   editForm.value = goalData;
+  
+  // // 添加一个空行用于添加新子目标
+  // editForm.value.childGoals.push({
+  //   message: '',
+  //   finish: false,
+  //   fileList: []
+  // });
 };
 
 // 初始化表单数据
@@ -559,17 +589,89 @@ const subGoalColumns = [
         return h('span', { style: { color: '#999' } }, '无文件');
       }
     }
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render: (row, index) => {
+      return h(NButton, {
+        size: 'small',
+        type: 'primary',
+        onClick: () => viewChildGoalFilesInViewMode(index)
+      }, { default: () => '查看文件' });
+    }
   }
 ];
 
 // 可编辑子目标表格列定义
 const editableSubGoalColumns = [
-  { title: '子目标', key: 'message' },
-  // { title: '进度', key: 'progress' },
+  { 
+    title: '子目标', 
+    key: 'message',
+    render: (row, index) => {
+    console.log("index=>>",index);
+    console.log("editForm.value.childGoals.length=>>",editForm.value.childGoals.length);
+    
+      // 如果是最后一行，显示添加新子目标的输入框
+      if (index === editForm.value.childGoals.length-1) {
+        return h(NInput, {
+          value: row.message,
+          onUpdateValue: (val) => {
+            // 如果是新行，创建新的子目标
+            // if (index === editForm.value.childGoals.length-1) {
+            //   editForm.value.childGoals.push({
+            //     message: val,
+            //     finish: false,
+            //     fileList: []
+            //   });
+            // } else {
+              editForm.value.childGoals[index].message = val;
+            // }
+          },
+          placeholder: '输入新子目标后按回车添加',
+          onKeyup: (e) => {
+            if (e.key === 'Enter' ) {
+              editForm.value.childGoals.push({
+                message: '',
+                finish: false,
+                fileList: []
+              });
+            }
+          }
+        });
+      }
+      
+      return h(NInput, {
+        value: row.message,
+        onUpdateValue: (val) => {
+          editForm.value.childGoals[index].message = val;
+        },
+        placeholder: '请输入子目标'
+      });
+    }
+  },
   {
     title: '文件',
     key: 'fileList',
     render: (row, index) => {
+      // 如果是最后一行，显示添加按钮
+      if (index === editForm.value.childGoals.length-1) {
+        return h(NButton, {
+          size: 'small',
+          type: 'primary',
+          dashed: true,
+          onClick: () => {
+          
+              editForm.value.childGoals.push({
+                message: '',
+                finish: false,
+                fileList: []
+              });
+            
+          }
+        }, { default: () => '添加子目标' });
+      }
+      
       // 检查是否有文件，同时兼容fileList和files字段
       const files = row.fileList || row.files || [];
       if (files.length > 0) {
@@ -607,13 +709,32 @@ const editableSubGoalColumns = [
   },
   {
     title: '操作',
-    key: 'finish',
+    key: 'actions',
     render: (row, index) => {
-      return h(NButton, {
-        size: 'small',
-        disabled: row.finish,
-        onClick: () => finishChild(index)
-      }, { default: () => '完成' });
+      // 如果是最后一行，不显示操作按钮
+      if (index === editForm.value.childGoals.length-1) {
+        return null;
+      }
+      
+      return h(NSpace, {}, [
+        h(NButton, {
+          size: 'small',
+          type: 'primary',
+          disabled: row.finish,
+          onClick: () => finishChild(index)
+        }, { default: () => '完成' }),
+        h(NButton, {
+          size: 'small',
+          type: 'info',
+          onClick: () => viewChildGoalFiles(index)
+        }, { default: () => '查看文件' }),
+        h(NButton, {
+          size: 'small',
+          type: 'error',
+          disabled: row.finish,
+          onClick: () => removeSubGoal(index)
+        }, { default: () => '删除' })
+      ]);
     }
   }
 ];
@@ -796,15 +917,42 @@ const editGoal = () => {
 
 // 添加子目标
 const addSubGoal = () => {
-  editForm.value.subGoals.push({
-    title: '',
-    progress: 0
+  // 确保childGoals数组存在
+  if (!editForm.value.childGoals) {
+    editForm.value.childGoals = [];
+  }
+  
+  // 移除最后一行的空行（如果存在）
+  if (editForm.value.childGoals.length > 0 && 
+      editForm.value.childGoals[editForm.value.childGoals.length - 1].message === '') {
+    editForm.value.childGoals.pop();
+  }
+  
+  // 添加新的空行
+  editForm.value.childGoals.push({
+    message: '',
+    finish: false,
+    fileList: []
   });
 };
 
 // 删除子目标
 const removeSubGoal = (index) => {
-  editForm.value.subGoals.splice(index, 1);
+  if (editForm.value.childGoals && editForm.value.childGoals.length > index) {
+    // 删除指定索引的子目标
+    editForm.value.childGoals.splice(index, 1);
+    message.success('子目标已删除');
+    
+    // 如果删除后没有空行，添加一个空行用于添加新子目标
+    const hasEmptyRow = editForm.value.childGoals.some(child => child.message === '');
+    if (!hasEmptyRow) {
+      editForm.value.childGoals.push({
+        message: '',
+        finish: false,
+        fileList: []
+      });
+    }
+  }
 };
 
 // 保存目标
@@ -819,22 +967,32 @@ const saveGoal = async (val) => {
       saveData.fileList = [];
     }
     
-    // 确保子目标的文件列表存在
-    if (saveData.childGoals) {
-      saveData.childGoals.forEach(child => {
-        if (!child.fileList) {
-          child.fileList = [];
-        }
-      });
+    // 确保子目标数组存在
+    if (!saveData.childGoals) {
+      saveData.childGoals = [];
     }
+    
+    // 移除空行（message为空的子目标）
+    saveData.childGoals = saveData.childGoals.filter(child => child.message && child.message.trim() !== '');
+    
+    // 确保子目标的文件列表存在
+    saveData.childGoals.forEach(child => {
+      if (!child.fileList) {
+        child.fileList = [];
+      }
+      // 确保finish字段存在
+      if (typeof child.finish === 'undefined') {
+        child.finish = false;
+      }
+    });
     
     console.log('保存数据:', saveData);
     const res = await postM('editGoal', saveData);
     if(isSuccess(res)){
       message.success('目标保存成功')
+     
       if(val!='no'){
-
-        showModal.value=false
+        closeModal()
       }
       emit('updateGoal');
     }
@@ -844,6 +1002,7 @@ const saveGoal = async (val) => {
 // 关闭模态框
 const closeModal = () => {
   // 重置表单数据
+  isEditing.value = false;
   initFormData();
   emit('update:show', false);
 };
