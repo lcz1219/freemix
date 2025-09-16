@@ -342,6 +342,7 @@ import {
   useMessage 
 } from 'naive-ui';
 import { useStore } from 'vuex';
+import { color } from 'echarts';
 const store = useStore();
 
 const props = defineProps({
@@ -596,7 +597,7 @@ const subGoalColumns = [
     render: (row, index) => {
       return h(NButton, {
         size: 'small',
-        type: 'primary',
+        type: 'tertiary',
         onClick: () => viewChildGoalFilesInViewMode(index)
       }, { default: () => '查看文件' });
     }
@@ -1152,7 +1153,7 @@ watch(() => props.goal, (newGoal) => {
 }
 
 :deep(.subgoals-table .n-data-table-th) {
-  background-color: var(--n-color-target);
+  background-color: var(--n-color-modal);
   font-weight: 600;
 }
 
