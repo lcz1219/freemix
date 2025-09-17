@@ -77,6 +77,22 @@
             </div>
           </div>
           
+          <!-- 协作人区域 -->
+          <div class="meta-item">
+            <n-text depth="3" class="meta-label">协作人</n-text>
+            <n-space>
+              <n-tag v-if="goal.collaborators && goal.collaborators.length > 0" type="info" :bordered="false">
+                {{ goal.collaborators.length }}个协作人
+              </n-tag>
+              <n-button size="small" type="primary" text @click="showCollaboratorsModal = true">
+                <template #icon>
+                  <n-icon :component="People" />
+                </template>
+                管理协作人
+              </n-button>
+            </n-space>
+          </div>
+          
           <!-- 标签区域 -->
           <div v-if="goal.tags && goal.tags.length > 0" class="meta-item">
             <n-text depth="3" class="meta-label">标签</n-text>
@@ -181,6 +197,21 @@
               <n-dynamic-tags v-model:value="editForm.tags" />
             </n-form-item>
           </n-gi>
+          <n-gi :span="12">
+            <n-form-item label="协作人" path="collaborators">
+              <n-space>
+                <n-tag v-if="editForm.collaborators && editForm.collaborators.length > 0" type="info" :bordered="false">
+                  {{ editForm.collaborators.length }}个协作人
+                </n-tag>
+                <n-button size="small" type="primary" @click="showCollaboratorsModal = true">
+                  <template #icon>
+                    <n-icon :component="People" />
+                  </template>
+                  管理协作人
+                </n-button>
+              </n-space>
+            </n-form-item>
+          </n-gi>
            <n-gi :span="24">
             <n-form-item label="文件上传" path="description">
                <!-- <n-button type="primary" @click="() => fileupload = true">上传文件</n-button> -->
@@ -217,6 +248,13 @@
       </n-space>
     </template>
   </n-modal>
+  
+  <!-- 协作人管理模态框 -->
+  <CollaboratorManager
+    v-model:show="showCollaboratorsModal"
+    :goal="isEditing ? editForm : goal"
+    @collaborators-updated="handleCollaboratorsUpdated"
+  />
   
   <!-- 子目标文件上传模态框 -->
   <n-modal v-model:show="showChildGoalUploadModal" preset="card" :style="{ width: '600px' }" title="上传子目标文件" draggable>
@@ -302,13 +340,16 @@
       </n-space>
     </template>
   </n-modal>
+  
+  
 </template>
 
 <script setup>
 import GeneralUpload from '@/components/GeneralUpload.vue';
+import CollaboratorManager from '@/components/CollaboratorManager.vue';
 
 import { ref, computed, watch,h,onMounted } from 'vue';
-import { Pencil, Copy,Eye,CloudDownloadSharp,CalendarOutline,AlertCircleOutline,CheckmarkCircleOutline,BarChartOutline,TimeOutline,FlagOutline,CheckboxOutline,TrendingUpOutline } from '@vicons/ionicons5';
+import { Pencil, Copy,Eye,CloudDownloadSharp,CalendarOutline,AlertCircleOutline,CheckmarkCircleOutline,BarChartOutline,TimeOutline,FlagOutline,CheckboxOutline,TrendingUpOutline,Close,People } from '@vicons/ionicons5';
 import { postM,isSuccess, baseURL } from '@/utils/request'
 import { 
   NModal, 
@@ -339,7 +380,10 @@ import {
   NText,
   NAvatar,
   NCard,
-  useMessage 
+  useMessage,
+  NAlert,
+  NTabs,
+  NTabPane
 } from 'naive-ui';
 import { useStore } from 'vuex';
 import { color } from 'echarts';
@@ -356,6 +400,7 @@ const props = defineProps({
   }
 });
 const fileupload=ref(false);
+const showCollaboratorsModal = ref(false);
 const avatarUrl = ref('');
 onMounted(() => {
   const saveAvatarUrl = store.state.user.avatarUrl;
@@ -451,6 +496,11 @@ const initFormData = () => {
   // 确保主目标的文件列表存在
   if (!goalData.fileList) {
     goalData.fileList = [];
+  }
+  
+  // 确保协作人列表存在
+  if (!goalData.collaborators) {
+    goalData.collaborators = [];
   }
   
   // 确保子目标数组存在
@@ -887,6 +937,24 @@ const formatFileSize = (bytes) => {
   else return (bytes / 1048576).toFixed(1) + ' MB';
 };
 
+// 处理协作人更新
+const handleCollaboratorsUpdated = (collaborators) => {
+  if (isEditing.value) {
+    // 如果是编辑模式，更新editForm中的协作人列表
+    let tmpEdit = JSON.parse(JSON.stringify(editForm.value));
+    tmpEdit.collaborators = collaborators;
+    editForm.value = tmpEdit;
+  } else {
+    // 如果是查看模式，更新props.goal中的协作人列表
+    // 由于props是只读的，我们需要通过emit通知父组件更新
+    emit('update:goal', {
+      ...props.goal,
+      collaborators
+    });
+  }
+  message.success('协作人列表已更新');
+};
+
 // 复制目标
 const copyGoal = async () => {
   try {
@@ -968,6 +1036,11 @@ const saveGoal = async (val) => {
       saveData.fileList = [];
     }
     
+    // 确保协作人列表存在
+    if (!saveData.collaborators) {
+      saveData.collaborators = [];
+    }
+    
     // 确保子目标数组存在
     if (!saveData.childGoals) {
       saveData.childGoals = [];
@@ -1007,6 +1080,13 @@ const closeModal = () => {
   initFormData();
   emit('update:show', false);
 };
+
+
+
+// 导出方法供模板使用
+defineExpose({
+  closeModal
+});
 
 // 监听目标数据变化
 watch(() => props.goal, (newGoal) => {
@@ -1137,14 +1217,11 @@ watch(() => props.goal, (newGoal) => {
   margin-top: 16px;
 }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--n-border-color);
+.subgoals-table {
+  margin-top: 16px;
 }
+
+
 
 .subgoals-table {
   border-radius: 6px;
