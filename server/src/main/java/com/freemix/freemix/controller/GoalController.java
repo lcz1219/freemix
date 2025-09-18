@@ -61,6 +61,8 @@ public class GoalController extends BaseController {
 
             mongoTemplate.save(goal);
         }
+    //插入创建者到关系表里面
+    editCollaborator(goal.get_id(),Arrays.asList(goal.getOwner()),"creater" );
 
         return ApiResponse.success(body);
     }
