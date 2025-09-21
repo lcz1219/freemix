@@ -20,8 +20,9 @@
                       <n-tag :type="collaborator.role === 'owner' ? 'warning' : 'info'" size="small">
                         {{ collaborator.role === 'owner' ? '创建者' : '协作者' }}
                       </n-tag>
+                      <!-- 只有目标所有者才能移除协作者 -->
                       <n-button 
-                        v-if="collaborator.role !== 'owner'" 
+                        v-if="collaborator.role !== 'owner' && isGoalOwner" 
                         size="tiny" 
                         type="error" 
                         @click="removeCollaborator(collaborator)"
@@ -37,7 +38,7 @@
           <n-empty v-else description="暂无协作人" />
         </n-tab-pane>
         
-        <n-tab-pane name="add" tab="添加协作人">
+        <n-tab-pane name="add" tab="添加协作人" v-if="isGoalOwner">
           <n-space vertical>
             <n-alert type="info" title="添加协作人">
               从系统用户列表中选择用户作为协作人，协作人可以查看和更新目标进度。
@@ -82,6 +83,9 @@ import { NModal, NList, NListItem, NThing, NAvatar, NTag, NButton, NSpace, NTabs
 import { baseURL } from '@/utils/request'
 // import { getOwerList } from '@/api/login'
 import { postM, isSuccess,getM } from '@/utils/request'
+import { useStore } from 'vuex'
+
+const store = useStore()
 
 const props = defineProps({
   show: {
@@ -97,6 +101,26 @@ const props = defineProps({
 const emit = defineEmits(['update:show', 'collaborators-updated'])
 
 const message = useMessage()
+
+// 判断当前用户是否为目标所有者
+const isGoalOwner = computed(() => {
+  const currentUser = store.state.user;
+  if (!currentUser || !currentUser.username) return false;
+  
+  // 检查当前用户是否为目标所有者
+  if (props.goal.ownerName === currentUser.username) return true;
+  if (props.goal.owner === currentUser.username) return true;
+  
+  // 检查协作人列表中是否有当前用户且角色为owner
+  if (props.goal.collaborators && props.goal.collaborators.length > 0) {
+    const ownerCollaborator = props.goal.collaborators.find(c => 
+      c.username === currentUser.username && c.role === 'owner'
+    );
+    return !!ownerCollaborator;
+  }
+  
+  return false;
+});
 
 // 模态框显示状态
 const showModal = computed({
@@ -137,7 +161,18 @@ const loadCollaborators = async () => {
     if (props.goal) {
       // 假设目标数据中有collaborators字段
       if (props.goal.collaborators) {
-        collaborators.value = props.goal.collaborators
+        // 深拷贝协作人列表以避免修改原始数据
+        collaborators.value = JSON.parse(JSON.stringify(props.goal.collaborators));
+        
+        // 对协作人列表进行排序，确保创建者（owner）排在第一位
+        collaborators.value.sort((a, b) => {
+          // 如果a是owner，排在前面
+          if (a.role === 'owner') return -1;
+          // 如果b是owner，排在前面
+          if (b.role === 'owner') return 1;
+          // 其他情况保持原顺序
+          return 0;
+        });
       } else {
         // 如果没有，我们可以从owner和负责人中构建
         collaborators.value = [

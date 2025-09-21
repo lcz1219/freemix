@@ -82,7 +82,7 @@
 
           <!-- 协作人区域 -->
           <div class="meta-item">
-            <n-text depth="3" class="meta-label" @click="showCollaboratorsModal = true">协作人</n-text>
+            <n-text depth="3" class="meta-label" @click=" (showCollaboratorsModal = true)">协作人</n-text>
             <n-space vertical>
 
               <div v-if="goal.collaborators && goal.collaborators.length > 0">
@@ -228,7 +228,8 @@
                     </div>
                   </n-space>
                 </div>
-                <n-button size="small" type="primary" @click="showCollaboratorsModal = true">
+                <!-- 只有目标所有者才能管理协作人 -->
+                <n-button v-if="isGoalOwner" size="small" type="primary" @click="showCollaboratorsModal = true">
                   <template #icon>
                     <n-icon :component="People" />
                   </template>
@@ -239,13 +240,10 @@
           </n-gi>
           <n-gi :span="24">
             <n-form-item label="文件上传" path="description">
-              <!-- <n-button type="primary" @click="() => fileupload = true">上传文件</n-button> -->
-              <!-- <n-modal v-model:show="fileupload" title="文件上传" preset="card" draggable -->
-              <!-- :style="{ width: '800px' }"> -->
-              <!-- :fileList="goalForm.fileList" -->
-              <GeneralUpload @uploadSuccess="fileChange" @fileRemove="fileChange" @uploadError="handleFileUploadError"
+              <!-- 只有目标所有者才能上传文件 -->
+              <GeneralUpload v-if="isGoalOwner" @uploadSuccess="fileChange" @fileRemove="fileChange" @uploadError="handleFileUploadError"
                 :fileList="editForm.fileList" />
-              <!-- </n-modal> -->
+              <n-empty v-else description="只有目标所有者才能上传文件" />
             </n-form-item>
           </n-gi>
           <n-gi :span="24">
@@ -280,14 +278,17 @@
     <div v-if="currentChildGoalIndex !== -1">
       <p style="margin-bottom: 16px;">为子目标 "{{
         editForm.childGoals[currentChildGoalIndex] ? editForm.childGoals[currentChildGoalIndex].message :'' }}" 上传相关文件：</p>
-      <GeneralUpload @uploadSuccess="handleChildGoalFileChange" @fileRemove="handleChildGoalFileChange"
+      <!-- 只有目标所有者才能上传子目标文件 -->
+      <GeneralUpload  @uploadSuccess="handleChildGoalFileChange" @fileRemove="handleChildGoalFileChange"
         @uploadError="handleFileUploadError" :fileList="childGoalFiles[currentChildGoalIndex] || []" />
+      <!-- <n-empty v-else description="只有目标所有者才能上传文件" /> -->
     </div>
     <template #footer>
       <n-space justify="end">
         <n-button @click="showChildGoalUploadModal = false">
           取消
         </n-button>
+        <!-- 只有目标所有者才能保存子目标文件 -->
         <n-button type="primary" @click="saveChildGoalFiles">
           保存文件
         </n-button>
@@ -412,6 +413,27 @@ const props = defineProps({
 const fileupload = ref(false);
 const showCollaboratorsModal = ref(false);
 const avatarUrl = ref('');
+
+// 判断当前用户是否为目标所有者
+const isGoalOwner = computed(() => {
+  const currentUser = store.state.user;
+  if (!currentUser || !currentUser.username) return false;
+  
+  // 检查当前用户是否为目标所有者
+  if (props.goal.ownerName === currentUser.username) return true;
+  if (props.goal.owner === currentUser.username) return true;
+  
+  // 检查协作人列表中是否有当前用户且角色为owner
+  if (props.goal.collaborators && props.goal.collaborators.length > 0) {
+    const ownerCollaborator = props.goal.collaborators.find(c => 
+      c.username === currentUser.username && c.role === 'owner'
+    );
+    return !!ownerCollaborator;
+  }
+  
+  return false;
+});
+
 onMounted(() => {
   const saveAvatarUrl = store.state.user.avatarUrl;
   console.log('saveAvatarUrl', saveAvatarUrl);
@@ -715,8 +737,8 @@ const editableSubGoalColumns = [
     title: '文件',
     key: 'fileList',
     render: (row, index) => {
-      // 如果是最后一行，显示添加按钮
-      if (index === editForm.value.childGoals.length - 1) {
+      // 如果是最后一行，显示添加按钮（仅目标所有者可以添加）
+      if (index === editForm.value.childGoals.length - 1 && isGoalOwner.value) {
         return h(NButton, {
           size: 'small',
           type: 'primary',
@@ -789,12 +811,13 @@ const editableSubGoalColumns = [
           type: 'info',
           onClick: () => viewChildGoalFiles(index)
         }, { default: () => '查看文件' }),
-        h(NButton, {
+        // 只有目标所有者才能删除子目标
+        isGoalOwner.value ? h(NButton, {
           size: 'small',
           type: 'error',
           disabled: row.finish,
           onClick: () => removeSubGoal(index)
-        }, { default: () => '删除' })
+        }, { default: () => '删除' }) : null
       ]);
     }
   }

@@ -253,7 +253,7 @@
                       <PencilOutline />
                     </n-icon>
                   </n-button>
-                  <n-button type="primary" circle secondary strong @click="deleteGoal(scope.row)">
+                  <n-button type="primary" circle secondary strong @click="deleteGoal(scope.row)" v-if="isGoalOwner(scope.row)">
 
                     <n-icon size="20">
                       <ArchiveOutline />
@@ -364,7 +364,7 @@ import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
-import request, { postM, getMPaths, isSuccess, baseURL } from '@/utils/request';
+import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import { EyeSharp, PencilOutline, CheckmarkOutline,ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
