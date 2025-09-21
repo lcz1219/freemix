@@ -797,11 +797,20 @@ const getGoals = async () => {
     goal.deadlineString = formatDate(goal.deadline);
   });
   getGoalsMoth.value=filterMoth()
+  
+  
+  // 如果当前有选中的目标，更新选中的目标数据
+  if (selectedGoal.value && selectedGoal.value._id) {
+    const updatedGoal = goals.value.find(g => g._id === selectedGoal.value._id);
+    console.log("updatedGoal",updatedGoal);
+    
+    if (updatedGoal) {
+      selectedGoal.value = { ...updatedGoal };
+    }
   }
   
-
-
-
+  getGoalsMoth.value=filterMoth()
+  }
 }
 
 // 显示目标详情

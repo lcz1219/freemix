@@ -600,7 +600,15 @@ const addNewGoal = () => {
 
 // 刷新目标列表
 const refreshGoals = () => {
-  getGoals();
+  getGoals().then(() => {
+    // 如果当前有选中的目标，更新选中的目标数据
+    if (selectedGoal.value && selectedGoal.value._id) {
+      const updatedGoal = goals.value.find(g => g._id === selectedGoal.value._id);
+      if (updatedGoal) {
+        selectedGoal.value = { ...updatedGoal };
+      }
+    }
+  });
   message.success('目标列表已刷新');
 };
 

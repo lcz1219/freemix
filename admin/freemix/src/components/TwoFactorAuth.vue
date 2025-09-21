@@ -28,8 +28,8 @@
           <!-- 直接使用原始的qrCodeUrl作为n-qr-code的value -->
           <!-- 移除图标以避免遮挡二维码内容，确保扫描正常 -->
           <span v-if="qrCodeUrl">
-            <n-qr-code :value="qrCodeUrl" alt="QR Code" :color="color" class="qr-code" />
-            <n-color-picker v-model:value="color"  />
+            <n-qr-code :value="qrCodeUrl" alt="QR Code"  class="qr-code" />
+            <!-- <n-color-picker v-model:value="color"  /> -->
           </span>
 
           <p v-else>正在生成二维码...</p>
