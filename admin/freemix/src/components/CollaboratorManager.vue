@@ -81,7 +81,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { NModal, NList, NListItem, NThing, NAvatar, NTag, NButton, NSpace, NTabs, NTabPane, NSelect, NAlert, NEmpty, useMessage } from 'naive-ui'
 import { baseURL } from '@/utils/request'
 // import { getOwerList } from '@/api/login'
-import { postM, isSuccess } from '@/utils/request'
+import { postM, isSuccess,getM } from '@/utils/request'
 
 const props = defineProps({
   show: {
@@ -172,11 +172,11 @@ const loadCollaborators = async () => {
 const loadUserOptions = async () => {
   try {
     loadingUsers.value = true
-    const response = await getOwerList()
-    if (response && response.data) {
+    const response = await getM('getOwerList')
+    if (isSuccess(response)) {
       // 过滤掉已经是协作人的用户
-      const collaboratorIds = collaborators.value.map(c => c.id)
-      userOptions.value = response.data
+      const collaboratorIds = collaborators.value.map(c => c.username)
+      userOptions.value = response.data.data
         .filter(user => !collaboratorIds.includes(user.value))
         .map(user => ({
           label: user.text || user.username || user.chinesename,
@@ -203,15 +203,16 @@ const addCollaborator = async () => {
     if (!selectedUser) return
     
     // 调用API添加协作人
-    const response = await postM('/api/goal/addCollaborator', {
-      goalId: props.goal.id,
-      userId: selectedCollaborator.value
+    const response = await postM('addCollaborator', {
+      goalId: props.goal._id,
+      username: selectedCollaborator.value
     })
     
     if (isSuccess(response)) {
       // 添加到协作人列表
       collaborators.value.push({
         id: selectedCollaborator.value,
+        avatarUrl:response.data.data.avatarUrl,
         username: selectedUser.label,
         role: 'collaborator'
       })
@@ -240,9 +241,9 @@ const addCollaborator = async () => {
 const removeCollaborator = async (collaborator) => {
   try {
     // 调用API移除协作人
-    const response = await postM('/api/goal/removeCollaborator', {
-      goalId: props.goal.id,
-      userId: collaborator.id
+    const response = await postM('removeCollaborator', {
+      goalId: props.goal._id,
+      username: collaborator.username
     })
     
     if (isSuccess(response)) {

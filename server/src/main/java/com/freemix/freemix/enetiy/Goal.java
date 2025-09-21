@@ -1,8 +1,8 @@
 package com.freemix.freemix.enetiy;
 
+import com.alibaba.fastjson2.JSONObject;
 import lombok.Builder;
 import lombok.Data;
-import org.json.JSONObject;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.File;
@@ -28,6 +28,7 @@ public class Goal {
     List fileList;
     Boolean disRecover;
     boolean finish;
+    List<JSONObject> collaborators;
 
 
 }

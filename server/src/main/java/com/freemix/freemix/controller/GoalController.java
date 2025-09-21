@@ -4,6 +4,8 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.Goal;
+import com.freemix.freemix.enetiy.Relation;
+import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.enetiy.childGoals;
 import com.freemix.freemix.util.ApiResponse;
 import io.netty.util.internal.StringUtil;
@@ -62,7 +64,7 @@ public class GoalController extends BaseController {
             mongoTemplate.save(goal);
         }
     //插入创建者到关系表里面
-    editCollaborator(goal.get_id(),Arrays.asList(goal.getOwner()),"creater" );
+    editCollaborator(goal.get_id(),Arrays.asList(goal.getOwner()),"owner" );
 
         return ApiResponse.success(body);
     }
@@ -104,18 +106,49 @@ public class GoalController extends BaseController {
 @GetMapping("/getGoals/{ower}")
 @CheckToken
     public ApiResponse getGoals(@PathVariable("ower") String ower){
-    List<Goal> owner = mongoTemplate.find(new Query(Criteria.where("owner").is(ower).and("del").ne(1)), Goal.class);
+    List<String> collect = mongoTemplate.find(new Query(Criteria.where("username").is(ower).and("del").ne(1)), Relation.class).stream().map(Relation::getGoalId).collect(Collectors.toList());
+    List<Goal> owner = mongoTemplate.find(new Query(new Criteria().orOperator(
+            Criteria.where("owner").is(ower).and("del").ne(1),
+            Criteria.where("_id").in(collect).and("del").ne(1)
+    ) ), Goal.class);
     owner.stream().forEach(goal -> {
         if(goal.getProgress()==100){
             goal.setFinish(true);
         }else {
             goal.setFinish(false);
         }
+       goal.setCollaborators(genCollaborator(goal.get_id()));
 
     });
     return ApiResponse.success(owner);
 
 }
+@PostMapping("/addCollaborator")
+@CheckToken
+    public ApiResponse addCollaborator(@RequestBody String body){
+    JSONObject jsonObject = JSONObject.parseObject(body);
+    String username = jsonObject.getString("username");
+    String goalId = jsonObject.getString("goalId");
+    editCollaborator(goalId,Arrays.asList(username),"collaborator");
+    User username1 = mongoTemplate.findOne(new Query(Criteria.where("username").is(username)), User.class);
+
+
+    return ApiResponse.success(username1);
+
+}@PostMapping("/removeCollaborator")
+@CheckToken
+    public ApiResponse removeCollaborator(@RequestBody String body){
+    JSONObject jsonObject = JSONObject.parseObject(body);
+    String username = jsonObject.getString("username");
+    String goalId = jsonObject.getString("goalId");
+        delRelationPerson(username, goalId);
+
+        return ApiResponse.success(goalId);
+
+}
+
+
+
     @PostMapping("/saveGoalStructure")
     public ApiResponse saveGoalStructure(@RequestBody String body) {
         log.info("saveGoalStructure---{}", body);

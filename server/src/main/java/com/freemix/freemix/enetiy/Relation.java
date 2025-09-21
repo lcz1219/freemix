@@ -13,5 +13,6 @@ public class Relation {
     String username;
     Date addTime;
     String role;
+    Integer del;
 
 }
