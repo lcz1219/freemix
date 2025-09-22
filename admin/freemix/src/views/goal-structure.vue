@@ -27,7 +27,7 @@
               </template>
               保存结构
             </n-button>
-            <n-button @click="clearAll" type="error">
+            <n-button @click="clearAll" type="error" v-if="isGoalOwner(editForm)" >
               清空画布
             </n-button>
             <n-button id="download" @click="downloadImg" type="info">
@@ -75,7 +75,7 @@ import { Menu, Snapshot, DndPanel, Control, MiniMap } from '@logicflow/extension
 // 修复样式导入路径
 import '@logicflow/core/dist/style/index.css';
 import '@logicflow/extension/lib/style/index.css';
-import { baseURL, isSuccess, postM, getMPaths } from '@/utils/request.js'
+import { baseURL, isSuccess, postM, getMPaths, isGoalOwner } from '@/utils/request.js'
 
 import {
   NLayout,

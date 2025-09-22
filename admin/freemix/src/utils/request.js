@@ -128,5 +128,25 @@ const uploadGeneralFile = async function(file) {
   }
 }
 
+// 检查当前用户是否为目标所有者的工具函数
+const isGoalOwner = function(goal) {
+  const currentUser = store.state.user;
+  if (!currentUser || !currentUser.username) return false;
+  
+  // 检查当前用户是否为目标所有者
+  if (goal.ownerName === currentUser.username) return true;
+  if (goal.owner === currentUser.username) return true;
+  
+  // 检查协作人列表中是否有当前用户且角色为owner
+  if (goal.collaborators && goal.collaborators.length > 0) {
+    const ownerCollaborator = goal.collaborators.find(c => 
+      c.username === currentUser.username && c.role === 'owner'
+    );
+    return !!ownerCollaborator;
+  }
+  
+  return false;
+}
+
 export default request;
-export { postM, getM, getMPaths, isSuccess, uploadFile, uploadGeneralFile, baseURL };
+export { postM, getM, getMPaths, isSuccess, uploadFile, uploadGeneralFile, baseURL, isGoalOwner };

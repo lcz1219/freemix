@@ -1,7 +1,9 @@
 package com.freemix.freemix.interceptor;
 
 import com.freemix.freemix.CheckToken;
+import com.freemix.freemix.controller.BaseController;
 import com.freemix.freemix.util.ApiResponse;
+import com.freemix.freemix.util.EnvironmentChecker;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,13 +22,15 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Slf4j
 @Component
-public class CheckAspect  {
+public class CheckAspect extends BaseController  {
 
     private final RedisTemplate redisTemplate;
+    private final EnvironmentChecker environmentChecker;
 
     // 使用构造函数注入 + @Lazy 解决循环依赖
-    public CheckAspect(@Lazy RedisTemplate redisTemplate) {
+    public CheckAspect(@Lazy RedisTemplate redisTemplate, EnvironmentChecker environmentChecker) {
         this.redisTemplate = redisTemplate;
+        this.environmentChecker = environmentChecker;
     }
 
     @Pointcut("@annotation(com.freemix.freemix.CheckToken)")
@@ -36,6 +40,13 @@ public class CheckAspect  {
 
     @Around("pointcut()")
     public Object check(ProceedingJoinPoint joinPoint) throws Throwable {
+
+        if ("dev".equals(environmentChecker.checkEnvironment())){
+            log.info("不用检测token，本地测试环境");
+            return joinPoint.proceed();
+        }
+        log.info("用检测token，线上环境");
+        // 在生产环境中进行token验证
         Object token1 = redisTemplate.opsForValue().get("token");
         if(token1==null){
             return ApiResponse.failure("token过期");
@@ -45,16 +56,19 @@ public class CheckAspect  {
 
         HttpServletRequest request = attributes.getRequest();
 
-        // 2. 获取Token（支持多种方式）
+        // 获取Token（支持多种方式）
         String token = getTokenFromRequest(request);
         if(!token.equals(tokenRedis)){
             return ApiResponse.failure("token不正确");
         }
 
-        // 4. Token有效，继续执行业务逻辑
+        // Token有效，继续执行业务逻辑
         return joinPoint.proceed();
 
     }
+
+
+
     private String getTokenFromRequest(HttpServletRequest request) {
         // 优先级1：Authorization头（标准方式）
         String authHeader = request.getHeader("Authorization");

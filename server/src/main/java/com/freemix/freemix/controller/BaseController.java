@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freemix.freemix.enetiy.Relation;
 import com.freemix.freemix.enetiy.User;
+import com.freemix.freemix.util.EnvironmentChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -22,6 +23,8 @@ import java.util.List;
 public class BaseController {
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    EnvironmentChecker environmentChecker;
 
     public boolean editCollaborator(String goalId, List<String> collaborator,String role) {
         if("owner".equals(role)){
@@ -60,6 +63,7 @@ public class BaseController {
         });
 
     }
+
     public List<JSONObject> genCollaborator(String goalId) {
 
         List<Relation> strings = mongoTemplate.find(Query.query(Criteria.where("goalId").is(goalId).and("del").ne(1)), Relation.class);
