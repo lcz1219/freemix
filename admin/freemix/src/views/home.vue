@@ -569,6 +569,9 @@
     <n-layout-footer class="footer" bordered>
       <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
     </n-layout-footer>
+    
+    <!-- 浮动日历按钮组件 -->
+    <CalendarFloatButton @dateSelected="handleCalendarUpdate" />
   </n-layout>
 </template>
 
@@ -615,12 +618,13 @@ import {
   GraphicComponent
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { AccessibilitySharp } from '@vicons/ionicons5';
+import { AccessibilitySharp,CalendarSharp } from '@vicons/ionicons5';
 import { useRouter } from 'vue-router'
 import { getMPaths,isSuccess } from '@/utils/request'
 import { useStore } from 'vuex'
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
+import CalendarFloatButton from '@/components/CalendarFloatButton.vue';
 // import { log } from 'echarts/types/src/util/log.js';
 
 // 图片占位符
@@ -887,6 +891,13 @@ const nextGuideSection = () => {
 // 处理页面变化
 const handlePageChange = (page) => {
   currentGuidePage.value = page;
+};
+
+// 处理日历日期选择
+const handleCalendarUpdate = (value) => {
+  console.log('选择的日期:', value);
+  // 可以在这里添加处理日期选择的逻辑
+  // 例如：显示该日期的目标或任务
 };
 
 const filterMoth=()=>{

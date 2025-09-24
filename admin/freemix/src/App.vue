@@ -2,6 +2,8 @@
   <n-config-provider 
     :theme="isDark ? darkTheme : null" 
     :theme-overrides="themeOverrides"
+    :locale="locale"
+    :date-locale="dateLocale"
     class="config-provider"
   >
   <van-config-provider :theme="isDark?'dark':'light'">
@@ -41,7 +43,9 @@ import {
   NDialogProvider,
   NLoadingBarProvider,
   NTooltip,
-  NIcon
+  NIcon,
+  zhCN,
+  dateZhCN
 } from 'naive-ui';
 import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
@@ -55,7 +59,12 @@ const isMobileDevice = isMobile(); // 调用函数获取是否为移动端
 const route = useRoute();
 const router = useRouter();
 
-
+const locale = computed(() => {
+  return zhCN;
+});
+const dateLocale = computed(() => {
+  return dateZhCN;
+});
 
 // 计算主题类
 const themeClass = computed(() => {
