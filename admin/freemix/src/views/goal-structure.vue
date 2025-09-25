@@ -27,7 +27,7 @@
               </template>
               保存结构
             </n-button>
-            <n-button @click="clearAll" type="error" v-if="isGoalOwner(editForm)" >
+            <n-button @click="clearAll" type="error" v-if="isGoalOwner(currGoal)" >
               清空画布
             </n-button>
             <n-button id="download" @click="downloadImg" type="info">
@@ -380,7 +380,7 @@ const renderLabel = (goal) => {
 
 }
 
-
+const currGoal = ref({})
 // 获取目标列表
 const getGoals = async () => {
   console.log("getGoals");
@@ -409,7 +409,7 @@ const rootnode = ref()
 // 加载目标结构
 const loadGoalStructure = (goal) => {
   console.log("loadGoalStructure", goal);
-
+    currGoal.value = goal
   nodes.value = [{
     id: goal._id,
     title: goal.title,
