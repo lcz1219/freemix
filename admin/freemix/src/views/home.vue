@@ -46,10 +46,16 @@
             </n-button>
           </div>
         </section>
+        <StatsOverview 
+          :total-goals="totalGoals"
+          :completed-goals="completedGoals"
+          :in-progress-goals="inProgressGoals"
+          :expired-goals="expiredGoals"
+        />
 
         <!-- 功能卡片区域 -->
         <section class="features-section">
-          <n-card class="feature-card">
+          <n-card class="feature-card" v-show="false">
             <div class="card-header">
               <div ref="progressChart" class="echart-icon"></div>
               <h2 class="card-title">目标概览</h2>
@@ -75,20 +81,6 @@
             </div>
           </n-card>
 
-          <n-card class="feature-card">
-            <div class="card-header">
-              <div ref="timelineChart" class="echart-icon"></div>
-              <h2 class="card-title">近期目标</h2>
-            </div>
-
-            <n-timeline>
-              <n-timeline-item v-for="(item, index) in goals" :title="item.title" :time="formatDate(item.deadline)"
-                
-              :type="checktype(item)"
-              :key="index">
-              </n-timeline-item>
-            </n-timeline>
-          </n-card>
 
           <n-card class="feature-card">
             <div class="card-header">
@@ -572,6 +564,16 @@
     
     <!-- 浮动日历按钮组件 -->
     <CalendarFloatButton @dateSelected="handleCalendarUpdate" />
+    
+    <!-- 浮动近期目标按钮组件 -->
+    <RecentGoalsFloatButton 
+      :goals="goals" 
+      :formatDate="formatDate" 
+      :checktype="checktype"
+      :right="10"
+      :bottom="120"
+      
+    />
   </n-layout>
 </template>
 
@@ -610,13 +612,16 @@ import {
 } from 'naive-ui';
 import Chart from 'chart.js/auto';
 import * as echarts from 'echarts/core';
-import { PieChart, BarChart, LineChart } from 'echarts/charts';
+import { PieChart, LineChart } from 'echarts/charts';
 import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
   GraphicComponent
 } from 'echarts/components';
+import StatsOverview from '@/components/StatsOverview.vue';
+import RecentGoals from '@/components/RecentGoals.vue';
+import RecentGoalsFloatButton from '@/components/RecentGoalsFloatButton.vue';
 import { CanvasRenderer } from 'echarts/renderers';
 import { AccessibilitySharp,CalendarSharp } from '@vicons/ionicons5';
 import { useRouter } from 'vue-router'
@@ -644,6 +649,10 @@ const checkThemebyDetail=computed(()=>{
 const checkThemebyStat=computed(()=>{
  return isDark.value?'stat-label':'stat-label-light'
 })
+const totalGoals = computed(() => goals.value.length);
+const completedGoals = computed(() => goals.value.filter(g => g.status === 'completed').length);
+const inProgressGoals = computed(() => goals.value.filter(g => g.status === 'in-progress').length);
+const expiredGoals = computed(() => goals.value.filter(g => g.status === 'expired').length);
 const checktype=(val)=>{
     switch(val.tags[0]){
       case '学习':
@@ -671,7 +680,6 @@ const goalIngCount = computed(() => {
 // 注册 ECharts 组件
 echarts.use([
   PieChart,
-  BarChart,
   LineChart,
   GridComponent,
   TooltipComponent,
@@ -726,7 +734,6 @@ const darkMode = ref(true);
 const progressDetailChart = ref(null);
 const trendChart = ref(null);
 const progressChart = ref(null);
-const timelineChart = ref(null);
 const trendChartIcon = ref(null);
 const isDark = inject('isDark', ref(true))
 const toggleTheme = inject('toggleTheme', (value) => {
@@ -935,43 +942,6 @@ onMounted(async () => {
     color: ['#00c9a7', '#8a2be2', '#3a3a4a']
   });
 
-  // 时间线图表 (ECharts)
-  const timelineChartInstance = echarts.init(timelineChart.value);
-  timelineChartInstance.setOption({
-    series: [{
-      type: 'bar',
-      data: [10, 15, 12, 8],
-      itemStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-          offset: 0,
-          color: '#8a2be2'
-        }, {
-          offset: 1,
-          color: '#4b0082'
-        }])
-      },
-      barWidth: 20
-    }],
-    xAxis: {
-      type: 'category',
-      data: ['', '', '', ''],
-      axisTick: { show: false },
-      axisLabel: { show: false }
-    },
-    yAxis: {
-      type: 'value',
-      splitLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: { show: false }
-    },
-    grid: {
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0
-    }
-  });
-
   // 趋势图表图标 (ECharts)
   const trendChartIconInstance = echarts.init(trendChartIcon.value);
   trendChartIconInstance.setOption({
@@ -1099,7 +1069,7 @@ onMounted(async () => {
   overflow-x: hidden;
 }
 .home-container-light {
-  background-color: #dadae3;
+  background-color: #f5f5f7;
   color: #000000;
   min-height: 100vh;
   position: relative;
@@ -1119,31 +1089,31 @@ onMounted(async () => {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.3;
+  opacity: 0.2;
 }
 
 .gradient-circle.blue {
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, #1e90ff, transparent 70%);
-  top: -300px;
-  right: -300px;
+  top: -200px;
+  right: -200px;
 }
 
 .gradient-circle.green {
   width: 500px;
   height: 500px;
   background: radial-gradient(circle, #00c9a7, transparent 70%);
-  bottom: -250px;
-  left: -250px;
+  bottom: -200px;
+  left: -200px;
 }
 
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
   background: radial-gradient(circle, #8a2be2, transparent 70%);
-  top: 50%;
-  left: 30%;
+  top: 40%;
+  left: 40%;
 }
 
 .header {
@@ -1205,26 +1175,20 @@ onMounted(async () => {
   align-items: center;
 }
 
-
-
-
-
-
 .main-content-wrapper {
   height: calc(100vh - 100px);
-  /* 减去头部和底部的高度 */
   overflow-y: auto;
 }
 
 /* 滚动条样式 - Webkit内核浏览器 */
 .main-content-wrapper::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
   background-color: rgba(138, 43, 226, 0.4);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: background-color 0.3s ease;
 }
 
@@ -1234,7 +1198,7 @@ onMounted(async () => {
 
 .main-content-wrapper::-webkit-scrollbar-track {
   background-color: transparent;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-corner {
@@ -1257,7 +1221,7 @@ onMounted(async () => {
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px;
+  padding: 30px;
 }
 
 .content-wrapper {
@@ -1266,13 +1230,13 @@ onMounted(async () => {
 
 .hero-section {
   text-align: center;
-  padding: 80px 0 120px;
+  padding: 17px 0 50px;
   max-width: 800px;
   margin: 0 auto;
 }
 
 .hero-title {
-  font-size: 52px;
+  font-size: 40px;
   font-weight: 800;
   background: linear-gradient(to right, #fff, #d3c1ff);
   -webkit-background-clip: text;
@@ -1281,7 +1245,7 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 .hero-title-light {
-  font-size: 52px;
+  font-size: 48px;
   font-weight: 800;
   background: linear-gradient(to right, #180202, #070116);
   -webkit-background-clip: text;
@@ -1291,43 +1255,54 @@ onMounted(async () => {
 }
 
 .hero-subtitle {
-  font-size: 20px;
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .hero-subtitle-light {
-  font-size: 20px;
+  font-size: 18px;
   color: rgba(27, 2, 2, 0.7);
   line-height: 1.6;
   margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero-actions {
   display: flex;
   justify-content: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .features-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
-  margin-bottom: 60px;
+  gap: 25px;
+  margin-bottom: 50px;
 }
 
 .feature-card {
   background: rgba(30, 30, 42, 0.7);
   border-radius: 16px;
-  padding: 30px;
+  padding: 25px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  border-color: rgba(138, 43, 226, 0.3);
 }
 
 .card-header {
@@ -1338,7 +1313,7 @@ onMounted(async () => {
 }
 
 .card-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
 }
 
@@ -1349,18 +1324,20 @@ onMounted(async () => {
 
 .stats-container {
   display: flex;
-  gap: 30px;
+  justify-content: space-around;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 .stat-value {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   margin-bottom: 5px;
 }
@@ -1371,16 +1348,16 @@ onMounted(async () => {
 }
 .stat-label-light {
   font-size: 14px;
-  color: black;
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .chart-container {
   position: relative;
-  height: 500px;
+  height: 18vh;
   width: 100%;
-  margin-top: 20px;
+  margin-top: auto;
+  flex-grow: 1;
 }
-
 
 .targets-section {
   margin-top: 40px;
@@ -1406,10 +1383,42 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.timeline-container {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* 时间线容器滚动条样式 */
+.timeline-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.timeline-container::-webkit-scrollbar-thumb {
+  background-color: rgba(138, 43, 226, 0.3);
+  border-radius: 3px;
+}
+
+.timeline-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(138, 43, 226, 0.5);
+}
+
+.timeline-container::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 3px;
+}
+
 .target-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
 }
 
 .target-card {
@@ -1419,11 +1428,16 @@ onMounted(async () => {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .target-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  border-color: rgba(138, 43, 226, 0.3);
 }
 
 .card-header {
@@ -1436,12 +1450,19 @@ onMounted(async () => {
 .goal-title {
   font-size: 18px;
   font-weight: 600;
+  margin: 0;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .goal-details {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-top: 20px;
 }
 
@@ -1457,14 +1478,14 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  /* color: rgba(255, 255, 255, 0.7); */
+  color: rgba(0, 0, 0, 0.7);
 }
 
 .footer {
   text-align: center;
-  /* padding: 40px 0; */
-  /* margin-top: 60px; */
-  color: rgba(11, 1, 1, 0.5);
+  padding: 40px 0;
+  margin-top: 60px;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -1506,7 +1527,61 @@ onMounted(async () => {
 }
 
 .modal-light {
-  background-color: rgba(218, 218, 227, 0.95);
+  background-color: rgba(245, 245, 247, 0.95);
   color: #000000;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .main-content {
+    padding: 20px;
+  }
+  
+  .hero-section {
+    padding: 50px 0 60px;
+  }
+  
+  .hero-title, .hero-title-light {
+    font-size: 42px;
+  }
+  
+  .hero-subtitle, .hero-subtitle-light {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .target-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .hero-section {
+    padding: 40px 0 50px;
+  }
+  
+  .hero-title, .hero-title-light {
+    font-size: 36px;
+  }
+  
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-actions .n-button {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .stats-container {
+    flex-direction: column;
+    gap: 15px;
+  }
 }
 </style>
