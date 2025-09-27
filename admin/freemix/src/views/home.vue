@@ -1230,7 +1230,7 @@ onMounted(async () => {
 
 .hero-section {
   text-align: center;
-  padding: 17px 0 50px;
+  padding: 30px 0 40px;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -1245,7 +1245,7 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 .hero-title-light {
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 800;
   background: linear-gradient(to right, #180202, #070116);
   -webkit-background-clip: text;

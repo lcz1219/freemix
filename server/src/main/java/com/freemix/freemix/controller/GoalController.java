@@ -10,11 +10,15 @@ import com.freemix.freemix.enetiy.childGoals;
 import com.freemix.freemix.util.ApiResponse;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.bson.json.JsonObject;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -67,7 +71,198 @@ public class GoalController extends BaseController {
     editCollaborator(goal.get_id(),Arrays.asList(goal.getOwner()),"owner" );
 
         return ApiResponse.success(body);
+}
+
+
+    /**
+     * 从Excel文件导入目标
+     * @param file Excel文件
+     * @param owner 目标所有者
+     * @return 导入结果
+     */
+    @PostMapping("/importGoalsFromExcel")
+    @CheckToken
+    public ApiResponse importGoalsFromExcel(@RequestParam("file") MultipartFile file,
+                                           @RequestParam("owner") String owner) {
+        try {
+            // 检查文件是否为空
+            if (file.isEmpty()) {
+                return ApiResponse.failure("上传的文件为空");
+            }
+            
+            // 检查文件格式
+            String fileName = file.getOriginalFilename();
+            if (fileName == null || (!fileName.toLowerCase().endsWith(".xlsx") && !fileName.toLowerCase().endsWith(".xls"))) {
+                return ApiResponse.failure("请上传.xlsx或.xls格式的Excel文件");
+            }
+
+            JSONObject res= parseGoalsFromExcel(file, owner);
+            Boolean ischeck = res.getBoolean("ischeck");
+            String ischeckMsg = res.getString("ischeckMsg");
+            if (!ischeck) return ApiResponse.failure("导入失败: " +ischeckMsg );
+            List<Goal> goals= res.getJSONArray("goals").toJavaList(Goal.class);
+            List<Goal> savedGoals = new ArrayList<>();
+
+            for (Goal goal : goals) {
+                // 检查是否已存在相同目标
+//                Goal existingGoal = mongoTemplate.findOne(
+//                    new Query(Criteria.where("title").is(goal.getTitle())
+//                            .and("description").is(goal.getDescription())
+//                            .and("owner").is(goal.getOwner())),
+//                    Goal.class);
+
+//                if (existingGoal == null) {
+                    // 设置目标ID和初始状态
+                    goal.set_id(UUID.randomUUID().toString());
+                    goal.setProgress(0);
+                    goal.setStatus("in-progress");
+
+                    // 处理子目标ID
+                    if (goal.getChildGoals() != null && !goal.getChildGoals().isEmpty()) {
+                        goal.getChildGoals().forEach(child -> {
+                            if (StringUtil.isNullOrEmpty(child.get_id())) {
+                                child.set_id(UUID.randomUUID().toString());
+                            }
+                        });
+                    }
+
+                    // 插入创建者到关系表
+                    editCollaborator(goal.get_id(), Arrays.asList(goal.getOwner()), "owner");
+
+                    mongoTemplate.insert(goal);
+                    savedGoals.add(goal);
+                }
+//            }
+
+            return ApiResponse.success("成功导入 " + savedGoals.size() + " 个目标");
+        } catch (Exception e) {
+            log.error("导入Excel目标时发生错误", e);
+            return ApiResponse.failure("导入失败: " + e.getMessage());
+        }
     }
+    
+    /**
+     * 解析Excel文件中的目标数据
+     * @param file Excel文件
+     * @param owner 目标所有者
+     * @return 目标列表
+     * @throws Exception 解析异常
+     */
+    private JSONObject parseGoalsFromExcel(MultipartFile file, String owner) throws Exception {
+        List<Goal> goals = new ArrayList<>();
+        Workbook workbook;
+        boolean ischeck=true;
+        String ischeckMsg="";
+        
+        // 根据文件扩展名选择合适的工作簿类型
+        String fileName = file.getOriginalFilename();
+        if (fileName != null && fileName.toLowerCase().endsWith(".xls")) {
+            // 处理.xls文件（Excel 97-2003格式）
+            workbook = new HSSFWorkbook(file.getInputStream());
+        } else {
+            // 处理.xlsx文件（Excel 2007+格式）
+            workbook = new XSSFWorkbook(file.getInputStream());
+        }
+        
+        Sheet sheet = workbook.getSheetAt(0); // 读取第一个工作表
+        
+        // 跳过标题行，从第二行开始读取数据
+        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            if (row == null) continue;
+            
+            // 解析主目标数据
+            Goal goal = new Goal();
+            goal.setTitle(getCellValueAsString(row.getCell(0)));
+            goal.setDescription(getCellValueAsString(row.getCell(1)));
+            goal.setOwner(owner);
+            
+            // 解析截止日期
+            Cell deadlineCell = row.getCell(2);
+            if (deadlineCell != null) {
+                if (deadlineCell.getCellType() == CellType.NUMERIC) {
+                    goal.setDeadline(deadlineCell.getDateCellValue());
+                } else {
+                    String dateStr = getCellValueAsString(deadlineCell);
+                    if (dateStr != null && !dateStr.isEmpty()) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                        goal.setDeadline(sdf.parse(dateStr));
+                    }else{
+                        ischeckMsg=ischeckMsg+"截止日期未填写,请填写后再次导入";
+                        ischeck=false;
+                    }
+                }
+            }
+            
+            // 解析优先级
+            goal.setLevel(getCellValueAsString(row.getCell(3)));
+            
+            // 解析标签
+            String tagsStr = getCellValueAsString(row.getCell(4));
+            if (tagsStr != null && !tagsStr.isEmpty()) {
+                String[] tagsArray = tagsStr.split(",");
+                List<String> tags = new ArrayList<>();
+                for (String tag : tagsArray) {
+                    tags.add(tag.trim());
+                }
+                goal.setTags(tags);
+            }else{
+                if(ischeckMsg.isEmpty()){
+                    ischeckMsg=ischeckMsg+"标签未填写,请填写后再次导入";
+                }else{
+                    ischeckMsg=ischeckMsg+",标签未填写,请填写后再次导入";
+                }
+
+                ischeck=false;
+            }
+            
+            // 初始化其他字段
+            goal.setChildGoals(new ArrayList<>());
+            goal.setFileList(new ArrayList<>());
+            goal.setCollaborators(new ArrayList<>());
+            goal.setPlanTime(0);
+            goal.setDel(0);
+            goal.setDisRecover(false);
+            goal.setFinish(false);
+            
+            goals.add(goal);
+        }
+        
+        workbook.close();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("goals", goals);
+        jsonObject.put("ischeck",ischeck);
+        jsonObject.put("ischeckMsg",ischeckMsg);
+        return jsonObject;
+    }
+    
+    /**
+     * 获取单元格值作为字符串
+     * @param cell 单元格
+     * @return 单元格值字符串
+     */
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) return null;
+        
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    return sdf.format(cell.getDateCellValue());
+                } else {
+                    return String.valueOf((long) cell.getNumericCellValue());
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return null;
+        }
+    }
+
     @PostMapping("/deleteGoal")
 @CheckToken
     public ApiResponse deleteGoal(@RequestBody String body){

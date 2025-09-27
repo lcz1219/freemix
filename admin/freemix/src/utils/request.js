@@ -56,12 +56,23 @@ fileRequest.interceptors.request.use(
 );
 
  const postM=async function(val,data){
-   const res= await request.post(`/freemix/${val}`,data)
+   // 检查是否为FormData，如果是则让浏览器自动设置Content-Type
+   const config = {};
+   if (data instanceof FormData) {
+     // 不设置Content-Type，让浏览器自动设置multipart/form-data和boundary
+     config.headers = {'Content-Type': 'application/form-data'};
+   } else {
+     config.headers = {
+       'Content-Type': 'application/json'
+     };
+   }
+   
+   const res= await request.post(`/freemix/${val}`,data, config)
     if(res.data.msg=='token过期'){
        await store.dispatch('logout')
        router.push('/login')
      }
-     return res
+    return res
 }
  const getM=async function(val,data){
    const res=await  request.get(`/freemix/${val}`,{params:data},)

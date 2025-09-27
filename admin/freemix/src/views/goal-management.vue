@@ -42,6 +42,8 @@
                   添加新目标
                 </n-button>
 
+                <ExcelImport @import-success="refreshGoals" />
+
                 <n-button @click="refreshGoals">
                   <template #icon>
                     <n-icon>
@@ -364,6 +366,7 @@ import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
+import ExcelImport from '@/components/ExcelImport.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import { EyeSharp, PencilOutline, CheckmarkOutline,ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
