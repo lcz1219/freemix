@@ -150,6 +150,7 @@ public class GoalController extends BaseController {
      */
     private JSONObject parseGoalsFromExcel(MultipartFile file, String owner) throws Exception {
         List<Goal> goals = new ArrayList<>();
+        List<childGoals> orphanedChildGoals = new ArrayList<>(); // 存储尚未找到父目标的子目标
         Workbook workbook;
         boolean ischeck=true;
         String ischeckMsg="";
@@ -170,62 +171,151 @@ public class GoalController extends BaseController {
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             Row row = sheet.getRow(i);
             if (row == null) continue;
+            // 新增：获取最后一列的数据
+            // 1. 首先获取最后一列的索引（从0开始）
+            int lastCellIndex = row.getLastCellNum()-1;
+
+            boolean isChildGoal = lastCellIndex==5;
+            // 检查是否为子目标（第一列为空）
+
+            String firstColumnValue = getCellValueAsString(row.getCell(0));
             
-            // 解析主目标数据
-            Goal goal = new Goal();
-            goal.setTitle(getCellValueAsString(row.getCell(0)));
-            goal.setDescription(getCellValueAsString(row.getCell(1)));
-            goal.setOwner(owner);
-            
-            // 解析截止日期
-            Cell deadlineCell = row.getCell(2);
-            if (deadlineCell != null) {
-                if (deadlineCell.getCellType() == CellType.NUMERIC) {
-                    goal.setDeadline(deadlineCell.getDateCellValue());
+            if (isChildGoal) {
+                // 这是子目标
+                childGoals childGoal = new childGoals();
+                childGoal.setMessage(getCellValueAsString(row.getCell(1)));
+                childGoal.setExcelParentTitle(getCellValueAsString(row.getCell(lastCellIndex)));
+                // 解析子目标截止日期
+                Cell deadlineCell = row.getCell(2);
+                if (deadlineCell != null) {
+                    if (deadlineCell.getCellType() == CellType.NUMERIC) {
+                        // 注意：childGoals类中没有deadline字段，需要根据实际情况处理
+                        // 这里仅作演示，实际可能需要添加deadline字段或使用其他方式存储
+                    } else {
+                        String dateStr = getCellValueAsString(deadlineCell);
+                        if (dateStr != null && !dateStr.isEmpty()) {
+                            // 同样，childGoals类中没有deadline字段，需要根据实际情况处理
+                        }
+                    }
+                }
+                
+                // 解析子目标优先级
+//                childGoal.setPriority(getCellValueAsString(row.getCell(3)));
+                
+                // 解析子目标标签
+                String tagsStr = getCellValueAsString(row.getCell(4));
+                if (tagsStr != null && !tagsStr.isEmpty()) {
+                    String[] tagsArray = tagsStr.split(",");
+                    List<String> tags = new ArrayList<>();
+                    for (String tag : tagsArray) {
+                        tags.add(tag.trim());
+                    }
+//                    childGoal.setTags(tags);
                 } else {
-                    String dateStr = getCellValueAsString(deadlineCell);
-                    if (dateStr != null && !dateStr.isEmpty()) {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        goal.setDeadline(sdf.parse(dateStr));
+                    if(ischeckMsg.isEmpty()){
+                        ischeckMsg=ischeckMsg+"子目标标签未填写,请填写后再次导入";
                     }else{
-                        ischeckMsg=ischeckMsg+"截止日期未填写,请填写后再次导入";
-                        ischeck=false;
+                        ischeckMsg=ischeckMsg+",子目标标签未填写,请填写后再次导入";
+                    }
+                    ischeck=false;
+                }
+                
+                // 初始化子目标的其他字段
+                childGoal.setChildGoals(new ArrayList<>());
+                childGoal.setFileList(new ArrayList<>());
+                childGoal.setFinish(false);
+                
+                // 尝试将子目标关联到已存在的父目标
+                boolean attached = false;
+                for (Goal goal : goals) {
+                    if (goal.getTitle().equals(childGoal.getExcelParentTitle())) {
+                        goal.getChildGoals().add(childGoal);
+                        attached = true;
+                        break;
+                    }
+                }
+                
+                // 如果未找到父目标，将子目标添加到孤儿列表中
+                if (!attached) {
+                    orphanedChildGoals.add(childGoal);
+                }
+            } else {
+                // 这是主目标
+                Goal goal = new Goal();
+                goal.setTitle(firstColumnValue);
+                goal.setDescription(getCellValueAsString(row.getCell(1)));
+                goal.setOwner(owner);
+                
+                // 解析截止日期
+                Cell deadlineCell = row.getCell(2);
+                if (deadlineCell != null) {
+                    if (deadlineCell.getCellType() == CellType.NUMERIC) {
+                        goal.setDeadline(deadlineCell.getDateCellValue());
+                    } else {
+                        String dateStr = getCellValueAsString(deadlineCell);
+                        if (dateStr != null && !dateStr.isEmpty()) {
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                            goal.setDeadline(sdf.parse(dateStr));
+                        }else{
+                            ischeckMsg=ischeckMsg+"截止日期未填写,请填写后再次导入";
+                            ischeck=false;
+                        }
+                    }
+                }
+                
+                // 解析优先级
+                goal.setLevel(getCellValueAsString(row.getCell(3)));
+                
+                // 解析标签
+                String tagsStr = getCellValueAsString(row.getCell(4));
+                if (tagsStr != null && !tagsStr.isEmpty()) {
+                    String[] tagsArray = tagsStr.split(",");
+                    List<String> tags = new ArrayList<>();
+                    for (String tag : tagsArray) {
+                        tags.add(tag.trim());
+                    }
+                    goal.setTags(tags);
+                }else{
+                    if(ischeckMsg.isEmpty()){
+                        ischeckMsg=ischeckMsg+"标签未填写,请填写后再次导入";
+                    }else{
+                        ischeckMsg=ischeckMsg+",标签未填写,请填写后再次导入";
+                    }
+
+                    ischeck=false;
+                }
+                
+                // 初始化其他字段
+                goal.setChildGoals(new ArrayList<>());
+                goal.setFileList(new ArrayList<>());
+                goal.setCollaborators(new ArrayList<>());
+                goal.setPlanTime(0);
+                goal.setDel(0);
+                goal.setDisRecover(false);
+                goal.setFinish(false);
+                
+                goals.add(goal);
+                
+                // 检查是否有孤儿子目标可以关联到这个新创建的父目标
+                Iterator<childGoals> iterator = orphanedChildGoals.iterator();
+                while (iterator.hasNext()) {
+                    childGoals orphanedChild = iterator.next();
+                    if (orphanedChild.getExcelParentTitle().equals(goal.getTitle())) {
+                        goal.getChildGoals().add(orphanedChild);
+                        iterator.remove(); // 从孤儿列表中移除
                     }
                 }
             }
-            
-            // 解析优先级
-            goal.setLevel(getCellValueAsString(row.getCell(3)));
-            
-            // 解析标签
-            String tagsStr = getCellValueAsString(row.getCell(4));
-            if (tagsStr != null && !tagsStr.isEmpty()) {
-                String[] tagsArray = tagsStr.split(",");
-                List<String> tags = new ArrayList<>();
-                for (String tag : tagsArray) {
-                    tags.add(tag.trim());
-                }
-                goal.setTags(tags);
+        }
+        
+        // 检查是否还有未关联的孤儿子目标
+        if (!orphanedChildGoals.isEmpty()) {
+            if(ischeckMsg.isEmpty()){
+                ischeckMsg=ischeckMsg+"存在未找到父目标的子目标，请检查Excel文件格式";
             }else{
-                if(ischeckMsg.isEmpty()){
-                    ischeckMsg=ischeckMsg+"标签未填写,请填写后再次导入";
-                }else{
-                    ischeckMsg=ischeckMsg+",标签未填写,请填写后再次导入";
-                }
-
-                ischeck=false;
+                ischeckMsg=ischeckMsg+",存在未找到父目标的子目标，请检查Excel文件格式";
             }
-            
-            // 初始化其他字段
-            goal.setChildGoals(new ArrayList<>());
-            goal.setFileList(new ArrayList<>());
-            goal.setCollaborators(new ArrayList<>());
-            goal.setPlanTime(0);
-            goal.setDel(0);
-            goal.setDisRecover(false);
-            goal.setFinish(false);
-            
-            goals.add(goal);
+            ischeck=false;
         }
         
         workbook.close();

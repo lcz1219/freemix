@@ -3,17 +3,23 @@
     <template #icon>
       <n-icon>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14H7v-2h4v2zm0-3H7v-2h4v2zm0-3H7V9h4v2zm6 6h-4v-2h4v2zm0-3h-4v-2h4v2zm0-3h-4V9h4v2z"/>
+          <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14H7v-2h4v2zm0-3H7v-2h4v2zm0-3H7V9h4v2zm6 6h-4v-2h4v2zm0-3h-4v-2h4v2zm0-3h-4V9h4v2z" />
         </svg>
       </n-icon>
     </template>
     导入Excel
   </n-button>
 
-  <n-modal v-model:show="showModal" preset="card" style="width: 600px;" title="导入Excel目标" :mask-closable="false">
+  <n-modal v-model:show="showModal"  preset="card" style="width: 600px;" title="导入Excel目标" :mask-closable="false"> 
     <n-space vertical>
       <div class="import-instructions">
-        <h3>导入说明</h3>
+        <div style="display: flex;justify-content: space-between;">
+          <h3>导入说明</h3><n-button type="primary" @click="showTemplateInstructions">
+            查看详细模板说明
+          </n-button>
+        </div>
+
         <p>请确保您的Excel文件格式如下：</p>
         <n-table :bordered="false" :single-line="false">
           <thead>
@@ -43,23 +49,25 @@
               <td>标签</td>
               <td>目标标签，多个标签用逗号分隔</td>
             </tr>
+            <tr>
+              <td>子目标</td>
+              <td>子目标描述（可选，留空表示为主目标）</td>
+            </tr>
           </tbody>
         </n-table>
         <p>第一行为标题行，从第二行开始为数据行。支持.xlsx和.xls格式的Excel文件。</p>
+        <p>子目标会自动关联到其上方最近的一个主目标。</p>
+
       </div>
 
-      <n-upload
-        ref="uploadRef"
-        :default-file-list="fileList"
-        :custom-request="customRequest"
-        :max="1"
-        @change="handleUploadChange"
-      >
+      <n-upload ref="uploadRef" :default-file-list="fileList" :custom-request="customRequest" :max="1"
+        @change="handleUploadChange">
         <n-upload-dragger>
           <div style="margin-bottom: 12px">
             <n-icon size="48" :depth="3">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                <path
+                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-3H8V9h4v2zm6 6h-4v-2h4v2zm0-3h-4v-2h4v2zm0-3h-4V9h4v2z" />
               </svg>
             </n-icon>
           </div>
@@ -82,19 +90,28 @@
       </n-space>
     </template>
   </n-modal>
+
+  <!-- 模板说明弹窗 -->
+  <n-modal v-model:show="showInstructionsModal" preset="card" style="width: 100%;height: 100%;overflow-y: auto;"
+    :mask-closable="false" title="Excel模板说明" :on-after-leave="closeInstructionsModal">
+    <div v-html="templateInstructions" style="overflow-y: auto;"></div>
+    <template #footer>
+      <!-- <n-button @click="closeInstructionsModal">关闭</n-button> -->
+    </template>
+  </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { 
-  NButton, 
-  NIcon, 
-  NModal, 
-  NSpace, 
-  NUpload, 
-  NUploadDragger, 
-  NText, 
-  NP, 
+import { ref, computed, onMounted } from 'vue'
+import {
+  NButton,
+  NIcon,
+  NModal,
+  NSpace,
+  NUpload,
+  NUploadDragger,
+  NText,
+  NP,
   NTable,
   useMessage
 } from 'naive-ui'
@@ -105,12 +122,17 @@ const emits = defineEmits(['import-success'])
 
 const store = useStore()
 const message = useMessage()
-
+const closeInstructionsModal = () => {
+  showModal.value = true
+  showInstructionsModal.value = false
+}
 const showModal = ref(false)
+const showInstructionsModal = ref(false)
 const fileList = ref<any[]>([])
 const selectedFile = ref<File | null>(null)
 const loading = ref(false)
 const uploadRef = ref<any>(null)
+const templateInstructions = ref('')
 
 const canImport = computed(() => {
   return selectedFile.value !== null && !loading.value
@@ -129,13 +151,27 @@ const closeModal = () => {
   loading.value = false
 }
 
+const showTemplateInstructions = async () => {
+  try {
+    // 从public目录加载HTML模板说明文件
+    const response = await fetch('/templates/template_instructions.html')
+    const htmlContent = await response.text()
+    templateInstructions.value = htmlContent
+    showInstructionsModal.value = true
+    showModal.value = false
+  } catch (error) {
+    console.error('加载模板说明失败:', error)
+    message.error('加载模板说明失败')
+  }
+}
+
 const handleUploadChange = (data: any) => {
   const { file, fileList: currentFileList } = data
   if (file.status === 'removed') {
     selectedFile.value = null
     return
   }
-  
+
   // 检查文件类型
   if (file.file && (file.file.name.endsWith('.xlsx') || file.file.name.endsWith('.xls'))) {
     selectedFile.value = file.file
@@ -152,7 +188,7 @@ const handleUploadChange = (data: any) => {
 const customRequest = (options: any) => {
   // 自定义上传请求，这里我们只需要文件对象
   return {
-    abort: () => {}
+    abort: () => { }
   }
 }
 
@@ -163,16 +199,16 @@ const importGoals = async () => {
   }
 
   loading.value = true
-  
+
   try {
     // 创建FormData对象
     const formData = new FormData()
     formData.append('file', selectedFile.value)
     formData.append('owner', store.state.user.username)
-    
+
     // 使用项目中一致的请求方式
     const response = await postM('importGoalsFromExcel', formData)
-    
+
     if (isSuccess(response)) {
       message.success(response.data.msg || '目标导入成功')
       emits('import-success')
@@ -192,6 +228,8 @@ const importGoals = async () => {
 <style scoped>
 .import-instructions {
   margin-bottom: 20px;
+  overflow-y: auto;
+  max-height: 50vh;
 }
 
 .import-instructions h3 {

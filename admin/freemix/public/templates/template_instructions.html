@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标导入模板说明</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: rgb(12, 10, 10);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(120deg, #4f6bff 0%, #6b8cff 100%);
+            color: rgb(14, 11, 11);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        h2 {
+            color: #2d3748;
+            font-size: 1.6rem;
+            margin: 30px 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #2d3748;
+            font-weight: 600;
+        }
+        
+        h2:first-child {
+            margin-top: 0;
+        }
+        
+        h3 {
+            color: #4a5568;
+            font-size: 1.3rem;
+            margin: 25px 0 15px;
+            font-weight: 600;
+        }
+        
+        ul, ol {
+            padding-left: 24px;
+            margin: 16px 0;
+        }
+        
+        li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+        
+        ul li {
+            list-style-type: none;
+            position: relative;
+        }
+        
+        ul li:before {
+            content: "•";
+            color: #4f6bff;
+            font-size: 1.2rem;
+            position: absolute;
+            left: -20px;
+            top: -2px;
+        }
+        
+        ol li {
+            padding-left: 8px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: #2d3748;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid #2d3748;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            color: #4f6bff;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: rgb(9, 7, 7);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        th {
+            background: linear-gradient(120deg, #4f6bff 0%, #6b8cff 100%);
+            color: rgb(10, 7, 7);
+            text-align: left;
+            padding: 16px 20px;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #2d3748;
+        }
+        
+        /* tr:hover {
+            background-color: #2d3748;
+        } */
+        
+        .note {
+            background: linear-gradient(120deg, #2d3748 0%, #2d3748 100%);
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 30px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .note strong {
+            color: #856404;
+        }
+        
+        .example-container {
+            overflow-x: auto;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #718096;
+            font-size: 0.9rem;
+            border-top: 1px solid #2d3748;
+            background: #2d3748;
+        }
+        
+        .highlight-text {
+            background: linear-gradient(120deg, #2d3748 0%, #2d3748 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 12px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>目标导入模板说明</h1>
+            <div class="subtitle">按照以下格式准备您的Excel文件，确保数据准确导入</div>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>模板格式</h2>
+                
+                <div class="card">
+                    <h3>主目标行（第一层）</h3>
+                    <ul>
+                        <li><strong>A列:</strong> 目标名称 <span class="highlight-text">*</span></li>
+                        <li><strong>B列:</strong> 目标描述</li>
+                        <li><strong>C列:</strong> 截止日期 (yyyy-MM-dd格式)</li>
+                        <li><strong>D列:</strong> 优先级 (高/中/低)</li>
+                        <li><strong>E列:</strong> 标签（多个标签用逗号分隔）</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>子目标行（第二层）</h3>
+                    <ul>
+                        <li><strong>A列:</strong> 留空（表示这是子目标）</li>
+                        <li><strong>B列:</strong> 子目标描述 <span class="highlight-text">*</span></li>
+                        <li><strong>C列:</strong> 截止日期 (yyyy-MM-dd格式)</li>
+                        <li><strong>D列:</strong> 优先级 (高/中/低)</li>
+                        <li><strong>E列:</strong> 标签（多个标签用逗号分隔）</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>使用说明</h2>
+                <ol>
+                    <li>主目标必须填写目标名称</li>
+                    <li>子目标只需填写描述，且其上一行必须是主目标或同级子目标</li>
+                    <li>子目标会自动关联到其上方最近的一个主目标</li>
+                    <li>可以连续添加多个子目标</li>
+                    <li>日期格式必须为 yyyy-MM-dd，例如 <span class="highlight-text">2023-12-31</span></li>
+                    <li>优先级只能填写 <span class="highlight-text">高</span>、<span class="highlight-text">中</span>、<span class="highlight-text">低</span> 三个选项之一</li>
+                    <li>标签可以为空，多个标签用英文逗号分隔</li>
+                </ol>
+            </div>
+            
+            <div class="section">
+                <h2>示例</h2>
+                <div class="example-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>目标名称</th>
+                                <th>目标描述</th>
+                                <th>截止日期</th>
+                                <th>优先级</th>
+                                <th>标签</th>
+                                <th>父节点目标</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>第一个父目标</td>
+                                <td>22323</td>
+                                <td>2025/9/30</td>
+                                <td>高</td>
+                                <td>标签</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>子目标3213131</td>
+                                <!-- <td></td> -->
+                                <td>子目标3213131</td>
+                                <td>2025/9/18</td>
+                                <td>高</td>
+                                <td>标签</td>
+                                <td>第一个父目标</td>
+                            </tr>
+                            <tr>
+                                <td>第二</td>
+                                <td>第二</td>
+                                <td>222</td>
+                                <td>高</td>
+                                <td>标签</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <!-- <td></td> -->
+                                <td>6666</td>
+                                <td>6666</td>
+                                <td>2025/9/20</td>
+                                <td>高</td>
+                                <td>标签</td>
+                                <td>第二</td>
+                            </tr>
+                           
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="note">
+                <strong>注意：</strong>请确保使用.xlsx格式的Excel文件，并严格按照上述格式填写数据。
+            </div>
+        </div>
+        
+        <div class="footer">
+            如有疑问，请联系技术支持
+        </div>
+    </div>
+</body>
+</html>
