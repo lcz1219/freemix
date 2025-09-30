@@ -104,122 +104,93 @@
               <el-table-column type="expand">
                 <template #default="props">
                   <div class="expanded-content-wrapper">
-                    <n-collapse>
-                      <n-collapse-item v-for="(childGoal, index) in props.row.childGoals" :key="index" :name="index"
-                        class="child-goal-collapse-item">
-                        <template #header>
-                          <div class="child-goal-header">
-                            <div class="child-goal-title">
-                              <n-ellipsis style="max-width: 300px">
-                                {{ childGoal.message }}
-                              </n-ellipsis>
-                            </div>
-                            <div class="child-goal-status">
-                              <n-tag :type="childGoal.finish ? 'success' : 'warning'" size="small">
-                                {{ childGoal.finish ? '已完成' : '进行中' }}
-                              </n-tag>
-                            </div>
-                          </div>
-                        </template>
-
-                        <div class="child-goal-details">
-                          <div class="child-goal-info-row">
-                            <!-- <div class="info-item">
-                              <n-icon size="16" class="info-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                </svg>
-                              </n-icon>
-                              <span v-if="childGoal.description">{{ childGoal.description }}</span>
-                              <span v-else class="no-description">暂无描述</span>
-                            </div> -->
-
-                            <div class="info-item">
-                              <n-icon size="16" class="info-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                                  fill="currentColor">
-                                  <path
-                                    d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
-                                </svg>
-                              </n-icon>
-                              <span>完成日期: {{ formatDate(childGoal.finishDate) }}</span>
-                              <div>
-
-                              </div>
-                              <n-button v-if="!childGoal.finish" type="primary" size="small"
-                                @click="finishChildGoal(props.row, index)">
-                                <n-icon>
-                                  <CheckmarkOutline />
-                                </n-icon>
-                                完成
-                              </n-button>
-                              <n-button v-else type="tertiary" size="small"
-                                @click="unfinishChildGoal(props.row, index)">
-                                取消完成
-                              </n-button>
-                            </div>
-                          </div>
-
-                          <div class="child-goal-actions">
-                            <!-- 文件上传按钮 -->
-                            <n-button v-if="!childGoal.finish" type="info" size="small" ghost @click="showChildGoalUpload(props.row, index)">
-                              <n-icon>
-                                <CloudUploadOutline />
-                              </n-icon>
-                              上传文件
-                            </n-button>
-                            <!-- 查看文件按钮 -->
-                            <n-button v-if="childGoal.fileList && childGoal.fileList.length > 0" type="info" size="small" ghost @click="viewChildGoalFiles(childGoal)">
-                              <n-icon>
-                                <DocumentTextOutline />
-                              </n-icon>
-                              查看文件
-                            </n-button>
-                          </div>
+                    <div v-for="(childGoal, index) in props.row.childGoals" :key="index" class="child-goal-item">
+                      <div class="child-goal-header">
+                        <div class="child-goal-title">
+                          <n-icon size="18" style="margin-right: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                          </n-icon>
+                          <n-ellipsis style="max-width: 300px">
+                            {{ childGoal.message }}
+                          </n-ellipsis>
                         </div>
-                      </n-collapse-item>
+                        <div class="child-goal-status">
+                          <n-tag :type="childGoal.finish ? 'success' : 'warning'" size="small">
+                            {{ childGoal.finish ? '已完成' : '进行中' }}
+                          </n-tag>
+                        </div>
+                        <div class="child-goal-actions-inline">
+                          <span class="finish-date" v-if="childGoal.finishDate">完成日期: {{ formatDate(childGoal.finishDate) }}</span>
+                          <n-dropdown
+                            trigger="click"
+                            :options="getDropdownOptions(childGoal, props.row, index)"
+                            @select="(key) => handleDropdownSelect(key, props.row, index, childGoal)"
+                          >
+                            <n-button type="info" secondary strong size="small">
+                              操作
+                              <n-icon>
+                                <ChevronDownOutline />
+                              </n-icon>
+                            </n-button>
+                          </n-dropdown>
+                        </div>
+                      </div>
 
-                      <n-collapse-item name="summary" class="summary-collapse-item">
-                        <template #header>
-                          <div class="summary-header">
-                            <n-icon size="18">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                                fill="currentColor">
-                                <path
-                                  d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z" />
-                                <path
-                                  d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z" />
+                      <div class="child-goal-details">
+                        <div class="child-goal-info-row">
+                          <div class="info-item">
+                            <n-icon size="16" class="info-icon">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                               </svg>
                             </n-icon>
-                            <span class="summary-title">子目标汇总</span>
+                            <span v-if="childGoal.description">{{ childGoal.description }}</span>
+                            <span v-else class="no-description">暂无描述</span>
                           </div>
-                        </template>
-
-                        <div class="summary-content">
-                          <div class="summary-stats">
-                            <div class="stat-item">
-                              <div class="stat-value">{{ props.row.childGoals ? props.row.childGoals.length : 0 }}</div>
-                              <div class="stat-label">总计</div>
-                            </div>
-                            <div class="stat-item">
-                              <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
-                                props.row.childGoals.filter((c: any) => c.finish).length : 0}}</div>
-                              <div class="stat-label">已完成</div>
-                            </div>
-                            <div class="stat-item">
-                              <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
-                                props.row.childGoals.filter((c: any) => !c.finish).length : 0}}</div>
-                              <div class="stat-label">未完成</div>
-                            </div>
-                          </div>
-
-                          <n-progress type="line" :percentage="props.row.childGoals && props.row.childGoals.length > 0
-                            ? Math.round(props.row.childGoals.filter((c: any) => c.finish).length / props.row.childGoals.length * 100)
-                            : 0" :indicator-placement="'inside'" :processing="true"
-                            :color="getProgressColor(props.row)" />
                         </div>
-                      </n-collapse-item>
-                    </n-collapse>
+                      </div>
+                    </div>
+
+                    <div class="summary-section">
+                      <div class="summary-header">
+                        <n-icon size="18">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                            fill="currentColor">
+                            <path
+                              d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z" />
+                            <path
+                              d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z" />
+                          </svg>
+                        </n-icon>
+                        <span class="summary-title">子目标汇总</span>
+                      </div>
+
+                      <div class="summary-content">
+                        <div class="summary-stats">
+                          <div class="stat-item">
+                            <div class="stat-value">{{ props.row.childGoals ? props.row.childGoals.length : 0 }}</div>
+                            <div class="stat-label">总计</div>
+                          </div>
+                          <div class="stat-item">
+                            <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
+                              props.row.childGoals.filter((c: any) => c.finish).length : 0}}</div>
+                            <div class="stat-label">已完成</div>
+                          </div>
+                          <div class="stat-item">
+                            <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
+                              props.row.childGoals.filter((c: any) => !c.finish).length : 0}}</div>
+                            <div class="stat-label">未完成</div>
+                          </div>
+                        </div>
+
+                        <n-progress type="line" :percentage="props.row.childGoals && props.row.childGoals.length > 0
+                          ? Math.round(props.row.childGoals.filter((c: any) => c.finish).length / props.row.childGoals.length * 100)
+                          : 0" :indicator-placement="'inside'" :processing="true"
+                          :color="getProgressColor(props.row)" />
+                      </div>
+                    </div>
                   </div>
                 </template>
               </el-table-column>
@@ -359,7 +330,8 @@ import {
   NListItem,
   NThing,
   NText,
-  NEmpty
+  NEmpty,
+  NDropdown
 } from 'naive-ui';
 import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -368,7 +340,7 @@ import GoalDetail from '@/components/GoalDetail.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
-import { EyeSharp, PencilOutline, CheckmarkOutline,ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline } from '@vicons/ionicons5';
+import { EyeSharp, PencilOutline, CheckmarkOutline, ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline, ChevronDownOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
 
@@ -394,6 +366,56 @@ const currentChildGoalIndex = ref(-1);
 const currentChildGoalFiles = ref<any[]>([]);
 const viewChildGoalFilesList = ref<any[]>([]);
 const childGoalUploadRef = ref<any>(null);
+
+// 下拉菜单相关状态
+const showDropdown = ref(false);
+
+// 获取下拉菜单选项
+const getDropdownOptions = (childGoal, row, index) => {
+  const options = [
+    {
+      label: childGoal.finish ? '取消完成' : '完成',
+      key: 'finish'
+    }
+  ];
+  
+  // 只有未完成的子目标才显示上传文件选项
+  if (!childGoal.finish) {
+    options.push({
+      label: '上传文件',
+      key: 'upload'
+    });
+  }
+  
+  // 如果有文件则显示查看文件选项
+  if (childGoal.fileList && childGoal.fileList.length > 0) {
+    options.push({
+      label: '查看文件',
+      key: 'view'
+    });
+  }
+  
+  return options;
+};
+
+// 处理下拉菜单选择
+const handleDropdownSelect = (key, row, index, childGoal) => {
+  switch (key) {
+    case 'finish':
+      if (childGoal.finish) {
+        unfinishChildGoal(row, index);
+      } else {
+        finishChildGoal(row, index);
+      }
+      break;
+    case 'upload':
+      showChildGoalUpload(row, index);
+      break;
+    case 'view':
+      viewChildGoalFiles(childGoal);
+      break;
+  }
+};
 
 // 筛选和搜索
 const searchQuery = ref('');
@@ -684,7 +706,7 @@ const saveChildGoalFiles = async (): Promise<void> => {
   
   try {
     // 创建目标副本
-    const updatedGoal = { ...currentChildGoal.value };
+    const updatedGoal = { ...JSON.parse(JSON.stringify(currentChildGoal.value)) };
     
     // 确保子目标存在
     if (!updatedGoal.childGoals) {
@@ -705,7 +727,7 @@ const saveChildGoalFiles = async (): Promise<void> => {
       message.success('文件保存成功');
       
       // 更新本地数据
-     getGoals()
+    //  getGoals()
       
       // 关闭模态框
       closeChildGoalUploadModal();
@@ -1226,20 +1248,44 @@ onMounted(() => {
 .expanded-content-wrapper {
   padding: 1px 1px;
   background: rgb(30, 30, 40);
-  border-radius: 8px;
-  margin: 12px;
+  border-radius: 12px;
+  margin: 16px 0;
   backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .home-container-light .expanded-content-wrapper {
-  background: linear-gradient(rgba(138, 43, 226, 0.03), rgba(138, 43, 226, 0.03));
-  background-color: rgba(255, 255, 255, 0.214);
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.05), rgba(138, 43, 226, 0.05));
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.child-goal-collapse-item {
-  margin-bottom: 8px;
-  border-radius: 8px;
+.child-goal-item {
+  margin-bottom: 16px;
+  border-radius: 12px;
   overflow: hidden;
+  background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.child-goal-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(145deg, rgba(138, 43, 226, 0.15), rgba(75, 0, 130, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.home-container-light .child-goal-item {
+  background: linear-gradient(145deg, rgba(138, 43, 226, 0.05), rgba(75, 0, 130, 0.05));
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.home-container-light .child-goal-item:hover {
+  background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .child-goal-header {
@@ -1247,21 +1293,68 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 24px;
+  background: rgba(138, 43, 226, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.home-container-light .child-goal-header {
+  background: rgba(138, 43, 226, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .child-goal-title {
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 17px;
   flex: 1;
-  margin-right: 12px;
+  min-width: 200px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+}
+
+.home-container-light .child-goal-title {
+  color: #333333;
+  text-shadow: none;
 }
 
 .child-goal-status {
   flex-shrink: 0;
 }
 
+.child-goal-actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.finish-date {
+  font-size: 13px;
+  opacity: 0.9;
+  white-space: nowrap;
+  color: #e0e0e0;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.home-container-light .finish-date {
+  color: #666666;
+  background: rgba(0, 0, 0, 0.05);
+}
+
 .child-goal-details {
-  padding: 16px 0;
+  padding: 24px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.home-container-light .child-goal-details {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 .child-goal-info-row {
@@ -1270,16 +1363,29 @@ onMounted(() => {
 
 .info-item {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 13px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #e0e0e0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.home-container-light .info-item {
+  color: #666666;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .info-icon {
   flex-shrink: 0;
   margin-top: 2px;
+  color: #8a2be2;
+  background: rgba(138, 43, 226, 0.2);
+  border-radius: 50%;
+  padding: 6px;
 }
 
 .no-description {
@@ -1292,65 +1398,87 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-.summary-collapse-item {
-  margin-top: 16px;
-  border-radius: 8px;
+.summary-section {
+  margin-top: 24px;
+  border-radius: 12px;
   overflow: hidden;
-  border: none;
+  background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.home-container-light .summary-section {
+  background: linear-gradient(145deg, rgba(138, 43, 226, 0.05), rgba(75, 0, 130, 0.05));
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .summary-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
+  gap: 12px;
+  font-weight: 600;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.home-container-light .summary-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  color: #333333;
+  text-shadow: none;
 }
 
 .summary-title {
-  font-size: 14px;
+  font-size: 17px;
 }
 
 .summary-content {
-  padding: 16px 0;
+  padding: 24px 0 16px 0;
 }
 
 .summary-stats {
   display: flex;
-  gap: 24px;
-  margin-bottom: 16px;
+  gap: 32px;
+  margin-bottom: 24px;
+  justify-content: center;
 }
 
 .stat-item {
   text-align: center;
+  min-width: 90px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.home-container-light .stat-item {
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .stat-value {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
   line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.home-container-light .stat-value {
+  color: #333333;
+  text-shadow: none;
 }
 
 .stat-label {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-top: 4px;
+  font-size: 14px;
+  opacity: 0.9;
+  margin-top: 8px;
+  color: #e0e0e0;
+  font-weight: 500;
 }
 
-.n-collapse-item :deep(.n-collapse-item__header) {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 12px 16px;
-}
-
-.home-container-light .n-collapse-item :deep(.n-collapse-item__header) {
-  background-color: rgba(0, 0, 0, 0.03);
-}
-
-.n-collapse-item :deep(.n-collapse-item__content-wrapper) {
-  background-color: transparent;
-}
-
-.n-collapse-item :deep(.n-collapse-item__content-inner) {
-  padding: 0 16px 16px 16px;
+.home-container-light .stat-label {
+  color: #666666;
 }
 </style>

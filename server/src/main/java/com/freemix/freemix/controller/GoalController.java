@@ -63,6 +63,8 @@ public class GoalController extends BaseController {
             if (goal.getProgress()==100){
                 goal.setStatus("completed");
             }
+        Integer newProgress = computedProgress(goal);
+        goal.setProgress(newProgress);
 
 
             mongoTemplate.save(goal);
