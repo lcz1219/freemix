@@ -107,10 +107,12 @@
                     <div v-for="(childGoal, index) in props.row.childGoals" :key="index" class="child-goal-item">
                       <div class="child-goal-header">
                         <div class="child-goal-title">
-                          <n-icon size="18" style="margin-right: 8px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                            </svg>
+
+                          <n-icon size="18" style="margin-right: 8px;" v-if="childGoal.finish">
+                            <CheckmarkCircle/>
+                          </n-icon>
+                          <n-icon size="18" style="margin-right: 8px;" v-else>
+                            <CheckmarkCircleOutline/>
                           </n-icon>
                           <n-ellipsis style="max-width: 300px">
                             {{ childGoal.message }}
@@ -138,7 +140,7 @@
                         </div>
                       </div>
 
-                      <div class="child-goal-details">
+                      <!-- <div class="child-goal-details">
                         <div class="child-goal-info-row">
                           <div class="info-item">
                             <n-icon size="16" class="info-icon">
@@ -150,7 +152,7 @@
                             <span v-else class="no-description">暂无描述</span>
                           </div>
                         </div>
-                      </div>
+                      </div> -->
                     </div>
 
                     <div class="summary-section">
@@ -342,6 +344,7 @@ import ExcelImport from '@/components/ExcelImport.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import { EyeSharp, PencilOutline, CheckmarkOutline, ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline, ChevronDownOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
+import { AccessibilitySharp,CalendarSharp,CheckmarkCircle,CheckmarkCircleOutline } from '@vicons/ionicons5';
 import { useStore } from 'vuex';
 
 // 注入主题变量
@@ -1264,7 +1267,7 @@ onMounted(() => {
   margin-bottom: 16px;
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); */
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -1273,17 +1276,17 @@ onMounted(() => {
 .child-goal-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  background: linear-gradient(145deg, rgba(138, 43, 226, 0.15), rgba(75, 0, 130, 0.15));
+  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.15), rgba(75, 0, 130, 0.15)); */
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .home-container-light .child-goal-item {
-  background: linear-gradient(145deg, rgba(138, 43, 226, 0.05), rgba(75, 0, 130, 0.05));
+  background: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .home-container-light .child-goal-item:hover {
-  background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); */
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.15);
 }
@@ -1296,12 +1299,12 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 16px;
   padding: 20px 24px;
-  background: rgba(138, 43, 226, 0.15);
+  /* background: rgba(138, 43, 226, 0.15); */
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .home-container-light .child-goal-header {
-  background: rgba(138, 43, 226, 0.08);
+  background: white;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -1402,14 +1405,14 @@ onMounted(() => {
   margin-top: 24px;
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
+  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); */
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .home-container-light .summary-section {
-  background: linear-gradient(145deg, rgba(138, 43, 226, 0.05), rgba(75, 0, 130, 0.05));
+  background: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
