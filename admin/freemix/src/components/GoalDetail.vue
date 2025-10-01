@@ -839,6 +839,7 @@ const finishChild = (index) => {
   // 确保子目标存在
   if (tmpEdit.childGoals && tmpEdit.childGoals[index]) {
     tmpEdit.childGoals[index].finish = true;
+    tmpEdit.childGoals[index].finishDate = new Date();
 
     // 初始化该子目标的文件列表（如果不存在）
     if (!tmpEdit.childGoals[index].fileList) {

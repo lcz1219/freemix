@@ -42,7 +42,7 @@ public class LoginController {
     @PostMapping("/register")
     public ApiResponse register(@RequestBody  String body){
         User user = JSONObject.parseObject(body, User.class);
-        User existUser = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("name").is(user.getUsername())), User.class);
+        User existUser = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())), User.class);
         if(existUser != null){
             return ApiResponse.failure("此用户名已存在");
         }
@@ -97,7 +97,7 @@ public class LoginController {
             user.setPassword(password);
             
             User userFromDB = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())
-                    .and("password").is(user.getPassword())), User.class);
+                    .and("password").is(user.getPassword()).and("del").ne(1)), User.class);
             if(userFromDB == null){
                 loginLog.setLoginSuccess(false);
                 loginLog.setErrorMessage("用户名或密码错误");

@@ -216,6 +216,11 @@
         if(res.data.code==200){
            message.success('注册成功')
            router.replace('/login')
+        }else{
+          message.error(res.data.msg || '注册失败')
+           router.replace('/register')
+           currentStep.value=1
+           return
         }
       }
         currentStep.value++;

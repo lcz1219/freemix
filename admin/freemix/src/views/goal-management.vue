@@ -1249,10 +1249,10 @@ onMounted(() => {
 
 /* 子目标展开区域样式 */
 .expanded-content-wrapper {
-  padding: 1px 1px;
+  padding: 10px 30px;
   background: rgb(30, 30, 40);
   border-radius: 12px;
-  margin: 16px 0;
+  /* margin: 16px 0; */
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

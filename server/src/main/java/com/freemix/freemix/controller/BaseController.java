@@ -69,7 +69,7 @@ public class BaseController {
         List<Relation> strings = mongoTemplate.find(Query.query(Criteria.where("goalId").is(goalId).and("del").ne(1)), Relation.class);
         List<JSONObject> users = new ArrayList<>();
         strings.forEach(relation -> {
-            User username1 = mongoTemplate.findOne(Query.query(Criteria.where("username").is(relation.getUsername())), User.class);
+            User username1 = mongoTemplate.findOne(Query.query(Criteria.where("username").is(relation.getUsername()).and("del").ne(1)), User.class);
             // 2. 创建 ObjectMapper 实例
             ObjectMapper objectMapper = new ObjectMapper();
 
