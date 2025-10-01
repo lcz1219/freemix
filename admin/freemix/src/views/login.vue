@@ -5,7 +5,7 @@
       <n-tabs class="card-tabs" default-value="signin" size="large" animated pane-wrapper-style="margin: 0 -4px"
         pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;">
         <n-tab-pane name="signin" tab="登录">
-          <n-form :rules="rules" ref="formRef" :model="user">
+          <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="handleLogin">
             <n-form-item-row label="用户名" path="username">
               <n-input placeholder="请输入用户名" v-model:value="user.username" @blur="loadCaptcha" />
             </n-form-item-row>
@@ -50,8 +50,10 @@
       <h3>双因素认证</h3>
       <p>请输入Google Authenticator应用中的6位验证码：</p>
       <n-input-otp
-        v-model:value="totpCode"
+      v-model:value="totpCode"
+      ref="totpInputRef"
         style="margin-bottom: 20px;"
+        @keydown.enter="verifyTwoFactorAuth"
       />
       <n-button type="primary" block @click="verifyTwoFactorAuth">
         验证并登录
@@ -87,7 +89,7 @@ import {
   NIcon,
   NInputOtp
 } from 'naive-ui';
-import { ref } from 'vue';
+import { onMounted, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // @ts-ignore
 import { useStore } from 'vuex';
@@ -111,6 +113,7 @@ const rules = ref({
 });
 
 const formRef = ref<FormInst | null>(null);
+const totpInputRef = ref<any>(null);
 const user = ref({
   username: '',
   password: '',
@@ -253,6 +256,23 @@ const loadCaptcha = async () => {
     message.error('验证码加载失败');
   }
 };
+
+
+// 监听登录步骤变化，当切换到双因素认证时自动聚焦
+watch(loginStep, (newStep) => {
+  if (newStep === '2fa-verify') {
+    nextTick(() => {
+      setTimeout(() => {
+        if (totpInputRef.value) {
+          console.log("Focusing 2FA input via watch",totpInputRef.value.inputRefList[0].focus);
+          
+          totpInputRef.value.inputRefList[0].focus();
+          console.log("Focused on 2FA input via watch");
+        }
+      }, 100);
+    });
+  }
+});
 </script>
 
 
