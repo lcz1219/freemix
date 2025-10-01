@@ -562,17 +562,12 @@
       <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
     </n-layout-footer>
     
-    <!-- 浮动日历按钮组件 -->
-    <CalendarFloatButton @dateSelected="handleCalendarUpdate" />
-    
-    <!-- 浮动近期目标按钮组件 -->
-    <RecentGoalsFloatButton 
+    <!-- 整合浮动按钮组件 -->
+    <UnifiedFloatButton 
       :goals="goals" 
       :formatDate="formatDate" 
       :checktype="checktype"
-      :right="10"
-      :bottom="120"
-      
+      @dateSelected="handleCalendarUpdate"
     />
   </n-layout>
 </template>
@@ -621,7 +616,6 @@ import {
 } from 'echarts/components';
 import StatsOverview from '@/components/StatsOverview.vue';
 import RecentGoals from '@/components/RecentGoals.vue';
-import RecentGoalsFloatButton from '@/components/RecentGoalsFloatButton.vue';
 import { CanvasRenderer } from 'echarts/renderers';
 import { AccessibilitySharp,CalendarSharp } from '@vicons/ionicons5';
 import { useRouter } from 'vue-router'
@@ -629,7 +623,7 @@ import { getMPaths,isSuccess } from '@/utils/request'
 import { useStore } from 'vuex'
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
-import CalendarFloatButton from '@/components/CalendarFloatButton.vue';
+import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue';
 // import { log } from 'echarts/types/src/util/log.js';
 
 // 图片占位符

@@ -28,81 +28,82 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 public class GoalController extends BaseController {
-@PostMapping("/editGoal")
-@CheckToken
-    public ApiResponse editGoal(@RequestBody String body){
+    @PostMapping("/editGoal")
+    @CheckToken
+    public ApiResponse editGoal(@RequestBody String body) {
         Goal goal = JSONObject.parseObject(body, Goal.class);
         Goal one = mongoTemplate.findOne(new Query(Criteria.where("title").is(goal.getTitle())
                 .and("description").is(goal.getDescription()).and("ower").is(goal.getOwner())), Goal.class);
-        if(one != null){
+        if (one != null) {
             return ApiResponse.failure("已存在相同的目标");
         }
-    List<childGoals> childGoals = goal.getChildGoals();
-        if(!childGoals.isEmpty()){
+        List<childGoals> childGoals = goal.getChildGoals();
+        if (!childGoals.isEmpty()) {
             childGoals.forEach(child -> {
-                if(StringUtil.isNullOrEmpty(child.get_id())){
+                if (StringUtil.isNullOrEmpty(child.get_id())) {
                     child.set_id(UUID.randomUUID().toString());
                 }
             });
         }
         goal.setChildGoals(childGoals);
-    if(StringUtil.isNullOrEmpty(goal.get_id())){
+        if (StringUtil.isNullOrEmpty(goal.get_id())) {
             goal.set_id(UUID.randomUUID().toString());
             goal.setProgress(0);
             goal.setStatus("in-progress");
 
 
             mongoTemplate.insert(goal);
-        }else {
-        if(System.currentTimeMillis()>goal.getDeadline().getTime()){
-            goal.setStatus("expired");
-        }else{
-            goal.setStatus("in-progress");
-        }
+        } else {
+            if (System.currentTimeMillis() > goal.getDeadline().getTime()) {
+                goal.setStatus("expired");
+            } else {
+                goal.setStatus("in-progress");
+            }
 
-            if (goal.getProgress()==100){
+            if (goal.getProgress() == 100) {
                 goal.setStatus("completed");
             }
-        Integer newProgress = computedProgress(goal);
-        goal.setProgress(newProgress);
+            Integer newProgress = computedProgress(goal);
+            goal.setProgress(newProgress);
 
 
             mongoTemplate.save(goal);
         }
-    //插入创建者到关系表里面
-    editCollaborator(goal.get_id(),Arrays.asList(goal.getOwner()),"owner" );
+        //插入创建者到关系表里面
+        editCollaborator(goal.get_id(), Arrays.asList(goal.getOwner()), "owner");
 
         return ApiResponse.success(body);
-}
+    }
 
 
     /**
      * 从Excel文件导入目标
-     * @param file Excel文件
+     *
+     * @param file  Excel文件
      * @param owner 目标所有者
      * @return 导入结果
      */
     @PostMapping("/importGoalsFromExcel")
     @CheckToken
     public ApiResponse importGoalsFromExcel(@RequestParam("file") MultipartFile file,
-                                           @RequestParam("owner") String owner) {
+                                            @RequestParam("owner") String owner) {
         try {
             // 检查文件是否为空
             if (file.isEmpty()) {
                 return ApiResponse.failure("上传的文件为空");
             }
-            
+
             // 检查文件格式
             String fileName = file.getOriginalFilename();
             if (fileName == null || (!fileName.toLowerCase().endsWith(".xlsx") && !fileName.toLowerCase().endsWith(".xls"))) {
                 return ApiResponse.failure("请上传.xlsx或.xls格式的Excel文件");
             }
 
-            JSONObject res= parseGoalsFromExcel(file, owner);
+            JSONObject res = parseGoalsFromExcel(file, owner);
             Boolean ischeck = res.getBoolean("ischeck");
             String ischeckMsg = res.getString("ischeckMsg");
-            if (!ischeck) return ApiResponse.failure("导入失败: " +ischeckMsg );
-            List<Goal> goals= res.getJSONArray("goals").toJavaList(Goal.class);
+            if (!ischeck) return ApiResponse.failure("导入失败: " + ischeckMsg);
+            List<Goal> goals = res.getJSONArray("goals").toJavaList(Goal.class);
             List<Goal> savedGoals = new ArrayList<>();
 
             for (Goal goal : goals) {
@@ -114,26 +115,26 @@ public class GoalController extends BaseController {
 //                    Goal.class);
 
 //                if (existingGoal == null) {
-                    // 设置目标ID和初始状态
-                    goal.set_id(UUID.randomUUID().toString());
-                    goal.setProgress(0);
-                    goal.setStatus("in-progress");
+                // 设置目标ID和初始状态
+                goal.set_id(UUID.randomUUID().toString());
+                goal.setProgress(0);
+                goal.setStatus("in-progress");
 
-                    // 处理子目标ID
-                    if (goal.getChildGoals() != null && !goal.getChildGoals().isEmpty()) {
-                        goal.getChildGoals().forEach(child -> {
-                            if (StringUtil.isNullOrEmpty(child.get_id())) {
-                                child.set_id(UUID.randomUUID().toString());
-                            }
-                        });
-                    }
-
-                    // 插入创建者到关系表
-                    editCollaborator(goal.get_id(), Arrays.asList(goal.getOwner()), "owner");
-
-                    mongoTemplate.insert(goal);
-                    savedGoals.add(goal);
+                // 处理子目标ID
+                if (goal.getChildGoals() != null && !goal.getChildGoals().isEmpty()) {
+                    goal.getChildGoals().forEach(child -> {
+                        if (StringUtil.isNullOrEmpty(child.get_id())) {
+                            child.set_id(UUID.randomUUID().toString());
+                        }
+                    });
                 }
+
+                // 插入创建者到关系表
+                editCollaborator(goal.get_id(), Arrays.asList(goal.getOwner()), "owner");
+
+                mongoTemplate.insert(goal);
+                savedGoals.add(goal);
+            }
 //            }
 
             return ApiResponse.success("成功导入 " + savedGoals.size() + " 个目标");
@@ -142,10 +143,11 @@ public class GoalController extends BaseController {
             return ApiResponse.failure("导入失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 解析Excel文件中的目标数据
-     * @param file Excel文件
+     *
+     * @param file  Excel文件
      * @param owner 目标所有者
      * @return 目标列表
      * @throws Exception 解析异常
@@ -154,9 +156,9 @@ public class GoalController extends BaseController {
         List<Goal> goals = new ArrayList<>();
         List<childGoals> orphanedChildGoals = new ArrayList<>(); // 存储尚未找到父目标的子目标
         Workbook workbook;
-        boolean ischeck=true;
-        String ischeckMsg="";
-        
+        boolean ischeck = true;
+        String ischeckMsg = "";
+
         // 根据文件扩展名选择合适的工作簿类型
         String fileName = file.getOriginalFilename();
         if (fileName != null && fileName.toLowerCase().endsWith(".xls")) {
@@ -166,22 +168,22 @@ public class GoalController extends BaseController {
             // 处理.xlsx文件（Excel 2007+格式）
             workbook = new XSSFWorkbook(file.getInputStream());
         }
-        
+
         Sheet sheet = workbook.getSheetAt(0); // 读取第一个工作表
-        
+
         // 跳过标题行，从第二行开始读取数据
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             Row row = sheet.getRow(i);
             if (row == null) continue;
             // 新增：获取最后一列的数据
             // 1. 首先获取最后一列的索引（从0开始）
-            int lastCellIndex = row.getLastCellNum()-1;
+            int lastCellIndex = row.getLastCellNum() - 1;
 
-            boolean isChildGoal = lastCellIndex==5;
+            boolean isChildGoal = lastCellIndex == 5;
             // 检查是否为子目标（第一列为空）
 
             String firstColumnValue = getCellValueAsString(row.getCell(0));
-            
+
             if (isChildGoal) {
                 // 这是子目标
                 childGoals childGoal = new childGoals();
@@ -200,10 +202,10 @@ public class GoalController extends BaseController {
                         }
                     }
                 }
-                
+
                 // 解析子目标优先级
 //                childGoal.setPriority(getCellValueAsString(row.getCell(3)));
-                
+
                 // 解析子目标标签
                 String tagsStr = getCellValueAsString(row.getCell(4));
                 if (tagsStr != null && !tagsStr.isEmpty()) {
@@ -214,19 +216,19 @@ public class GoalController extends BaseController {
                     }
 //                    childGoal.setTags(tags);
                 } else {
-                    if(ischeckMsg.isEmpty()){
-                        ischeckMsg=ischeckMsg+"子目标标签未填写,请填写后再次导入";
-                    }else{
-                        ischeckMsg=ischeckMsg+",子目标标签未填写,请填写后再次导入";
+                    if (ischeckMsg.isEmpty()) {
+                        ischeckMsg = ischeckMsg + "子目标标签未填写,请填写后再次导入";
+                    } else {
+                        ischeckMsg = ischeckMsg + ",子目标标签未填写,请填写后再次导入";
                     }
-                    ischeck=false;
+                    ischeck = false;
                 }
-                
+
                 // 初始化子目标的其他字段
                 childGoal.setChildGoals(new ArrayList<>());
                 childGoal.setFileList(new ArrayList<>());
                 childGoal.setFinish(false);
-                
+
                 // 尝试将子目标关联到已存在的父目标
                 boolean attached = false;
                 for (Goal goal : goals) {
@@ -236,7 +238,7 @@ public class GoalController extends BaseController {
                         break;
                     }
                 }
-                
+
                 // 如果未找到父目标，将子目标添加到孤儿列表中
                 if (!attached) {
                     orphanedChildGoals.add(childGoal);
@@ -247,7 +249,7 @@ public class GoalController extends BaseController {
                 goal.setTitle(firstColumnValue);
                 goal.setDescription(getCellValueAsString(row.getCell(1)));
                 goal.setOwner(owner);
-                
+
                 // 解析截止日期
                 Cell deadlineCell = row.getCell(2);
                 if (deadlineCell != null) {
@@ -258,16 +260,16 @@ public class GoalController extends BaseController {
                         if (dateStr != null && !dateStr.isEmpty()) {
                             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                             goal.setDeadline(sdf.parse(dateStr));
-                        }else{
-                            ischeckMsg=ischeckMsg+"截止日期未填写,请填写后再次导入";
-                            ischeck=false;
+                        } else {
+                            ischeckMsg = ischeckMsg + "截止日期未填写,请填写后再次导入";
+                            ischeck = false;
                         }
                     }
                 }
-                
+
                 // 解析优先级
                 goal.setLevel(getCellValueAsString(row.getCell(3)));
-                
+
                 // 解析标签
                 String tagsStr = getCellValueAsString(row.getCell(4));
                 if (tagsStr != null && !tagsStr.isEmpty()) {
@@ -277,16 +279,16 @@ public class GoalController extends BaseController {
                         tags.add(tag.trim());
                     }
                     goal.setTags(tags);
-                }else{
-                    if(ischeckMsg.isEmpty()){
-                        ischeckMsg=ischeckMsg+"标签未填写,请填写后再次导入";
-                    }else{
-                        ischeckMsg=ischeckMsg+",标签未填写,请填写后再次导入";
+                } else {
+                    if (ischeckMsg.isEmpty()) {
+                        ischeckMsg = ischeckMsg + "标签未填写,请填写后再次导入";
+                    } else {
+                        ischeckMsg = ischeckMsg + ",标签未填写,请填写后再次导入";
                     }
 
-                    ischeck=false;
+                    ischeck = false;
                 }
-                
+
                 // 初始化其他字段
                 goal.setChildGoals(new ArrayList<>());
                 goal.setFileList(new ArrayList<>());
@@ -295,9 +297,9 @@ public class GoalController extends BaseController {
                 goal.setDel(0);
                 goal.setDisRecover(false);
                 goal.setFinish(false);
-                
+
                 goals.add(goal);
-                
+
                 // 检查是否有孤儿子目标可以关联到这个新创建的父目标
                 Iterator<childGoals> iterator = orphanedChildGoals.iterator();
                 while (iterator.hasNext()) {
@@ -309,33 +311,34 @@ public class GoalController extends BaseController {
                 }
             }
         }
-        
+
         // 检查是否还有未关联的孤儿子目标
         if (!orphanedChildGoals.isEmpty()) {
-            if(ischeckMsg.isEmpty()){
-                ischeckMsg=ischeckMsg+"存在未找到父目标的子目标，请检查Excel文件格式";
-            }else{
-                ischeckMsg=ischeckMsg+",存在未找到父目标的子目标，请检查Excel文件格式";
+            if (ischeckMsg.isEmpty()) {
+                ischeckMsg = ischeckMsg + "存在未找到父目标的子目标，请检查Excel文件格式";
+            } else {
+                ischeckMsg = ischeckMsg + ",存在未找到父目标的子目标，请检查Excel文件格式";
             }
-            ischeck=false;
+            ischeck = false;
         }
-        
+
         workbook.close();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("goals", goals);
-        jsonObject.put("ischeck",ischeck);
-        jsonObject.put("ischeckMsg",ischeckMsg);
+        jsonObject.put("ischeck", ischeck);
+        jsonObject.put("ischeckMsg", ischeckMsg);
         return jsonObject;
     }
-    
+
     /**
      * 获取单元格值作为字符串
+     *
      * @param cell 单元格
      * @return 单元格值字符串
      */
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return null;
-        
+
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue();
@@ -356,9 +359,9 @@ public class GoalController extends BaseController {
     }
 
     @PostMapping("/deleteGoal")
-@CheckToken
-    public ApiResponse deleteGoal(@RequestBody String body){
-    JSONObject bodyJson = JSONObject.parseObject(body);
+    @CheckToken
+    public ApiResponse deleteGoal(@RequestBody String body) {
+        JSONObject bodyJson = JSONObject.parseObject(body);
         Goal goal = JSONObject.parseObject(bodyJson.getString("row"), Goal.class);
         log.info("deleteGoal {}", goal);
         goal.setDel(1);
@@ -366,74 +369,125 @@ public class GoalController extends BaseController {
         mongoTemplate.save(goal);
         return ApiResponse.success(body);
     }
+
     @GetMapping("/recycle/{ower}")
     @CheckToken
-    public ApiResponse recycle(@PathVariable("ower") String ower){
+    public ApiResponse recycle(@PathVariable("ower") String ower) {
 
         List<Goal> owner = mongoTemplate.find(new Query(Criteria.where("owner").is(ower).and("del").is(1)), Goal.class);
         owner.stream().forEach(goal -> {
-            if(goal.getProgress()==100){
+            if (goal.getProgress() == 100) {
                 goal.setFinish(true);
-            }else {
+            } else {
                 goal.setFinish(false);
             }
-            if(System.currentTimeMillis()>goal.getDeadline().getTime()){
+            if (System.currentTimeMillis() > goal.getDeadline().getTime()) {
                 goal.setStatus("expired");
 
 
 //           editGoal(goal.toString());
             }
-            if(goal.getDeltime()!=0L&&System.currentTimeMillis()-goal.getDeltime()>30*24*60*60*1000L){
+            if (goal.getDeltime() != 0L && System.currentTimeMillis() - goal.getDeltime() > 30 * 24 * 60 * 60 * 1000L) {
                 goal.setDisRecover(true);
             }
         });
         return ApiResponse.success(owner);
     }
 
-@GetMapping("/getGoals/{ower}")
-@CheckToken
-    public ApiResponse getGoals(@PathVariable("ower") String ower){
-    List<String> collect = mongoTemplate.find(new Query(Criteria.where("username").is(ower).and("del").ne(1)), Relation.class).stream().map(Relation::getGoalId).collect(Collectors.toList());
-    List<Goal> owner = mongoTemplate.find(new Query(new Criteria().orOperator(
-            Criteria.where("owner").is(ower).and("del").ne(1),
-            Criteria.where("_id").in(collect).and("del").ne(1)
-    ) ), Goal.class);
-    owner.stream().forEach(goal -> {
-        if(goal.getProgress()==100){
-            goal.setFinish(true);
-        }else {
-            goal.setFinish(false);
-        }
-       goal.setCollaborators(genCollaborator(goal.get_id()));
+    @GetMapping("/getGoals/{ower}")
+    @CheckToken
+    public ApiResponse getGoals(@PathVariable("ower") String ower) {
+        List<String> collect = mongoTemplate.find(new Query(Criteria.where("username").is(ower).and("del").ne(1)), Relation.class)
+                .stream()
+                .map(Relation::getGoalId)
+                .collect(Collectors.toList());
+        List<Goal> owner = mongoTemplate.find(new Query(new Criteria().orOperator(
+                Criteria.where("owner").is(ower).and("del").ne(1),
+                Criteria.where("_id").in(collect).and("del").ne(1)
+        )), Goal.class);
+        owner.stream().forEach(goal -> {
+            if (goal.getProgress() == 100) {
+                goal.setFinish(true);
+            } else {
+                goal.setFinish(false);
+            }
+            goal.setCollaborators(genCollaborator(goal.get_id()));
+            //排序子目标
 
-    });
-    return ApiResponse.success(owner);
+            // 获取目标下的所有子目标，并按特定规则进行排序：
+// 1. 未完成的子目标（isFinish = false）排在前面
+// 2. 已完成的子目标（isFinish = true）排在后面，并按完成日期降序排列（最新完成的排在最前）
 
-}
-@PostMapping("/addCollaborator")
-@CheckToken
-    public ApiResponse addCollaborator(@RequestBody String body){
-    JSONObject jsonObject = JSONObject.parseObject(body);
-    String username = jsonObject.getString("username");
-    String goalId = jsonObject.getString("goalId");
-    editCollaborator(goalId,Arrays.asList(username),"collaborator");
-    User username1 = mongoTemplate.findOne(new Query(Criteria.where("username").is(username)), User.class);
+// 首先，筛选出所有未完成的子目标
+            List<childGoals> noFinChildGoals = goal.getChildGoals()
+                    .stream()
+                    // 过滤条件：只保留未完成的目标（isFinish() 返回 false）
+                    .filter(e -> !e.isFinish())
+                    // 收集为 List
+                    .collect(Collectors.toList());
+
+// 然后，筛选出所有已完成的子目标，并按完成日期排序
+            List<childGoals> dateChildGoals = goal.getChildGoals()
+                    .stream()
+                    // 过滤条件：只保留已完成的目标（isFinish() 返回 true）
+                    .filter(e -> e.isFinish())
+                    // 对已完成的目标进行排序：
+                    .sorted(Comparator.comparing(
+                            // 主排序键：完成日期
+                            childGoals::getFinishDate,
+                            // 处理完成日期可能为 null 的情况：
+                            // 1. Comparator.nullsFirst - 规定 null 值应被视为小于任何非 null 值
+                            // 2. Comparator.naturalOrder() - 对于非 null 值，使用其自然顺序（即日期从早到晚）
+                            // 组合效果：null 日期排在最前，非 null 日期按升序排列（从早到晚）
+                            Comparator.nullsFirst(Comparator.naturalOrder())
+                            // 反转排序顺序：将自然顺序（升序）变为降序，使得：
+                            // 1. 非 null 日期中，最新日期排在最前
+                            // 2. null 日期仍然排在最前（因为 null 被视为最小，反转后最小变最大？不对！注意：nullsFirst 的语义不受 reversed 影响）
+                            // 注意：这里需要特别小心，因为 reversed() 会反转整个比较器的逻辑
+                            // 实际上，这里的 reversed() 会使：
+                            // - 非 null 日期：从升序（早到晚）变为降序（晚到早）
+                            // - null 值：由于 nullsFirst 的定义，null 仍然会被视为最小，但反转后，最小会变成最大吗？
+                            // 实际上，Comparator.nullsFirst 的语义是：null 总是小于非 null。这个语义不会因为 reversed() 而改变。
+                            // 因此，反转后的效果是：null 值仍然排在最前面，而非 null 日期按降序排列（最新的在最前）
+                    ).reversed())
+                    .collect(Collectors.toList());
+
+// 将两部分列表合并：未完成的在前，已完成的（按日期降序）在后
+            noFinChildGoals.addAll(dateChildGoals);
+
+// 将排序后的列表设置回目标对象
+            goal.setChildGoals(noFinChildGoals);
+
+        });
+        return ApiResponse.success(owner);
+
+    }
+
+    @PostMapping("/addCollaborator")
+    @CheckToken
+    public ApiResponse addCollaborator(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String username = jsonObject.getString("username");
+        String goalId = jsonObject.getString("goalId");
+        editCollaborator(goalId, Arrays.asList(username), "collaborator");
+        User username1 = mongoTemplate.findOne(new Query(Criteria.where("username").is(username)), User.class);
 
 
-    return ApiResponse.success(username1);
+        return ApiResponse.success(username1);
 
-}@PostMapping("/removeCollaborator")
-@CheckToken
-    public ApiResponse removeCollaborator(@RequestBody String body){
-    JSONObject jsonObject = JSONObject.parseObject(body);
-    String username = jsonObject.getString("username");
-    String goalId = jsonObject.getString("goalId");
+    }
+
+    @PostMapping("/removeCollaborator")
+    @CheckToken
+    public ApiResponse removeCollaborator(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String username = jsonObject.getString("username");
+        String goalId = jsonObject.getString("goalId");
         delRelationPerson(username, goalId);
 
         return ApiResponse.success(goalId);
 
-}
-
+    }
 
 
     @PostMapping("/saveGoalStructure")
@@ -502,9 +556,9 @@ public class GoalController extends BaseController {
         goal.setChildGoals(newChildGoals);
         Integer newProgress = computedProgress(goal);
         goal.setProgress(newProgress);
-        if(goal.getProgress()==100){
+        if (goal.getProgress() == 100) {
             goal.setStatus("completed");
-        }else{
+        } else {
             goal.setStatus("in-progress");
         }
 
@@ -513,13 +567,15 @@ public class GoalController extends BaseController {
         mongoTemplate.save(goal);
         return ApiResponse.success("目标结构保存成功");
     }
+
     private Integer computedProgress(Goal goal) {
-       Integer total=goal.getChildGoals().size();
+        Integer total = goal.getChildGoals().size();
         int size = goal.getChildGoals().stream().filter(e -> e.isFinish()).collect(Collectors.toList()).size();
-        int i = (size*100 / total*100);
-        return i/100;
+        int i = (size * 100 / total * 100);
+        return i / 100;
 
     }
+
     // 处理嵌套子目标
     private void processNestedChildren(childGoals parentGoal, String parentId,
                                        Map<String, List<String>> connectionMap,
@@ -546,6 +602,7 @@ public class GoalController extends BaseController {
             parentGoal.setChildGoals(nestedChildren);
         }
     }
+
     // 递归查找子目标
     private childGoals findExistingChild(String id, List<childGoals> parentGoal) {
         for (childGoals child : parentGoal) {
@@ -561,6 +618,7 @@ public class GoalController extends BaseController {
         }
         return null;
     }
+
     // 在创建或更新子目标时保留完成状态
     private childGoals createOrUpdateChildGoal(JSONObject node, Goal parentGoal) {
         childGoals existing = findExistingChild(node.getString("id"), parentGoal.getChildGoals());
@@ -576,6 +634,7 @@ public class GoalController extends BaseController {
             return newChild;
         }
     }
+
     private String identifyRootNode(JSONArray nodes, JSONArray connections) {
         // 1. 收集所有节点ID
         Set<String> allNodeIds = new HashSet<>();
@@ -607,6 +666,7 @@ public class GoalController extends BaseController {
             return findMostConnectedNode(rootCandidates, connections);
         }
     }
+
     private String findMostConnectedNode(Set<String> candidates, JSONArray connections) {
         Map<String, Integer> connectionCount = new HashMap<>();
 
