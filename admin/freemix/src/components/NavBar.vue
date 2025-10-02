@@ -48,18 +48,6 @@
         </n-button> -->
       </nav>
 
-      <!-- <div class="header-actions">
-
-  
-    </div> -->
-   
-
-
-
-
-
-     
-
     </n-layout-header>
     <div style="width: 10%;">
      <n-dropdown animated :options="options" trigger="hover" @select="handleSelect" :loading="logoutLoading">
@@ -82,15 +70,11 @@
       </n-tooltip>
        </div>
        </div>
-    <!-- <div style="display: flex; width: 20%;"> -->
-    <!-- <n-avatar style="margin-right: 34%;" round size="medium"
-        src="https://api.dicebear.com/7.x/miniavs/svg?seed=3"></n-avatar> -->
-       
-  
-    
-
+ <!-- 标签页组件 (非移动端) -->
+      
   </n-layout-header>
-
+  
+  <TabsView v-if="!isMobileDevice" />
 </template>
 
 <script setup>
@@ -101,6 +85,7 @@ import { SunnyOutline, IdCardSharp,MoonOutline, Settings, LogInOutline, LogIn,Gi
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
 import upload from './upload.vue';
+import TabsView from '@/components/TabsView.vue';
 import { baseURL, isSuccess, postM } from '@/utils/request.js'
 
 const dialog = useDialog();

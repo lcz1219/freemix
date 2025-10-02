@@ -351,8 +351,8 @@ const initMonthlyChart = () => {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     let data=`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
     months.push(data);
-    console.log("goals",goals.value);
-    console.log("months",months);
+    // console.log("goals",goals.value);
+    // console.log("months",months);
 
     
     // 模拟数据
