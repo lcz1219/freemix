@@ -154,16 +154,16 @@ public class LoginController {
     
     @PostMapping("/captcha")
     public ApiResponse getCaptcha(@RequestBody String body) {
-        // 生成验证码
+        // 生成计算验证码
         CaptchaUtil.CaptchaResult captchaResult = CaptchaUtil.generateCaptcha();
-        // 存储验证码到Redis，设置5分钟过期
+        // 存储验证码答案到Redis，设置5分钟过期
         JSONObject jsonObject = JSONObject.parseObject(body);
         String username = jsonObject.getString("username");
         String captchaKey = "captcha_" + username;
-        redisTemplate.opsForValue().set(captchaKey, captchaResult.getCode(), 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(captchaKey, String.valueOf(captchaResult.getCode()), 5, TimeUnit.MINUTES);
         
         JSONObject result = new JSONObject();
-        result.put("image", "data:image/png;base64," + captchaResult.getImageBase64());
+        result.put("expression", captchaResult.getExpression());
         result.put("captchaId", captchaKey);
         
         return ApiResponse.success(result);

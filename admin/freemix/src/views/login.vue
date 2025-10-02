@@ -15,20 +15,13 @@
             <n-form-item-row label="验证码" path="captcha">
               <div class="captcha-container">
                 <n-input 
-                  placeholder="请输入验证码" 
+                  placeholder="请输入计算结果" 
                   v-model:value="user.captcha" 
-                  maxlength="4"
+                  maxlength="10"
                   style="flex: 1;"
                 />
-                <img 
-                  v-if="captchaImage" 
-                  :src="captchaImage" 
-                  alt="验证码" 
-                  class="captcha-image"
-                  @click="loadCaptcha"
-                />
-                <div v-else class="captcha-placeholder" @click="loadCaptcha">
-                  <n-icon :component="RefreshOutline" />
+                <div class="captcha-expression" @click="loadCaptcha">
+                  {{ captchaExpression || '点击刷新' }}
                 </div>
               </div>
             </n-form-item-row>
@@ -120,7 +113,7 @@ const user = ref({
   captcha: ''
 });
 const totpCode = ref<string[]>([]);
-const captchaImage = ref('');
+const captchaExpression = ref('');
 const tempUserData = ref<any>(null); // 临时存储登录成功但未完成2FA验证的用户数据
 
 // 处理登录
@@ -249,7 +242,7 @@ const loadCaptcha = async () => {
   try {
     const res = await postM('/captcha', {"username": user.value.username});
     if (isSuccess(res)) {
-      captchaImage.value = res.data.data.image;
+      captchaExpression.value = res.data.data.expression;
     }
   } catch (error) {
     console.log(error);
@@ -289,15 +282,8 @@ watch(loginStep, (newStep) => {
   gap: 10px;
 }
 
-.captcha-image {
-  width: 120px;
-  height: 40px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.captcha-placeholder {
-  width: 120px;
+.captcha-expression {
+  min-width: 120px;
   height: 40px;
   display: flex;
   align-items: center;
@@ -306,6 +292,9 @@ watch(loginStep, (newStep) => {
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid #d9d9d9;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
 }
 
 .captcha-placeholder:hover {
