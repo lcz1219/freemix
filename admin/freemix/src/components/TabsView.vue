@@ -238,18 +238,32 @@ onMounted(() => {
 .tabs-view-container {
   background-color: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .tabs-container {
   padding: 0 20px;
 }
 
+:deep(.n-tabs-nav) {
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 0;
+}
+
 :deep(.n-tabs-tab) {
   color: var(--text-color);
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-bottom: none;
-  transition: all 0.3s;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 8px 16px;
+  font-weight: 500;
+  position: relative;
+  margin-right: 4px;
 }
 
 :deep(.n-tabs-tab:hover) {
@@ -257,12 +271,61 @@ onMounted(() => {
 }
 
 :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background-color: var(--bg-color);
-  border-bottom: 1px solid var(--bg-color);
-  font-weight: 500;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-:deep(.n-tabs-nav) {
-  border-bottom: 1px solid var(--border-color);
+:deep(.n-tabs-tab.n-tabs-tab--active)::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #8a2be2;
+  border-radius: 2px;
+}
+
+:deep(.n-tabs-tab__close) {
+  margin-left: 8px;
+  border-radius: 50%;
+  padding: 2px;
+  transition: all 0.3s;
+}
+
+:deep(.n-tabs-tab__close:hover) {
+  background-color: rgba(138, 43, 226, 0.1);
+  color: #8a2be2;
+}
+
+:deep(.n-tabs-tab):hover .n-tabs-tab__close {
+  opacity: 1;
+}
+
+:deep(.n-tabs-tab__close) {
+  opacity: 0.7;
+}
+
+:deep(.n-dropdown) {
+  border-radius: 8px;
+  padding: 4px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+}
+
+:deep(.n-dropdown-option) {
+  padding: 8px 12px;
+  transition: background-color 0.2s;
+}
+
+:deep(.n-dropdown-option:hover) {
+  background-color: var(--hover-color);
+}
+
+:deep(.n-dropdown-option__label) {
+  color: var(--text-color);
 }
 </style>

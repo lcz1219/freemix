@@ -1,30 +1,33 @@
 <template>
-  <n-modal v-model:show="showModal" preset="card"
-    :style="{ width: '70%', height: '85vh' , maxHeight: '90vh' }" title="目标详情" :bordered="false"
-    :segmented="{ content: true, footer: 'soft' }" draggable :on-after-leave="closeModal">
-     
-    <template #header-extra>
-      <n-space>
-        <n-button quaternary circle @click="copyGoal">
-          <template #icon>
-            <n-icon :component="Copy" />
-          </template>
-        </n-button>
-        <n-button quaternary circle @click="editGoal" v-if="!isEditing">
-          <template #icon>
-
-            <n-icon :component="Pencil" />
-          </template>
-        </n-button>
-        <n-button quaternary circle @click="() => isEditing = false" v-else>
-          <template #icon>
-
-            <n-icon :component="Eye" />
-          </template>
-        </n-button>
-      </n-space>
-    </template>
-<div style="overflow-y: auto;height: 60vh;width: 100%;">
+  <n-drawer 
+    v-model:show="showModal" 
+    :default-width="drawerWidth" 
+    :height="'85vh'" 
+    placement="right" 
+    resizable
+    @resize="handleDrawerResize">
+    <n-drawer-content title="目标详情" closable >
+      <template #header>
+        <n-space style="justify-content: flex-end;">
+          <n-button quaternary circle @click="copyGoal">
+            <template #icon>
+              <n-icon :component="Copy" />
+            </template>
+          </n-button>
+          <n-button quaternary circle @click="editGoal" v-if="!isEditing">
+            <template #icon>
+              <n-icon :component="Pencil" />
+            </template>
+          </n-button>
+          <n-button quaternary circle @click="() => isEditing = false" v-else>
+            <template #icon>
+              <n-icon :component="Eye" />
+            </template>
+          </n-button>
+        </n-space>
+      </template>
+      <div style="overflow-y: auto; height: calc(85vh - 100px); width: 100%;">
+<!-- <div style="overflow-y: auto;height: 60vh;width: 100%;"> -->
     <div v-if="!isEditing" class="view-mode-container">
       <n-card class="goal-card" :bordered="false">
         <n-space vertical size="large">
@@ -267,7 +270,8 @@
       </n-space>
     </template>
    
-  </n-modal>
+  </n-drawer-content>
+  </n-drawer>
 
   <!-- 协作人管理模态框 -->
   <CollaboratorManager v-model:show="showCollaboratorsModal" :goal="isEditing ? editForm : goal"
@@ -364,6 +368,8 @@ import { Pencil, Copy, Eye, CloudDownloadSharp, CalendarOutline, AlertCircleOutl
 import { postM, isSuccess, baseURL } from '@/utils/request'
 import {
   NModal,
+  NDrawer,
+  NDrawerContent,
   NButton,
   NIcon,
   NSpace,
@@ -479,6 +485,16 @@ const getDownloadUrl = (file) => {
 const emit = defineEmits(['update:show', 'update:goal', 'save']);
 
 const message = useMessage();
+
+// 抽屉宽度相关属性
+const drawerWidth = ref('30%');
+
+// 处理抽屉大小调整事件
+const handleDrawerResize = (width) => {
+  console.log('抽屉宽度调整:', width);
+  drawerWidth.value = width + 'px';
+  // 可以在这里添加任何需要在宽度调整时执行的逻辑
+};
 
 const showModal = computed({
   get: () => props.show,
