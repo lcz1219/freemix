@@ -26,7 +26,7 @@
           </n-button>
         </n-space>
       </template>
-      <div style="overflow-y: auto; height: calc(85vh - 100px); width: 100%;">
+      <div style="overflow-y: auto; height: calc(85vh - 46px); width: 100%;">
 <!-- <div style="overflow-y: auto;height: 60vh;width: 100%;"> -->
     <div v-if="!isEditing" class="view-mode-container">
       <n-card class="goal-card" :bordered="false">
@@ -164,17 +164,17 @@
       </n-card>
     </div>
 
-    <div v-else>
+    <div v-else class="edit-mode-container">
       <!-- <n-modal :show="true"
     title="card 预设拖拽"
     preset="card"
     draggable
     :style="{ width: '800px',height:'800px' }"> -->
-      <n-form ref="formRef" :model="editForm" :rules="formRules" label-placement="left" label-width="120"
+      <n-form ref="formRef" :model="editForm" :rules="formRules" label-placement="top" label-width="120"
         require-mark-placement="right-hanging">
-        <n-grid :gutter="24">
+        <n-grid :gutter="24" x-gap="12">
           <n-gi :span="12">
-            <n-form-item label="目标标题" path="title">
+            <n-form-item label="目标标题" path="title" >
               <n-input v-model:value="editForm.title" placeholder="请输入目标标题" maxlength="30" show-count />
             </n-form-item>
           </n-gi>
@@ -487,7 +487,7 @@ const emit = defineEmits(['update:show', 'update:goal', 'save']);
 const message = useMessage();
 
 // 抽屉宽度相关属性
-const drawerWidth = ref('30%');
+const drawerWidth = ref('35%');
 
 // 处理抽屉大小调整事件
 const handleDrawerResize = (width) => {
@@ -1377,5 +1377,10 @@ watch(() => props.goal, (newGoal) => {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+}
+
+.edit-mode-container {
+  background-color: #0000003d; /* 比查看模式稍暗的背景 */
+  padding: 16px;
 }
 </style>
