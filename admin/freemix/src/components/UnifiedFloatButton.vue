@@ -27,11 +27,29 @@
     <!-- 展开菜单 -->
     <transition name="slide-up">
       <div v-if="showMenu" class="float-menu" :style="{ right: right + 'px', bottom: bottom + height + 10 + 'px' }">
+        <!-- 反馈中心按钮 -->
+        <n-button
+          class="menu-button"
+          circle
+          :title="'反馈中心'"
+          size="large"
+          @click="toggleFeedback"
+        >
+          <n-icon size="24">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+              <path d="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M20,16H5.2L4,17.2V4h16V16z" />
+              <path d="M11,8H9v2h2V8z M11,12H9v4h2V12z" />
+              <path d="M15,8h-2v6h2V8z" />
+            </svg>
+          </n-icon>
+        </n-button>
+        
         <!-- 日历按钮 -->
         <n-button
           class="menu-button"
           circle
           size="large"
+          :title="'日历'"
           @click="toggleCalendar"
         >
           <n-icon size="24">
@@ -44,6 +62,7 @@
           class="menu-button"
           circle
           size="large"
+          :title="'近期目标'"
           @click="toggleGoals"
         >
           <n-icon size="24">
@@ -75,6 +94,9 @@
       />
     </n-modal>
 
+    <!-- 反馈中心抽屉 -->
+    <FeedbackCenter v-model:show="showFeedback" />
+    
     <!-- 近期目标弹窗 -->
     <n-modal
       v-model:show="showGoals"
@@ -100,6 +122,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import RecentGoals from '@/components/RecentGoals.vue';
+import FeedbackCenter from '@/components/FeedbackCenter.vue';
 import { NFloatButton, NIcon, NButton, NModal, NCalendar } from 'naive-ui';
 import { CalendarSharp } from '@vicons/ionicons5';
 
@@ -162,12 +185,18 @@ const emit = defineEmits(['dateSelected']);
 const showMenu = ref(false);
 const showCalendar = ref(false);
 const showGoals = ref(false);
+const showFeedback = ref(false);
 const calendarValue = ref(null);
 const isDark = inject('isDark', ref(true));
 
 // 方法
 const toggleMenu = () => {
   showMenu.value = !showMenu.value;
+};
+
+const toggleFeedback = () => {
+  showMenu.value = false;
+  showFeedback.value = !showFeedback.value;
 };
 
 const toggleCalendar = () => {

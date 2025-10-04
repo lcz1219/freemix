@@ -1,0 +1,8 @@
+{
+  "feedbackTypes": [
+    { "label": "功能建议", "value": "feature" },
+    { "label": "问题报告", "value": "bug" },
+    { "label": "用户体验", "value": "ux" },
+    { "label": "其他", "value": "other" }
+  ]
+}
