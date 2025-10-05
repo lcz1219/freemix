@@ -42,6 +42,7 @@
           </NIcon>
           目标结构
         </n-button>
+        
         <!-- <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'settings' }"
           @click="goTo('/settings')">
           设置
@@ -49,9 +50,16 @@
       </nav>
 
     </n-layout-header>
-    <div style="width: 10%;">
-     <n-dropdown animated :options="options" trigger="hover" @select="handleSelect" :loading="logoutLoading">
-      <n-button><n-icon>
+    <div style="width: 20%;">
+      <n-button   class="nav-link" :class="{ active: activeTab === 'messages' }"
+          @click="goTo('/messages')">
+          <NIcon class="icon">
+            <ChatboxEllipses />
+          </NIcon>
+          <!-- 消息中心 -->
+        </n-button>
+     <n-dropdown  animated :options="options" trigger="hover" @select="handleSelect" :loading="logoutLoading">
+      <n-button style="margin-left: 10px;"><n-icon>
           <PersonCircle />
         </n-icon></n-button>
     </n-dropdown>
@@ -81,7 +89,7 @@
 import { ref, inject, onMounted, render, h, computed,watch } from 'vue';
 import { NLayoutHeader, NIcon, NButton, NAvatar, useDialog, NSwitch, NTooltip, NPopselect, NText, NDropdown, useMessage, NInput, useLoadingBar } from 'naive-ui';
 import { useRouter, useRoute } from 'vue-router';
-import { SunnyOutline, IdCardSharp,MoonOutline, Settings, LogInOutline, LogIn,GitCompareOutline, PersonCircle,Podium,Analytics,ClipboardSharp,Desktop } from '@vicons/ionicons5';
+import { SunnyOutline, IdCardSharp,MoonOutline, Settings, LogInOutline, LogIn,GitCompareOutline, PersonCircle,Podium,Analytics,ClipboardSharp,Desktop, ChatboxEllipses } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
 import upload from './upload.vue';

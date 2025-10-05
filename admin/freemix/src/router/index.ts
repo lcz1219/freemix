@@ -65,6 +65,11 @@ const routes = [
     component: getComponent(GoalManagement, GoalManagement) 
   },
   { 
+    path: '/messages', 
+    name: 'Messages', 
+     component: () => import('@/views/MessageCenter.vue')
+  },
+  { 
     path: '/statistics', 
     name: 'Statistics', 
     component: getComponent(Statistics, MobileStatistics) 

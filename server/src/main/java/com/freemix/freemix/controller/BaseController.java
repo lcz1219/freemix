@@ -8,6 +8,8 @@ import com.freemix.freemix.enetiy.Relation;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.enetiy.childGoals;
 import com.freemix.freemix.util.EnvironmentChecker;
+import com.freemix.freemix.util.UserContextUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -29,6 +31,10 @@ public class BaseController {
     MongoTemplate mongoTemplate;
     @Autowired
     EnvironmentChecker environmentChecker;
+    @Autowired
+    HttpServletRequest request;
+    @Autowired
+    UserContextUtil userContextUtil;
 
     public boolean editCollaborator(String goalId, List<String> collaborator,String role) {
         if("owner".equals(role)){
@@ -139,6 +145,14 @@ public class BaseController {
         });
 
 return users;
+    }
+
+    /**
+     * 获取当前登录用户信息
+     * @return User 当前用户对象
+     */
+    protected User getCurrentUser() {
+        return userContextUtil.getCurrentUser();
     }
 
 }

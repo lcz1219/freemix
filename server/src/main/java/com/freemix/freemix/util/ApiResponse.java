@@ -18,6 +18,12 @@ public class ApiResponse<T> {
         this.code = code;
     }
 
+    public ApiResponse(boolean operSucc, String msg, int code) {
+        this.operSucc = operSucc;
+        this.msg = msg;
+        this.code = code;
+    }
+
     // Getter 和 Setter 方法
     public boolean isOperSucc() {
         return operSucc;
@@ -59,6 +65,9 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> success(T data, String msg) {
         return new ApiResponse<>(true, msg, data,200);
     }
+//    public static <T> ApiResponse<T> success( String msg,T data) {
+//        return new ApiResponse<>(true, msg, data,200);
+//    }
     public static <T> ApiResponse<T> success() {
         return new ApiResponse<>(true, "msg", null,200);
     }
@@ -73,6 +82,8 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> failure(String msg, T data) {
         return new ApiResponse<>(false, msg, data,500);
+    } public static <T> ApiResponse<T> failure(String msg, Integer code) {
+        return new ApiResponse<>(false, msg,code);
     }
 
     @Override

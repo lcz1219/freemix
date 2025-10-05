@@ -263,11 +263,16 @@ public class LoginController {
     public ApiResponse getOwerList(){
         List<User> users = mongoTemplate.find(new Query(), User.class);
         Set<JSONObject> collect = users.stream().map(e -> {
+
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("value", e.getUsername());
             jsonObject.put("text", e.getUsername());
+            jsonObject.put("avatarUrl", e.getAvatarUrl());
             return jsonObject;
         }).collect(Collectors.toSet());
+        collect=collect.stream().filter(e->e.getString("value")!=null).collect(
+                Collectors.toSet()
+        );
 
         return ApiResponse.success(collect);
     }

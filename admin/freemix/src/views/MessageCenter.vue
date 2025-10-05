@@ -1,0 +1,668 @@
+<template>
+  <n-layout style="height: 100%">
+    <n-layout-header bordered>
+      <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0;">消息中心</h2>
+        
+      </div>
+      <!-- <n-button type="primary" @click="show()">
+         
+          发送消息
+        </n-button> -->
+    </n-layout-header>
+    
+    <n-layout has-sider style="height: calc(100% - 64px);">
+      <!-- 侧边栏 - 用户列表 -->
+      <n-layout-sider 
+        bordered 
+        width="240" 
+        style="height: 100vh;"
+        :collapsed-width="0" 
+        collapse-mode="width"
+        :collapsed="collapsed"
+        show-trigger
+        @collapse="collapsed = true"
+        @expand="collapsed = false"
+      >
+        <div style="padding: 16px;">
+          <n-input 
+            v-model:value="searchUser" 
+            placeholder="搜索用户" 
+            clearable
+            style="margin-bottom: 16px;"
+          >
+            <template #prefix>
+              <n-icon><Search /></n-icon>
+            </template>
+          </n-input>
+          
+          <n-list>
+            <n-list-item 
+              v-for="user in filteredUsers" 
+              :key="user.username"
+              @click="selectUser(user)"
+              :class="{ 'active-user': selectedUser && selectedUser.username === user.username }"
+              style="cursor: pointer;"
+            >
+              <n-thing>
+                <template #avatar>
+                <n-badge :value="computedBadge(user.username)" :max="15">
+                  <n-avatar 
+                    :src="showAvatar(user.avatarUrl)" 
+                    round 
+                    size="small"
+                  />
+                  </n-badge>
+                </template>
+                <template #header>
+                  {{ user.chinesename || user.username }}
+                </template>
+                <template #description>
+                  <n-text depth="3">
+                    {{ user.username }}
+                  </n-text>
+                </template>
+              </n-thing>
+            </n-list-item>
+          </n-list>
+        </div>
+      </n-layout-sider>
+      
+      <!-- 主内容区域 - 消息对话 -->
+      <n-layout>
+        <n-layout-content 
+          ref="messageContainer" 
+          style="padding: 16px; height: 75vh; overflow-y: auto;"
+          v-if="selectedUser"
+        >
+          <div v-if="messages.length === 0" style="text-align: center; padding: 40px 0;">
+            <n-empty description="暂无消息">
+              <template #icon>
+                <n-icon>
+                  <Chatbox />
+                </n-icon>
+              </template>
+            </n-empty>
+          </div>
+          
+          <div 
+            v-for="message in messages" 
+            :key="message.id"
+            :class="['message-item', message.fromUser === currentUser.username ? 'sent' : 'received']"
+          >
+            <div class="message-content">
+              <div class="message-text">{{ message.content }}</div>
+              <div class="message-time">
+                {{ formatTime(message.createdAt) }}
+              </div>
+            </div>
+          </div>
+        </n-layout-content>
+        
+        <n-layout-footer 
+          bordered 
+          v-if="selectedUser"
+          style="padding: 16px; height: 120px;"
+        >
+          <div style="display: flex; gap: 10px;">
+            <n-input 
+              v-model:value="newMessage" 
+              type="textarea" 
+              placeholder="输入消息..." 
+              :autosize="{ minRows: 3, maxRows: 4 }"
+              @keydown.enter="handleSendMessage"
+            />
+            <!-- <n-button 
+              type="primary" 
+              @click="sendMessage"
+              :disabled="!newMessage.trim()"
+              style="height: fit-content;"
+            >
+              发送
+            </n-button> -->
+          </div>
+        </n-layout-footer>
+        
+        <n-layout-content v-else style="display: flex; justify-content: center; align-items: center; height: 100%;">
+          <n-empty description="请选择一个用户开始聊天">
+            <template #icon>
+              <n-icon>
+                <Chat />
+              </n-icon>
+            </template>
+          </n-empty>
+        </n-layout-content>
+      </n-layout>
+    </n-layout>
+    
+    <!-- 发送消息模态框 -->
+    <n-modal v-model:show="showSendMessageModal" preset="dialog" title="发送消息">
+      <n-form :model="messageForm" :rules="messageRules" ref="messageFormRef">
+        <n-form-item label="接收者" path="toUser">
+          <n-select 
+            v-model:value="messageForm.toUser" 
+            :options="userOptions" 
+            placeholder="选择接收者"
+            filterable
+          />
+        </n-form-item>
+        <n-form-item label="消息内容" path="content">
+          <n-input 
+            v-model:value="messageForm.content" 
+            type="textarea" 
+            placeholder="输入消息内容"
+            :autosize="{ minRows: 3, maxRows: 6 }"
+          />
+        </n-form-item>
+      </n-form>
+      <template #action>
+        <n-button @click="showSendMessageModal = false">取消</n-button>
+        <n-button type="primary" @click="sendDirectMessage" :loading="sendingMessage">发送</n-button>
+      </template>
+    </n-modal>
+  </n-layout>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useStore } from 'vuex'
+import { useMessage } from 'naive-ui'
+import { getM, postM, isSuccess,baseURL } from '@/utils/request'
+import { 
+  Send, 
+  Search, 
+  Chatbox,
+  
+} from '@vicons/ionicons5'
+import {
+  NLayout,
+  NLayoutHeader,
+  NLayoutSider,
+  NLayoutContent,
+  NLayoutFooter,
+  NButton,
+  NInput,
+  NList,
+  NListItem,
+  NThing,
+  NAvatar,
+  NText,
+  NEmpty,
+  NBadge,
+  NModal,
+  NForm,
+  NFormItem,
+  NSelect,
+  NIcon,
+  NSpin
+} from 'naive-ui'
+// import defaultAvatar from '@/assets/images/default-avatar.png'
+
+// 定义消息类型
+interface Message {
+  id: string
+  fromUser: string
+  toUser: string
+  content: string
+  createdAt: number
+  isRead: boolean
+  type: string
+}
+
+// 定义用户类型
+interface User {
+  username: string
+  chinesename?: string
+  avatarUrl?: string
+}
+const badge = ref({})
+
+const store = useStore()
+const message = useMessage()
+const show=()=>{
+  
+  showSendMessageModal.value = true
+  console.log("showSendMessageModal.value:",showSendMessageModal.value);
+  
+}
+const showAvatar=(item)=>{
+  if(!item) return `${baseURL()}${'/file/WechatIMG105.jpg'}`
+  return `${baseURL()}${item}` 
+}
+// 响应式数据
+const collapsed = ref(false)
+const searchUser = ref('')
+const selectedUser = ref<User | null>(null)
+const messages = ref<Message[]>([])
+const newMessage = ref('')
+const showSendMessageModal = ref(false)
+const sendingMessage = ref(false)
+
+// 表单相关
+const messageFormRef = ref()
+const messageForm = ref({
+  toUser: '',
+  content: ''
+})
+const computedBadge=(item)=>{
+  let count = 0
+return badge.value[item]
+}
+
+const messageRules = {
+  toUser: {
+    required: true,
+    message: '请选择接收者',
+    trigger: 'blur'
+  },
+  content: {
+    required: true,
+    message: '请输入消息内容',
+    trigger: 'blur'
+  }
+}
+
+// 当前用户
+const currentUser = computed(() => store.state.user)
+
+// 获取所有用户
+const allUsers = ref<User[]>([])
+
+// 过滤用户列表
+const filteredUsers = computed(() => {
+  if (!searchUser.value) {
+    return allUsers.value
+  }
+  console.log("searchUser.value:",searchUser.value);
+  
+  const search = searchUser.value.trim()
+  console.log("allUsers.value:",allUsers.value);
+  
+  return allUsers.value.filter(user => 
+    user.username.includes(search) || 
+    (user.chinesename && user.chinesename.includes(search))
+  )
+})
+
+// 用户选项（用于选择器）
+const userOptions = computed(() => {
+  return allUsers.value
+    .filter(user => user.username !== currentUser.value.username)
+    .map(user => ({
+      label: `${user.chinesename || user.username} (${user.username})`,
+      value: user.username
+    }))
+})
+
+// 格式化时间
+const formatTime = (timestamp: number) => {
+  try {
+    const date = new Date(timestamp)
+    const now = new Date()
+    
+    // 如果是今天，只显示时间
+    if (date.toDateString() === now.toDateString()) {
+      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+    }
+    
+    // 如果是今年，显示月日和时间
+    if (date.getFullYear() === now.getFullYear()) {
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+    }
+    
+    // 其他情况显示完整日期
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
+  } catch (error) {
+    console.error('时间格式化失败:', error)
+    return '未知时间'
+  }
+}
+
+// 获取所有用户
+const fetchAllUsers = async () => {
+  try {
+    // 调用获取用户列表的API
+    const res = await getM('getOwerList')
+    if (isSuccess(res)) {
+      res.data.data.map(user=>{
+        user.username=user.value,
+        user.chinesename=user.text
+        return user
+      })
+      allUsers.value = res.data.data.filter((user: User) => user.username !== currentUser.value.username)
+      //默认选择第一个初始化时候
+      selectedUser.value = allUsers.value[0]
+      return true
+    } else {
+      // 如果API调用失败，使用模拟数据
+      console.warn('获取用户列表API失败，使用模拟数据:', res.data?.msg)
+      const mockUsers = [
+        { username: 'admin', chinesename: '管理员' },
+        { username: 'linchengzhong', chinesename: '林成中' },
+        { username: 'user1', chinesename: '用户一' },
+        { username: 'user2', chinesename: '用户二' }
+      ]
+      allUsers.value = mockUsers.filter(user => user.username !== currentUser.value.username)
+      return false
+    }
+  } catch (error: any) {
+    // 如果出现异常，使用模拟数据
+    console.warn('获取用户列表异常，使用模拟数据:', error)
+    const mockUsers = [
+      { username: 'admin', chinesename: '管理员' },
+      { username: 'linchengzhong', chinesename: '林成中' },
+      { username: 'user1', chinesename: '用户一' },
+      { username: 'user2', chinesename: '用户二' }
+    ]
+    allUsers.value = mockUsers.filter(user => user.username !== currentUser.value.username)
+    return false
+  }
+}
+
+// 选择用户
+const selectUser = async (user: User) => {
+  try {
+    selectedUser.value = user
+    await fetchMessages()
+    scrollToBottom()
+  } catch (error) {
+    console.error('选择用户失败:', error)
+    message.error('选择用户失败')
+  }
+}
+
+// 获取消息
+const fetchMessages = async () => {
+  if (!selectedUser.value) return
+  
+  try {
+    // 获取与选中用户的所有消息（发送的和接收的）
+    const [sentRes, receivedRes] = await Promise.all([
+      getM('messages/sent'),
+      getM('messages/received')
+    ])
+    
+    if (isSuccess(sentRes) && isSuccess(receivedRes)) {
+      const sentMessages = sentRes.data.data || []
+      const receivedMessages = receivedRes.data.data || []
+      
+      // 过滤出与当前选中用户相关的消息
+      const userMessages = [...sentMessages, ...receivedMessages].filter(
+        (msg: Message) => 
+          (msg.fromUser === currentUser.value.username && msg.toUser === selectedUser.value?.username) ||
+          (msg.fromUser === selectedUser.value?.username && msg.toUser === currentUser.value.username)
+      )
+      
+      // 按时间排序
+      messages.value = userMessages.sort((a: Message, b: Message) => a.createdAt - b.createdAt)
+      
+      // 标记接收的消息为已读
+      await markMessagesAsRead()
+    } else {
+      const errorMsg = sentRes.data?.msg || receivedRes.data?.msg || '获取消息失败'
+      message.error(errorMsg)
+    }
+  } catch (error: any) {
+    if (error?.message) {
+      message.error(error.message)
+    } else {
+      message.error('获取消息失败')
+    }
+    console.error('获取消息失败:', error)
+  }
+}
+
+// 标记消息为已读
+const markMessagesAsRead = async () => {
+  if (!selectedUser.value) return
+  
+  try {
+    // 找出未读的接收消息并标记为已读
+    const unreadMessages = messages.value.filter(
+      msg => msg.toUser === currentUser.value.username && !msg.isRead
+    )
+    
+    // 如果有未读消息，才调用接口
+    if (unreadMessages.length > 0) {
+      const messageIds = unreadMessages.map(msg => msg.id)
+      const res = await postM('messages/markAsReadBatch', { messageIds })
+      
+      if (isSuccess(res)) {
+        // 更新本地消息状态
+        messages.value.forEach(msg => {
+          if (messageIds.includes(msg.id)) {
+            msg.isRead = true
+          }
+        })
+        fetchUnreadCount()
+        return true
+      } else {
+        message.error(res.data.msg || '标记消息为已读失败')
+        console.error('标记消息为已读失败:', res.data.msg)
+        return false
+      }
+    }
+    return true
+  } catch (error: any) {
+    if (error?.message) {
+      message.error(error.message)
+    } else {
+      message.error('标记消息为已读失败')
+    }
+    console.error('标记消息为已读失败:', error)
+    return false
+  }
+}
+
+// 发送消息
+const sendMessage = async () => {
+  if (!newMessage.value.trim() || !selectedUser.value) return
+  
+  try {
+    const content = newMessage.value.trim()
+    if (!content) {
+      message.error('消息内容不能为空')
+      return
+    }
+    
+    const messageData = {
+      toUser: selectedUser.value.username,
+      content: content,
+      type: 'text'
+    }
+    
+    const res = await postM('messages/send', messageData)
+    
+    if (isSuccess(res)) {
+      // 添加到消息列表
+      messages.value.push(res.data.data)
+      newMessage.value = ''
+      scrollToBottom()
+      message.success('消息发送成功')
+    } else {
+      message.error(res.data.msg || '消息发送失败')
+    }
+  } catch (error: any) {
+    if (error?.message) {
+      message.error(error.message)
+    } else {
+      message.error('消息发送失败')
+    }
+    console.error('消息发送失败:', error)
+  }
+}
+
+// 直接发送消息（通过模态框）
+const sendDirectMessage = async () => {
+  try {
+    await messageFormRef.value?.validate()
+    
+    const content = messageForm.value.content.trim()
+    if (!content) {
+      message.error('消息内容不能为空')
+      return
+    }
+    
+    if (!messageForm.value.toUser) {
+      message.error('请选择接收者')
+      return
+    }
+    
+    sendingMessage.value = true
+    const messageData = {
+      toUser: messageForm.value.toUser,
+      content: content,
+      type: 'text'
+    }
+    
+    const res = await postM('messages/send', messageData)
+    
+    if (isSuccess(res)) {
+      message.success('消息发送成功')
+      showSendMessageModal.value = false
+      messageForm.value = {
+        toUser: '',
+        content: ''
+      }
+      
+      // 如果正在与该用户聊天，刷新消息
+      if (selectedUser.value?.username === messageForm.value.toUser) {
+        await fetchMessages()
+      }
+    } else {
+      message.error(res.data.msg || '消息发送失败')
+    }
+  } catch (error: any) {
+    if (error?.message) {
+      message.error(error.message)
+    } else {
+      message.error('消息发送失败')
+    }
+  } finally {
+    sendingMessage.value = false
+  }
+}
+
+// 处理回车发送消息
+const handleSendMessage = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    sendMessage()
+  }
+}
+
+// 滚动到底部
+const messageContainer = ref()
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messageContainer.value) {
+      const container = messageContainer.value.$el || messageContainer.value
+      console.log("container:",container);
+      
+      if (container) {
+        container.scrollTop = container.scrollHeight
+      }
+    }
+  })
+}
+
+// 获取未读消息数量
+const fetchUnreadCount = async () => {
+  try {
+    const res = await getM('messages/unreadCount')
+    if (isSuccess(res)) {
+      // 这里可以更新全局未读消息数
+      console.log('未读消息数量:', res.data.data)
+      badge.value = res.data.data
+      return res.data.data
+    }
+  } catch (error) {
+    console.error('获取未读消息数量失败:', error)
+  }
+  return 0
+}
+
+// 初始化
+onMounted(async () => {
+  try {
+    const usersLoaded = await fetchAllUsers()
+    const unreadCount = await fetchUnreadCount()
+    
+    if (!usersLoaded) {
+      message.warning('用户列表加载失败，正在使用模拟数据')
+    }
+    
+    console.log('初始化完成，未读消息数量:', unreadCount)
+  } catch (error: any) {
+    console.error('初始化失败:', error)
+    if (error?.message) {
+      message.error('初始化失败: ' + error.message)
+    } else {
+      message.error('初始化失败')
+    }
+  }
+})
+
+// 监听消息变化，自动滚动到底部
+watch(messages, () => {
+  scrollToBottom()
+})
+</script>
+
+<style scoped>
+.message-item {
+  margin-bottom: 16px;
+  display: flex;
+}
+
+.message-item.sent {
+  justify-content: flex-end;
+}
+
+.message-item.received {
+  justify-content: flex-start;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.message-item.sent .message-content {
+  background-color: #40ff6a9e;
+  color: white;
+}
+
+.message-item.received .message-content {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.message-text {
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.message-time {
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: 0.8;
+  text-align: right;
+}
+
+.message-item.sent .message-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.message-item.received .message-time {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.active-user {
+background-color: #e6f4ff1c;
+    border-radius: 17px;
+    margin: 3px;
+}
+</style>

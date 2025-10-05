@@ -2,6 +2,7 @@ package com.freemix.freemix.interceptor;
 
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.controller.BaseController;
+import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.ApiResponse;
 import com.freemix.freemix.util.EnvironmentChecker;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
@@ -26,6 +30,8 @@ public class CheckAspect extends BaseController  {
 
     private final RedisTemplate redisTemplate;
     private final EnvironmentChecker environmentChecker;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     // 使用构造函数注入 + @Lazy 解决循环依赖
     public CheckAspect(@Lazy RedisTemplate redisTemplate, EnvironmentChecker environmentChecker) {
@@ -84,6 +90,17 @@ public class CheckAspect extends BaseController  {
 
         // 优先级3：URL参数（备用方案）
         return request.getParameter("token");
+    }
+    
+    /**
+     * 根据token获取用户信息
+     * @param token 用户token
+     * @return User 用户对象
+     */
+    public User getUserByToken(String token) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("token").is(token));
+        return mongoTemplate.findOne(query, User.class);
     }
 
 

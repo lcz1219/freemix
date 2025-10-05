@@ -30,7 +30,7 @@
       <!-- 用户留言 -->
       <div class="chat-message user-message">
         <div class="message-header">
-          <span class="sender">我</span>
+          <span class="sender">{{feedback.createdBy}}</span>
           <span class="time">{{ formatDate(feedback.createdAt) }}</span>
         </div>
         <div class="message-content">
