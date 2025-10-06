@@ -1,0 +1,57 @@
+[{
+  "_id": "487a9de4-5d8d-4a7f-b150-284c5a702591",
+  "type": "bug",
+  "subject": "系统需要优化",
+  "content": "系统需要优化",
+  "feedResultTime": {
+    "$numberLong": "0"
+  },
+  "status": "pending",
+  "feedTime": {
+    "$numberLong": "0"
+  },
+  "createdAt": {
+    "$numberLong": "1759634035953"
+  },
+  "contact": "",
+  "_class": "com.freemix.freemix.enetiy.FeedBack"
+},
+{
+  "_id": "3c6e4dff-6f88-4b1b-b615-7a12763de631",
+  "type": "ux",
+  "subject": "5",
+  "content": "5",
+  "feedResultTime": {
+    "$numberLong": "0"
+  },
+  "status": "pending",
+  "feedTime": {
+    "$numberLong": "0"
+  },
+  "createdAt": {
+    "$numberLong": "1759634758640"
+  },
+  "createdBy": "lcz1",
+  "contact": "",
+  "_class": "com.freemix.freemix.enetiy.FeedBack"
+},
+{
+  "_id": "dc727c98-4113-4b97-862a-ffdbbdfc3164",
+  "type": "ux",
+  "subject": "3",
+  "content": "3",
+  "feedResult": "可以的，收到",
+  "feedResultTime": {
+    "$numberLong": "1759634944320"
+  },
+  "status": "resolved",
+  "feedTime": {
+    "$numberLong": "0"
+  },
+  "createdAt": {
+    "$numberLong": "1759634927354"
+  },
+  "createdBy": "linchengzhong",
+  "contact": "3",
+  "_class": "com.freemix.freemix.enetiy.FeedBack"
+}]
