@@ -1,7 +1,11 @@
 <template>
   <n-layout style="height: 100%">
     <n-layout-header bordered>
-      <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="padding: 16px; display: flex; justify-content: flex-start; align-items: center;">
+        <n-button text @click="turnHome()">
+          <n-icon style="margin-right: 10px"><ArrowBack /></n-icon>
+
+        </n-button>
         <h2 style="margin: 0;">消息中心</h2>
         
       </div>
@@ -47,11 +51,16 @@
               <n-thing>
                 <template #avatar>
                 <n-badge :value="computedBadge(user.username)" :max="15">
-                  <n-avatar 
+                  <n-avatar
+                      v-if="user.avatarUrl"
                     :src="showAvatar(user.avatarUrl)" 
                     round 
                     size="small"
+                      fallback-src="https://bpic.588ku.com/element_origin_min_pic/19/04/10/e87e154ddafd724a915a119fb21c38b9.jpg"
                   />
+                  <n-icon :size="24"
+                      v-else
+                  ><Accessibility/></n-icon>
                   </n-badge>
                 </template>
                 <template #header>
@@ -72,7 +81,7 @@
       <n-layout>
         <n-layout-content 
           ref="messageContainer" 
-          style="padding: 16px; height: 75vh; overflow-y: auto;"
+          style="padding: 16px; height: calc(100% - 185px); overflow-y: auto;"
           v-if="selectedUser"
         >
           <div v-if="messages.length === 0" style="text-align: center; padding: 40px 0;">
@@ -172,6 +181,8 @@ import {
   Send, 
   Search, 
   Chatbox,
+  ArrowBack,
+  Accessibility
   
 } from '@vicons/ionicons5'
 import {
@@ -196,6 +207,7 @@ import {
   NIcon,
   NSpin
 } from 'naive-ui'
+import router from "@/router";
 // import defaultAvatar from '@/assets/images/default-avatar.png'
 
 // 定义消息类型
@@ -216,7 +228,9 @@ interface User {
   avatarUrl?: string
 }
 const badge = ref({})
-
+const  turnHome=()=>{
+  router.push("/home")
+}
 const store = useStore()
 const message = useMessage()
 const show=()=>{
@@ -226,7 +240,7 @@ const show=()=>{
   
 }
 const showAvatar=(item)=>{
-  if(!item) return `${baseURL()}${'/file/WechatIMG105.jpg'}`
+  // if(!item) return `${baseURL()}${'/file/WechatIMG105.jpg'}`
   return `${baseURL()}${item}` 
 }
 // 响应式数据
@@ -662,7 +676,7 @@ watch(messages, () => {
 
 .active-user {
 background-color: #e6f4ff1c;
-    border-radius: 17px;
+    //border-radius: 17px;
     margin: 3px;
 }
 </style>
