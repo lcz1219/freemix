@@ -87,7 +87,8 @@ const routeTitleMap: Record<string, string> = {
   'GoalManagement': '目标管理',
   'Statistics': '统计',
   'Settings': '设置',
-  'LoginLog': '登录日志'
+  'LoginLog': '登录日志',
+  "Messages": "消息"
 }
 
 // 获取路由标题
