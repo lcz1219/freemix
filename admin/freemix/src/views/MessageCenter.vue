@@ -1,26 +1,28 @@
 <template>
-  <n-layout style="height: 100%">
+  <!-- 顶部导航栏 -->
+    <NavBar active-tab="dashboard" />
+  <n-layout style="height: 100vh;">
     <n-layout-header bordered>
-      <div style="padding: 16px; display: flex; justify-content: flex-start; align-items: center;">
-        <n-button text @click="turnHome()">
+      <!-- <div style="padding: 16px; display: flex; justify-content: flex-start; align-items: center;"> -->
+        <!-- <n-button text @click="turnHome()">
           <n-icon style="margin-right: 10px"><ArrowBack /></n-icon>
 
-        </n-button>
-        <h2 style="margin: 0;">消息中心</h2>
+        </n-button> -->
+        <!-- <h2 style="margin: 0;">消息中心</h2> -->
         
-      </div>
+      <!-- </div> -->
       <!-- <n-button type="primary" @click="show()">
          
           发送消息
         </n-button> -->
     </n-layout-header>
     
-    <n-layout has-sider style="height: calc(100% - 64px);">
+    <n-layout has-sider style="height: calc(100vh - 64px); ">
       <!-- 侧边栏 - 用户列表 -->
       <n-layout-sider 
         bordered 
         width="240" 
-        style="height: 100vh;"
+        style="height: 100%;"
         :collapsed-width="0" 
         collapse-mode="width"
         :collapsed="collapsed"
@@ -28,7 +30,7 @@
         @collapse="collapsed = true"
         @expand="collapsed = false"
       >
-        <div style="padding: 16px;">
+        <div style="padding: 16px; height: calc(100% - 32px); display: flex; flex-direction: column;">
           <n-input 
             v-model:value="searchUser" 
             placeholder="搜索用户" 
@@ -40,7 +42,7 @@
             </template>
           </n-input>
           
-          <n-list>
+          <n-list style="flex: 1; overflow-y: auto;">
             <n-list-item 
               v-for="user in filteredUsers" 
               :key="user.username"
@@ -81,7 +83,7 @@
       <n-layout>
         <n-layout-content 
           ref="messageContainer" 
-          style="padding: 16px; height: calc(100% - 185px); overflow-y: auto;"
+          style="padding: 16px; height: calc(100% - 185px); overflow-y: scroll; overflow-x: hidden; min-height: 100px;"
           v-if="selectedUser"
         >
           <div v-if="messages.length === 0" style="text-align: center; padding: 40px 0;">
@@ -111,15 +113,16 @@
         <n-layout-footer 
           bordered 
           v-if="selectedUser"
-          style="padding: 16px; height: 120px;"
+          style="padding: 16px; height: 120px; min-height: 100px;"
         >
-          <div style="display: flex; gap: 10px;">
+          <div style="display: flex; gap: 10px; height: 100%;">
             <n-input 
               v-model:value="newMessage" 
               type="textarea" 
               placeholder="输入消息..." 
-              :autosize="{ minRows: 3, maxRows: 4 }"
+              :autosize="{ minRows: 2, maxRows: 4 }"
               @keydown.enter="handleSendMessage"
+              style="flex: 1;"
             />
             <!-- <n-button 
               type="primary" 
@@ -176,6 +179,7 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useStore } from 'vuex'
 import { useMessage } from 'naive-ui'
+import NavBar from '@/components/NavBar.vue';
 import { getM, postM, isSuccess,baseURL } from '@/utils/request'
 import { 
   Send, 
@@ -362,13 +366,10 @@ const fetchAllUsers = async () => {
   } catch (error: any) {
     // 如果出现异常，使用模拟数据
     console.warn('获取用户列表异常，使用模拟数据:', error)
-    const mockUsers = [
-      { username: 'admin', chinesename: '管理员' },
-      { username: 'linchengzhong', chinesename: '林成中' },
-      { username: 'user1', chinesename: '用户一' },
-      { username: 'user2', chinesename: '用户二' }
+    const mockUsers: User[] = [
+     
     ]
-    allUsers.value = mockUsers.filter(user => user.username !== currentUser.value.username)
+    allUsers.value = mockUsers
     return false
   }
 }
@@ -567,15 +568,14 @@ const handleSendMessage = (e: KeyboardEvent) => {
 
 // 滚动到底部
 const messageContainer = ref()
+const bottomscroll = ref(9999999)
 const scrollToBottom = () => {
   nextTick(() => {
     if (messageContainer.value) {
-      const container = messageContainer.value.$el || messageContainer.value
-      console.log("container:",container);
-      
-      if (container) {
-        container.scrollTop = container.scrollHeight
-      }
+      // 每次滚动增加一个偏移量，避免滚动到相同位置
+      bottomscroll.value=bottomscroll.value+1
+      console.log("bottomscroll.value:",bottomscroll.value);
+    messageContainer.value.scrollTo({ top: bottomscroll.value, behavior: 'smooth' })
     }
   })
 }
