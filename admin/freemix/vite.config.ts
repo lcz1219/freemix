@@ -8,6 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './', // 使用相对路径，确保打包后资源能正确加载
   plugins: [
     vue(),
     vueJsx(),

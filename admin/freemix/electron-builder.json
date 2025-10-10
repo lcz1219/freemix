@@ -1,0 +1,49 @@
+{
+  "appId": "com.example.freemix",
+  "productName": "FreeMix",
+  "directories": {
+    "output": "dist-electron",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "package.json",
+    "!node_modules/**/*"
+  ],
+  "extends": null,
+  "mac": {
+    "category": "public.app-category.utilities",
+    "target": [
+      "dmg",
+      "zip"
+    ],
+    "icon": "build/icons/icon.icns",
+    "identity": null,
+    "gatekeeperAssess": false
+  },
+  "win": {
+    "target": [
+      "nsis",
+      "zip"
+    ],
+    "icon": "build/icons/icon.ico",
+    "signAndEditExecutable": false
+  },
+  "linux": {
+    "target": [
+      "AppImage",
+      "deb"
+    ],
+    "icon": "build/icons/icon.png"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  },
+  "publish": null,
+  "electronDownload": {
+    "mirror": "https://npmmirror.com/mirrors/electron/"
+  },
+  "npmRebuild": false
+}
