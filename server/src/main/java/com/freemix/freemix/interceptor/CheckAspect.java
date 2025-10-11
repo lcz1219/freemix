@@ -52,18 +52,28 @@ public class CheckAspect extends BaseController  {
             return joinPoint.proceed();
         }
         log.info("用检测token，线上环境");
-        // 在生产环境中进行token验证
-        Object token1 = redisTemplate.opsForValue().get("token");
-        if(token1==null){
-            return ApiResponse.failure("token过期");
-        }
-        String tokenRedis = (String) redisTemplate.opsForValue().get("token");
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
         HttpServletRequest request = attributes.getRequest();
 
         // 获取Token（支持多种方式）
         String token = getTokenFromRequest(request);
+        if(token == null || token.isEmpty()){
+            return ApiResponse.failure("token不能为空");
+        }
+
+        // 根据token从数据库获取用户信息
+        User user = getUserByToken(token);
+        if(user == null){
+            return ApiResponse.failure("token无效");
+        }
+
+        // 使用用户名_token作为Redis key进行验证
+        String tokenKey = user.getUsername() + "_token";
+        String tokenRedis = (String) redisTemplate.opsForValue().get(tokenKey);
+        if(tokenRedis == null){
+            return ApiResponse.failure("token过期");
+        }
+        
         if(!token.equals(tokenRedis)){
             return ApiResponse.failure("token不正确");
         }

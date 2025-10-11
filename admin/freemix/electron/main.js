@@ -1,5 +1,5 @@
 // electron/main.js
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,6 +12,12 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    titleBarStyle: 'hiddenInset', // macOS: 隐藏标题栏但保留窗口控制按钮
+    frame: process.platform === 'darwin' ? false : true, // macOS: 无边框，其他平台保留边框
+    title: '', // 清空窗口标题
+    // 增加窗口拖动区域设置
+    transparent: false, // 确保窗口不透明
+    thickFrame: true, // 增加窗口边框厚度
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // 预加载脚本
       contextIsolation: true, // 启用上下文隔离（安全）
@@ -31,6 +37,36 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
+
+// 窗口控制事件处理
+ipcMain.on('window-control', (event, action) => {
+  const window = BrowserWindow.getFocusedWindow();
+  if (!window) return;
+  
+  switch (action) {
+    case 'minimize':
+      window.minimize();
+      break;
+    case 'maximize':
+      if (window.isMaximized()) {
+        window.unmaximize();
+      } else {
+        window.maximize();
+      }
+      break;
+    case 'close':
+      window.close();
+      break;
+  }
+});
+
+// 窗口拖动事件处理
+ipcMain.on('window-drag', (event, action) => {
+  const window = BrowserWindow.getFocusedWindow();
+  if (window) {
+    window.webContents.send('window-drag-start');
+  }
+});
 
 // 应用准备就绪后创建窗口
 app.whenReady().then(createWindow);

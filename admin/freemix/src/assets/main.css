@@ -1,5 +1,30 @@
 @import './base.css';
 
+/* 自定义拖动区域样式 - 仅窗口边缘可拖动 */
+.drag-region {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background-color: transparent;
+  z-index: 1000;
+  pointer-events: auto;
+  -webkit-app-region: drag;
+}
+
+/* 确保页面内容不会被拖动区域遮挡 */
+#app {
+  margin-top: 20px;
+}
+
+/* 在拖动区域内排除按钮等交互元素 */
+.drag-region button,
+.drag-region input,
+.drag-region a {
+  -webkit-app-region: no-drag;
+}
+
 #app {
   /* max-width: 1280px; */
   margin: 0 auto;

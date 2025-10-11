@@ -256,6 +256,11 @@ const newMessage = ref('')
 const showSendMessageModal = ref(false)
 const sendingMessage = ref(false)
 
+// 轮询相关
+const pollingInterval = ref<NodeJS.Timeout | null>(null)
+const pollingEnabled = ref(true)
+const pollingIntervalTime = 300 // 3秒轮询一次
+
 // 表单相关
 const messageFormRef = ref()
 const messageForm = ref({
@@ -377,9 +382,15 @@ const fetchAllUsers = async () => {
 // 选择用户
 const selectUser = async (user: User) => {
   try {
+    // 停止之前的轮询
+    stopPolling()
+    
     selectedUser.value = user
     await fetchMessages()
     scrollToBottom()
+    
+    // 开始新的轮询
+    startPolling()
   } catch (error) {
     console.error('选择用户失败:', error)
     message.error('选择用户失败')
@@ -489,11 +500,14 @@ const sendMessage = async () => {
     const res = await postM('messages/send', messageData)
     
     if (isSuccess(res)) {
-      // 添加到消息列表
+      // 立即添加到消息列表
       messages.value.push(res.data.data)
       newMessage.value = ''
       scrollToBottom()
       message.success('消息发送成功')
+      
+      // 立即刷新消息列表，确保显示最新消息
+      await fetchMessages()
     } else {
       message.error(res.data.msg || '消息发送失败')
     }
@@ -596,6 +610,38 @@ const fetchUnreadCount = async () => {
   return 0
 }
 
+// 开始轮询消息
+const startPolling = () => {
+  if (pollingInterval.value) {
+    clearInterval(pollingInterval.value)
+  }
+  
+  pollingInterval.value = setInterval(async () => {
+    if (pollingEnabled.value && selectedUser.value) {
+      await fetchMessages()
+      await fetchUnreadCount()
+    }
+  }, pollingIntervalTime)
+}
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollingInterval.value) {
+    clearInterval(pollingInterval.value)
+    pollingInterval.value = null
+  }
+}
+
+// 切换轮询状态
+const togglePolling = (enabled: boolean) => {
+  pollingEnabled.value = enabled
+  if (enabled && selectedUser.value) {
+    startPolling()
+  } else {
+    stopPolling()
+  }
+}
+
 // 初始化
 onMounted(async () => {
   try {
@@ -607,6 +653,11 @@ onMounted(async () => {
     }
     
     console.log('初始化完成，未读消息数量:', unreadCount)
+    
+    // 开始轮询
+    if (selectedUser.value) {
+      startPolling()
+    }
   } catch (error: any) {
     console.error('初始化失败:', error)
     if (error?.message) {
@@ -615,6 +666,12 @@ onMounted(async () => {
       message.error('初始化失败')
     }
   }
+})
+
+// 组件销毁时停止轮询
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  stopPolling()
 })
 
 // 监听消息变化，自动滚动到底部

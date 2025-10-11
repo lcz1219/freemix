@@ -129,7 +129,9 @@ public class LoginController {
 //        }
             
             userFromDB.setToken(UUID.randomUUID().toString());
-            redisTemplate.opsForValue().set("token", userFromDB.getToken(),60, TimeUnit.MINUTES);
+            // 使用用户名_token作为Redis key
+            String tokenKey = userFromDB.getUsername() + "_token";
+            redisTemplate.opsForValue().set(tokenKey, userFromDB.getToken(),60, TimeUnit.MINUTES);
             // 更新用户信息
             mongoTemplate.findAndModify(
                 new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),

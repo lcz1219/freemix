@@ -7,8 +7,10 @@
     class="config-provider"
   >
   <van-config-provider :theme="isDark?'dark':'light'">
-    <!-- 主题切换按钮 -->
-    
+    <!-- 自定义拖动区域（仅桌面端）- 仅窗口顶部边缘 -->
+    <div v-if="!isMobileDevice" class="drag-region">
+      <!-- 仅用于窗口拖动的透明区域 -->
+    </div>
 
     <!-- 全局样式 -->
     <n-global-style />
