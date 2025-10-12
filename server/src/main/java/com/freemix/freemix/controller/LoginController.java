@@ -129,7 +129,7 @@ public class LoginController {
 //        }
             
             userFromDB.setToken(UUID.randomUUID().toString());
-            // 使用用户名_token作为Redis key
+            // 使用用户名_token作为Redis key （）
             String tokenKey = userFromDB.getUsername() + "_token";
             redisTemplate.opsForValue().set(tokenKey, userFromDB.getToken(),60, TimeUnit.MINUTES);
             // 更新用户信息
