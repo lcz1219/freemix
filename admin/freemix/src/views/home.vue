@@ -1,7 +1,7 @@
 <template>
   <n-layout :native-scrollbar="true" :class="isDark ? 'home-container' : 'home-container-light'">
-    <common>
-      <template #content>
+    <!-- <common>
+      <template #content> -->
         <n-layout-content class="main-content-wrapper">
           <div class="main-content">
             <!-- 英雄区域 -->
@@ -500,8 +500,8 @@
         </n-layout-footer> -->
           </div>
         </n-layout-content>
-      </template>
-    </common>
+      <!-- </template>
+    </common> -->
 
     <!-- 主内容区域 -->
 
@@ -1094,6 +1094,7 @@ onMounted(async () => {
   position: relative;
 }
 
+
 .nav-link.active::after {
   content: '';
   position: absolute;
@@ -1111,7 +1112,7 @@ onMounted(async () => {
 }
 
 .main-content-wrapper {
-  height: calc(100vh - 100px);
+  height: 100%;
   overflow-y: auto;
 }
 

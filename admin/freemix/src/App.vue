@@ -20,7 +20,34 @@
     <!-- 消息提供器 -->
     <n-message-provider>
       <!-- 路由视图 - 应用主题类 -->
-      <router-view :class="themeClass" />
+      <n-layout position="absolute" class="app-layout" has-sider>
+        <!-- 侧边栏导航 -->
+        <n-layout-sider
+          v-if="!isMobileDevice"
+          bordered
+          collapse-mode="transform"
+          :collapsed-width="64"
+          show-collapsed-content
+          :width="isSidebarCollapsed ? 64 : 240"
+          :native-scrollbar="false"
+          class="side-navbar"
+        >
+          <NavBar :active-tab="activeTab" @update:collapsed="isSidebarCollapsed = $event" />
+        </n-layout-sider>
+
+        <!-- 主内容区域 -->
+        <n-layout class="main-layout">
+          <!-- 顶部导航栏（仅移动端） -->
+          <n-layout-header v-if="isMobileDevice" bordered class="top-navbar">
+            <NavBar :active-tab="activeTab" />
+          </n-layout-header>
+
+          <!-- 页面内容 -->
+          <n-layout-content class="content-wrapper">
+            <router-view :class="themeClass" />
+          </n-layout-content>
+        </n-layout>
+      </n-layout>
       
       <!-- 移动端浮动导航组件 -->
       <MobileFloatingNav v-if="isMobileDevice" />
@@ -47,15 +74,34 @@ import {
   NTooltip,
   NIcon,
   zhCN,
-  dateZhCN
+  dateZhCN,
+  NLayout,
+  NLayoutSider,
+  NLayoutHeader,
+  NLayoutContent
 } from 'naive-ui';
 import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
+import NavBar from '@/components/NavBar.vue';
 
 // 主题状态管理
 const isDark = ref(false);
 const isMobileDevice = isMobile(); // 调用函数获取是否为移动端
+
+// 侧边栏折叠状态
+const isSidebarCollapsed = ref(false);
+
+// 计算当前激活的标签
+const activeTab = computed(() => {
+  const path = route.path;
+  if (path === '/home' || path === '/') return 'dashboard';
+  if (path.includes('/goal-management')) return 'goalmanagement';
+  if (path.includes('/statistics')) return 'statistics';
+  if (path.includes('/goal-structure')) return 'goalstructure';
+  if (path.includes('/messages')) return 'messages';
+  return 'dashboard';
+});
 
 // 路由信息
 const route = useRoute();
@@ -180,6 +226,10 @@ const railStyle = ({
   return style;
 };
 
+// 提供函数给子组件使用
+provide('isDark', isDark);
+provide('toggleTheme', toggleTheme);
+provide('railStyle', railStyle);
 // 图标组件
 const SunIcon = SunnyOutline;
 const MoonIcon = MoonOutline;
@@ -229,6 +279,33 @@ body {
   border: 1px solid var(--border-color);
 }
 
+/* 应用布局样式 */
+.app-layout {
+  /* height: 100vh; */
+}
+
+/* 侧边栏样式 */
+.side-navbar {
+  height: 100vh;
+  padding: 20px 0;
+  background-color: var(--card-bg);
+}
+
+/* 顶部导航栏样式 */
+.top-navbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  background-color: var(--card-bg);
+}
+
+/* 内容区域样式 */
+.content-wrapper {
+  padding: 10px;
+  height: 100%;
+  overflow-y: auto;
+}
 
 /* 确保所有Naive UI组件使用主题变量 */
 .n-card {

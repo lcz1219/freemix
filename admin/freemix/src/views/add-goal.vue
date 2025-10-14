@@ -473,7 +473,7 @@ defineExpose({
 }
 
 .main-content-wrapper {
-  height: calc(100vh - 160px);
+  height: 100%;
   overflow-y: auto;
 }
 

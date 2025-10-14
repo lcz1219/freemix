@@ -439,7 +439,7 @@ onMounted(() => {
   padding: 20px;
   /* max-width: 1200px; */
   /* margin: 0 auto; */
-  max-height: calc(100vh - 120px);
+  max-height: 100%;
   overflow-y: auto;
 }
 
