@@ -1,16 +1,8 @@
 <template>
   <n-layout :native-scrollbar="true" :class="isDark ? 'home-container' : 'home-container-light'">
-    <!-- 装饰背景元素 -->
-    <div class="background-elements">
-      <div class="gradient-circle blue"></div>
-      <div class="gradient-circle green"></div>
-      <div class="gradient-circle purple"></div>
-    </div>
-
-    <!-- 顶部导航栏 -->
-    <NavBar active-tab="statistics" />
-
-    <!-- 主内容区域 -->
+    <common>
+      <template #content>
+<!-- 主内容区域 -->
     <n-layout-content class="main-content-wrapper">
       <div class="main-content">
         <!-- 页面标题 -->
@@ -113,15 +105,18 @@
         </section>
       </div>
     </n-layout-content>
+      </template>
+    </common>
+
+    
 
     <!-- 底部 -->
-    <n-layout-footer class="footer" bordered>
-      <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
-    </n-layout-footer>
+   
   </n-layout>
 </template>
 
 <script setup lang="ts">
+import common from '@/views/common.vue';
 import { ref, onMounted, inject, computed, watch, h } from 'vue';
 import { 
   NLayout,
