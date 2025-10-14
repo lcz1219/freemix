@@ -628,7 +628,7 @@ onMounted(async () => {
 }
 
 .main-content-wrapper {
-  height: 100%;
+  height: calc(100vh - 160px);
   overflow-y: auto;
 }
 

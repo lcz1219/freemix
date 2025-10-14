@@ -1,8 +1,8 @@
 <template>
   <!-- 顶部导航栏 -->
-    <!-- <NavBar active-tab="dashboard" /> -->
-  <n-layout style="height: 100%;">
-    <n-layout-header >
+    <NavBar active-tab="dashboard" />
+  <n-layout style="height: 100vh;">
+    <n-layout-header bordered>
       <!-- <div style="padding: 16px; display: flex; justify-content: flex-start; align-items: center;"> -->
         <!-- <n-button text @click="turnHome()">
           <n-icon style="margin-right: 10px"><ArrowBack /></n-icon>
@@ -17,7 +17,7 @@
         </n-button> -->
     </n-layout-header>
     
-    <n-layout has-sider style="height: 100%; ">
+    <n-layout has-sider style="height: calc(100vh - 64px); ">
       <!-- 侧边栏 - 用户列表 -->
       <n-layout-sider 
         bordered 
@@ -675,9 +675,9 @@ onUnmounted(() => {
 })
 
 // 监听消息变化，自动滚动到底部
-// watch(messages, () => {
-//   scrollToBottom()
-// })
+watch(messages, () => {
+  scrollToBottom()
+})
 </script>
 
 <style scoped>
