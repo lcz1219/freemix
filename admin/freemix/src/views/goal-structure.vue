@@ -1,11 +1,12 @@
 <template>
   <n-layout :native-scrollbar="false">
-    <n-layout-header>
+    <!-- <n-layout-header>
       <NavBar active-tab="goal-structure" />
-    </n-layout-header>
+    </n-layout-header> -->
     <n-layout has-sider>
-      <n-layout-sider bordered content-style="padding: 24px;">
-        <n-menu accordion :inverted="inverted" :collapsed-width="64" :collapsed-icon-size="22" :options="menuOptions" />
+      <n-layout-sider bordered collapse-mode="transform"
+ content-style="padding: 25px; " show-trigger="arrow-circle" :collapsed-width="0" :width="200" :collapsed-icon-size="22">
+        <n-menu accordion :inverted="inverted"  :options="menuOptions" />
       </n-layout-sider>
       <n-layout-content class="main-content" >
         <div class="structure-container" ref="containerRef">
@@ -591,7 +592,7 @@ const toggleTheme = () => {
 .structure-container {
   position: relative;
   width: 100%;
-  height: calc(100vh - 120px);
+  height: 100vh;
   overflow: hidden;
 }
 

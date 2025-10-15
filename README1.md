@@ -48,6 +48,7 @@
 -./build-mac.sh/./build-win.sh # 构建安装包
 #### 方法二：直接下载安装包
 -前往 Releases 页面下载对应系统的安装文件
+-安装完毕后需要在终端执行sudo xattr -rd com.apple.quarantine /Applications/Freemix.app(绕过macos的外来下载源限制)
 
 
 
