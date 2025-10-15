@@ -59,7 +59,7 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">消息</span>
       </n-button>
-      <n-dropdown animated  inverted :options="options" placement="right-start" trigger="hover" @select="handleSelect" :loading="logoutLoading">
+      <n-dropdown :inverted="isDark" animated  inverted :options="options" placement="right-start" trigger="hover" @select="handleSelect" :loading="logoutLoading">
         <n-button class="nav-link footer-button">
           <n-icon>
             <PersonCircle />
@@ -392,7 +392,7 @@ const goTo = (path) => {
 }
 
 .sidebar-container.collapsed .logo-section {
-  padding: 0 10px 10px;
+  padding: 0 0px 10px;
   justify-content: center;
 }
 
@@ -454,7 +454,7 @@ const goTo = (path) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 10px;
+  /* padding: 0 10px; */
   flex: 1;
 }
 

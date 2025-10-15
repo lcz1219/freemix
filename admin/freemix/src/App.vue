@@ -20,7 +20,7 @@
     <!-- 消息提供器 -->
     <n-message-provider>
       <!-- 路由视图 - 应用主题类 -->
-      <n-layout position="absolute" class="app-layout" has-sider v-if="true">
+      <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
         <!-- 侧边栏导航 -->
         <n-layout-sider
           v-if="!isMobileDevice"
@@ -156,8 +156,9 @@ onMounted(() => {
 const store = useStore()
 
 // 判断当前用户是否为开发者 (linchengzhong)
-const isUser = computed(() => {
-  return localStorage.getItem("token")
+const isShowSidebar = computed(() => {
+  const list = ['/login', '/register']
+ return !list.includes(route.path) 
  
 })
 

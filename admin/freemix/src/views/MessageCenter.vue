@@ -83,7 +83,7 @@
       <n-layout>
         <n-layout-content 
           ref="messageContainer" 
-          style="padding: 16px; height: calc(100% - 185px); overflow-y: scroll; overflow-x: hidden; min-height: 100px;"
+          style="padding: 16px; height: 80%; overflow-y: scroll; overflow-x: hidden; min-height: 100px;"
           v-if="selectedUser"
         >
           <div v-if="messages.length === 0" style="text-align: center; padding: 40px 0;">
@@ -113,7 +113,7 @@
         <n-layout-footer 
           bordered 
           v-if="selectedUser"
-          style="padding: 16px; height: 120px; min-height: 100px;"
+          style="padding: 16px; height: 20%; min-height: 100px;"
         >
           <div style="display: flex; gap: 10px; height: 100%;">
             <n-input 
