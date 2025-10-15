@@ -522,7 +522,7 @@ const goTo = (path) => {
   gap: 12px;
   font-size: 16px;
   font-weight: 500;
-  padding: 12px 16px;
+  padding: 6px 8px;
   border-radius: 8px;
   margin: 0 10px 10px;
   transition: all 0.3s ease;
