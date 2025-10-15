@@ -20,7 +20,7 @@
     <!-- 消息提供器 -->
     <n-message-provider>
       <!-- 路由视图 - 应用主题类 -->
-      <n-layout position="absolute" class="app-layout" has-sider>
+      <n-layout position="absolute" class="app-layout" has-sider v-if="true">
         <!-- 侧边栏导航 -->
         <n-layout-sider
           v-if="!isMobileDevice"
@@ -48,6 +48,7 @@
           </n-layout-content>
         </n-layout>
       </n-layout>
+      <router-view v-else  :class="themeClass" />
       
       <!-- 移动端浮动导航组件 -->
       <MobileFloatingNav v-if="isMobileDevice" />
@@ -61,6 +62,7 @@
 <script setup lang="ts">
 import { isMobile } from '@/utils/device.js'
 import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vue';
+import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router';
 import { 
   NConfigProvider, 
@@ -151,6 +153,13 @@ onMounted(() => {
   }
   updateBodyTheme();
 });
+const store = useStore()
+
+// 判断当前用户是否为开发者 (linchengzhong)
+const isUser = computed(() => {
+  return localStorage.getItem("token")
+ 
+})
 
 // 主题样式覆盖配置
 const themeOverrides = computed<GlobalThemeOverrides>(() => {
@@ -173,13 +182,13 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
         textColorBase: '#e0e0e0',
         borderColor: '#333333',
         hoverColor: '#2a2a2a',
-        primaryColor: '#8a2be2',
-        primaryColorHover: '#9d45e5',
-        primaryColorPressed: '#7a1fc9',
-        primaryColorSuppl: '#7a1fc9'
+        primaryColor: '#81c683',
+        primaryColorHover: '#81c683',
+        primaryColorPressed: '#81c683',
+        primaryColorSuppl: '#81c683'
       },
       Switch: {
-        railColorActive: '#8a2be2'
+        railColorActive: '#81c683'
       }
     };
   } else {
@@ -194,13 +203,13 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
         textColorBase: '#333333',
         borderColor: '#e0e0e0',
         hoverColor: '#f5f5f5',
-        primaryColor: '#8a2be2',
-        primaryColorHover: '#9d45e5',
-        primaryColorPressed: '#7a1fc9',
-        primaryColorSuppl: '#7a1fc9'
+        primaryColor: '#81c683',
+        primaryColorHover: '#81c683',
+        primaryColorPressed: '#81c683',
+        primaryColorSuppl: '#81c683'
       },
       Switch: {
-        railColorActive: '#8a2be2'
+        railColorActive: '#81c683'
       }
     };
   }
@@ -217,8 +226,8 @@ const railStyle = ({
 }) => {
   const style: CSSProperties = {};
   if (checked) {
-    style.background = '#8a2be2';
-    if (focused) style.boxShadow = '0 0 0 2px rgba(138, 43, 226, 0.3)';
+    style.background = '#81c683';
+    if (focused) style.boxShadow = '0 0 0 2px rgba(129, 198, 131, 0.3)';
   } else {
     style.background = '#e0e0e0';
     if (focused) style.boxShadow = '0 0 0 2px rgba(224, 224, 224, 0.3)';
@@ -347,7 +356,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(137, 43, 226, 0);
+  background-color: rgba(129, 198, 131, 0);
 }
 
 ::-webkit-scrollbar-track {
@@ -361,11 +370,11 @@ body {
 
 /* 亮色模式下的全局滚动条样式 */
 .light-theme ::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.3);
+  background-color: rgba(129, 198, 131, 0.3);
 }
 
 .light-theme ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(138, 43, 226, 0.5);
+  background-color: rgba(129, 198, 131, 0.5);
 }
 
 .light-theme ::-webkit-scrollbar-track {

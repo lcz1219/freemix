@@ -72,7 +72,7 @@ onMounted(() => {
       itemStyle: {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
           offset: 0,
-          color: '#8a2be2'
+          color: '#81c683'
         }, {
           offset: 1,
           color: '#4b0082'
@@ -120,7 +120,7 @@ onMounted(() => {
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(138, 43, 226, 0.4);
+  box-shadow: 0 12px 40px rgba(129, 198, 131, 0.4);
 }
 
 .card-header {
@@ -132,7 +132,7 @@ onMounted(() => {
 .echart-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #8a2be2, #4b0082);
+  background: linear-gradient(135deg, #81c683, #4b0082);
   border-radius: 10px;
   margin-right: 12px;
   display: flex;
@@ -163,7 +163,7 @@ onMounted(() => {
 }
 
 .timeline-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #8a2be2, #4b0082);
+  background: linear-gradient(135deg, #81c683, #4b0082);
   border-radius: 3px;
 }
 

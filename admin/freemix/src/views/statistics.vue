@@ -28,7 +28,7 @@
             <n-grid-item>
               <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
                 <div class="card-header">
-                  <n-icon size="28" color="#8a2be2">
+                  <n-icon size="28" color="#81c683">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
                       <path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z"/>
                       <path d="M12,8c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S14.2,8,12,8z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2 S13.1,14,12,14z"/>
@@ -189,7 +189,7 @@ const columns: DataTableColumns<any> = [
           percentage: row.progress,
           indicatorPlacement: 'inside',
           processing: row.status === 'in-progress',
-          color: row.status === 'completed' ? '#00c9a7' : row.status === 'expired' ? '#ff6b6b' : '#8a2be2'
+          color: row.status === 'completed' ? '#00c9a7' : row.status === 'expired' ? '#ff6b6b' : '#81c683'
         })
       ]);
     }
@@ -306,7 +306,7 @@ const initStatusChart = () => {
         },
         data: [
           { value: completedGoals.value, name: '已完成', itemStyle: { color: '#00c9a7' } },
-          { value: inProgressGoals.value, name: '进行中', itemStyle: { color: '#8a2be2' } },
+          { value: inProgressGoals.value, name: '进行中', itemStyle: { color: '#81c683' } },
           { value: expiredGoals.value, name: '已过期', itemStyle: { color: '#ff6b6b' } }
         ]
       }
@@ -435,11 +435,11 @@ const initMonthlyChart = () => {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             {
               offset: 0,
-              color: '#8a2be2'
+              color: '#81c683'
             },
             {
               offset: 1,
-              color: 'rgba(138, 43, 226, 0.1)'
+              color: 'rgba(129, 198, 131, 0.1)'
             }
           ])
         },
@@ -622,7 +622,7 @@ onMounted(async () => {
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 50%;
   left: 30%;
 }
@@ -786,12 +786,12 @@ onMounted(async () => {
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
   border-radius: 4px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.7);
+  background: rgba(129, 198, 131, 0.7);
 }
 
 /* 浅色模式滚动条 */
@@ -800,10 +800,10 @@ onMounted(async () => {
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.3);
+  background: rgba(129, 198, 131, 0.3);
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
 }
 </style>

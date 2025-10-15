@@ -76,7 +76,7 @@
         <section class="goals-section">
           <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
             <div class="card-header">
-              <n-icon size="28" color="#8a2be2">
+              <n-icon size="28" color="#81c683">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
                   fill="currentColor">
                   <path
@@ -472,7 +472,7 @@ const getStatusColor = (status: string) => {
     case 'completed':
       return '#00c9a7'; // 绿色
     case 'in-progress':
-      return '#8a2be2'; // 紫色
+      return '#81c683'; // 紫色
     case 'expired':
       return '#ff6b6b'; // 红色
     default:
@@ -482,13 +482,13 @@ const getStatusColor = (status: string) => {
 
 // 获取进度条颜色
 const getProgressColor = (goal: any) => {
-  if (!goal.childGoals || goal.childGoals.length === 0) return '#8a2be2';
+  if (!goal.childGoals || goal.childGoals.length === 0) return '#81c683';
 
   const finishedCount = goal.childGoals.filter((c: any) => c.finish).length;
   const progress = Math.round(finishedCount / goal.childGoals.length * 100);
 
   if (progress === 100) return '#00c9a7';
-  if (progress >= 50) return '#8a2be2';
+  if (progress >= 50) return '#81c683';
   return '#409eff';
 };
 
@@ -877,7 +877,7 @@ onMounted(() => {
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 50%;
   left: 30%;
 }
@@ -1089,12 +1089,12 @@ onMounted(() => {
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
   border-radius: 4px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.7);
+  background: rgba(129, 198, 131, 0.7);
 }
 
 /* 浅色模式滚动条 */
@@ -1103,11 +1103,11 @@ onMounted(() => {
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.3);
+  background: rgba(129, 198, 131, 0.3);
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
 }
 
 /* Element UI 表格主题适配 */
@@ -1252,7 +1252,7 @@ onMounted(() => {
 }
 
 .home-container-light .expanded-content-wrapper {
-  background: linear-gradient(135deg, rgba(138, 43, 226, 0.05), rgba(138, 43, 226, 0.05));
+  background: linear-gradient(135deg, rgba(129, 198, 131, 0.05), rgba(129, 198, 131, 0.05));
   background-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -1379,8 +1379,8 @@ onMounted(() => {
 .info-icon {
   flex-shrink: 0;
   margin-top: 2px;
-  color: #8a2be2;
-  background: rgba(138, 43, 226, 0.2);
+  color: #81c683;
+  background: rgba(129, 198, 131, 0.2);
   border-radius: 50%;
   padding: 6px;
 }

@@ -304,7 +304,7 @@ onMounted(() => {
 .gradient-circle.purple {
   width: 200px;
   height: 200px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 30%;
   left: 20%;
 }
@@ -355,7 +355,7 @@ onMounted(() => {
 }
 
 :deep(.n-form-item-label .n-form-item-label__text) {
-  color: #8a2be2;
+  color: #81c683;
 }
 
 .login-button {
@@ -374,14 +374,14 @@ onMounted(() => {
 
 .register-button-dark {
   background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(138, 43, 226, 0.5) !important;
-  color: #8a2be2 !important;
+  border: 1px solid rgba(129, 198, 131, 0.5) !important;
+  color: #81c683 !important;
 }
 
 .register-button-light {
   background: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid #8a2be2 !important;
-  color: #8a2be2 !important;
+  border: 1px solid #81c683 !important;
+  color: #81c683 !important;
 }
 
 :deep(.n-input__prefix) {

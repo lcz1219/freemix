@@ -494,7 +494,7 @@ const getStatusColor = (status) => {
     case 'completed':
       return '#00c9a7'; // 绿色
     case 'in-progress':
-      return '#8a2be2'; // 紫色
+      return '#81c683'; // 紫色
     case 'expired':
       return '#ff6b6b'; // 红色
     default:
@@ -595,7 +595,7 @@ onMounted(() => {
 .gradient-circle.purple {
   width: 200px;
   height: 200px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 30%;
   left: 20%;
 }
@@ -716,7 +716,7 @@ onMounted(() => {
 .stat-value {
   font-size: 20px;
   font-weight: bold;
-  color: #8a2be2;
+  color: #81c683;
   margin-bottom: 5px;
 }
 
@@ -832,12 +832,12 @@ onMounted(() => {
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
   border-radius: 3px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.7);
+  background: rgba(129, 198, 131, 0.7);
 }
 
 /* 浅色模式滚动条 */
@@ -846,10 +846,10 @@ onMounted(() => {
 }
 
 .mobile-home.light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.3);
+  background: rgba(129, 198, 131, 0.3);
 }
 
 .mobile-home.light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
 }
 </style>

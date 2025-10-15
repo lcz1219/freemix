@@ -96,7 +96,7 @@
 
                   <n-progress type="line" :percentage="goal.progress" :indicator-placement="'inside'" :height="8"
                     processing :rail-color="isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgb(235 235 235)'"
-                    :fill-color="'linear-gradient(90deg, #8a2be2, #4b0082)'" />
+                    :fill-color="'linear-gradient(90deg, #81c683, #4b0082)'" />
 
                   <div class="goal-details">
                     <div :class="checkThemebyDetail">
@@ -307,7 +307,7 @@
                             <p>圆形图表显示了所有目标的状态分布：</p>
                             <ul>
                               <li><span style="color: #00c9a7;">绿色</span>表示已完成的目标</li>
-                              <li><span style="color: #8a2be2;">紫色</span>表示进行中的目标</li>
+                              <li><span style="color: #81c683;">紫色</span>表示进行中的目标</li>
                               <li><span style="color: #3a3a4a;">灰色</span>表示未开始的目标</li>
                             </ul>
                             <n-image width="100" :src="overviewChartImage" preview-disabled />
@@ -783,7 +783,7 @@ const saveGoal = (updatedGoal) => {
 const railStyle = ({ focused, checked }) => {
   const style = {};
   if (checked) {
-    style.background = '#8a2be2';
+    style.background = '#81c683';
     if (focused) style.boxShadow = '0 0 0 2px #d0305040';
   } else {
     style.background = '#2080f0';
@@ -873,7 +873,7 @@ onMounted(async () => {
       animationType: 'scale',
       animationEasing: 'elasticOut'
     }],
-    color: ['#00c9a7', '#8a2be2', '#3a3a4a']
+    color: ['#00c9a7', '#81c683', '#3a3a4a']
   });
 
   // 趋势图表图标 (ECharts)
@@ -929,7 +929,7 @@ onMounted(async () => {
       labels: ['已完成', '进行中', '未开始'],
       datasets: [{
         data: [goalFinishCount, goalIngCount, goalExpireCount],
-        backgroundColor: ['#00c9a7', '#8a2be2', '#3a3a4a'],
+        backgroundColor: ['#00c9a7', '#81c683', '#3a3a4a'],
         borderWidth: 0
       }]
     },
@@ -1046,7 +1046,7 @@ onMounted(async () => {
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 40%;
   left: 40%;
 }
@@ -1070,7 +1070,7 @@ onMounted(async () => {
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #8a2be2, #4b0082);
+  background: linear-gradient(135deg, #81c683, #4b0082);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -1078,7 +1078,7 @@ onMounted(async () => {
 }
 
 .logo-text {
-  background: linear-gradient(to right, #8a2be2, #4b0082);
+  background: linear-gradient(to right, #81c683, #4b0082);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1102,7 +1102,7 @@ onMounted(async () => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #8a2be2, #4b0082);
+  background: linear-gradient(90deg, #81c683, #4b0082);
 }
 
 .header-actions {
@@ -1123,13 +1123,13 @@ onMounted(async () => {
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.4);
+  background-color: rgba(129, 198, 131, 0.4);
   border-radius: 4px;
   transition: background-color 0.3s ease;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(138, 43, 226, 0.7);
+  background-color: rgba(129, 198, 131, 0.7);
 }
 
 .main-content-wrapper::-webkit-scrollbar-track {
@@ -1143,11 +1143,11 @@ onMounted(async () => {
 
 /* 亮色模式下的滚动条样式 */
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.3);
+  background-color: rgba(129, 198, 131, 0.3);
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(138, 43, 226, 0.5);
+  background-color: rgba(129, 198, 131, 0.5);
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-track {
@@ -1240,7 +1240,7 @@ onMounted(async () => {
 .feature-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-  border-color: rgba(138, 43, 226, 0.3);
+  border-color: rgba(129, 198, 131, 0.3);
 }
 
 .card-header {
@@ -1318,7 +1318,7 @@ onMounted(async () => {
   transform: translateY(-50%);
   width: 8px;
   height: 32px;
-  background: linear-gradient(to bottom, #8a2be2, #4b0082);
+  background: linear-gradient(to bottom, #81c683, #4b0082);
   border-radius: 4px;
 }
 
@@ -1341,12 +1341,12 @@ onMounted(async () => {
 }
 
 .timeline-container::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.3);
+  background-color: rgba(129, 198, 131, 0.3);
   border-radius: 3px;
 }
 
 .timeline-container::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(138, 43, 226, 0.5);
+  background-color: rgba(129, 198, 131, 0.5);
 }
 
 .timeline-container::-webkit-scrollbar-track {
@@ -1376,7 +1376,7 @@ onMounted(async () => {
 .target-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-  border-color: rgba(138, 43, 226, 0.3);
+  border-color: rgba(129, 198, 131, 0.3);
 }
 
 .card-header {

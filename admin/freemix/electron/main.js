@@ -1,5 +1,5 @@
 // electron/main.js
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain,Notification } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -37,6 +37,9 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
+function showNotification(title, body) {
+  new Notification({ title, body }).show()
+}
 
 // 窗口控制事件处理
 ipcMain.on('window-control', (event, action) => {
@@ -70,6 +73,7 @@ ipcMain.on('window-drag', (event, action) => {
 
 // 应用准备就绪后创建窗口
 app.whenReady().then(createWindow);
+app.whenReady().then(showNotification);
 
 // 处理所有窗口关闭事件（在macOS上应用通常保持活动状态）
 app.on('window-all-closed', () => {

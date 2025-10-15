@@ -302,7 +302,7 @@ watch(loginStep, (newStep) => {
 }
 
 .login-card {
-  background-color: rgba(8, 8, 8, 0.566) !important;
+  background-color: transparent !important;
   backdrop-filter: blur(10px);
 }
 

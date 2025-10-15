@@ -285,7 +285,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 2px;
-  background-color: #8a2be2;
+  background-color: #81c683;
   border-radius: 2px;
 }
 
@@ -297,8 +297,8 @@ onMounted(() => {
 }
 
 :deep(.n-tabs-tab__close:hover) {
-  background-color: rgba(138, 43, 226, 0.1);
-  color: #8a2be2;
+  background-color: rgba(129, 198, 131, 0.1);
+  color: #81c683;
 }
 
 :deep(.n-tabs-tab):hover .n-tabs-tab__close {

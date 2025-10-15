@@ -116,18 +116,18 @@ const handleCalendarUpdate = (value) => {
 }
 
 :deep(.n-calendar-cell--selected) {
-  background-color: rgba(138, 43, 226, 0.3) !important;
+  background-color: rgba(129, 198, 131, 0.3) !important;
 }
 
 :deep(.n-calendar-cell--today) {
-  border: 2px solid #8a2be2;
+  border: 2px solid #81c683;
 }
 
 .modal-light :deep(.n-calendar-cell--selected) {
-  background-color: rgba(138, 43, 226, 0.2) !important;
+  background-color: rgba(129, 198, 131, 0.2) !important;
 }
 
 .modal-light :deep(.n-calendar-cell--today) {
-  border: 2px solid #8a2be2;
+  border: 2px solid #81c683;
 }
 </style>

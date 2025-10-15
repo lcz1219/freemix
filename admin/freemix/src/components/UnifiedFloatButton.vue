@@ -264,7 +264,7 @@ const handleCalendarUpdate = (value) => {
 .modal-header h2 {
   margin: 0;
   font-size: 1.5em;
-  color: #8a2be2;
+  color: #81c683;
 }
 
 .goals-content {

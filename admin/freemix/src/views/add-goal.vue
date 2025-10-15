@@ -260,7 +260,7 @@ const formRules: FormRules = {
 const railStyle = ({ focused, checked }: { focused: boolean; checked: boolean }) => {
   const style: { background?: string; boxShadow?: string } = {};
   if (checked) {
-    style.background = '#8a2be2';
+    style.background = '#81c683';
     if (focused) style.boxShadow = '0 0 0 2px #d0305040';
   } else {
     style.background = '#2080f0';
@@ -408,7 +408,7 @@ defineExpose({
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 50%;
   left: 30%;
 }
@@ -432,7 +432,7 @@ defineExpose({
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #8a2be2, #4b0082);
+  background: linear-gradient(135deg, #81c683, #4b0082);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -440,7 +440,7 @@ defineExpose({
 }
 
 .logo-text {
-  background: linear-gradient(to right, #8a2be2, #4b0082);
+  background: linear-gradient(to right, #81c683, #4b0082);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -463,7 +463,7 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #8a2be2, #4b0082);
+  background: linear-gradient(90deg, #81c683, #4b0082);
 }
 
 .header-actions {
@@ -484,13 +484,13 @@ defineExpose({
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.4);
+  background-color: rgba(129, 198, 131, 0.4);
   border-radius: 3px;
   transition: background-color 0.3s ease;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(138, 43, 226, 0.7);
+  background-color: rgba(129, 198, 131, 0.7);
 }
 
 .main-content-wrapper::-webkit-scrollbar-track {
@@ -504,11 +504,11 @@ defineExpose({
 
 /* 亮色模式下的滚动条样式 */
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(138, 43, 226, 0.3);
+  background-color: rgba(129, 198, 131, 0.3);
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(138, 43, 226, 0.5);
+  background-color: rgba(129, 198, 131, 0.5);
 }
 
 .home-container-light .main-content-wrapper::-webkit-scrollbar-track {
@@ -536,7 +536,7 @@ defineExpose({
   font-size: 36px;
   font-weight: 700;
   margin-bottom: 20px;
-  background: linear-gradient(to right, #fff, #8a2be2);
+  background: linear-gradient(to right, #fff, #81c683);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

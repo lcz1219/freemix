@@ -280,7 +280,7 @@ const reminderTime = ref(new Date().setHours(9, 0, 0, 0));
 // 主题设置
 const themeSettings = ref({
   mode: 'auto',
-  color: '#8a2be2',
+  color: '#81c683',
   animations: true
 });
 
@@ -500,7 +500,7 @@ onMounted(() => {
 .gradient-circle.purple {
   width: 200px;
   height: 200px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 30%;
   left: 20%;
 }
@@ -708,12 +708,12 @@ onMounted(() => {
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
   border-radius: 3px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.7);
+  background: rgba(129, 198, 131, 0.7);
 }
 
 /* 浅色模式滚动条 */
@@ -722,10 +722,10 @@ onMounted(() => {
 }
 
 .mobile-settings.light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.3);
+  background: rgba(129, 198, 131, 0.3);
 }
 
 .mobile-settings.light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
 }
 </style>

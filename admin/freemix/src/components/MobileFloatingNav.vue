@@ -158,13 +158,13 @@ const navigateTo = (path) => {
 
 /* 浮动按钮样式 */
 .fab-dark {
-  background: rgba(138, 43, 226, 0.9) !important;
+  background: rgba(129, 198, 131, 0.9) !important;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .fab-light {
-  background: rgba(138, 43, 226, 0.9) !important;
+  background: rgba(129, 198, 131, 0.9) !important;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

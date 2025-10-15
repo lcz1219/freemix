@@ -66,7 +66,7 @@
             <n-grid-item>
               <n-card :class="isDark ? 'stat-card' : 'stat-card-light'">
                 <div class="stat-item">
-                  <div class="stat-value" style="color: #8a2be2;">{{ inProgressGoals }}</div>
+                  <div class="stat-value" style="color: #81c683;">{{ inProgressGoals }}</div>
                   <div :class="isDark ? 'stat-label' : 'stat-label-light'">进行中</div>
                 </div>
               </n-card>
@@ -314,7 +314,7 @@ const initCharts = () => {
         },
         data: [
           { value: completedGoals.value, name: '已完成', itemStyle: { color: '#00c9a7' } },
-          { value: inProgressGoals.value, name: '进行中', itemStyle: { color: '#8a2be2' } },
+          { value: inProgressGoals.value, name: '进行中', itemStyle: { color: '#81c683' } },
           { value: expiredGoals.value, name: '已过期', itemStyle: { color: '#ff6b6b' } }
         ]
       }
@@ -351,10 +351,10 @@ const initCharts = () => {
         smooth: true,
         data: [2, 3, 1, 4, 2, 3, 5, 4, 6, 5, 7, 6],
         itemStyle: {
-          color: '#8a2be2'
+          color: '#81c683'
         },
         areaStyle: {
-          color: '#8a2be2',
+          color: '#81c683',
           opacity: 0.3
         }
       }
@@ -395,7 +395,7 @@ const initCharts = () => {
         data: [8, 6, 4, 3, 3],
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#8a2be2' },
+            { offset: 0, color: '#81c683' },
             { offset: 1, color: '#00c9a7' }
           ])
         }
@@ -477,7 +477,7 @@ onBeforeUnmount(() => {
 .gradient-circle.purple {
   width: 200px;
   height: 200px;
-  background: radial-gradient(circle, #8a2be2, transparent 70%);
+  background: radial-gradient(circle, #81c683, transparent 70%);
   top: 30%;
   left: 20%;
 }
@@ -692,12 +692,12 @@ onBeforeUnmount(() => {
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
   border-radius: 3px;
 }
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.7);
+  background: rgba(129, 198, 131, 0.7);
 }
 
 /* 浅色模式滚动条 */
@@ -706,10 +706,10 @@ onBeforeUnmount(() => {
 }
 
 .mobile-statistics.light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, 0.3);
+  background: rgba(129, 198, 131, 0.3);
 }
 
 .mobile-statistics.light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 43, 226, 0.5);
+  background: rgba(129, 198, 131, 0.5);
 }
 </style>
