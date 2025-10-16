@@ -3,22 +3,659 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeMix - 跨平台远程控制解决方案</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="../freemix/public/icons/icon.png" type="image/png">
+    <title>FreeMix - 全栈目标管理系统</title>
+    <!-- 推荐使用的link标签 -->
+    <link rel="icon" href="../freemix/public/icons/icon.png" type="image/x-icon">
+    <!-- 为兼容旧版浏览器也可同时添加shortcut icon -->
+    <link rel="shortcut icon" href="../freemix/public/icons/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ff88;
+            --primary-dark: #00cc6d;
+            --secondary: #7857ff;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #f8f9fa;
+            --gray: #1e1e1e;
+            --text: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--darker);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(120, 87, 255, 0.08) 0%, transparent 30%),
+                radial-gradient(circle at 85% 30%, rgba(0, 255, 136, 0.1) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 20px 0;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        header.scrolled {
+            padding: 15px 0;
+            background: rgba(10, 10, 10, 0.95);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            transition: var(--transition);
+        }
+
+        .logo:hover img {
+            transform: rotate(15deg);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 8px 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.2;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: var(--text-secondary);
+            max-width: 600px;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: var(--darker);
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 255, 136, 0.4);
+        }
+
+        .cta-button i {
+            margin-left: 10px;
+            transition: var(--transition);
+        }
+
+        .cta-button:hover i {
+            transform: translateX(5px);
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+        }
+
+        .floating-device {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .desktop-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 300px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #2c3e50, #1a2a3a);
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .screen-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .screen-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .desktop-base {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 550px;
+            height: 20px;
+            background: #333;
+            border-radius: 5px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .desktop-stand {
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 15px;
+            background: #222;
+            border-radius: 3px;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--light);
+        }
+
+        .section-title p {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: var(--gray);
+            border-radius: var(--radius);
+            padding: 30px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(120, 87, 255, 0.1));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: inline-block;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.2);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--light);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+
+        /* Downloads Section */
+        .downloads {
+            padding: 100px 0;
+            background: var(--dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .downloads::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 30%, rgba(120, 87, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .platforms {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .platform-card {
+            background: var(--gray);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            width: 280px;
+        }
+
+        .platform-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow);
+        }
+
+        .platform-card:hover::before {
+            opacity: 1;
+        }
+
+        .platform-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .platform-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--light);
+        }
+
+        .platform-card p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* Screenshots Section */
+        .screenshots {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .screenshot-card {
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+            transition: var(--transition);
+            transform: perspective(1000px) rotateY(0);
+            transform-style: preserve-3d;
+        }
+
+        .screenshot-card:hover {
+            transform: perspective(1000px) rotateY(5deg) translateY(-10px);
+            box-shadow: var(--shadow);
+        }
+
+        .screenshot-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: var(--transition);
+        }
+
+        .screenshot-card:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--darker);
+            padding: 80px 0 40px;
+            position: relative;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--light);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .footer-links a i {
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero-bg {
+                width: 100%;
+                opacity: 0.4;
+                top: auto;
+                bottom: 0;
+            }
+            
+            .floating-device {
+                width: 500px;
+                height: 350px;
+            }
+            
+            .desktop-screen {
+                width: 400px;
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                margin-top: 20px;
+            }
+            
+            .nav-links li {
+                margin: 0 15px;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .floating-device {
+                width: 400px;
+                height: 280px;
+            }
+            
+            .desktop-screen {
+                width: 320px;
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links li {
+                margin: 10px;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .features-grid, .platforms, .screenshots-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .floating-device {
+                width: 300px;
+                height: 220px;
+            }
+            
+            .desktop-screen {
+                width: 250px;
+                height: 160px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
         <div class="container">
             <nav class="navbar">
-                <div class="logo">
-                    <span class="logo-icon"><img src="../freemix/public/icons/icon.png" alt="FreeMix Logo" width="40" height="40"></span>
+                <a href="#" class="logo">
+                    <img src="../freemix/public/icons/icon.png" alt="Logo" class="custom-logo" />
                     FreeMix
-                </div>
+                </a>
                 <ul class="nav-links">
                     <li><a href="#features">功能特性</a></li>
                     <li><a href="#downloads">下载</a></li>
                     <li><a href="#screenshots">截图</a></li>
+                    <li><a href="#support">支持</a></li>
                 </ul>
             </nav>
         </div>
@@ -26,46 +663,67 @@
 
     <section class="hero">
         <div class="container">
-            <h1>统一管理，掌控全局</h1>
-            <p>FreeMix是一款创新的目标管理多端系统，让您能够集中管理和控制所有连接的设备。通过统一的界面，您可以轻松监控和操作多个平台上的设备，提高工作效率。</p>
-            <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="cta-button" id="mac-download">立即下载 Mac 版</a>
+            <div class="hero-content">
+                <h1>统一管理，掌控全局</h1>
+                <p>是一个功能强大、设计优雅的全栈目标管理系统（Goal Management System）。它采用跨平台架构，既提供现代化的 Web 应用，又通过 Electron 框架打包成原生桌面应用，让用户在任何环境下都能享受流畅的目标管理体验！</p>
+                <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="cta-button">
+                    立即下载 Mac 版 <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="hero-bg">
+            <div class="floating-device">
+                <div class="desktop-screen">
+                    <div class="screen-content">
+                        <div class="screen-title">FreeMix 桌面控制中心</div>
+                        <div class="screen-subtitle">多设备统一管理平台</div>
+                        <div class="devices">
+                            <i class="fas fa-desktop"></i>
+                            <i class="fas fa-laptop"></i>
+                            <i class="fas fa-server"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="desktop-base"></div>
+                <div class="desktop-stand"></div>
+            </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
+    <section id="features" class="features">
         <div class="container">
             <div class="section-title">
                 <h2>核心功能</h2>
+                <p>FreeMix提供了一系列强大的功能，帮助您更好地管理和控制设备</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">📱</div>
+                    <div class="feature-icon"><i class="fas fa-desktop"></i></div>
                     <h3>多端统一管理</h3>
                     <p>通过单一界面集中管理所有连接的设备，无论它们运行在哪个平台。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
+                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
                     <h3>实时监控</h3>
                     <p>实时查看所有设备状态，快速响应异常情况和用户需求。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
+                    <div class="feature-icon"><i class="fas fa-lock"></i></div>
                     <h3>安全保障</h3>
                     <p>端到端加密和多重身份验证，保护您的数据和隐私安全。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
+                    <div class="feature-icon"><i class="fas fa-paint-brush"></i></div>
                     <h3>直观界面</h3>
                     <p>简洁现代的用户界面设计，操作简单易上手。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔄</div>
+                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
                     <h3>批量操作</h3>
                     <p>支持对多个设备进行批量操作，大幅提升管理效率。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">⚙️</div>
+                    <div class="feature-icon"><i class="fas fa-cog"></i></div>
                     <h3>灵活配置</h3>
                     <p>根据不同设备类型和用途进行灵活配置，满足多样化需求。</p>
                 </div>
@@ -73,8 +731,7 @@
         </div>
     </section>
 
-    <!-- Downloads Section -->
-    <section class="downloads">
+    <section id="downloads" class="downloads">
         <div class="container">
             <div class="section-title">
                 <h2>立即下载</h2>
@@ -82,27 +739,15 @@
             </div>
             <div class="platforms">
                 <div class="platform-card">
-                    <div class="platform-icon">🍎</div>
+                    <div class="platform-icon"><i class="fab fa-apple"></i></div>
                     <h3>Mac 版</h3>
                     <p>适用于 macOS 10.14 及更高版本</p>
-                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="cta-button" id="mac-download">下载</a>
+                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="cta-button">下载</a>
                 </div>
                 <div class="platform-card">
-                    <div class="platform-icon">🪟</div>
+                    <div class="platform-icon"><i class="fab fa-windows"></i></div>
                     <h3>Windows 版</h3>
                     <p>适用于 Windows 10 及更高版本</p>
-                    <a href="#" class="cta-button">即将推出</a>
-                </div>
-                <div class="platform-card">
-                    <div class="platform-icon">🤖</div>
-                    <h3>Android 版</h3>
-                    <p>适用于 Android 7.0 及更高版本</p>
-                    <a href="#" class="cta-button">即将推出</a>
-                </div>
-                <div class="platform-card">
-                    <div class="platform-icon">📱</div>
-                    <h3>iOS 版</h3>
-                    <p>适用于 iOS 12.0 及更高版本</p>
                     <a href="#" class="cta-button">即将推出</a>
                 </div>
             </div>
@@ -117,42 +762,42 @@
             </div>
             <div class="screenshots-grid">
                 <div class="screenshot-card">
-                    <img src="https://placehold.co/300x600/81c683/ffffff?text=Android+界面" alt="Android界面">
+                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Mac界面">
                 </div>
                 <div class="screenshot-card">
-                    <img src="https://placehold.co/300x600/81c683/ffffff?text=iOS+界面" alt="iOS界面">
+                    <img src="https://images.unsplash.com/photo-1547394765-185e1e68f34e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Windows界面">
                 </div>
                 <div class="screenshot-card">
-                    <img src="https://placehold.co/600x400/81c683/ffffff?text=Mac+界面" alt="Mac界面">
+                    <img src="https://images.unsplash.com/photo-1587202372775-e229f1723e0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="控制面板">
                 </div>
                 <div class="screenshot-card">
-                    <img src="https://placehold.co/600x400/81c683/ffffff?text=Windows+界面" alt="Windows界面">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="多设备管理">
                 </div>
             </div>
         </div>
     </section>
 
-    <footer>
+    <footer id="support">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>FreeMix</h3>
-                    <p>创新的目标管理多端系统，让设备管理更简单。</p>
+                    <p>创新的跨平台远程控制系统，让设备管理更简单。</p>
                 </div>
                 <div class="footer-section">
                     <h3>快速链接</h3>
                     <ul class="footer-links">
-                        <li><a href="#home">首页</a></li>
-                        <li><a href="#features">功能</a></li>
-                        <li><a href="#downloads">下载</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 首页</a></li>
+                        <li><a href="#features"><i class="fas fa-chevron-right"></i> 功能</a></li>
+                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> 下载</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h3>支持</h3>
                     <ul class="footer-links">
-                        <li><a href="#">帮助中心</a></li>
-                        <li><a href="#">社区论坛</a></li>
-                        <li><a href="#">反馈建议</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 帮助中心</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 社区论坛</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 反馈建议</a></li>
                     </ul>
                 </div>
             </div>
@@ -162,6 +807,212 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Parallax effect for hero section
+        document.addEventListener('mousemove', function(e) {
+            const heroBg = document.querySelector('.hero-bg');
+            const x = (window.innerWidth - e.pageX) / 100;
+            const y = (window.innerHeight - e.pageY) / 100;
+            heroBg.style.transform = `translate(${x}px, ${y}px)`;
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .platform-card, .screenshot-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            .feature-card, .platform-card, .screenshot-card {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+                transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                            transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            
+            .feature-card.animated, .platform-card.animated, .screenshot-card.animated {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            
+            /* Staggered animations */
+            .feature-card:nth-child(1), .platform-card:nth-child(1), .screenshot-card:nth-child(1) {
+                transition-delay: 0.1s;
+            }
+            
+            .feature-card:nth-child(2), .platform-card:nth-child(2), .screenshot-card:nth-child(2) {
+                transition-delay: 0.2s;
+            }
+            
+            .feature-card:nth-child(3), .platform-card:nth-child(3), .screenshot-card:nth-child(3) {
+                transition-delay: 0.3s;
+            }
+            
+            .feature-card:nth-child(4), .platform-card:nth-child(4), .screenshot-card:nth-child(4) {
+                transition-delay: 0.4s;
+            }
+            
+            .feature-card:nth-child(5), .platform-card:nth-child(5), .screenshot-card:nth-child(5) {
+                transition-delay: 0.5s;
+            }
+            
+            .feature-card:nth-child(6), .platform-card:nth-child(6), .screenshot-card:nth-child(6) {
+                transition-delay: 0.6s;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Enhanced CTA button ripple effect
+        document.querySelectorAll('.cta-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Remove any existing ripples
+                const existingRipples = this.querySelectorAll('.ripple');
+                existingRipples.forEach(ripple => ripple.remove());
+                
+                // Create ripple
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                
+                // Position ripple
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                // Remove ripple after animation
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add CSS for ripple effect
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            .cta-button {
+                position: relative;
+                overflow: hidden;
+                transform: translate3d(0, 0, 0);
+            }
+            
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.7);
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple {
+                to {
+                    transform: scale(2.5);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
+        // Background particle effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const hero = document.querySelector('.hero');
+            const particlesContainer = document.createElement('div');
+            particlesContainer.classList.add('particles');
+            hero.appendChild(particlesContainer);
+            
+            // Create particles
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                particle.style.width = Math.random() * 10 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Add CSS for particles
+            const particleStyle = document.createElement('style');
+            particleStyle.textContent = `
+                .particles {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 1;
+                }
+                
+                .particle {
+                    position: absolute;
+                    background: rgba(255, 255, 255, 0.15);
+                    border-radius: 50%;
+                    animation: float 15s infinite ease-in-out;
+                }
+                
+                @keyframes float {
+                    0%, 100% {
+                        transform: translate(0, 0);
+                    }
+                    25% {
+                        transform: translate(20px, 20px);
+                    }
+                    50% {
+                        transform: translate(-20px, 20px);
+                    }
+                    75% {
+                        transform: translate(-20px, -20px);
+                    }
+                }
+            `;
+            document.head.appendChild(particleStyle);
+        });
+    </script>
 </body>
 </html>

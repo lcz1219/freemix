@@ -1,7 +1,7 @@
 <template>
   <n-layout >
     <!-- 顶部导航栏 -->
-    <NavBar active-tab="login-log" />
+    <!-- <NavBar active-tab="login-log" /> -->
 
     <!-- 主内容区域 -->
     <n-card class="main-content">

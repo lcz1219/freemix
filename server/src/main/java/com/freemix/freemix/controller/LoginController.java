@@ -260,6 +260,38 @@ public class LoginController {
         return ApiResponse.success(null, "双因素认证已禁用");
     }
     
+    /**
+     * 验证并保存桌面端token
+     */
+    @PostMapping("/verify-desktop-token")
+    @CheckToken
+    public ApiResponse verifyDesktopToken(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String desktopToken = jsonObject.getString("desktopToken");
+        
+        if (desktopToken == null || desktopToken.isEmpty()) {
+            return ApiResponse.failure("桌面端token不能为空");
+        }
+        
+        // 获取当前用户信息
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ApiResponse.failure("缺少认证信息");
+        }
+        
+        String normalToken = authorizationHeader.substring(7);
+        User user = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("token").is(normalToken)), User.class);
+        if (user == null) {
+            return ApiResponse.failure("用户信息无效");
+        }
+        
+        // 保存桌面端token到Redis（30天有效期）
+        String desktopTokenKey = "desktop_token_" + desktopToken;
+        redisTemplate.opsForValue().set(desktopTokenKey, user.getId(), 30, TimeUnit.DAYS);
+        
+        return ApiResponse.success(null, "桌面端token已保存");
+    }
+    
     @GetMapping("/getOwerList")
     @CheckToken
     public ApiResponse getOwerList(){

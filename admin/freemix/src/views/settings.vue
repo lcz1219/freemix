@@ -1,7 +1,7 @@
 <template>
   <div :class="isDark ? 'settings-container dark' : 'settings-container light'">
     <!-- 顶部导航栏 -->
-    <NavBar active-tab="settings" />
+    <!-- <NavBar active-tab="settings" /> -->
 
     <!-- 主内容区域 -->
     <div class="main-content">

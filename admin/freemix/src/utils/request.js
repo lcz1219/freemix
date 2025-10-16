@@ -2,6 +2,8 @@
 import axios from 'axios';
 import store from '../stores/index.js';
 import router from '../router/index.js';
+import { isDesktop } from './device.js';
+import { getDesktopToken } from './desktopToken.js';
 
 const request = axios.create({
   baseURL: import.meta.env.PROD ? 'http://8.134.84.105' : 'http://localhost:5173',
@@ -20,11 +22,22 @@ request.interceptors.request.use(
     );
     
     if (needsAuth) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        return Promise.reject(new Error('缺少认证Token'));
+      // 检查是否为桌面端
+      if (isDesktop()) {
+        // 桌面端使用桌面token
+        const desktopToken = getDesktopToken();
+        if (!desktopToken) {
+          return Promise.reject(new Error('缺少桌面端认证Token'));
+        }
+        config.headers['X-Desktop-Token'] = desktopToken;
+      } else {
+        // 移动端使用普通token
+        const token = localStorage.getItem('token');
+        if (!token) {
+          return Promise.reject(new Error('缺少认证Token'));
+        }
+        config.headers.Authorization = `Bearer ${token}`;
       }
-      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -97,7 +110,7 @@ const getMPaths=async function(val,data){
       if(res.data.code==200){
         return true
       }else{
-        if(res.data.msg=='token不正确'){
+        if(!res.data.msg.includes('token不正确')){
           store.dispatch('logout')
         }
         return false

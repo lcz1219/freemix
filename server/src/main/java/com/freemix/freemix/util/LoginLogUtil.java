@@ -1,5 +1,6 @@
 package com.freemix.freemix.util;
 
+import com.freemix.freemix.enetiy.AgentModel;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.util.StringUtils;
 
@@ -62,18 +63,19 @@ public class LoginLogUtil {
         if (StringUtils.isEmpty(userAgent)) {
             return "Unknown";
         }
-        
-        // 简单的浏览器识别逻辑
-        if (userAgent.contains("Chrome")) {
-            return getBrowserName(userAgent, "Chrome");
-        } else if (userAgent.contains("Firefox")) {
-            return getBrowserName(userAgent, "Firefox");
-        } else if (userAgent.contains("Safari")) {
-            return getBrowserName(userAgent, "Safari");
-        } else if (userAgent.contains("Edge")) {
-            return getBrowserName(userAgent, "Edge");
-        } else if (userAgent.contains("MSIE")) {
-            return getBrowserName(userAgent, "Internet Explorer");
+
+        if (userAgent.contains(AgentModel.Chrome)) {
+            return getBrowserName(userAgent, AgentModel.Chrome);
+        } else if (userAgent.contains(AgentModel.Firefox)) {
+            return getBrowserName(userAgent, AgentModel.Firefox);
+        } else if (userAgent.contains(AgentModel.Safari)) {
+            return getBrowserName(userAgent, AgentModel.Safari);
+        } else if (userAgent.contains(AgentModel.Edge)) {
+            return getBrowserName(userAgent, AgentModel.Edge);
+        } else if (userAgent.contains(AgentModel.MSIE)) {
+            return getBrowserName(userAgent, AgentModel.InternetExplorer);
+        }else if (userAgent.contains(AgentModel.Electron)) {
+            return "桌面端";
         } else {
             return "Unknown";
         }
