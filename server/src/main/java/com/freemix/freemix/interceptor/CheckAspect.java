@@ -81,7 +81,7 @@ public class CheckAspect extends BaseController  {
             return ApiResponse.failure("token无效");
         }
 
-        // 使用用户名_token作为Redis key进行验证
+        // 使用用户名_token作为Redis key进行验证（Web端token）
         String tokenKey = user.getUsername() + "_token";
         String tokenRedis = (String) redisTemplate.opsForValue().get(tokenKey);
         if(tokenRedis == null){
@@ -131,50 +131,12 @@ public class CheckAspect extends BaseController  {
         // 从Redis中获取桌面端token信息
         String userId = (String) redisTemplate.opsForValue().get(desktopTokenKey);
         if (userId == null) {
-            // 桌面端token不存在或已过期，尝试生成新的
-            return generateNewDesktopToken(request, joinPoint, desktopToken);
+            log.info("桌面端token无效或已过期");
+            return ApiResponse.failure("桌面端token无效或已过期");
         }
         
         // 延长桌面端token有效期（30天）
         redisTemplate.expire(desktopTokenKey, 30, TimeUnit.DAYS);
-        
-        // 继续执行业务逻辑
-        return joinPoint.proceed();
-    }
-    
-    /**
-     * 生成新的桌面端token
-     * @param request HTTP请求
-     * @param joinPoint 切入点
-     * @param desktopToken 桌面端token
-     * @return Object 处理结果
-     */
-    private Object generateNewDesktopToken(HttpServletRequest request, ProceedingJoinPoint joinPoint, String desktopToken) throws Throwable {
-        // 从Authorization头获取普通token来验证用户身份
-        String normalToken = getTokenFromRequest(request);
-        if (normalToken == null || normalToken.isEmpty()) {
-            log.info("生成桌面端token需要普通token验证");
-            return ApiResponse.failure("生成桌面端token需要普通token验证");
-        }
-        
-        // 根据普通token获取用户信息
-        User user = getUserByToken(normalToken);
-        if (user == null) {
-            log.info("普通token无效");
-            return ApiResponse.failure("普通token无效");
-        }
-        
-        // 验证普通token是否有效
-        String tokenKey = user.getUsername() + "_token";
-        String tokenRedis = (String) redisTemplate.opsForValue().get(tokenKey);
-        if (tokenRedis == null || !normalToken.equals(tokenRedis)) {
-            log.info("普通token已过期或不正确");
-            return ApiResponse.failure("普通token已过期或不正确");
-        }
-        
-        // 生成桌面端token并保存到Redis（30天有效期）
-        String desktopTokenKey = "desktop_token_" + desktopToken;
-        redisTemplate.opsForValue().set(desktopTokenKey, user.getId(), 30, TimeUnit.DAYS);
         
         // 继续执行业务逻辑
         return joinPoint.proceed();

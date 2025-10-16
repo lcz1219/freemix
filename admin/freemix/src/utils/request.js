@@ -26,6 +26,12 @@ request.interceptors.request.use(
       if (isDesktop()) {
         // 桌面端使用桌面token
         const desktopToken = getDesktopToken();
+        // 移动端使用普通token
+        const token = localStorage.getItem('token');
+        if (!token) {
+          return Promise.reject(new Error('缺少认证Token'));
+        }
+        config.headers.Authorization = `Bearer ${token}`;
         if (!desktopToken) {
           return Promise.reject(new Error('缺少桌面端认证Token'));
         }

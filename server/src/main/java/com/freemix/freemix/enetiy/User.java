@@ -18,6 +18,7 @@ public class User {
     String saveQuestionThree;
     String saveAnThree;
     String token;
+    String deskToken;
     String avatarUrl;
     String fashionTitle;
     

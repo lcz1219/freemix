@@ -264,7 +264,6 @@ public class LoginController {
      * 验证并保存桌面端token
      */
     @PostMapping("/verify-desktop-token")
-    @CheckToken
     public ApiResponse verifyDesktopToken(@RequestBody String body) {
         JSONObject jsonObject = JSONObject.parseObject(body);
         String desktopToken = jsonObject.getString("desktopToken");
@@ -288,6 +287,10 @@ public class LoginController {
         // 保存桌面端token到Redis（30天有效期）
         String desktopTokenKey = "desktop_token_" + desktopToken;
         redisTemplate.opsForValue().set(desktopTokenKey, user.getId(), 30, TimeUnit.DAYS);
+        
+        // 同时将桌面端token保存到用户信息中
+        user.setDeskToken(desktopToken);
+        mongoTemplate.save(user);
         
         return ApiResponse.success(null, "桌面端token已保存");
     }
