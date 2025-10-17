@@ -1,17 +1,26 @@
 // electron/preload.js
 import { contextBridge, ipcRenderer } from 'electron';
 
-// 通过 contextBridge 安全地将API暴露给渲染进程（Vue组件）
+// 安全地暴露API到渲染进程
 contextBridge.exposeInMainWorld('electronAPI', {
-  // 窗口控制功能
-  minimizeWindow: () => ipcRenderer.send('window-control', 'minimize'),
-  maximizeWindow: () => ipcRenderer.send('window-control', 'maximize'),
-  closeWindow: () => ipcRenderer.send('window-control', 'close'),
+  // 窗口控制
+  windowControl: (action) => ipcRenderer.send('window-control', action),
   
-  // 窗口拖动功能
-  startDrag: () => ipcRenderer.send('window-drag', 'start'),
+  // 窗口拖动
+  windowDrag: () => ipcRenderer.send('window-drag'),
   
-  // 其他功能
-  sendMessage: (message) => ipcRenderer.send('message-to-main', message),
-  onReply: (callback) => ipcRenderer.on('reply-from-main', callback)
+  // 创建新窗口
+  createNewWindow: (options) => ipcRenderer.invoke('create-new-window', options),
+  
+  // 关闭窗口
+  closeWindow: (winId) => ipcRenderer.send('close-window', winId),
+  
+  // 聚焦窗口
+  focusWindow: (winId) => ipcRenderer.send('focus-window', winId),
+  
+  // 监听窗口拖动开始事件
+  onWindowDragStart: (callback) => ipcRenderer.on('window-drag-start', callback),
+  
+  // 移除窗口拖动开始事件监听
+  removeWindowDragStartListener: (callback) => ipcRenderer.removeListener('window-drag-start', callback)
 });
