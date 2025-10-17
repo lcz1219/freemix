@@ -1,6 +1,11 @@
 // windows/WindowManager.js
 import { app, BrowserWindow, ipcMain,Notification } from 'electron';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// 获取 __dirname 的 ES 模块替代方案
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 可选：用于持久化窗口状态，如大小和位置
 // const Store = require('electron-store');
@@ -51,7 +56,11 @@ class WindowManager {
         win.loadURL(`http://localhost:5173${pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}`}`);
       } else {
         // 生产环境：加载打包后的静态文件
-        win.loadFile(path.join(__dirname, `../dist${pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}`}`));
+        // 修复路径问题：使用正确的相对路径
+        // const basePath = path.join(__dirname, '..');
+        const distPath = path.join(__dirname, '../dist/index.html');
+        // const fullPath = path.join(distPath, pageUrl.startsWith('/') ? pageUrl.substring(1) : pageUrl);
+        win.loadFile(distPath);
       }
     }
 
