@@ -88,7 +88,7 @@ import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
 
 // 主题状态管理
-const isDark = ref(false);
+const isDark = ref(true);
 const isMobileDevice = isMobile(); // 调用函数获取是否为移动端
 
 // 侧边栏折叠状态
