@@ -53,7 +53,7 @@ public class CheckAspect extends BaseController  {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         String userAgent = request.getHeader("User-Agent");
-        if ("dev".equals(environmentChecker.checkEnvironment())||userAgent.contains(AgentModel.Electron)){
+        if ("dev".equals(environmentChecker.checkEnvironment())){
             log.info("不用检测token，本地测试环境");
             return joinPoint.proceed();
         }
