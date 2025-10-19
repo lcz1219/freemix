@@ -2,11 +2,15 @@
 import { app, BrowserWindow, ipcMain, Notification, Menu } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import WindowManager from './WindowManager.js';
-
 // 获取 __dirname 的 ES 模块替代方案
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 获取应用数据目录
+const userDataPath = app.getPath('userData');
+const tokenFilePath = path.join(userDataPath, 'token.json');
 
 // 全局窗口管理器实例
 let windowManager;
@@ -23,9 +27,10 @@ function createWindow() {
     // 增加窗口拖动区域设置
     transparent: false, // 确保窗口不透明
     thickFrame: true, // 增加窗口边框厚度
+   
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // 预加载脚本
-      
+      // nodeIntegration: true,
       contextIsolation: true, // 启用上下文隔离（安全）
       nodeIntegration: false, // 禁用Node集成（安全）
     },
@@ -48,6 +53,7 @@ function createWindow() {
 
 // 显示通知
 function showNotification(title, body) {
+  console.log('显示通知:', title, body);
   new Notification({ title, body }).show()
 }
 
@@ -306,6 +312,44 @@ ipcMain.on('close-window', (event, winId) => {
 // IPC 监听：接收聚焦窗口的请求
 ipcMain.on('focus-window', (event, winId) => {
   windowManager.focus(winId);
+});
+
+// IPC 监听：保存 token 到文件
+ipcMain.on('save-token', (event, tokenData) => {
+  try {
+    fs.writeFileSync(tokenFilePath, JSON.stringify(tokenData));
+    console.log('保存 token 到文件成功',tokenFilePath);
+  } catch (error) {
+    console.error('保存 token 到文件失败:', error);
+  }
+});
+
+// IPC 监听：从文件获取 token
+ipcMain.handle('get-token', async (event) => {
+  try {
+    if (fs.existsSync(tokenFilePath)) {
+      const data = fs.readFileSync(tokenFilePath, 'utf8');
+      console.log('从文件获取 token 成功',data);
+      const tokenData = JSON.parse(data);
+      return tokenData;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('从文件获取 token 失败:', error);
+    return null;
+  }
+});
+
+// IPC 监听：从文件删除 token
+ipcMain.on('remove-token', (event) => {
+  try {
+    if (fs.existsSync(tokenFilePath)) {
+      fs.unlinkSync(tokenFilePath);
+    }
+  } catch (error) {
+    console.error('从文件删除 token 失败:', error);
+  }
 });
 
 // 应用准备就绪后创建窗口

@@ -3,7 +3,7 @@ import axios from 'axios';
 import store from '../stores/index.js';
 import router from '../router/index.js';
 import { isDesktop } from './device.js';
-import { getDesktopToken } from './desktopToken.js';
+import { getDesktopToken, getToken } from './desktopToken.js';
 
 const request = axios.create({
   baseURL: import.meta.env.PROD ? 'http://8.134.84.105' : 'http://localhost:5173',
@@ -16,7 +16,7 @@ const request = axios.create({
 const NO_AUTH_PATHS = ['/login', '/register', '/captcha','/enable2fa', '/file/upload','/verify2fa'];
 
 request.interceptors.request.use(
-  config => {
+ async config => {
     const needsAuth = !NO_AUTH_PATHS.some(path => 
       config.url.endsWith(path) // 精确匹配路径结尾
     );
@@ -24,18 +24,29 @@ request.interceptors.request.use(
     if (needsAuth) {
       // 检查是否为桌面端
       if (isDesktop()) {
-        // 桌面端使用桌面token
+        // 桌面端使用桌面token和持久化存储的普通token
         const desktopToken = getDesktopToken();
-        // 移动端使用普通token
-        const token = localStorage.getItem('token');
-        if (!token) {
-          return Promise.reject(new Error('缺少认证Token'));
-        }
-        config.headers.Authorization = `Bearer ${token}`;
+        console.log('desktopToken', desktopToken);
+        // // 移动端使用普通token
+        // const token = localStorage.getItem('token');
+        // if (!token) {
+        //   return Promise.reject(new Error('缺少认证Token'));
+        // }
+        // config.headers.Authorization = `Bearer ${token}`;
         if (!desktopToken) {
+          // return Promise.reject(new Error('缺少桌面端认证Token'));
+        const longDeskToken =  await getToken(); 
+        console.log('longDeskToken', longDeskToken);
+        
+        if(!longDeskToken){
           return Promise.reject(new Error('缺少桌面端认证Token'));
         }
-        config.headers['X-Desktop-Token'] = desktopToken;
+         config.headers['X-Desktop-Token'] = longDeskToken;
+         
+        }else{
+          config.headers['X-Desktop-Token'] = desktopToken;
+        }
+        
       } else {
         // 移动端使用普通token
         const token = localStorage.getItem('token');
@@ -65,7 +76,15 @@ const fileRequest = axios.create({
 
 fileRequest.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('token');
+    // 根据设备类型获取 token
+    let token;
+    if (isDesktop()) {
+      token = getToken();
+      console.log('desktopToken', token);
+    } else {
+      token = localStorage.getItem('token');
+    }
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -174,7 +193,7 @@ const getMPaths=async function(val,data, loadingText = ''){
       if(res.data.code==200){
         return true
       }else{
-        if(!res.data.msg.includes('token不正确')){
+        if(res.data.msg.includes('token不正确')){
           store.dispatch('logout')
         }
         return false

@@ -64,15 +64,15 @@ public class LoginLogUtil {
             return "Unknown";
         }
 
-        if (userAgent.contains(AgentModel.Chrome)) {
+        if (userAgent.contains(AgentModel.Chrome)&&!userAgent.contains(AgentModel.Electron)) {
             return getBrowserName(userAgent, AgentModel.Chrome);
-        } else if (userAgent.contains(AgentModel.Firefox)) {
+        } else if (userAgent.contains(AgentModel.Firefox)&&!userAgent.contains(AgentModel.Electron)) {
             return getBrowserName(userAgent, AgentModel.Firefox);
-        } else if (userAgent.contains(AgentModel.Safari)) {
+        } else if (userAgent.contains(AgentModel.Safari)&&!userAgent.contains(AgentModel.Electron)) {
             return getBrowserName(userAgent, AgentModel.Safari);
-        } else if (userAgent.contains(AgentModel.Edge)) {
+        } else if (userAgent.contains(AgentModel.Edge)&&!userAgent.contains(AgentModel.Electron)) {
             return getBrowserName(userAgent, AgentModel.Edge);
-        } else if (userAgent.contains(AgentModel.MSIE)) {
+        } else if (userAgent.contains(AgentModel.MSIE)&&!userAgent.contains(AgentModel.Electron)) {
             return getBrowserName(userAgent, AgentModel.InternetExplorer);
         }else if (userAgent.contains(AgentModel.Electron)) {
             return "桌面端";

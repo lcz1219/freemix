@@ -1,5 +1,6 @@
 // electron/preload.js
-import { contextBridge, ipcRenderer } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
+// import { contextBridge, ipcRenderer } from 'electron';
 
 // 安全地暴露API到渲染进程
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -18,9 +19,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 聚焦窗口
   focusWindow: (winId) => ipcRenderer.send('focus-window', winId),
   
+  // 保存 token 到文件
+  saveToken: (tokenData) => ipcRenderer.send('save-token', tokenData),
+  
+  // 从文件获取 token
+  getToken: () => ipcRenderer.invoke('get-token'),
+  
+  // 从文件删除 token
+  removeToken: () => ipcRenderer.send('remove-token'),
+  
   // 监听窗口拖动开始事件
   onWindowDragStart: (callback) => ipcRenderer.on('window-drag-start', callback),
   
   // 移除窗口拖动开始事件监听
   removeWindowDragStartListener: (callback) => ipcRenderer.removeListener('window-drag-start', callback)
+
 });

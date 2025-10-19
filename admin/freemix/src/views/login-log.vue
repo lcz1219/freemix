@@ -150,11 +150,11 @@ const columns = [
     key: 'ipAddress',
     width: 140
   },
-  {
-    title: '设备',
-    key: 'deviceType',
-    width: 120
-  },
+  // {
+  //   title: '设备',
+  //   key: 'deviceType',
+  //   width: 120
+  // },
   {
     title: '浏览器',
     key: 'browser',

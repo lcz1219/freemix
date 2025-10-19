@@ -267,19 +267,20 @@ public class LoginController {
     public ApiResponse verifyDesktopToken(@RequestBody String body) {
         JSONObject jsonObject = JSONObject.parseObject(body);
         String desktopToken = jsonObject.getString("desktopToken");
-        
-        if (desktopToken == null || desktopToken.isEmpty()) {
-            return ApiResponse.failure("桌面端token不能为空");
-        }
-        
-        // 获取当前用户信息
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ApiResponse.failure("缺少认证信息");
-        }
-        
-        String normalToken = authorizationHeader.substring(7);
-        User user = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("token").is(normalToken)), User.class);
+        String username = jsonObject.getString("username");
+
+//        if (desktopToken == null || desktopToken.isEmpty()) {
+//            return ApiResponse.failure("桌面端token不能为空");
+//        }
+//
+//        // 获取当前用户信息
+//        String authorizationHeader = request.getHeader("Authorization");
+//        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+//            return ApiResponse.failure("缺少认证信息");
+//        }
+//
+//        String normalToken = authorizationHeader.substring(7);
+        User user = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(username)), User.class);
         if (user == null) {
             return ApiResponse.failure("用户信息无效");
         }
