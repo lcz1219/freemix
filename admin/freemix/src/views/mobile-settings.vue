@@ -415,7 +415,7 @@ const logout = () => {
 const getUserProfile = async () => {
   try {
     // 获取用户资料
-    const res = await getMPaths("getUserInfo", store.state.user.username);
+    const res = await getMPaths("getUserInfo", store.state.user.username, "正在获取用户信息...");
     if (isSuccess(res)) {
       const userData = res.data.data || {};
       profileForm.value = {

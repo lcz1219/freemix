@@ -1,5 +1,6 @@
 import { createStore } from 'vuex';
 import router from '../router';
+import loadingStore from './loading.js';
 
 
 export default createStore({
@@ -35,5 +36,7 @@ export default createStore({
   getters: {                  // 计算属性
     user: state => state.user
   },
-  modules: {}                 // 模块化（可选）
+  modules: {
+    loading: loadingStore
+  }                 // 模块化（可选）
 });

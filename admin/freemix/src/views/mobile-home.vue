@@ -517,7 +517,7 @@ const formatDate = (dateString) => {
 // 获取目标列表
 const getGoals = async () => {
   try {
-    const res = await getMPaths("getGoals", store.state.user.username);
+    const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
     if (isSuccess(res)) {
       goals.value = res.data.data || [];
       goals.value.forEach(goal => {

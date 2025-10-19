@@ -48,6 +48,8 @@ request.interceptors.request.use(
     return config;
   },
   error => {
+    // 隐藏loading
+    store.dispatch('loading/hideLoading');
     return Promise.reject(error);
   }
 );  
@@ -70,47 +72,103 @@ fileRequest.interceptors.request.use(
     return config;
   },
   error => {
+    // 隐藏loading
+    store.dispatch('loading/hideLoading');
     return Promise.reject(error);
   }
 );
 
- const postM=async function(val,data){
-   // 检查是否为FormData，如果是则让浏览器自动设置Content-Type
-   const config = {};
-   if (data instanceof FormData) {
-     // 不设置Content-Type，让浏览器自动设置multipart/form-data和boundary
-     config.headers = {'Content-Type': 'application/form-data'};
-   } else {
-     config.headers = {
-       'Content-Type': 'application/json'
-     };
+ const postM=async function(val,data, loadingText = ''){
+   // 显示loading
+   if (loadingText != '') {
+     store.dispatch('loading/showLoading', loadingText);
    }
    
-   const res= await request.post(`/freemix/${val}`,data, config)
-    if(res.data.msg=='token过期'){
-       await store.dispatch('logout')
-       router.push('/login')
+   try {
+     // 检查是否为FormData，如果是则让浏览器自动设置Content-Type
+     const config = {};
+     if (data instanceof FormData) {
+       // 不设置Content-Type，让浏览器自动设置multipart/form-data和boundary
+       config.headers = {'Content-Type': 'application/form-data'};
+     } else {
+       config.headers = {
+         'Content-Type': 'application/json'
+       };
      }
-    return res
-}
- const getM=async function(val,data){
-   const res=await  request.get(`/freemix/${val}`,{params:data},)
-    if(res.data.msg=='token过期'){
-       await store.dispatch('logout')
-       router.push('/login')
+     
+     const res= await request.post(`/freemix/${val}`,data, config)
+      if(res.data.msg=='token过期'){
+         await store.dispatch('logout')
+         router.push('/login')
+       }
+       
+       // 隐藏loading
+       if (loadingText != '') {
+         store.dispatch('loading/hideLoading');
+       }
+      return res
+   } catch (error) {
+     // 隐藏loading
+     if (loadingText != '') {
+       store.dispatch('loading/hideLoading');
      }
-     return res
+     throw error;
+   }
 }
-const getMPaths=async function(val,data){
+ const getM=async function(val,data, loadingText = ''){
+   // 显示loading
+   if (loadingText != '') {
+     store.dispatch('loading/showLoading', loadingText);
+   }
+   
+   try {
+     const res=await  request.get(`/freemix/${val}`,{params:data},)
+      if(res.data.msg=='token过期'){
+         await store.dispatch('logout')
+         router.push('/login')
+       }
+       
+       // 隐藏loading
+       if (loadingText != '') {
+         store.dispatch('loading/hideLoading');
+       }
+      return res
+   } catch (error) {
+     // 隐藏loading
+     if (loadingText != '') {
+       store.dispatch('loading/hideLoading');
+     }
+     throw error;
+   }
+}
+const getMPaths=async function(val,data, loadingText = ''){
+   // 显示loading
+   if (loadingText != '') {
+     store.dispatch('loading/showLoading', loadingText);
+   }
+   
+   try {
      const res=await request.get(`/freemix/${val}/${data}`)
-     if(res.data.msg=='token过期'){
-      
-      // console.log('token过期');
-      
-       await store.dispatch('logout')
-       router.push('/login')
+      if(res.data.msg=='token过期'){
+        
+        // console.log('token过期');
+        
+         await store.dispatch('logout')
+         router.push('/login')
+       }
+       
+       // 隐藏loading
+       if (loadingText != '') {
+         store.dispatch('loading/hideLoading');
+       }
+      return res
+   } catch (error) {
+     // 隐藏loading
+     if (loadingText != '') {
+       store.dispatch('loading/hideLoading');
      }
-     return res
+     throw error;
+   }
 }
  const isSuccess=( res)=>{
       if(res.data.code==200){

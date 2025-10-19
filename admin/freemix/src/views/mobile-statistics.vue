@@ -208,7 +208,7 @@ const toggleTheme = () => {
 // 获取统计数据
 const getStatisticsData = async () => {
   try {
-    const res = await getMPaths("getGoals", store.state.user.username);
+    const res = await getMPaths("getGoals", store.state.user.username, "正在获取统计数据...");
     if (isSuccess(res)) {
       const goals = res.data.data || [];
       

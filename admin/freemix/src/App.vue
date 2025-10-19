@@ -50,6 +50,23 @@
       </n-layout>
       <router-view v-else  :class="themeClass" />
       
+      <!-- 全局加载提示 -->
+      <n-modal 
+        v-model:show="isLoading" 
+        :show-icon="false" 
+        :closable="false" 
+        :mask-closable="false"
+        
+        class="global-loading-modal"
+      >
+        <n-card :bordered="false" class="global-loading-card">
+          <div class="loading-content">
+            <n-spin size="large" />
+            <div class="loading-text">{{ loadingText }}</div>
+          </div>
+        </n-card>
+      </n-modal>
+      
       <!-- 移动端浮动导航组件 -->
       <MobileFloatingNav v-if="isMobileDevice" />
     </n-message-provider>
@@ -80,7 +97,10 @@ import {
   NLayout,
   NLayoutSider,
   NLayoutHeader,
-  NLayoutContent
+  NLayoutContent,
+  NModal,
+  NSpin,
+  NCard
 } from 'naive-ui';
 import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
@@ -161,6 +181,10 @@ const isShowSidebar = computed(() => {
  return !list.includes(route.path) 
  
 })
+
+// loading 状态
+const isLoading = computed(() => store.state.loading.loading);
+const loadingText = computed(() => store.state.loading.loadingText);
 
 // 主题样式覆盖配置
 const themeOverrides = computed<GlobalThemeOverrides>(() => {
@@ -380,6 +404,32 @@ body {
 
 .light-theme ::-webkit-scrollbar-track {
   background-color: transparent;
+}
+
+/* 全局加载模态框样式 */
+.global-loading-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 50px;
+}
+
+.global-loading-card {
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-text {
+  font-size: 16px;
+  font-weight: 500;
 }
 
 body {

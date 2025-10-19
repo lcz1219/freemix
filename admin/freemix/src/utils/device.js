@@ -1,4 +1,6 @@
 // 移动端设备检测工具
+import isElectron from 'is-electron';
+
 export function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
@@ -8,5 +10,5 @@ export function isTablet() {
 }
 
 export function isDesktop() {
-  return !isMobile() && !isTablet();
+  return isElectron();
 }

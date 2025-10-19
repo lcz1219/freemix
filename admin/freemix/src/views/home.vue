@@ -734,7 +734,7 @@ const getGoalsMoth = ref([])
 const getGoals = async () => {
   console.log("store.state.user.username", store.state.user.username);
 
-  const res = await getMPaths("getGoals", store.state.user.username);
+  const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
   if (isSuccess(res)) {
     goals.value = res.data.data;
     console.log("goals.value", goals.value);

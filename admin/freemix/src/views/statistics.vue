@@ -242,7 +242,7 @@ const formatDate = (dateString: string) => {
 const getGoals = async () => {
   loading.value = true;
   try {
-    const res = await getMPaths("getGoals", store.state.user.username);
+    const res = await getMPaths("getGoals", store.state.user.username, "正在获取统计数据...");
     if (isSuccess(res)) {
       goals.value = res.data.data || [];
       goals.value.forEach(goal => {

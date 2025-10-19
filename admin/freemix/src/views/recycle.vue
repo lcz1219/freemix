@@ -122,7 +122,7 @@ const formatDate = (dateString) => {
 
 const recycle = async () => {
     try {
-        const res = await getMPaths("recycle", store.state.user.username);
+        const res = await getMPaths("recycle", store.state.user.username, "正在获取回收数据...");
         if (isSuccess(res)) {
             data.value = res.data.data || [];
             data.value.forEach(goal => {
