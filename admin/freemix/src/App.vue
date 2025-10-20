@@ -1,78 +1,61 @@
 <template>
-  <n-config-provider 
-    :theme="isDark ? darkTheme : null" 
-    :theme-overrides="themeOverrides"
-    :locale="locale"
-    :date-locale="dateLocale"
-    class="config-provider"
-  >
-  <van-config-provider :theme="isDark?'dark':'light'">
-    <!-- 自定义拖动区域（仅桌面端）- 仅窗口顶部边缘 -->
-    <div v-if="!isMobileDevice" class="drag-region">
-      <!-- 仅用于窗口拖动的透明区域 -->
-    </div>
-    
-    
-    
-    <!-- 全局样式 -->
-    <n-global-style />
-    <n-dialog-provider>
-      <n-loading-bar-provider>
-    
-    <!-- 消息提供器 -->
-    <n-message-provider>
-      <!-- 路由视图 - 应用主题类 -->
-      <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
-        <!-- 侧边栏导航 -->
-        <n-layout-sider
-          v-if="!isMobileDevice"
-          bordered
-          collapse-mode="transform"
-          :collapsed-width="64"
-          show-collapsed-content
-          :width="isSidebarCollapsed ? 64 : 240"
-          :native-scrollbar="false"
-          class="side-navbar"
-        >
-          <NavBar v-if="showContentByStoreUser"  :active-tab="activeTab" @update:collapsed="isSidebarCollapsed = $event" />
-        </n-layout-sider>
+  <n-config-provider :theme="isDark ? darkTheme : null" :theme-overrides="themeOverrides" :locale="locale"
+    :date-locale="dateLocale" class="config-provider">
+    <van-config-provider :theme="isDark ? 'dark' : 'light'">
+      <!-- 自定义拖动区域（仅桌面端）- 仅窗口顶部边缘 -->
+      <div v-if="!isMobileDevice" class="drag-region">
+        <!-- 仅用于窗口拖动的透明区域 -->
+      </div>
 
-        <!-- 主内容区域 -->
-        <n-layout class="main-layout">
-         
 
-          <!-- 页面内容 -->
-          <n-layout-content class="content-wrapper">
-            <router-view v-if="showContentByStoreUser" :class="themeClass" />
-            <!-- 应用加载页面 -->
-    <AppLoading v-else />
-          </n-layout-content>
-        </n-layout>
-      </n-layout>
-      <router-view v-else  :class="themeClass" />
-      
-      <!-- 全局加载提示 -->
-      <n-modal 
-        v-model:show="isLoading" 
-        :show-icon="false" 
-        :closable="false" 
-        :mask-closable="false"
-        
-        class="global-loading-modal"
-      >
-        <n-card :bordered="false" class="global-loading-card">
-          <div class="loading-content">
-            <n-spin size="large" />
-            <div class="loading-text">{{ loadingText }}</div>
-          </div>
-        </n-card>
-      </n-modal>
-      
-      <!-- 移动端浮动导航组件 -->
-      <MobileFloatingNav v-if="isMobileDevice" />
-    </n-message-provider>
-    </n-loading-bar-provider>
-    </n-dialog-provider>
+
+      <!-- 全局样式 -->
+      <n-global-style />
+      <n-dialog-provider>
+        <n-loading-bar-provider>
+
+          <!-- 消息提供器 -->
+          <n-message-provider>
+            <!-- 路由视图 - 应用主题类 -->
+            <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
+              <!-- 侧边栏导航 -->
+              <n-layout-sider v-if="!isMobileDevice" bordered collapse-mode="transform" :collapsed-width="64"
+                show-collapsed-content :width="isSidebarCollapsed ? 64 : 240" :native-scrollbar="false"
+                class="side-navbar">
+                <NavBar v-if="showContentByStoreUser" :active-tab="activeTab"
+                  @update:collapsed="isSidebarCollapsed = $event" />
+              </n-layout-sider>
+
+              <!-- 主内容区域 -->
+              <n-layout class="main-layout">
+
+
+                <!-- 页面内容 -->
+                <n-layout-content class="content-wrapper">
+                  <router-view v-if="showContentByStoreUser" :class="themeClass" />
+                  <!-- 应用加载页面 -->
+                  <AppLoading v-else />
+                </n-layout-content>
+              </n-layout>
+            </n-layout>
+            <router-view v-else :class="themeClass" />
+
+            <!-- 全局加载提示 -->
+            <n-modal v-model:show="isLoading" :show-icon="false" :closable="false" :mask-closable="false"
+              class="global-loading-modal">
+              <n-card :bordered="false" class="global-loading-card">
+                <div class="loading-content">
+                  <n-spin size="large" />
+                  <div class="loading-text">{{ loadingText }}</div>
+                </div>
+              </n-card>
+            </n-modal>
+
+            <!-- 移动端浮动导航组件 -->
+            <MobileFloatingNav v-if="isMobileDevice" />
+          </n-message-provider>
+        </n-loading-bar-provider>
+      </n-dialog-provider>
     </van-config-provider>
   </n-config-provider>
 </template>
@@ -83,9 +66,9 @@ import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vu
 import { useStore } from 'vuex'
 import { saveToken, getToken } from '@/utils/tokenUtils.js';
 import { useRoute, useRouter } from 'vue-router';
-import { 
-  NConfigProvider, 
-  darkTheme, 
+import {
+  NConfigProvider,
+  darkTheme,
   NSwitch,
   NMessageProvider,
   type GlobalThemeOverrides,
@@ -110,33 +93,33 @@ import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
 import AppLoading from '@/components/AppLoading.vue'; // 导入加载页面组件
 import request, { postM, isSuccess, getM } from '@/utils/request'
-import {isDesktop} from '@/utils/device.js'
-import {getLocalStorageDesktopToken} from '@/utils/desktopToken.js'
+import { isDesktop } from '@/utils/device.js'
+import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
 const showContentByStoreUser = computed(() => {
- return store.state.user && Object.keys(store.state.user).length !== 0
+  return store.state.user && Object.keys(store.state.user).length !== 0
 });
 
 // 添加桌面token加载状态
 
 
-const getDeskToken=async ()=>{
-   // 将多个值拼接成一个字符串
-  const res=await getToken()
-// alert(`用户信息: ${localStorage.getItem("user")}, Token: ${localStorage.getItem("token")}, deskToken: ${res}`);
-  if (isDesktop()&&!getLocalStorageDesktopToken()) {
+const getDeskToken = async () => {
+  // 将多个值拼接成一个字符串
+  const res = await getToken()
+  // alert(`用户信息: ${localStorage.getItem("user")}, Token: ${localStorage.getItem("token")}, deskToken: ${res}`);
+  if (isDesktop() && !getLocalStorageDesktopToken()) {
     console.log('getDeskTokenStrore')
     const res = await postM('/getDeskTokenStrore');
-    let user=res.data.data
-    if(user){
-      await  store.commit('saveUser', user);
+    let user = res.data.data
+    if (user) {
+      await store.commit('saveUser', user);
 
-    }else{
+    } else {
       await store.dispatch('logout');
-    router.push('/login');
+      router.push('/login');
     }
-      // 验证成功，完成登录流程
-      // 使用tokenUtils工具函数保存token
-      // await saveToken(user.deskToken);
+    // 验证成功，完成登录流程
+    // 使用tokenUtils工具函数保存token
+    // await saveToken(user.deskToken);
   }
   // 设置加载完成
 
@@ -203,13 +186,13 @@ const updateBodyTheme = () => {
 
 // 初始化时读取保存的主题状态
 onMounted(() => {
-   getDeskToken();
+  getDeskToken();
   const savedTheme = localStorage.getItem('theme-dark');
   if (savedTheme) {
     isDark.value = JSON.parse(savedTheme);
   }
   updateBodyTheme();
- 
+
 
 });
 const store = useStore()
@@ -217,8 +200,8 @@ const store = useStore()
 // 判断当前用户是否为开发者 (linchengzhong)
 const isShowSidebar = computed(() => {
   const list = ['/login', '/register']
- return !list.includes(route.path) 
- 
+  return !list.includes(route.path)
+
 })
 
 // loading 状态
@@ -233,7 +216,7 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
     // 统一圆角
     borderRadius: '8px'
   };
-  
+
   if (isDark.value) {
     return {
       common: {
@@ -323,7 +306,7 @@ body {
   --text-color: #333333;
   --card-bg: #ffffff;
   --border-color: #e0e0e0;
-  
+
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -334,7 +317,7 @@ body {
   --text-color: #e0e0e0;
   --card-bg: #1e1e1e;
   --border-color: #333333;
-  
+
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -402,7 +385,7 @@ body {
 }
 
 /* 添加平滑过渡 */
-.n-config-provider, 
+.n-config-provider,
 .n-config-provider * {
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }

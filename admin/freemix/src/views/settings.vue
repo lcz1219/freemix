@@ -9,6 +9,22 @@
         <h1>设置</h1>
         <p>自定义您的目标追踪者体验</p>
       </div>
+      <div class="settings-content">
+          <div class="settings-section">
+          <h2>token内容</h2>
+          <div class="settings-card token-info-card">
+            <div class="token-item">
+              <span class="token-label">用户:</span>
+              <span class="token-value">{{ user }}</span>
+            </div>
+            <div class="token-item">
+              <span class="token-label">token:</span>
+              <span class="token-value">{{ desktopToken }}</span>
+            </div>
+            
+          </div>
+        </div>
+        </div>
 
       <!-- 设置内容 -->
       <div class="settings-content">
@@ -207,7 +223,10 @@ import QRCode from 'qrcode'
 import { useMessage,NQrCode } from 'naive-ui';
 import { postM, isSuccess } from '@/utils/request.js';
 import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
+import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 
+const desktopToken = computed(() => localStorage.getItem('deskop_token'));
+const user = computed(() => localStorage.getItem('user'));
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
 const toggleTheme = inject('toggleTheme', () => {});
@@ -486,15 +505,58 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.settings-container.dark .settings-card {
+.token-info-card {
+  background-color: rgba(129, 198, 131, 0.1);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.settings-container.dark .token-info-card {
   background-color: rgba(30, 30, 40, 0.6);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.settings-container.light .settings-card {
+.settings-container.light .token-info-card {
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.token-item {
+  display: flex;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.settings-container.dark .token-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.token-label {
+  font-weight: 600;
+  min-width: 100px;
+  display: inline-block;
+}
+
+.token-value {
+  flex: 1;
+  word-break: break-all;
+  font-family: 'Courier New', monospace;
+  background: rgba(129, 198, 131, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.settings-container.dark .token-value {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.settings-container.light .token-value {
+  background: rgba(0, 0, 0, 0.05);
+  color: #333333;
 }
 
 .form-group {

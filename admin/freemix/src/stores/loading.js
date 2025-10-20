@@ -10,8 +10,10 @@ const loadingStore = {
       state.loadingText = text;
     },
     HIDE_LOADING(state) {
-      state.loading = false;
-      state.loadingText = '加载中...';
+      setTimeout(() => {
+        state.loading = false;
+        state.loadingText = '加载中...';
+      }, 500);
     }
   },
   actions: {
