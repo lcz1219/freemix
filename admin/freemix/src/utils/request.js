@@ -75,11 +75,11 @@ const fileRequest = axios.create({
 });
 
 fileRequest.interceptors.request.use(
-  config => {
+  async config => {
     // 根据设备类型获取 token
     let token;
     if (isDesktop()) {
-      token = getToken();
+      token = await getToken();
       console.log('desktopToken', token);
     } else {
       token = localStorage.getItem('token');

@@ -106,6 +106,19 @@ import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
+import request, { postM, isSuccess, getM } from '@/utils/request'
+import {isDesktop} from '@/utils/device.js'
+
+const getDeskToken=async ()=>{
+  if (isDesktop()) {
+    console.log('getDeskTokenStrore')
+    const res = await postM('/getDeskTokenStrore');
+    let user=res.data.data
+      // 验证成功，完成登录流程
+      store.commit('saveUser', user);
+      await localStorage.setItem('token', user.token);
+  }
+}
 
 // 主题状态管理
 const isDark = ref(true);
@@ -172,6 +185,7 @@ onMounted(() => {
     isDark.value = JSON.parse(savedTheme);
   }
   updateBodyTheme();
+  getDeskToken();
 });
 const store = useStore()
 

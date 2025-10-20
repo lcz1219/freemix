@@ -5,10 +5,7 @@ import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.LoginLog;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.service.LoginLogService;
-import com.freemix.freemix.util.ApiResponse;
-import com.freemix.freemix.util.CaptchaUtil;
-import com.freemix.freemix.util.GoogleAuthenticatorUtil;
-import com.freemix.freemix.util.LoginLogUtil;
+import com.freemix.freemix.util.*;
 import io.lettuce.core.json.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +46,13 @@ public class LoginController {
         mongoTemplate.insert(user);
         return ApiResponse.success(user);
 
+    }
+    @Autowired
+    UserContextUtil userContextUtil;
+    @PostMapping("/getDeskTokenStrore")
+    public ApiResponse getDeskTokenStrore(){
+        User currentUser = userContextUtil.getCurrentUser();
+       return ApiResponse.success(currentUser);
     }
     
     @PostMapping("/login")

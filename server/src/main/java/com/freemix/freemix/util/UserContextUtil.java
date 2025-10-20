@@ -1,5 +1,6 @@
 package com.freemix.freemix.util;
 
+import com.freemix.freemix.enetiy.AgentModel;
 import com.freemix.freemix.enetiy.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +36,23 @@ public class UserContextUtil {
         
         // 从请求中获取token
         String token = getTokenFromRequest(request);
-        
-        if (token != null && !token.isEmpty()) {
-            // 根据token查询用户信息
-            Query query = new Query();
-            query.addCriteria(Criteria.where("token").is(token));
-            return mongoTemplate.findOne(query, User.class);
+        String userAgent = request.getHeader("User-Agent");
+        if(userAgent.contains(AgentModel.Electron)){
+            if (token != null && !token.isEmpty()) {
+                // 根据token查询用户信息
+                Query query = new Query();
+                query.addCriteria(Criteria.where("deskToken").is(token));
+                return mongoTemplate.findOne(query, User.class);
+            }
+        }else{
+            if (token != null && !token.isEmpty()) {
+                // 根据token查询用户信息
+                Query query = new Query();
+                query.addCriteria(Criteria.where("token").is(token));
+                return mongoTemplate.findOne(query, User.class);
+            }
         }
+
         
         return null;
     }
@@ -56,6 +67,10 @@ public class UserContextUtil {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
+        }
+        String deskHeader = request.getHeader("X-Desktop-Token");
+        if (deskHeader != null && !deskHeader.isEmpty()) {
+            return deskHeader;
         }
 
         // 优先级2：自定义Header
