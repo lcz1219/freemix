@@ -1,7 +1,6 @@
 <template>
   <div :class="isDark ? 'settings-container dark' : 'settings-container light'">
     <!-- 顶部导航栏 -->
-    <!-- <NavBar active-tab="settings" /> -->
 
     <!-- 主内容区域 -->
     <div class="main-content">
@@ -207,6 +206,7 @@ import { useStore } from 'vuex';
 import QRCode from 'qrcode'
 import { useMessage,NQrCode } from 'naive-ui';
 import { postM, isSuccess } from '@/utils/request.js';
+import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
@@ -342,9 +342,10 @@ const manageSessions = () => {
 };
 
 // 退出登录
-const logout = () => {
+const logout = async () => {
   // 清除用户信息
   store.commit('clearUser');
+ await removeToken()
   // 跳转到登录页面
   router.push('/login');
   message.success('已退出登录');

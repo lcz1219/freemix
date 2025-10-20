@@ -1,6 +1,7 @@
 import { createStore } from 'vuex';
 import router from '../router';
 import loadingStore from './loading.js';
+import { removeToken } from '../utils/tokenUtils.js'; // 导入token工具函数
 
 
 export default createStore({
@@ -21,7 +22,8 @@ export default createStore({
       state.user = {};
       // 从 localStorage 中移除用户信息
       localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      // 使用tokenUtils工具函数移除token
+      removeToken();
       router.push('/login');
     }
   },

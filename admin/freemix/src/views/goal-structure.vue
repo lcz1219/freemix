@@ -1,8 +1,6 @@
 <template>
   <n-layout :native-scrollbar="false">
-    <!-- <n-layout-header>
-      <NavBar active-tab="goal-structure" />
-    </n-layout-header> -->
+   
     <n-layout has-sider>
       <n-layout-sider bordered collapse-mode="transform"
  content-style="padding: 25px; " show-trigger="arrow-circle" :collapsed-width="0" :width="200" :collapsed-icon-size="22">

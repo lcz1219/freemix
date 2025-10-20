@@ -8,7 +8,6 @@
     </div>
 
     <!-- 顶部导航栏 -->
-    <NavBar active-tab="add-goal" />
 
     <!-- 主内容区域 -->
     <n-layout-content class="main-content-wrapper">

@@ -11,7 +11,9 @@
     <div v-if="!isMobileDevice" class="drag-region">
       <!-- 仅用于窗口拖动的透明区域 -->
     </div>
-
+    
+    
+    
     <!-- 全局样式 -->
     <n-global-style />
     <n-dialog-provider>
@@ -32,19 +34,18 @@
           :native-scrollbar="false"
           class="side-navbar"
         >
-          <NavBar :active-tab="activeTab" @update:collapsed="isSidebarCollapsed = $event" />
+          <NavBar v-if="showContentByStoreUser"  :active-tab="activeTab" @update:collapsed="isSidebarCollapsed = $event" />
         </n-layout-sider>
 
         <!-- 主内容区域 -->
         <n-layout class="main-layout">
-          <!-- 顶部导航栏（仅移动端） -->
-          <n-layout-header v-if="isMobileDevice" bordered class="top-navbar">
-            <NavBar :active-tab="activeTab" />
-          </n-layout-header>
+         
 
           <!-- 页面内容 -->
           <n-layout-content class="content-wrapper">
-            <router-view :class="themeClass" />
+            <router-view v-if="showContentByStoreUser" :class="themeClass" />
+            <!-- 应用加载页面 -->
+    <AppLoading v-else />
           </n-layout-content>
         </n-layout>
       </n-layout>
@@ -80,6 +81,7 @@
 import { isMobile } from '@/utils/device.js'
 import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vue';
 import { useStore } from 'vuex'
+import { saveToken, getToken } from '@/utils/tokenUtils.js';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   NConfigProvider, 
@@ -106,19 +108,40 @@ import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
+import AppLoading from '@/components/AppLoading.vue'; // 导入加载页面组件
 import request, { postM, isSuccess, getM } from '@/utils/request'
 import {isDesktop} from '@/utils/device.js'
+import {getLocalStorageDesktopToken} from '@/utils/desktopToken.js'
+const showContentByStoreUser = computed(() => {
+ return store.state.user && Object.keys(store.state.user).length !== 0
+});
+
+// 添加桌面token加载状态
+
 
 const getDeskToken=async ()=>{
-  if (isDesktop()) {
+   // 将多个值拼接成一个字符串
+  const res=await getToken()
+// alert(`用户信息: ${localStorage.getItem("user")}, Token: ${localStorage.getItem("token")}, deskToken: ${res}`);
+  if (isDesktop()&&!getLocalStorageDesktopToken()) {
     console.log('getDeskTokenStrore')
     const res = await postM('/getDeskTokenStrore');
     let user=res.data.data
+    if(user){
+      await  store.commit('saveUser', user);
+
+    }else{
+      await store.dispatch('logout');
+    router.push('/login');
+    }
       // 验证成功，完成登录流程
-      store.commit('saveUser', user);
-      await localStorage.setItem('token', user.token);
+      // 使用tokenUtils工具函数保存token
+      // await saveToken(user.deskToken);
   }
+  // 设置加载完成
+
 }
+
 
 // 主题状态管理
 const isDark = ref(true);
@@ -180,12 +203,14 @@ const updateBodyTheme = () => {
 
 // 初始化时读取保存的主题状态
 onMounted(() => {
+   getDeskToken();
   const savedTheme = localStorage.getItem('theme-dark');
   if (savedTheme) {
     isDark.value = JSON.parse(savedTheme);
   }
   updateBodyTheme();
-  getDeskToken();
+ 
+
 });
 const store = useStore()
 

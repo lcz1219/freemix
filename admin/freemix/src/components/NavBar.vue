@@ -110,6 +110,8 @@ import { useStore } from 'vuex';
 import upload from './upload.vue';
 import TabsView from '@/components/TabsView.vue';
 import { baseURL, isSuccess, postM } from '@/utils/request.js'
+import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
+import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 
 const emit = defineEmits(['update:collapsed'])
 
@@ -305,10 +307,10 @@ const handleSelect = (key) => {
     logout();
   }
 }
-const logout = () => {
+ const logout = async () => {
   try {
     logoutLoading.value = true;
-    store.dispatch('logout');
+   await store.dispatch('logout');
     message.success('已退出登录');
     router.push('/login');
   } catch (error) {
@@ -351,9 +353,9 @@ const railStyle = ({ focused, checked }) => {
   return style;
 };
 
-const goTo = (path) => {
-  // 检查用户是否已登录
-  const token = localStorage.getItem('token');
+const goTo = async (path) => {
+  // 检查用户是否已登录（使用新的工具函数）
+  const token = await getToken();
   if (!token && path !== '/login' && path !== '/register') {
     router.push('/login');
     return;

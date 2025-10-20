@@ -88,7 +88,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { postM, isSuccess } from '@/utils/request';
 import { isDesktop } from '@/utils/device.js';
-import { generateDesktopToken, saveDesktopToken, saveToken } from '@/utils/desktopToken.js';
+import { generateDesktopToken, saveLocalStorageDesktopToken } from '@/utils/desktopToken.js';
+import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { RefreshOutline } from '@vicons/ionicons5';
 import TwoFactorAuth from '@/components/TwoFactorAuth.vue';
 
@@ -196,7 +197,7 @@ const verifyTwoFactorAuth = async () => {
       let user=res.data.data
       // 验证成功，完成登录流程
       store.commit('saveUser', user);
-      await localStorage.setItem('token', user.token);
+  
       
       // 如果是桌面端，生成并保存桌面端token
       if (isDesktop()) {
@@ -204,8 +205,8 @@ const verifyTwoFactorAuth = async () => {
         
         // 生成并保存桌面端token
         const desktopToken = generateDesktopToken();
-        saveToken(desktopToken);
-        saveDesktopToken(desktopToken);
+        saveTokenUtil(desktopToken);//本地token保存
+        saveLocalStorageDesktopToken(desktopToken);
         // 发送请求到服务器验证并保存桌面端token
         try {
           await postM('verify-desktop-token', { desktopToken,username:user.username });
@@ -213,6 +214,9 @@ const verifyTwoFactorAuth = async () => {
         } catch (error) {
           console.error('保存桌面端token失败:', error);
         }
+      }else{
+         // 使用新的工具函数保存token
+      await saveTokenUtil(user.token);
       }
       
       message.success('登录成功');

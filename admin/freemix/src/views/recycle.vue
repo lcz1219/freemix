@@ -1,7 +1,6 @@
 <template>
     <div class="recycle-page">
         <!-- 顶部导航栏 -->
-        <NavBar active-tab="" />
 
         <!-- 主内容区域 -->
         <n-layout-content class="main-content">

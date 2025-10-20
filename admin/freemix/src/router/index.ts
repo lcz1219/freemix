@@ -15,8 +15,11 @@ import MobileAddGoal from '@/views/mobile-add-goal.vue'
 import MobileSettings from '@/views/mobile-settings.vue'
 import MobileStatistics from '@/views/mobile-statistics.vue'
 import { isDesktop } from '@/utils/device.js'
-import { getDesktopToken, getToken } from '@/utils/desktopToken.js';
+// import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
+import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { isMobile } from '@/utils/device.js'
+import { useStore } from 'vuex'
+
 
 // 根据设备类型选择组件
 const getComponent = (desktopComponent: any, mobileComponent: any) => {
@@ -91,18 +94,13 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 })
+const store = useStore()
 
 // 路由守卫（示例：登录状态验证）
 router.beforeEach(async (to, from, next) => {
-  var isAuthenticated=false
-  // if(isDesktop()){
-  //    isAuthenticated = !!await getToken()
-  //    console.log("isAuthenticated",isAuthenticated)
-     
-  // }else{
-
-   isAuthenticated = !!localStorage.getItem('token')
-  // }
+  // 使用tokenUtils工具函数获取token（推荐）
+  const token = await getToken();
+  const isAuthenticated = !!token;
   
   // 允许访问登录和注册页面，无论是否已认证
   if (to.path === '/login' || to.path === '/register') {

@@ -3,7 +3,8 @@ import axios from 'axios';
 import store from '../stores/index.js';
 import router from '../router/index.js';
 import { isDesktop } from './device.js';
-import { getDesktopToken, getToken } from './desktopToken.js';
+import { getLocalStorageDesktopToken } from './desktopToken.js';
+import { saveToken, getToken } from './tokenUtils.js';
 
 const request = axios.create({
   baseURL: import.meta.env.PROD ? 'http://8.134.84.105' : 'http://localhost:5173',
@@ -23,38 +24,28 @@ request.interceptors.request.use(
     
     if (needsAuth) {
       // 检查是否为桌面端
-      if (isDesktop()) {
-        // 桌面端使用桌面token和持久化存储的普通token
-        const desktopToken = getDesktopToken();
-        console.log('desktopToken', desktopToken);
-        // // 移动端使用普通token
-        // const token = localStorage.getItem('token');
-        // if (!token) {
-        //   return Promise.reject(new Error('缺少认证Token'));
-        // }
-        // config.headers.Authorization = `Bearer ${token}`;
-        if (!desktopToken) {
-          // return Promise.reject(new Error('缺少桌面端认证Token'));
-        const longDeskToken =  await getToken(); 
-        console.log('longDeskToken', longDeskToken);
-        
-        if(!longDeskToken){
-          return Promise.reject(new Error('缺少桌面端认证Token'));
-        }
-         config.headers['X-Desktop-Token'] = longDeskToken;
-         
-        }else{
-          config.headers['X-Desktop-Token'] = desktopToken;
-        }
-        
-      } else {
-        // 移动端使用普通token
-        const token = localStorage.getItem('token');
+      // if (isDesktop()) {
+      //   // 桌面端使用桌面token和持久化存储的普通token
+      //   const desktopToken = getLocalStorageDesktopToken();
+        // 获取token
+        const token = await getToken(); // 使用新工具函数
         if (!token) {
           return Promise.reject(new Error('缺少认证Token'));
         }
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+        
+        // 根据设备类型设置相应的认证头
+        if (isDesktop()) {
+          // 桌面端优先使用本地存储的桌面token，如果没有则使用普通token
+          const desktopToken = getLocalStorageDesktopToken();
+          if (desktopToken) {
+            config.headers['X-Desktop-Token'] = desktopToken;
+          } else {
+            config.headers['X-Desktop-Token'] = token;
+          }
+        } else {
+          // 移动端使用普通token
+          config.headers.Authorization = `Bearer ${token}`;
+        }
     }
     return config;
   },
@@ -76,16 +67,23 @@ const fileRequest = axios.create({
 
 fileRequest.interceptors.request.use(
   async config => {
-    // 根据设备类型获取 token
-    let token;
-    if (isDesktop()) {
-      token = await getToken();
-      console.log('desktopToken', token);
-    } else {
-      token = localStorage.getItem('token');
+    // 获取token
+    const token = await getToken(); // 使用新工具函数
+    if (!token) {
+      return Promise.reject(new Error('缺少认证Token'));
     }
     
-    if (token) {
+    // 根据设备类型设置相应的认证头
+    if (isDesktop()) {
+      // 桌面端优先使用本地存储的桌面token，如果没有则使用普通token
+      const desktopToken = getLocalStorageDesktopToken();
+      if (desktopToken) {
+        config.headers['X-Desktop-Token'] = desktopToken;
+      } else {
+        config.headers['X-Desktop-Token'] = token;
+      }
+    } else {
+      // 移动端使用普通token
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

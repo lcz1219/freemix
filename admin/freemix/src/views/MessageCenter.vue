@@ -1,6 +1,5 @@
 <template>
   <!-- 顶部导航栏 -->
-    <!-- <NavBar active-tab="dashboard" /> -->
   <n-layout style="height: 100%;">
     <n-layout-header >
       <!-- <div style="padding: 16px; display: flex; justify-content: flex-start; align-items: center;"> -->
