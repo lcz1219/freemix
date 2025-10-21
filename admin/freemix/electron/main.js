@@ -1,5 +1,5 @@
 // electron/main.js
-import { app, BrowserWindow, ipcMain, Notification, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Notification, Menu, Tray, nativeImage } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -14,6 +14,8 @@ const tokenFilePath = path.join(userDataPath, 'token.json');
 
 // 全局窗口管理器实例
 let windowManager;
+// 在文件顶部，其他全局变量附近添加
+let tray = null; // 全局保存 Tray 实例的引用
 
 // 创建窗口函数
 function createWindow() {
@@ -56,6 +58,93 @@ function showNotification(title, body) {
   console.log('显示通知:', title, body);
   new Notification({ title, body }).show()
 }
+// 创建系统托盘图标
+ // 在文件顶部声明全局变量
+
+function createTrayIcon() {
+  try {
+    console.log('开始创建系统托盘图标...');
+    
+    // 根据平台选择合适的图标尺寸
+    const iconSize = process.platform === 'darwin' ? { width: 22, height: 22 } : { width: 20, height: 20 };
+    
+    // 尝试从文件创建图标
+    let icon;
+    try {
+      const iconPath = path.join(__dirname, 'icon.png');
+      icon = nativeImage.createFromPath(iconPath);
+      
+      // 检查图标是否有效
+      if (icon.isEmpty()) {
+        throw new Error('图标文件为空或无效');
+      }
+      
+      console.log('使用文件图标:', iconPath);
+    } catch (iconError) {
+      console.log('无法加载文件图标，使用默认base64图标:', iconError.message);
+      // 使用内嵌base64图标作为备选方案
+      // icon = nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABIUlEQVRYhe2WQQ6CMBBF/9SExIUbD+DJXHkAJS48gB6AG3gz8QIKuPAEehdwoe2k0E4hYJmZdpN/0zG0/dNpOwVijDHG/A0A9wDeAO5f6hXAPQaQpQBwAVD9qCsApwDgFMAVQN2jrgGc/YJTAHcATY+6AXDxCc4AtD3qFsDNF7gA0PWoOwAPX+ASQN+j7gE8fYArAIlB/QKQ+gDXAJaG+AfAygDfAFga4hvA2hDfADaG+AawNcQ3gJ0hvgHsDfEN4GCITwBHQ3wBOBviC8DFEF8Arob4APAxxAeAryE+AHwO8QHge4gPAN9DfADEMCQGQCyGDAWIyZAhADEa0hcgVkP6AMRsyC+AXAz5BJCTIe8AcjPkFSBnQxqA3A15AOT+DXkYYowxxvwxT4W5p6ZcXf5lAAAAAElFTkSuQmCC');
+    }
+    
+    // 调整图标尺寸
+    icon = icon.resize(iconSize);
+    console.log('图标创建成功，尺寸:', icon.getSize());
+    
+    // 创建托盘实例并保存到全局变量
+    tray = new Tray(icon);
+    console.log('Tray实例创建成功');
+
+    // 创建右键菜单
+    const contextMenu = Menu.buildFromTemplate([
+      { 
+        label: '显示主窗口', 
+        click: () => {
+          const mainWindow = BrowserWindow.getAllWindows()[0];
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        }
+      },
+      { type: 'separator' },
+      { 
+        label: '退出', 
+        click: () => {
+          app.quit();
+        }
+      }
+    ]);
+
+    // 设置托盘悬停提示
+    tray.setToolTip('FreeMix - 目标跨端协作平台');
+    
+    // 在macOS上设置标题（可选）
+    if (process.platform === 'darwin') {
+      // tray.setTitle('FreeMix');
+    }
+
+    // 绑定右键菜单
+    tray.setContextMenu(contextMenu);
+    
+    // 添加点击事件（显示/隐藏窗口）
+    tray.on('click', () => {
+      const mainWindow = BrowserWindow.getAllWindows()[0];
+      if (mainWindow) {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide();
+        } else {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      }
+    });
+    
+    console.log('系统托盘图标创建完成');
+  } catch (error) {
+    console.error('创建系统托盘图标时发生错误:', error);
+  }
+}// 全局保存 Tray 实例的引用
+
 
 // 显示关于对话框
 function showAboutDialog() {
@@ -149,26 +238,26 @@ function showAboutDialog() {
 }
 
 // 创建Dock菜单
-function createDockMenu() {
-  if (process.platform !== 'darwin') return;
+// function createDockMenu() {
+//   if (process.platform !== 'darwin') return;
   
-  const dockMenu = Menu.buildFromTemplate([
-    {
-      label: '新建窗口',
-      click() {
-        const winId = `window_${Date.now()}`;
-        windowManager.createWindow(winId, {
-          width: 1200,
-          height: 800
-        }, '/');
-      }
-    },
+//   const dockMenu = Menu.buildFromTemplate([
+//     {
+//       label: '新建窗口',
+//       click() {
+//         const winId = `window_${Date.now()}`;
+//         windowManager.createWindow(winId, {
+//           width: 1200,
+//           height: 800
+//         }, '/');
+//       }
+//     },
     
    
-  ]);
+//   ]);
   
-  app.dock.setMenu(dockMenu);
-}
+//   app.dock.setMenu(dockMenu);
+// }
 
 // 创建应用菜单
 function createAppMenu() {
@@ -176,17 +265,17 @@ function createAppMenu() {
     {
       label: '应用',
       submenu: [
-        {
-          label: '新建窗口',
-          accelerator: 'CmdOrCtrl+N',
-          click() {
-            const winId = `window_${Date.now()}`;
-            windowManager.createWindow(winId, {
-              width: 1200,
-              height: 800
-            }, '/');
-          }
-        },
+        // {
+        //   label: '新建窗口',
+        //   accelerator: 'CmdOrCtrl+N',
+        //   click() {
+        //     const winId = `window_${Date.now()}`;
+        //     windowManager.createWindow(winId, {
+        //       width: 1200,
+        //       height: 800
+        //     }, '/');
+        //   }
+        // },
         {
           label: '关闭窗口',
           accelerator: 'CmdOrCtrl+W',
@@ -354,6 +443,8 @@ ipcMain.on('remove-token', (event) => {
 
 // 应用准备就绪后创建窗口
 app.whenReady().then(() => {
+  // 创建系统托盘图标
+  createTrayIcon();
   // 创建主窗口
   createWindow();
   
@@ -362,12 +453,13 @@ app.whenReady().then(() => {
   
   // 创建应用菜单
   createAppMenu();
-  
-  // 创建Dock菜单（仅macOS）
-  createDockMenu();
+   
+ 
   
   // 显示通知
   showNotification('应用已启动', 'FreeMix 正在运行');
+  
+ 
 });
 
 // 处理所有窗口关闭事件（在macOS上应用通常保持活动状态）
