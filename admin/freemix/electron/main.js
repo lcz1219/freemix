@@ -136,12 +136,10 @@ function createTrayIcon() {
     tray.on('click', () => {
       const mainWindow = BrowserWindow.getAllWindows()[0];
       if (mainWindow) {
-        if (mainWindow.isVisible()) {
-          mainWindow.hide();
-        } else {
+      
           mainWindow.show();
           mainWindow.focus();
-        }
+        
       }
     });
     
