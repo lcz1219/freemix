@@ -107,7 +107,7 @@ const getDeskToken = async () => {
   // 将多个值拼接成一个字符串
   const res = await getToken()
   // alert(`用户信息: ${localStorage.getItem("user")}, Token: ${localStorage.getItem("token")}, deskToken: ${res}`);
-  if (isDesktop() && !getLocalStorageDesktopToken()) {
+  if (isDesktop()) {
     console.log('getDeskTokenStrore')
     const res = await postM('/getDeskTokenStrore');
     let user = res.data.data

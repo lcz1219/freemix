@@ -180,7 +180,6 @@ import { useStore } from 'vuex'
 import { useMessage } from 'naive-ui'
 import NavBar from '@/components/NavBar.vue';
 import { getM, postM, isSuccess,baseURL } from '@/utils/request'
-import { genMsg } from '@/utils/genMsg'
 import { 
   Send, 
   Search, 
