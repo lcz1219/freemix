@@ -66,6 +66,7 @@ import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vu
 import { useStore } from 'vuex'
 import { saveToken, getToken } from '@/utils/tokenUtils.js';
 import { useRoute, useRouter } from 'vue-router';
+import globalMessageListener from '@/utils/globalMessageListener.js';
 import {
   NConfigProvider,
   darkTheme,
@@ -192,8 +193,9 @@ onMounted(() => {
     isDark.value = JSON.parse(savedTheme);
   }
   updateBodyTheme();
-
-
+  
+  // 启动全局消息监听器
+  globalMessageListener.startListening();
 });
 const store = useStore()
 

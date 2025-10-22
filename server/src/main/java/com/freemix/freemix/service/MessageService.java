@@ -221,6 +221,24 @@ public class MessageService {
     }
 
     /**
+     * 获取未读消息内容
+     * @return ApiResponse
+     */
+    public ApiResponse<List<Message>> getUnreadMessages() {
+        // 验证用户是否登录
+        String currentUser = getCurrentUsername();
+        if (currentUser == null) {
+            return ApiResponse.failure("用户未登录", 401);
+        }
+
+        // 查询未读消息
+        Query query = new Query(Criteria.where("toUser").is(currentUser).and("isRead").is(false));
+        List<Message> messages = mongoTemplate.find(query, Message.class);
+        
+        return ApiResponse.success(messages);
+    }
+
+    /**
      * 删除消息
      * @param messageId 消息ID
      * @return ApiResponse

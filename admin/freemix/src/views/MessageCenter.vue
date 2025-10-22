@@ -180,6 +180,7 @@ import { useStore } from 'vuex'
 import { useMessage } from 'naive-ui'
 import NavBar from '@/components/NavBar.vue';
 import { getM, postM, isSuccess,baseURL } from '@/utils/request'
+import { genMsg } from '@/utils/genMsg'
 import { 
   Send, 
   Search, 
@@ -420,6 +421,15 @@ const fetchMessages = async () => {
       
       // 按时间排序
       messages.value = userMessages.sort((a: Message, b: Message) => a.createdAt - b.createdAt)
+      //消息提醒 - 只对当前用户的新消息进行提醒
+      console.log("messages.value:",messages.value);
+      messages.value.forEach(msg => {
+        // 只提醒接收的消息，且未读的消息
+        // if(msg.toUser === currentUser.value.username && !msg.isRead){
+        //     genMsg(`${msg.fromUserChinesename || msg.fromUser}: ${msg.content}`)
+        // }
+      })
+      
       
       // 标记接收的消息为已读
       await markMessagesAsRead()
@@ -599,7 +609,7 @@ const fetchUnreadCount = async () => {
     const res = await getM('messages/unreadCount')
     if (isSuccess(res)) {
       // 这里可以更新全局未读消息数
-      console.log('未读消息数量:', res.data.data)
+      // console.log('未读消息数量:', res.data.data)
       badge.value = res.data.data
       return res.data.data
     }

@@ -98,6 +98,16 @@ public class MessageController {
     }
     
     /**
+     * 获取未读消息内容
+     * @return ApiResponse 包含未读消息内容的响应
+     */
+    @GetMapping("/unreadMessages")
+    @CheckToken
+    public ApiResponse<List<Message>> getUnreadMessages() {
+        return messageService.getUnreadMessages();
+    }
+    
+    /**
      * 删除消息
      * @param messageId 消息ID
      * @return ApiResponse

@@ -58,6 +58,12 @@ function showNotification(title, body) {
   console.log('显示通知:', title, body);
   new Notification({ title, body }).show()
 }
+
+
+ipcMain.on("gen-msg",(event,msg)=>{
+  showNotification('新消息', msg);
+})
+
 // 创建系统托盘图标
  // 在文件顶部声明全局变量
 

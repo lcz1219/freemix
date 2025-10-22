@@ -32,6 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onWindowDragStart: (callback) => ipcRenderer.on('window-drag-start', callback),
   
   // 移除窗口拖动开始事件监听
-  removeWindowDragStartListener: (callback) => ipcRenderer.removeListener('window-drag-start', callback)
+  removeWindowDragStartListener: (callback) => ipcRenderer.removeListener('window-drag-start', callback),
+  genMsg: (msg) => ipcRenderer.send('gen-msg', msg)
 
 });
