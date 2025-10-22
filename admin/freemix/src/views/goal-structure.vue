@@ -436,8 +436,8 @@ const circleloadGoalStructure = (goal) => {
       title: child.message,
       description: child.message,
       finish: child.finish,
-      x: 150 + index * 100,
-      y: 250
+      x: 150+index*100 ,
+      y: 250+ index * 260
     });
 
     connections.value.push({

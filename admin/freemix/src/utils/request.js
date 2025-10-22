@@ -7,7 +7,7 @@ import { getLocalStorageDesktopToken } from './desktopToken.js';
 import { saveToken, getToken } from './tokenUtils.js';
 
 const request = axios.create({
-  baseURL: import.meta.env.PROD ? 'http://8.134.84.105' : 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'http://8.148.242.131' : 'http://localhost:5173',
   headers: {
     'Content-Type': 'application/json'
   },
@@ -57,12 +57,12 @@ request.interceptors.request.use(
 );  
 const baseURL =()=> {
   let url = '';
-  url= import.meta.env.PROD ? 'http://8.134.84.105/freemix' : 'http://localhost:5173/freemix'
+  url= import.meta.env.PROD ? 'http://8.148.242.131/freemix' : 'http://localhost:5173/freemix'
   return url;
   };
 // 创建一个用于文件上传的axios实例
 const fileRequest = axios.create({
-  baseURL: import.meta.env.PROD ? 'http://8.134.84.105' : 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'http://8.148.242.131' : 'http://localhost:5173',
 });
 
 fileRequest.interceptors.request.use(
