@@ -39,7 +39,7 @@ public class MessageService {
      * 获取当前用户名
      * @return 当前用户名
      */
-    private String getCurrentUsername() {
+    public String getCurrentUsername() {
         User user = getCurrentUser();
         return user != null ? user.getUsername() : null;
     }
@@ -238,6 +238,15 @@ public class MessageService {
         return ApiResponse.success(messages);
     }
 
+    /**
+     * 保存消息
+     * @param message 消息对象
+     * @return 保存后的消息对象
+     */
+    public Message saveMessage(Message message) {
+        return mongoTemplate.save(message);
+    }
+    
     /**
      * 删除消息
      * @param messageId 消息ID

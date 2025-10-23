@@ -33,15 +33,20 @@ export const saveToken = (token) => {
  */
 export const getToken = async () => {
   if (isDesktop()) {
-       const getTokenFromFileData=  await getTokenFromFile()
-        console.log("getLocalStorageDesktopToken",getLocalStorageDesktopToken());
-      console.log("getTokenFromFileData",getTokenFromFileData);
-      return getLocalStorageDesktopToken()?getLocalStorageDesktopToken():getTokenFromFileData;
-     
-      
-      
-     
-    // 桌面端从文件获取
+    // 桌面端优先从文件获取token
+    try {
+      const tokenData = await getTokenFromFile();
+      if (tokenData && tokenData.token) {
+        // 检查token是否过期
+        if (tokenData.expiresAt && Date.now() < tokenData.expiresAt) {
+          return tokenData.token;
+        }
+      }
+    } catch (error) {
+      console.error('从文件获取桌面端token失败:', error);
+    }
+    // 如果文件中没有有效token，尝试从localStorage获取
+    return getLocalStorageDesktopToken();
   } else {
     // 移动端从localStorage获取
     return localStorage.getItem('token');
@@ -73,12 +78,19 @@ export const hasValidToken = async () => {
   if (isDesktop()) {
     // 桌面端检查文件中的token
     try {
-      // 这里简化处理，实际应该检查token是否过期
-      const token = await getTokenFromFile();
-      return !!token;
+      const tokenData = await getTokenFromFile();
+      if (tokenData && tokenData.token) {
+        // 检查token是否过期
+        if (tokenData.expiresAt && Date.now() < tokenData.expiresAt) {
+          return true;
+        }
+      }
+      // 如果文件中没有有效token，检查localStorage
+      return !!getLocalStorageDesktopToken();
     } catch (error) {
       console.error('检查桌面端token有效性失败:', error);
-      return false;
+      // 出错时仍然检查localStorage
+      return !!getLocalStorageDesktopToken();
     }
   } else {
     // 移动端检查localStorage中的token

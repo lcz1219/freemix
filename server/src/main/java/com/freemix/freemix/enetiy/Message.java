@@ -23,6 +23,11 @@ public class Message {
     private String fromUser;
     
     /**
+     * 发送者中文名
+     */
+    private String fromUserChinesename;
+    
+    /**
      * 接收者用户名
      */
     private String toUser;

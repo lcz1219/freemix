@@ -15,13 +15,11 @@
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder",
-    
     "electron:build:linux": "npm run build && electron-builder --linux",
     "electron:build:all": "npm run build && electron-builder -mwl",
-    "electron:build:mac": "npm run build && ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ electron-builder",
+    "electron:build:mac": "npm run build && electron-builder --mac --config.mac.identity=null",
     "electron:build:win-mirror": "npm run build && ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --win",
     "electron:build:win": "npm run build && electron-builder --win --config.win.sign=null --config.win.signAndEditExecutable=false",
-    "electron:build:mac": "npm run build && electron-builder --mac --config.mac.identity=null",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "format": "prettier --write src/"
@@ -45,6 +43,8 @@
     "marked": "^16.3.0",
     "pinia": "^3.0.3",
     "qrcode": "^1.5.4",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3",
     "vant": "^4.9.21",
     "vue": "^3.5.17",
     "vue-clipboard3": "^2.0.0",

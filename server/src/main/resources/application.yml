@@ -21,3 +21,11 @@ spring:
       max-request-size: 100MB
 server:
   port: 8888
+
+logging:
+  level:
+    org:
+      springframework:
+        messaging: DEBUG
+        web:
+          socket: DEBUG

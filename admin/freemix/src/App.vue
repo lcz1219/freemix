@@ -98,6 +98,7 @@ import AppLoading from '@/components/AppLoading.vue'; // 导入加载页面组�
 import request, { postM, isSuccess, getM } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
 import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
+import {connect} from '@/utils/websocket.js'
 const showContentByStoreUser = computed(() => {
   return store.state.user && Object.keys(store.state.user).length !== 0
 });
@@ -188,16 +189,17 @@ const updateBodyTheme = () => {
 };
 
 // 初始化时读取保存的主题状态
-onMounted(() => {
+onMounted(async () => {
   getDeskToken();
   const savedTheme = localStorage.getItem('theme-dark');
   if (savedTheme) {
     isDark.value = JSON.parse(savedTheme);
   }
   updateBodyTheme();
+  await connect();
   
   // 启动全局消息监听器
-  globalMessageListener.startListening();
+  // globalMessageListener.startListening();
 });
 const store = useStore()
 

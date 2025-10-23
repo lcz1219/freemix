@@ -2,6 +2,11 @@
 const { contextBridge, ipcRenderer } = require('electron');
 // import { contextBridge, ipcRenderer } from 'electron';
 
+// 为 sockjs-client 等库提供 global 对象支持
+if (typeof global === 'undefined') {
+  global = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : {};
+}
+
 // 安全地暴露API到渲染进程
 contextBridge.exposeInMainWorld('electronAPI', {
   // 窗口控制

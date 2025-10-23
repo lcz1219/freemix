@@ -211,6 +211,8 @@ import {
   NSpin
 } from 'naive-ui'
 import router from "@/router";
+import {sendMessageWeb} from '@/utils/websocket.js'
+import {genMsg} from '@/utils/genMsg.js'
 // import defaultAvatar from '@/assets/images/default-avatar.png'
 
 // 定义消息类型
@@ -242,6 +244,7 @@ const show=()=>{
   console.log("showSendMessageModal.value:",showSendMessageModal.value);
   
 }
+
 const showAvatar=(item)=>{
   // if(!item) return `${baseURL()}${'/file/WechatIMG105.jpg'}`
   return `${baseURL()}${item}` 
@@ -256,9 +259,7 @@ const showSendMessageModal = ref(false)
 const sendingMessage = ref(false)
 
 // 轮询相关
-const pollingInterval = ref<NodeJS.Timeout | null>(null)
-const pollingEnabled = ref(true)
-const pollingIntervalTime = 300 // 3秒轮询一次
+
 
 // 表单相关
 const messageFormRef = ref()
@@ -382,14 +383,14 @@ const fetchAllUsers = async () => {
 const selectUser = async (user: User) => {
   try {
     // 停止之前的轮询
-    stopPolling()
+    // stopPolling()
     
     selectedUser.value = user
     await fetchMessages()
     scrollToBottom()
     
     // 开始新的轮询
-    startPolling()
+    
   } catch (error) {
     console.error('选择用户失败:', error)
     message.error('选择用户失败')
@@ -488,6 +489,37 @@ const markMessagesAsRead = async () => {
   }
 }
 
+const handleIncomingMessage=(messageStr)=>{
+  try {
+    // 解析接收到的消息
+    const message = JSON.parse(messageStr);
+    console.log("handleIncomingMessage,message:",message);
+    
+    // 检查是否是发给当前用户的消息
+    if (message.toUser === currentUser.value.username) {
+      // 生成通知
+      genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
+      
+      // 如果当前正在与发送者聊天，更新消息列表
+      if (selectedUser.value && selectedUser.value.username === message.fromUser) {
+        // 添加到消息列表
+        messages.value.push({
+          ...message,
+          isRead: false // 新消息默认未读
+        });
+        
+        // 滚动到底部
+        scrollToBottom();
+        
+        // 更新未读消息数量
+        fetchUnreadCount();
+      }
+    }
+  } catch (error) {
+    console.error('解析WebSocket消息失败:', error);
+  }
+}
+
 // 发送消息
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !selectedUser.value) return
@@ -506,6 +538,7 @@ const sendMessage = async () => {
     }
     
     const res = await postM('messages/send', messageData)
+     sendMessageWeb(JSON.stringify(messageData))
     
     if (isSuccess(res)) {
       // 立即添加到消息列表
@@ -618,37 +651,7 @@ const fetchUnreadCount = async () => {
   return 0
 }
 
-// 开始轮询消息
-const startPolling = () => {
-  if (pollingInterval.value) {
-    clearInterval(pollingInterval.value)
-  }
-  
-  pollingInterval.value = setInterval(async () => {
-    if (pollingEnabled.value && selectedUser.value) {
-      await fetchMessages()
-      await fetchUnreadCount()
-    }
-  }, pollingIntervalTime)
-}
 
-// 停止轮询
-const stopPolling = () => {
-  if (pollingInterval.value) {
-    clearInterval(pollingInterval.value)
-    pollingInterval.value = null
-  }
-}
-
-// 切换轮询状态
-const togglePolling = (enabled: boolean) => {
-  pollingEnabled.value = enabled
-  if (enabled && selectedUser.value) {
-    startPolling()
-  } else {
-    stopPolling()
-  }
-}
 
 // 初始化
 onMounted(async () => {
@@ -661,11 +664,7 @@ onMounted(async () => {
     }
     
     console.log('初始化完成，未读消息数量:', unreadCount)
-    
-    // 开始轮询
-    if (selectedUser.value) {
-      startPolling()
-    }
+    window.handleWebSocketMessage = handleIncomingMessage;
   } catch (error: any) {
     console.error('初始化失败:', error)
     if (error?.message) {
@@ -674,12 +673,6 @@ onMounted(async () => {
       message.error('初始化失败')
     }
   }
-})
-
-// 组件销毁时停止轮询
-import { onUnmounted } from 'vue'
-onUnmounted(() => {
-  stopPolling()
 })
 
 // 监听消息变化，自动滚动到底部

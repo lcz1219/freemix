@@ -37,16 +37,16 @@ public class UserContextUtil {
         // 从请求中获取token
         String token = getTokenFromRequest(request);
         String userAgent = request.getHeader("User-Agent");
-        if(userAgent.contains(AgentModel.Electron)){
+        if (userAgent != null && userAgent.contains(AgentModel.Electron)) {
             if (token != null && !token.isEmpty()) {
-                // 根据token查询用户信息
+                // 根据deskToken查询用户信息（桌面端）
                 Query query = new Query();
                 query.addCriteria(Criteria.where("deskToken").is(token));
                 return mongoTemplate.findOne(query, User.class);
             }
-        }else{
+        } else {
             if (token != null && !token.isEmpty()) {
-                // 根据token查询用户信息
+                // 根据token查询用户信息（移动端）
                 Query query = new Query();
                 query.addCriteria(Criteria.where("token").is(token));
                 return mongoTemplate.findOne(query, User.class);
@@ -63,14 +63,22 @@ public class UserContextUtil {
      * @return String token字符串
      */
     private String getTokenFromRequest(HttpServletRequest request) {
+        // 检查是否为桌面端请求
+        String userAgent = request.getHeader("User-Agent");
+        boolean isDesktop = userAgent != null && userAgent.contains(AgentModel.Electron);
+        
+        if (isDesktop) {
+            // 桌面端优先使用X-Desktop-Token头
+            String deskHeader = request.getHeader("X-Desktop-Token");
+            if (deskHeader != null && !deskHeader.isEmpty()) {
+                return deskHeader;
+            }
+        }
+        
         // 优先级1：Authorization头（标准方式）
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
-        }
-        String deskHeader = request.getHeader("X-Desktop-Token");
-        if (deskHeader != null && !deskHeader.isEmpty()) {
-            return deskHeader;
         }
 
         // 优先级2：自定义Header

@@ -6,6 +6,8 @@ import com.freemix.freemix.enetiy.Message;
 import com.freemix.freemix.service.MessageService;
 import com.freemix.freemix.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -85,6 +87,18 @@ public class MessageController {
     @CheckToken
     public ApiResponse<List<Message>> getChatHistory(@PathVariable String username) {
         return messageService.getChatHistory(username);
+    }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    // 假设用户Alice连接后订阅了主题 `/topic/user.Alice`
+    @MessageMapping("/chat.private")
+    public void sendPrivateMessage(Message message) {
+        // 将消息发送到以接收方命名的特定主题
+        messagingTemplate.convertAndSendToUser(
+                message.getToUser(), // 接收方用户名
+                "/topic/private", // 主题前缀
+                message.getContent()
+        );
     }
     
     /**
