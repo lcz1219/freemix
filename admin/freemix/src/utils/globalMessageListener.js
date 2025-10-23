@@ -5,7 +5,7 @@ import { genMsg } from '@/utils/genMsg'
 class GlobalMessageListener {
   constructor() {
     this.pollingInterval = null
-    this.pollingIntervalTime = 5000 // 5秒轮询一次
+    this.pollingIntervalTime = 2000 // 5秒轮询一次
     this.lastMessageIds = new Set() // 记录已处理的消息ID，避免重复提示
     this.isEnabled = true
   }

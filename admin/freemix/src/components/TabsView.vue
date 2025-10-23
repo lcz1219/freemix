@@ -9,36 +9,76 @@
       @clickoutside="showDropdown = false"
     >
     </n-dropdown>
-    <n-tabs 
-      v-model:value="activeTab" 
-      type="card" 
-      closable
-      @close="handleClose"
-      @update:value="handleTabClick"
-      class="tabs-container"
-    >
-      <n-tab 
-        v-for="tab in tabs" 
-        :key="tab.path" 
-        :name="tab.path"
-        @contextmenu="handleContextMenu($event, tab.path)"
+    <div class="tabs-header">
+      <n-tabs 
+        v-model:value="activeTab" 
+        type="card" 
+        closable
+        @close="handleClose"
+        @update:value="handleTabClick"
+        class="tabs-container"
       >
-        {{ tab.title }}
-      </n-tab>
-    </n-tabs>
+        <n-tab 
+          v-for="tab in tabs" 
+          :key="tab.path" 
+          :name="tab.path"
+          @contextmenu="handleContextMenu($event, tab.path)"
+        >
+          {{ tab.title }}
+        </n-tab>
+      </n-tabs>
+      <div class="theme-switch-container">
+        <n-tooltip placement="bottom">
+          <template #trigger>
+            <n-switch 
+              v-model:value="isDark" 
+              :rail-style="railStyle" 
+              @update:value="toggleTheme"
+              class="theme-switch"
+            >
+              <template #icon>
+                <n-icon v-if="isDark" :component="MoonIcon" />
+                <n-icon v-else :component="SunIcon" />
+              </template>
+            </n-switch>
+          </template>
+          <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
+        </n-tooltip>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, onMounted, nextTick, inject } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NTabs, NTab, NDropdown } from 'naive-ui'
+import { NTabs, NTab, NDropdown, NSwitch, NTooltip, NIcon } from 'naive-ui'
 import { useMessage } from 'naive-ui'
+import { SunnyOutline, MoonOutline } from '@vicons/ionicons5'
 
 // 获取路由和路由器实例
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
+
+// 主题相关
+const isDark = inject('isDark', ref(false))
+const toggleTheme = inject('toggleTheme', (value) => {})
+const railStyle = inject('railStyle', ({ focused, checked }) => {
+  const style = {}
+  if (checked) {
+    style.background = '#81c683'
+    if (focused) style.boxShadow = '0 0 0 2px rgba(129, 198, 131, 0.3)'
+  } else {
+    style.background = '#e0e0e0'
+    if (focused) style.boxShadow = '0 0 0 2px rgba(224, 224, 224, 0.3)'
+  }
+  return style
+})
+
+// 图标组件
+const SunIcon = SunnyOutline
+const MoonIcon = MoonOutline
 
 // 标签页数据
 const tabs = ref<Array<{ path: string; title: string }>>([])
@@ -244,10 +284,30 @@ onMounted(() => {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
+  background-color: rgba(var(--card-bg-rgb), 0.85);
+}
+
+.tabs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
 }
 
 .tabs-container {
-  padding: 0 20px;
+  flex: 1;
+}
+
+.theme-switch-container {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.theme-switch {
+  width: 40px;
+  height: 20px;
 }
 
 :deep(.n-tabs-nav) {
@@ -259,23 +319,27 @@ onMounted(() => {
   color: var(--text-color);
   background-color: transparent;
   border: none;
-  border-radius: 6px 6px 0 0;
+  border-radius: 8px 8px 0 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-weight: 500;
   position: relative;
-  margin-right: 4px;
+  margin-right: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 :deep(.n-tabs-tab:hover) {
   background-color: var(--hover-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background-color: var(--card-bg);
+  background: linear-gradient(145deg, var(--card-bg), var(--hover-color));
   color: var(--text-color);
   font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 :deep(.n-tabs-tab.n-tabs-tab--active)::after {
@@ -284,49 +348,82 @@ onMounted(() => {
   bottom: -1px;
   left: 0;
   right: 0;
-  height: 2px;
-  background-color: #81c683;
-  border-radius: 2px;
+  height: 3px;
+  background: linear-gradient(90deg, #81c683, #5baa73);
+  border-radius: 3px;
 }
 
 :deep(.n-tabs-tab__close) {
   margin-left: 8px;
-  border-radius: 50%;
-  padding: 2px;
-  transition: all 0.3s;
+  border-radius: 6px;
+  padding: 3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+  background-color: transparent;
 }
 
 :deep(.n-tabs-tab__close:hover) {
-  background-color: rgba(129, 198, 131, 0.1);
+  background-color: rgba(129, 198, 131, 0.2);
   color: #81c683;
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 :deep(.n-tabs-tab):hover .n-tabs-tab__close {
   opacity: 1;
 }
 
-:deep(.n-tabs-tab__close) {
-  opacity: 0.7;
-}
-
 :deep(.n-dropdown) {
-  border-radius: 8px;
-  padding: 4px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 6px 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   border: 1px solid var(--border-color);
   background-color: var(--card-bg);
+  backdrop-filter: blur(20px);
 }
 
 :deep(.n-dropdown-option) {
-  padding: 8px 12px;
-  transition: background-color 0.2s;
+  padding: 10px 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0;
 }
 
 :deep(.n-dropdown-option:hover) {
   background-color: var(--hover-color);
+  color: var(--text-color);
 }
 
 :deep(.n-dropdown-option__label) {
   color: var(--text-color);
+  font-weight: 500;
+}
+
+/* 添加深色模式下的特殊效果 */
+.dark-theme :deep(.n-tabs-tab.n-tabs-tab--active) {
+  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* 添加浅色模式下的特殊效果 */
+.light-theme :deep(.n-tabs-tab.n-tabs-tab--active) {
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* 响应式设计优化 */
+@media (max-width: 768px) {
+  .tabs-container {
+    padding: 0 10px;
+  }
+  
+  :deep(.n-tabs-tab) {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin-right: 4px;
+  }
+  
+  :deep(.n-tabs-tab__close) {
+    margin-left: 6px;
+  }
 }
 </style>

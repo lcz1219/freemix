@@ -32,6 +32,7 @@
 
                 <!-- 页面内容 -->
                 <n-layout-content class="content-wrapper">
+                  <TabsView></TabsView>
                   <router-view v-if="showContentByStoreUser" :class="themeClass" />
                   <!-- 应用加载页面 -->
                   <AppLoading v-else />
@@ -64,6 +65,7 @@
 import { isMobile } from '@/utils/device.js'
 import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vue';
 import { useStore } from 'vuex'
+import TabsView from '@/components/TabsView.vue';
 import { saveToken, getToken } from '@/utils/tokenUtils.js';
 import { useRoute, useRouter } from 'vue-router';
 import globalMessageListener from '@/utils/globalMessageListener.js';
@@ -307,7 +309,9 @@ body {
   --bg-color: #f8f9fa;
   --text-color: #333333;
   --card-bg: #ffffff;
+  --card-bg-rgb: 255, 255, 255;
   --border-color: #e0e0e0;
+  --hover-color: #f5f5f5;
 
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -318,7 +322,9 @@ body {
   --bg-color: #121212;
   --text-color: #e0e0e0;
   --card-bg: #1e1e1e;
+  --card-bg-rgb: 30, 30, 30;
   --border-color: #333333;
+  --hover-color: #2a2a2a;
 
   background-color: var(--bg-color);
   color: var(--text-color);

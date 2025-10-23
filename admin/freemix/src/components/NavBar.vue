@@ -67,19 +67,7 @@
           <span class="nav-text" v-if="!isCollapsed">用户</span>
         </n-button>
       </n-dropdown>
-      <div class="theme-switch" v-if="!isMobileDevice && !isCollapsed">
-        <n-tooltip placement="right">
-          <template #trigger>
-            <n-switch v-model:value="isDark" :rail-style="railStyle" @update:value="toggleTheme">
-              <template #icon>
-                <n-icon v-if="isDark" :component="MoonIcon" />
-                <n-icon v-else :component="SunIcon" />
-              </template>
-            </n-switch>
-          </template>
-          <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
-        </n-tooltip>
-      </div>
+
     </div>
   </div>
 </template>
