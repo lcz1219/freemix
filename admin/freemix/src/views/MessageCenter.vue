@@ -489,36 +489,7 @@ const markMessagesAsRead = async () => {
   }
 }
 
-const handleIncomingMessage=(messageStr)=>{
-  try {
-    // 解析接收到的消息
-    const message = JSON.parse(messageStr);
-    console.log("handleIncomingMessage,message:",message);
-    
-    // 检查是否是发给当前用户的消息
-    if (message.toUser === currentUser.value.username) {
-      // 生成通知
-      genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
-      
-      // 如果当前正在与发送者聊天，更新消息列表
-      if (selectedUser.value && selectedUser.value.username === message.fromUser) {
-        // 添加到消息列表
-        messages.value.push({
-          ...message,
-          isRead: false // 新消息默认未读
-        });
-        
-        // 滚动到底部
-        scrollToBottom();
-        
-        // 更新未读消息数量
-        fetchUnreadCount();
-      }
-    }
-  } catch (error) {
-    console.error('解析WebSocket消息失败:', error);
-  }
-}
+
 
 // 发送消息
 const sendMessage = async () => {
@@ -534,7 +505,8 @@ const sendMessage = async () => {
     const messageData = {
       toUser: selectedUser.value.username,
       content: content,
-      type: 'text'
+      type: 'text',
+      fromUser: currentUser.value.username
     }
     
     const res = await postM('messages/send', messageData)
@@ -664,7 +636,7 @@ onMounted(async () => {
     }
     
     console.log('初始化完成，未读消息数量:', unreadCount)
-    window.handleWebSocketMessage = handleIncomingMessage;
+    
   } catch (error: any) {
     console.error('初始化失败:', error)
     if (error?.message) {

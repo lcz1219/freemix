@@ -1,15 +1,21 @@
 package com.freemix.freemix.configurer;
 
+import com.freemix.freemix.enetiy.AgentModel;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.UserContextUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import org.springframework.web.util.UriComponentsBuilder;
+
 
 import java.security.Principal;
 import java.util.Map;
@@ -18,23 +24,54 @@ import java.util.Map;
 public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor {
     
     @Autowired
-    private UserContextUtil userContextUtil;
+    private MongoTemplate mongoTemplate;
     
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, 
+    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         if (request instanceof ServletServerHttpRequest) {
             ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
+            HttpServletRequest httpRequest = servletRequest.getServletRequest();
             
-            // 从HTTP请求中获取用户信息
-            User user = userContextUtil.getCurrentUser();
+            // 从URL参数或请求头中获取token
+            String deskToken = httpRequest.getParameter("deskToken");
+            String token = httpRequest.getParameter("token");
             
-            if (user != null) {
+            // 如果URL参数中没有，则尝试从请求头获取
+            if ((deskToken == null || deskToken.isEmpty()) && (token == null || token.isEmpty())) {
+                String userAgent = httpRequest.getHeader("User-Agent");
+                if (userAgent != null && userAgent.contains(AgentModel.Electron)) {
+                    deskToken = httpRequest.getHeader("X-Desktop-Token");
+                } else {
+                    String authHeader = httpRequest.getHeader("Authorization");
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        token = authHeader.substring(7);
+                    }
+                }
+            }
+            
+            User user = null;
+            
+            // 根据不同的token类型查询用户
+            if (deskToken != null && !deskToken.isEmpty()) {
+                // 根据deskToken查询用户信息（桌面端）
+                Query query = new Query();
+                query.addCriteria(Criteria.where("deskToken").is(deskToken));
+                user = mongoTemplate.findOne(query, User.class);
+            } else if (token != null && !token.isEmpty()) {
+                // 根据token查询用户信息（移动端）
+                Query query = new Query();
+                query.addCriteria(Criteria.where("token").is(token));
+                user = mongoTemplate.findOne(query, User.class);
+            }
+            final User finalUser=user;
+            
+            if (finalUser != null) {
                 // 创建Principal对象
                 Principal principal = new Principal() {
                     @Override
                     public String getName() {
-                        return user.getUsername();
+                        return finalUser.getUsername();
                     }
                 };
                 

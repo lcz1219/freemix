@@ -99,6 +99,7 @@ import request, { postM, isSuccess, getM } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
 import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
 import {connect} from '@/utils/websocket.js'
+import {genMsg} from '@/utils/genMsg.js'
 const showContentByStoreUser = computed(() => {
   return store.state.user && Object.keys(store.state.user).length !== 0
 });
@@ -187,7 +188,37 @@ const updateBodyTheme = () => {
     document.body.classList.remove('dark-theme');
   }
 };
-
+const currentUser = computed(() => store.state.user)
+const handleIncomingMessage=(messageStr)=>{
+  try {
+    // 解析接收到的消息
+    const message = JSON.parse(messageStr);
+    console.log("handleIncomingMessage,message:",message);
+    
+    // 检查是否是发给当前用户的消息
+    if (message.toUser === currentUser.value.username) {
+      // 生成通知
+      genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
+      
+      // 如果当前正在与发送者聊天，更新消息列表
+      // if (selectedUser.value && selectedUser.value.username === message.fromUser) {
+      //   // 添加到消息列表
+      //   messages.value.push({
+      //     ...message,
+      //     isRead: false // 新消息默认未读
+      //   });
+        
+        // 滚动到底部
+        // scrollToBottom();
+        
+        // 更新未读消息数量
+        // fetchUnreadCount();
+      // }
+    }
+  } catch (error) {
+    console.error('解析WebSocket消息失败:', error);
+  }
+}
 // 初始化时读取保存的主题状态
 onMounted(async () => {
   getDeskToken();
@@ -197,7 +228,7 @@ onMounted(async () => {
   }
   updateBodyTheme();
   await connect();
-  
+  window.handleWebSocketMessage = handleIncomingMessage;
   // 启动全局消息监听器
   // globalMessageListener.startListening();
 });

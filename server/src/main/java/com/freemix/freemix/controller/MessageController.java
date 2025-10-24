@@ -5,8 +5,11 @@ import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.Message;
 import com.freemix.freemix.service.MessageService;
 import com.freemix.freemix.util.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +23,8 @@ import java.util.List;
 @RequestMapping("/messages")
 @CrossOrigin(origins = "*") // 允许跨域请求
 public class MessageController {
-    
+
+    private static final Logger log = LoggerFactory.getLogger(MessageController.class);
     @Autowired
     private MessageService messageService;
     
@@ -93,12 +97,17 @@ public class MessageController {
     // 假设用户Alice连接后订阅了主题 `/topic/user.Alice`
     @MessageMapping("/chat.private")
     public void sendPrivateMessage(Message message) {
-        // 将消息发送到以接收方命名的特定主题
-        messagingTemplate.convertAndSendToUser(
-                message.getToUser(), // 接收方用户名
-                "/topic/private", // 主题前缀
-                message.getContent()
-        );
+        MessageController.log.info("Attempting to send private message to user: {}, content: {}", message.getToUser(), message.getContent());
+        try {
+            messagingTemplate.convertAndSendToUser(
+                    message.getToUser(),
+                    "/queue/private",
+                    message
+            );
+            log.info("Private message sent successfully.");
+        } catch (Exception e) {
+            log.error("Failed to send private message: ", e);
+        }
     }
     
     /**
