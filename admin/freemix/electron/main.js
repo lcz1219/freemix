@@ -410,8 +410,20 @@ ipcMain.on('focus-window', (event, winId) => {
 // IPC 监听：保存 token 到文件
 ipcMain.on('save-token', (event, tokenData) => {
   try {
-    fs.writeFileSync(tokenFilePath, JSON.stringify(tokenData));
-    console.log('保存 token 到文件成功',tokenFilePath);
+   let tokenArray = [];
+
+    // 1. 检查文件是否存在，并读取现有内容
+    if (fs.existsSync(tokenFilePath)) {
+      const existingData = fs.readFileSync(tokenFilePath, 'utf8');
+      tokenArray = JSON.parse(existingData);
+    }
+
+    // 2. 将新的 token 数据添加到数组中
+    tokenArray.push(tokenData);
+
+    // 3. 将整个数组重新写入文件（这会覆盖原文件）
+    fs.writeFileSync(tokenFilePath, JSON.stringify(tokenArray, null, 2)); // null, 2 参数用于美化输出，便于阅读
+    console.log('Token 已成功添加到JSON数组文件', tokenFilePath);
   } catch (error) {
     console.error('保存 token 到文件失败:', error);
   }

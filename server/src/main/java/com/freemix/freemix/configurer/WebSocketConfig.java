@@ -19,6 +19,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Autowired
     private WebSocketAuthenticationInterceptor webSocketAuthenticationInterceptor;
     
+//    @Autowired
+//    private WebSocketUserManager webSocketUserManager;
+    
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 客户端将连接到此端点，使用SockJS作为备选方案

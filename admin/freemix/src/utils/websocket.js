@@ -108,6 +108,17 @@ export async function connect() {
             }
         });
         
+        // 订阅用户状态更新主题
+        stompClient.subscribe('/topic/user-status', function (message) {
+            console.log('Received user status update: ' + message.body);
+            // 这里可以处理用户状态更新，例如更新用户列表中的在线状态
+            const statusUpdate = JSON.parse(message.body);
+            if (statusUpdate.type === 'user-status-update') {
+                // 通知页面更新用户状态
+                window.dispatchEvent(new CustomEvent('userStatusUpdate', { detail: statusUpdate.onlineUsers }));
+            }
+        });
+        
         console.log('Successfully subscribed to private messages');
     }, function(error) {
         // console.error('WebSocket connection error:', error);

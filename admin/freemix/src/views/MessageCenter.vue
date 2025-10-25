@@ -51,19 +51,25 @@
             >
               <n-thing>
                 <template #avatar>
-                <n-badge :value="computedBadge(user.username)" :max="15">
-                  <n-avatar
-                      v-if="user.avatarUrl"
-                    :src="showAvatar(user.avatarUrl)" 
-                    round 
-                    size="small"
-                      fallback-src="https://bpic.588ku.com/element_origin_min_pic/19/04/10/e87e154ddafd724a915a119fb21c38b9.jpg"
-                  />
-                  <n-icon :size="24"
-                      v-else
-                  ><Accessibility/></n-icon>
+                <div style="position: relative; display: inline-block;">
+                  <n-badge :value="computedBadge(user.username)" :max="15">
+                    <n-avatar
+                        v-if="user.avatarUrl"
+                      :src="showAvatar(user.avatarUrl)" 
+                      round 
+                      size="small"
+                        fallback-src="https://bpic.588ku.com/element_origin_min_pic/19/04/10/e87e154ddafd724a915a119fb21c38b9.jpg"
+                    />
+                    <n-icon :size="24"
+                        v-else
+                    ><Accessibility/></n-icon>
                   </n-badge>
-                </template>
+                  <!-- 在线状态指示点 -->
+                  <div 
+                    :class="['status-indicator', isUserOnline(user.username) ? 'online' : 'offline']"
+                  ></div>
+                </div>
+              </template>
                 <template #header>
                   {{ user.chinesename || user.username }}
                 </template>
@@ -257,6 +263,7 @@ const messages = ref<Message[]>([])
 const newMessage = ref('')
 const showSendMessageModal = ref(false)
 const sendingMessage = ref(false)
+const userStatus = ref<Record<string, boolean>>({})
 
 // 轮询相关
 
@@ -607,6 +614,19 @@ const scrollToBottom = () => {
   })
 }
 
+// 获取用户在线状态
+const fetchUserStatus = async () => {
+  try {
+    const res = await getM('user-status/all')
+    if (res && res.data) {
+      userStatus.value = res.data
+      console.log('用户在线状态:', userStatus.value)
+    }
+  } catch (error) {
+    console.error('获取用户在线状态失败:', error)
+  }
+}
+
 // 获取未读消息数量
 const fetchUnreadCount = async () => {
   try {
@@ -623,13 +643,35 @@ const fetchUnreadCount = async () => {
   return 0
 }
 
+// 检查用户是否在线
+const isUserOnline = (username: string) => {
+  return userStatus.value[username] || false
+}
 
+
+
+let statusInterval: number | null = null
 
 // 初始化
 onMounted(async () => {
   try {
     const usersLoaded = await fetchAllUsers()
     const unreadCount = await fetchUnreadCount()
+    await fetchUserStatus() // 获取初始用户在线状态
+    
+    // 每5秒获取一次用户在线状态
+    statusInterval = window.setInterval(fetchUserStatus, 5000)
+    
+    // 监听WebSocket用户状态更新事件
+      const handleUserStatusUpdate = (event) => {
+        const onlineUsers = event.detail;
+        // 更新用户状态
+        allUsers.value.forEach(user => {
+          userStatus.value[user.username] = onlineUsers.includes(user.username);
+        });
+      };
+    
+    window.addEventListener('userStatusUpdate', handleUserStatusUpdate);
     
     if (!usersLoaded) {
       message.warning('用户列表加载失败，正在使用模拟数据')
@@ -646,6 +688,13 @@ onMounted(async () => {
     }
   }
 })
+
+// 组件卸载时清理定时器
+// onUnmounted(() => {
+//   if (statusInterval) {
+//     clearInterval(statusInterval)
+//   }
+// })
 
 // 监听消息变化，自动滚动到底部
 // watch(messages, () => {
@@ -709,5 +758,25 @@ background-color: #e6f4ff1c;
     //border-radius: 17px;
         padding: 9px 11px;
     margin: 3px;
+}
+
+/* 在线状态指示点样式 */
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-indicator.online {
+  background-color: #4CAF50; /* 绿色表示在线 */
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.5);
+}
+
+.status-indicator.offline {
+  background-color: #9E9E9E; /* 灰色表示离线 */
 }
 </style>

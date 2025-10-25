@@ -28,6 +28,9 @@ public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor 
     @Autowired
     private MongoTemplate mongoTemplate;
     
+//    @Autowired
+//    private WebSocketUserManager webSocketUserManager;
+    
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
@@ -92,5 +95,6 @@ public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor 
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, 
                               WebSocketHandler wsHandler, Exception exception) {
         // 握手完成后不需要特殊处理
+        log.info("WebSocket handshake completed");
     }
 }
