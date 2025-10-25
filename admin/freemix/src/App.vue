@@ -29,10 +29,10 @@
               <!-- 主内容区域 -->
               <n-layout class="main-layout">
 
-
+<TabsView></TabsView>
                 <!-- 页面内容 -->
                 <n-layout-content class="content-wrapper">
-                  <TabsView></TabsView>
+                  
                   <router-view v-if="showContentByStoreUser" :class="themeClass" />
                   <!-- 应用加载页面 -->
                   <AppLoading v-else />
@@ -411,7 +411,7 @@ body {
 
 /* 内容区域样式 */
 .content-wrapper {
-  padding: 10px;
+  /* padding: 10px; */
   height: 100%;
   overflow-y: auto;
 }

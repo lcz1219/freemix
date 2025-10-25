@@ -707,6 +707,7 @@ onMounted(async () => {
 .active-user {
 background-color: #e6f4ff1c;
     //border-radius: 17px;
+        padding: 9px 11px;
     margin: 3px;
 }
 </style>
