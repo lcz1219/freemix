@@ -354,7 +354,7 @@ const fetchAllUsers = async () => {
       })
       allUsers.value = res.data.data.filter((user: User) => user.username !== currentUser.value.username)
       //默认选择第一个初始化时候
-      selectedUser.value = allUsers.value[0]
+      selectUser(allUsers.value[0])
       return true
     } else {
       // 如果API调用失败，使用模拟数据

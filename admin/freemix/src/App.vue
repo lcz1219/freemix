@@ -189,31 +189,43 @@ const updateBodyTheme = () => {
   }
 };
 const currentUser = computed(() => store.state.user)
-const handleIncomingMessage=(messageStr)=>{
+import { h } from 'vue'
+import { ElNotification } from 'element-plus'
+const handleIncomingMessage = (messageStr) => {
   try {
     // 解析接收到的消息
     const message = JSON.parse(messageStr);
-    console.log("handleIncomingMessage,message:",message);
-    
+    console.log("handleIncomingMessage,message:", message);
+
     // 检查是否是发给当前用户的消息
     if (message.toUser === currentUser.value.username) {
-      // 生成通知
-      genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
-      
-      // 如果当前正在与发送者聊天，更新消息列表
-      // if (selectedUser.value && selectedUser.value.username === message.fromUser) {
-      //   // 添加到消息列表
-      //   messages.value.push({
-      //     ...message,
-      //     isRead: false // 新消息默认未读
-      //   });
-        
-        // 滚动到底部
-        // scrollToBottom();
-        
-        // 更新未读消息数量
-        // fetchUnreadCount();
-      // }
+      if (isDesktop()) {
+        genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
+      } else {
+        // 根据当前主题设置通知样式
+        const isDarkTheme = isDark.value;
+        const notificationStyle = isDarkTheme ? {
+          background: '#1e1e1e',
+          border: '1px solid #333333',
+          color: '#e0e0e0'
+        } : {
+          background: '#ffffff',
+          border: '1px solid #e0e0e0',
+          color: '#333333'
+        };
+
+        ElNotification({
+          title: message.fromUserChinesename || message.fromUser,
+          message: h('i', { 
+            style: `color: ${isDarkTheme ? '#81c683' : '#81c683'}; font-style: normal; font-weight: 500;` 
+          }, message.content),
+          dangerouslyUseHTMLString: true,
+          duration: 4500,
+          customClass: isDarkTheme ? 'websocket-notification-dark' : 'websocket-notification',
+          style: notificationStyle
+        });
+      }
+
     }
   } catch (error) {
     console.error('解析WebSocket消息失败:', error);
@@ -402,6 +414,40 @@ body {
   padding: 10px;
   height: 100%;
   overflow-y: auto;
+}
+
+/* WebSocket通知样式 */
+.websocket-notification {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(10px);
+}
+
+.websocket-notification .el-notification__title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.websocket-notification .el-notification__content {
+  font-size: 14px;
+}
+/* WebSocket通知样式 */
+.websocket-websocket-notification-dark {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(10px);
+}
+
+:deep .websocket-websocket-notification-dark .el-notification__title {
+  font-weight: 600;
+  font-size: 15px;
+  color: white!important;
+  margin-bottom: 4px;
+}
+
+.websocket-websocket-notification-dark .el-notification__content {
+  font-size: 14px;
 }
 
 /* 确保所有Naive UI组件使用主题变量 */

@@ -4,6 +4,7 @@ import com.freemix.freemix.enetiy.AgentModel;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.UserContextUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.security.Principal;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor {
     
@@ -64,6 +66,7 @@ public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor 
                 query.addCriteria(Criteria.where("token").is(token));
                 user = mongoTemplate.findOne(query, User.class);
             }
+            log.info("WebSocketAuthenticationInterceptor,user------>{}", user);
             final User finalUser=user;
             
             if (finalUser != null) {

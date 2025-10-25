@@ -20,7 +20,13 @@ export default defineConfig({
         target: 'http://localhost:8888', // 后端地址
         changeOrigin: true, // 修改请求源为 target
         rewrite: (path) => path.replace(/^\/freemix/, '') // 移除 /api 前缀
-      }
+      },
+      '/ws': {
+        target: 'http://localhost:8888/ws', // 真实后端地址
+        changeOrigin: true,
+        ws: true, // 必须！启用 WebSocket 代理
+        rewrite: (path) => path.replace(/^\/ws/, '')
+      },
     }
   },
   
