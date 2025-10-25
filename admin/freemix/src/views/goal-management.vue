@@ -214,7 +214,7 @@
                     </n-icon>
 
                   </n-button>
-                  <n-button type="primary" circle secondary strong @click="editGoal(scope.row)">
+                  <n-button type="primary" circle secondary strong @click="editGoal(scope.row)" style="margin-right: 10px;">
 
                     <n-icon size="20">
                       <PencilOutline />
@@ -272,6 +272,14 @@
                       </n-icon>
                     </template>
                     下载
+                  </n-button>
+                  <n-button size="tiny" type="info" @click="watchfile(file)">
+                    <template #icon>
+                      <n-icon>
+                        <EyeSharp />
+                      </n-icon>
+                    </template>
+                    查看
                   </n-button>
                   <n-button size="tiny" type="error" @click="removeChildGoalFile(file)">
                     <template #icon>
@@ -338,7 +346,7 @@ import ExcelImport from '@/components/ExcelImport.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import { EyeSharp, PencilOutline, CheckmarkOutline, ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline, ChevronDownOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
-import { AccessibilitySharp,CalendarSharp,CheckmarkCircle,CheckmarkCircleOutline } from '@vicons/ionicons5';
+import { AccessibilitySharp,CalendarSharp,CheckmarkCircle,CheckmarkCircleOutline, } from '@vicons/ionicons5';
 import { useStore } from 'vuex';
 
 // 注入主题变量
@@ -363,6 +371,12 @@ const currentChildGoalIndex = ref(-1);
 const currentChildGoalFiles = ref<any[]>([]);
 const viewChildGoalFilesList = ref<any[]>([]);
 const childGoalUploadRef = ref<any>(null);
+const watchfile=(file:any)=>{
+  const a=document.createElement('a')
+   a.href = file.url || file.fileUrl || `${baseURL()}/file/${file.name}`;
+   a.target = '_blank';
+   a.click();
+}
 
 // 下拉菜单相关状态
 const showDropdown = ref(false);
@@ -724,7 +738,7 @@ const saveChildGoalFiles = async (): Promise<void> => {
       message.success('文件保存成功');
       
       // 更新本地数据
-    //  getGoals()
+     getGoals()
       
       // 关闭模态框
       closeChildGoalUploadModal();
