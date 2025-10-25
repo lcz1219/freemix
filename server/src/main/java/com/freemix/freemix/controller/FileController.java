@@ -62,9 +62,9 @@ public class FileController extends BaseController {
             
             // 保存文件
             file.transferTo(filePath);
-            User username = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user1.getUsername())), User.class);
-            username.setAvatarUrl("/file/"+uniqueFilename);
-            mongoTemplate.save(username);
+//            User username = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user1.getUsername())), User.class);
+            user1.setAvatarUrl("/file/"+uniqueFilename);
+            mongoTemplate.save(user1);
 
             // 返回成功响应，包含文件名
             return ApiResponse.success(uniqueFilename, "文件上传成功");

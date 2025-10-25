@@ -61,7 +61,7 @@ function showNotification(title, body) {
 
 
 ipcMain.on("gen-msg",(event,msg)=>{
-  showNotification('新消息', msg);
+  showNotification('Freemix', msg);
 })
 
 // 创建系统托盘图标

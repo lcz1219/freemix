@@ -303,7 +303,7 @@ public class LoginController {
     @GetMapping("/getOwerList")
     @CheckToken
     public ApiResponse getOwerList(){
-        List<User> users = mongoTemplate.find(new Query(), User.class);
+        List<User> users = mongoTemplate.find(new Query().addCriteria(Criteria.where("del").ne(1)), User.class);
         Set<JSONObject> collect = users.stream().map(e -> {
 
             JSONObject jsonObject = new JSONObject();
