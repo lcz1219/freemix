@@ -20,5 +20,19 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: Ov23liOK5XFcdhjSuZDB
+            clientSecret: 510b7bb65f0e01ccf5c09271cf96f49a9ef81aa7
+            scope: read:user,user:email
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: login
 server:
   port: 8888

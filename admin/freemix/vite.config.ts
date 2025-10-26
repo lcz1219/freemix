@@ -16,16 +16,21 @@ export default defineConfig({
   ],
    server: {
     proxy: {
-      '/freemix': { // 拦截所有以 /api 开头的请求
+      '/freemix': { // 拦截所有以 /freemix 开头的请求
         target: 'http://localhost:8888', // 后端地址
         changeOrigin: true, // 修改请求源为 target
-        rewrite: (path) => path.replace(/^\/freemix/, '') // 移除 /api 前缀
+        rewrite: (path) => path.replace(/^\/freemix/, '') // 移除 /freemix 前缀
       },
       '/ws': {
         target: 'http://localhost:8888/ws', // 真实后端地址
         changeOrigin: true,
         ws: true, // 必须！启用 WebSocket 代理
         rewrite: (path) => path.replace(/^\/ws/, '')
+      },
+      '/oauth2': {
+        target: 'http://localhost:8888', // 后端地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/oauth2/, '/oauth2')
       },
     }
   },

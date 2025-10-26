@@ -14,6 +14,7 @@ import MobileHome from '@/views/mobile-home.vue'
 import MobileAddGoal from '@/views/mobile-add-goal.vue'
 import MobileSettings from '@/views/mobile-settings.vue'
 import MobileStatistics from '@/views/mobile-statistics.vue'
+import GitHubOAuthCallback from '@/views/github-oauth-callback.vue'
 import { isDesktop } from '@/utils/device.js'
 // import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -87,7 +88,12 @@ const routes = [
     path: '/login-log', 
     name: 'LoginLog', 
     component: getComponent(LoginLog, LoginLog) 
-  }
+  },
+  // {
+  //   path: '/oauth/callback',
+  //   name: 'GitHubOAuthCallback',
+  //   component: GitHubOAuthCallback
+  // }
 ]
 
 const router = createRouter({
