@@ -1,5 +1,6 @@
 package com.freemix.freemix.configurer;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,6 +11,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class GitHubOAuth2Config {
 
+    @Autowired
+    private CustomOAuth2AuthorizationRequestResolver customOAuth2AuthorizationRequestResolver;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -19,7 +23,8 @@ public class GitHubOAuth2Config {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(authorization -> authorization
-                                .baseUri("/oauth2/authorization"))
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestResolver(customOAuth2AuthorizationRequestResolver))
                         .redirectionEndpoint(redirection -> redirection
                                 .baseUri("/login/oauth2/code/*"))
                         .defaultSuccessUrl("http://8.148.242.131/freemix/loginSuccess", true)
