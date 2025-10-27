@@ -21,7 +21,7 @@ public class GitHubOAuth2Config {
                         .authorizationEndpoint(authorization -> authorization
                                 .baseUri("/oauth2/authorization"))
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("/oauth2/callback/*"))
+                                .baseUri("/login/oauth2/code/*"))
                         .defaultSuccessUrl("http://8.148.242.131/freemix/loginSuccess", true)
                         .failureUrl("http://8.148.242.131/#/login?error=github_login_failed")
                 )

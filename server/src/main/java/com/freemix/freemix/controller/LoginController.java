@@ -47,6 +47,17 @@ public class LoginController {
         return ApiResponse.success(user);
 
     }
+    @PostMapping("/githubIdFindUser")
+    public ApiResponse githubIdFindUser(@RequestBody  String body){
+       JSONObject jsonObject = JSONObject.parseObject(body);
+        String githubId = jsonObject.getString("githubId");
+        User existUser = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("githubId").is(githubId)), User.class);
+        if(existUser == null){
+            return ApiResponse.failure("查询不到此用户");
+        }
+        return ApiResponse.success(existUser);
+
+    }
     @Autowired
     UserContextUtil userContextUtil;
     @PostMapping("/getDeskTokenStrore")
