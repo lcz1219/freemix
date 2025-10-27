@@ -33,7 +33,7 @@
                 <!-- 页面内容 -->
                 <n-layout-content class="content-wrapper">
                   
-                  <router-view v-if="showContentByStoreUser" :class="themeClass" />
+                  <router-view v-if="showContentByStoreUser||route.path=='/oauth/callback'" :class="themeClass" />
                   <!-- 应用加载页面 -->
                   <AppLoading v-else />
                 </n-layout-content>

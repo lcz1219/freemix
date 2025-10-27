@@ -89,11 +89,11 @@ const routes = [
     name: 'LoginLog', 
     component: getComponent(LoginLog, LoginLog) 
   },
-  // {
-  //   path: '/oauth/callback',
-  //   name: 'GitHubOAuthCallback',
-  //   component: GitHubOAuthCallback
-  // }
+  {
+    path: '/oauth/callback',
+    name: 'GitHubOAuthCallback',
+    component: GitHubOAuthCallback
+  }
 ]
 
 const router = createRouter({
@@ -107,7 +107,10 @@ router.beforeEach(async (to, from, next) => {
   // 使用tokenUtils工具函数获取token（推荐）
   const token = await getToken();
   const isAuthenticated = !!token;
-  
+  if(to.path==='/oauth/callback'){
+    next()
+    return
+  }
   // 允许访问登录和注册页面，无论是否已认证
   if (to.path === '/login' || to.path === '/register') {
     // 如果已经登录，重定向到主页
