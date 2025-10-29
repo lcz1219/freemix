@@ -412,7 +412,7 @@ body {
 /* 内容区域样式 */
 .content-wrapper {
   /* padding: 10px; */
-  height: 100%;
+  height: calc(100vh - 64px);
   overflow-y: auto;
 }
 

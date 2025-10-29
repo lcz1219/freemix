@@ -5,22 +5,8 @@
         正在处理GitHub登录...
       </template>
     </n-spin>
-    <n-result
-      v-else-if="error"
-      status="error"
-      title="登录失败"
-      :description="errorMessage"
-    >
-      <template #footer>
-        <n-button @click="retryLogin">重新登录</n-button>
-      </template>
-    </n-result>
-    <n-result
-      v-else
-      status="success"
-      title="登录成功"
-      description="正在跳转到首页..."
-    />
+  
+  
   </div>
 </template>
 
@@ -49,6 +35,8 @@ const retryLogin = () => {
 }
 const callback=async ()=>{
   try {
+    console.log("callback===>",route.query);
+    
     // 检查是否有错误参数
     const errorParam = route.query.error
     if (errorParam) {
@@ -101,7 +89,7 @@ const callback=async ()=>{
     
     // 跳转到首页
     loading.value = false
-    router.push('/home');
+    router.replace('/home');
   } catch (err) {
     console.error('GitHub OAuth处理失败:', err)
     error.value = true
@@ -142,7 +130,7 @@ const handleOAuthCallback = async () => {
 
     // 跳转到首页
     loading.value = false
-    router.push('/home')
+    router.replace('/home')
   } catch (err) {
     console.error('GitHub OAuth处理失败:', err)
     error.value = true
