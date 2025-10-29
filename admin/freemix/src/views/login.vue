@@ -278,7 +278,7 @@ const toRegister = () => {
         // 检查是否为桌面端
         if (isDesktop()) {
           // 桌面端直接访问后端服务器的完整URL
-          window.location.href = 'http://8.148.242.131/oauth2/authorization/github';
+          window.location.href = 'https://freemix.bond/oauth2/authorization/github';
         } else {
           // Web端保持原有行为
           window.location.href = '/oauth2/authorization/github';

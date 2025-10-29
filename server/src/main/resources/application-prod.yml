@@ -28,7 +28,7 @@ spring:
             clientId: Ov23liOK5XFcdhjSuZDB
             clientSecret: 510b7bb65f0e01ccf5c09271cf96f49a9ef81aa7
             scope: read:user,user:email
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://freemix.bond/login/oauth2/code/{registrationId}"
         provider:
           github:
             authorization-uri: https://github.com/login/oauth/authorize

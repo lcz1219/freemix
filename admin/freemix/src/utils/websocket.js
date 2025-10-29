@@ -11,8 +11,10 @@ let retryCount = 0;
 const MAX_RETRIES = 5;
 
 export async function connect() {
-    // 修复WebSocket连接URL配置
-    const baseUrl = import.meta.env.PROD ? 'http://8.148.242.131' : 'http://localhost:5173';
+    // 动态构建WebSocket连接URL，确保协议与当前页面一致
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const host = import.meta.env.PROD ? 'freemix.bond' : 'localhost:5173';
+    const baseUrl = `${protocol}//${host}`;
     
     // 获取token用于WebSocket连接认证
     const token = await getToken();
@@ -31,7 +33,13 @@ export async function connect() {
     }
     
     // 创建SockJS连接
-    const socket = new SockJS(wsUrl);
+    // 配置SockJS只使用安全的传输方式，避免不安全的连接尝试
+    const socket = new SockJS(wsUrl, null, {
+        // 只允许使用安全的传输方式
+        transports: window.location.protocol === 'https:' ? 
+            ['websocket', 'xhr-streaming', 'iframe-eventsource', 'iframe-htmlfile'] : 
+            ['websocket', 'xhr-streaming', 'xhr-polling', 'iframe-eventsource', 'iframe-htmlfile']
+    });
     
     stompClient = Stomp.over(socket);
     
