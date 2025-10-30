@@ -3,6 +3,7 @@ package com.freemix.freemix.util;
 import com.freemix.freemix.enetiy.AgentModel;
 import com.freemix.freemix.enetiy.User;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -15,6 +16,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * 用户上下文工具类
  * 提供获取当前登录用户信息的功能
  */
+@Slf4j
 @Component
 public class UserContextUtil {
 
@@ -36,6 +38,7 @@ public class UserContextUtil {
         
         // 从请求中获取token
         String token = getTokenFromRequest(request);
+        log.info("getCurrentUser=====>token:{}" + token);
         String userAgent = request.getHeader("User-Agent");
         if (userAgent != null && userAgent.contains(AgentModel.Electron)) {
             if (token != null && !token.isEmpty()) {

@@ -77,21 +77,20 @@ public class GitHubOAuth2Controller extends BaseController {
 
         // 生成用户token
         String token = generateUserToken();
-
+        String desktopToken = generateDesktopToken();
         // 根据设备类型处理token
         if (isDesktop) {
-            // 桌面端：生成并保存桌面端token
-            String desktopToken = generateDesktopToken();
-            user.setDeskToken(desktopToken);
-
-            // 保存桌面端token到Redis（30天有效期）
-            String desktopTokenKey = "desktop_token_" + desktopToken;
-            redisTemplate.opsForValue().set(desktopTokenKey, user.getId(), 30, TimeUnit.DAYS);
-
-            // 同时设置普通token
-            user.setToken(token);
-
-            userService.save(user);
+//            // 桌面端：生成并保存桌面端token
+//            user.setDeskToken(desktopToken);
+//
+//            // 保存桌面端token到Redis（30天有效期）
+//            String desktopTokenKey = "desktop_token_" + desktopToken;
+//            redisTemplate.opsForValue().set(desktopTokenKey, user.getId(), 30, TimeUnit.DAYS);
+//
+//            // 同时设置普通token
+//            user.setToken(token);
+//
+//            userService.save(user);
 
             // 保存用户信息到session
             HttpSession session = request.getSession();

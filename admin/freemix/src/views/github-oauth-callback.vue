@@ -19,7 +19,7 @@ import { postM, isSuccess } from '@/utils/request';
 import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { saveToken } from '@/utils/tokenUtils'
 import { generateDesktopToken, saveLocalStorageDesktopToken } from '@/utils/desktopToken.js';
-import { isDesktop } from '@/utils/device'
+import { isDesktop } from '@/utils/device.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -69,7 +69,7 @@ const callback=async ()=>{
       // 桌面端使用持久化存储
       
       // 生成并保存桌面端token
-      const desktopToken = user.deskToken;
+      const desktopToken = generateDesktopToken();
       saveTokenUtil(desktopToken);//本地token保存
       saveLocalStorageDesktopToken(desktopToken);
       // 发送请求到服务器验证并保存桌面端token
@@ -99,45 +99,7 @@ const callback=async ()=>{
 }
 
 // 处理GitHub OAuth回调
-const handleOAuthCallback = async () => {
-  try {
-    // 检查是否有错误参数
-    const errorParam = route.query.error
-    if (errorParam) {
-      error.value = true
-      errorMessage.value = 'GitHub登录失败: ' + errorParam
-      loading.value = false
-      return
-    }
 
-    // 获取token参数
-    const token = route.query.token
-    if (!token) {
-      error.value = true
-      errorMessage.value = '登录失败：缺少访问令牌'
-      loading.value = false
-      return
-    }
-
-    // 检查是否为桌面端
-    const isDesktopDevice = route.query.isDesktop === 'true' || isDesktop()
-
-    // 使用tokenUtils保存token（根据设备类型自动选择存储方式）
-    saveToken(token)
-
-    // 设置用户已登录状态
-    store.commit('setIsLoggedIn', true)
-
-    // 跳转到首页
-    loading.value = false
-    router.replace('/home')
-  } catch (err) {
-    console.error('GitHub OAuth处理失败:', err)
-    error.value = true
-    errorMessage.value = '处理登录请求时发生错误'
-    loading.value = false
-  }
-}
 
 onMounted(() => {
   callback()
