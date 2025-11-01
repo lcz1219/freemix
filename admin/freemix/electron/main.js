@@ -4,19 +4,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import WindowManager from './WindowManager.js';
-
 // 获取 __dirname 的 ES 模块替代方案
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// 添加单实例锁功能
-const gotTheLock = app.requestSingleInstanceLock();
-
-if (!gotTheLock) {
-  // 如果获取锁失败，说明已经有一个实例在运行，直接退出当前实例
-  app.quit();
-  process.exit(0);
-}
 
 // 获取应用数据目录
 const userDataPath = app.getPath('userData');
@@ -26,12 +16,11 @@ const tokenFilePath = path.join(userDataPath, 'token.json');
 let windowManager;
 // 在文件顶部，其他全局变量附近添加
 let tray = null; // 全局保存 Tray 实例的引用
-let mainWindow = null; // 保存主窗口实例的引用
 
 // 创建窗口函数
 function createWindow() {
   // 创建浏览器窗口
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 1500,
     height: 1000,
     titleBarStyle: 'hiddenInset', // macOS: 隐藏标题栏但保留窗口控制按钮
@@ -429,12 +418,12 @@ ipcMain.on('save-token', (event, tokenData) => {
   //     tokenArray = JSON.parse(existingData);
   //   }
 
-    // 2. 将新的 token 数据添加到数组中
-    // tokenArray.push(tokenData);
+  //   // 2. 将新的 token 数据添加到数组中
+  //   tokenArray.push(tokenData);
 
     // 3. 将整个数组重新写入文件（这会覆盖原文件）
     fs.writeFileSync(tokenFilePath, JSON.stringify(tokenData, null, 2)); // null, 2 参数用于美化输出，便于阅读
-    console.log('Token 已成功添加到JSON数组文件', tokenData);
+    console.log('Token 已成功添加到JSON数组文件', tokenFilePath);
   } catch (error) {
     console.error('保存 token 到文件失败:', error);
   }
@@ -497,16 +486,4 @@ app.on('window-all-closed', () => {
 // macOS上当点击Dock图标且没有其他窗口时重新创建窗口
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
-// 添加处理第二个实例的事件监听器
-app.on('second-instance', (event, commandLine, workingDirectory) => {
-  // 当运行第二个实例时，聚焦到主窗口
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  } else {
-    // 如果主窗口不存在，则创建新窗口
-    mainWindow = createWindow();
-  }
 });
