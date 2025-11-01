@@ -21,8 +21,8 @@ let tray = null; // 全局保存 Tray 实例的引用
 function createWindow() {
   // 创建浏览器窗口
   const mainWindow = new BrowserWindow({
-    width: 1500,
-    height: 1000,
+    width: 1300,
+    height: 800,
     titleBarStyle: 'hiddenInset', // macOS: 隐藏标题栏但保留窗口控制按钮
     frame: process.platform === 'darwin' ? false : true, // macOS: 无边框，其他平台保留边框
     title: '', // 清空窗口标题

@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick, inject } from 'vue'
+import { ref, watch, onMounted, nextTick, inject,  } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NTabs, NTab, NDropdown, NSwitch, NTooltip, NIcon } from 'naive-ui'
 import { useMessage } from 'naive-ui'
@@ -128,7 +128,8 @@ const routeTitleMap: Record<string, string> = {
   'Statistics': '统计',
   'Settings': '设置',
   'LoginLog': '登录日志',
-  "Messages": "消息"
+  "Messages": "消息",
+  "Profile": "个人信息"
 }
 
 // 获取路由标题
@@ -171,6 +172,8 @@ const addTab = (route: any) => {
 
 // 关闭标签页
 const handleClose = (name: string) => {
+  console.log("close:",name);
+  
   const index = tabs.value.findIndex(tab => tab.path === name)
   
   if (index !== -1) {
@@ -266,13 +269,24 @@ watch(
   },
   { deep: true }
 )
+const closeOauthCallback = () => {
+  handleClose("/oauth/callback")
+}
 
 // 组件挂载时初始化
 onMounted(() => {
+ 
   // 添加当前路由到标签页
   addTab(route)
   activeTab.value = route.path
+    // 延迟执行删除，确保标签页已添加
+  setTimeout(() => {
+    closeOauthCallback()
+  }, 200)
 })
+defineExpose({
+  handleClose
+});
 </script>
 
 <style scoped>

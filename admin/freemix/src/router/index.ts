@@ -93,6 +93,11 @@ const routes = [
     path: '/oauth/callback',
     name: 'GitHubOAuthCallback',
     component: GitHubOAuthCallback
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/Profile.vue')
   }
 ]
 

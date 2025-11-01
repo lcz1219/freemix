@@ -564,6 +564,8 @@ import { useStore } from 'vuex'
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue';
+import { useUser } from '@/hooks/useUser';
+import { useSettings } from '@/hooks/useSettings';
 // import { log } from 'echarts/types/src/util/log.js';
 
 // 图片占位符
@@ -726,15 +728,17 @@ const goals = ref([
   // { title: '项目交付', progress: 90, status: 'in-progress', deadline: '2023-10-30', owner: '孙八' }
 ]);
 const store = useStore();
+const { userInfo } = useUser();
+const { themeSettings } = useSettings();
 
 // 目标详情相关
 const showDetailModal = ref(false);
 const selectedGoal = ref({});
 const getGoalsMoth = ref([])
 const getGoals = async () => {
-  console.log("store.state.user.username", store.state.user.username);
+  console.log("userInfo.value.username", userInfo.value.username);
 
-  const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
+  const res = await getMPaths("getGoals", userInfo.value.username, "正在获取目标数据...");
   if (isSuccess(res)) {
     goals.value = res.data.data;
     console.log("goals.value", goals.value);

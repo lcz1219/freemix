@@ -1,101 +1,121 @@
 <template>
   <div :class="isDark ? 'settings-container dark' : 'settings-container light'">
-    <!-- 顶部导航栏 -->
-
     <!-- 主内容区域 -->
     <div class="main-content">
-      <!-- 页面标题 -->
-      <div class="page-header">
-        <h1>设置</h1>
-        <p>自定义您的目标追踪者体验</p>
-      </div>
-      <div class="settings-content">
-          <div class="settings-section">
-          <h2>token内容</h2>
-          <div class="settings-card token-info-card">
-            <div class="token-item">
-              <span class="token-label">用户:</span>
-              <span class="token-value">{{ user }}</span>
-            </div>
-            <div class="token-item">
-              <span class="token-label">token:</span>
-              <span class="token-value">{{ desktopToken }}</span>
-            </div>
-            
-          </div>
-        </div>
+      <div class="settings-layout">
+        <!-- 侧边栏导航 -->
+        <div class="sidebar">
+          <nav class="settings-nav">
+            <ul class="nav-list">
+              <li class="nav-item" :class="{ active: activeSection === 'profile' }">
+                <a href="#" @click.prevent="setActiveSection('profile')">个人资料</a>
+              </li>
+              <li class="nav-item" :class="{ active: activeSection === 'security' }">
+                <a href="#" @click.prevent="setActiveSection('security')">安全设置</a>
+              </li>
+              <li class="nav-item" :class="{ active: activeSection === 'token' }">
+                <a href="#" @click.prevent="setActiveSection('token')">Token信息</a>
+              </li>
+            </ul>
+          </nav>
         </div>
 
-      <!-- 设置内容 -->
-      <div class="settings-content">
-          <div class="settings-section">
-          <h2>安全设置</h2>
-          <div class="settings-card">
-            <TwoFactorAuth 
-            :parent="'settings'"
-              :initial-enabled="securitySettings.twoFactorEnabled"
-              @update:enabled="onTwoFactorUpdate"
-            />
-            
-            <div class="form-actions">
-              <button @click="saveSecuritySettings" class="btn primary">保存安全设置</button>
+        <!-- 主内容区域 -->
+        <div class="content-area">
+          <!-- 页面标题 -->
+          <div class="page-header">
+            <h1>{{ getPageTitle() }}</h1>
+            <p>{{ getPageSubtitle() }}</p>
+          </div>
+
+          <!-- 个人资料设置 -->
+          <div v-show="activeSection === 'profile'" class="settings-section">
+            <div class="settings-card">
+              <h2>个人资料</h2>
+              <div class="form-group">
+                <label>用户名</label>
+                <input 
+                  v-model="profileForm.username" 
+                  type="text" 
+                  disabled 
+                  class="form-input disabled"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>邮箱</label>
+                <input 
+                  v-model="profileForm.email" 
+                  type="email" 
+                  class="form-input"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>姓名</label>
+                <input 
+                  v-model="profileForm.name" 
+                  type="text" 
+                  class="form-input"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>职位</label>
+                <input 
+                  v-model="profileForm.position" 
+                  type="text" 
+                  class="form-input"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>个人简介</label>
+                <textarea 
+                  v-model="profileForm.bio" 
+                  rows="3" 
+                  class="form-input"
+                ></textarea>
+              </div>
+              
+              <div class="form-actions">
+                <button @click="saveProfile" class="btn primary">保存更改</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 安全设置 -->
+          <div v-show="activeSection === 'security'" class="settings-section">
+            <div class="settings-card">
+              <h2>安全设置</h2>
+              <TwoFactorAuth 
+                :parent="'settings'"
+                :initial-enabled="securitySettings.twoFactorEnabled"
+                @update:enabled="onTwoFactorUpdate"
+              />
+              
+              <div class="form-actions">
+                <button @click="saveSecuritySettings" class="btn primary">保存安全设置</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Token信息 -->
+          <div v-show="activeSection === 'token'" class="settings-section">
+            <div class="settings-card token-info-card">
+              <h2>Token信息</h2>
+              <div class="token-item">
+                <span class="token-label">用户:</span>
+                <span class="token-value">{{ user }}</span>
+              </div>
+              <div class="token-item">
+                <span class="token-label">Token:</span>
+                <span class="token-value">{{ desktopToken }}</span>
+              </div>
             </div>
           </div>
         </div>
-        <div class="settings-section">
-          <h2>个人资料</h2>
-          <div class="settings-card">
-            <div class="form-group">
-              <label>用户名</label>
-              <input 
-                v-model="profileForm.username" 
-                type="text" 
-                disabled 
-                class="form-input disabled"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>邮箱</label>
-              <input 
-                v-model="profileForm.email" 
-                type="email" 
-                class="form-input"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>姓名</label>
-              <input 
-                v-model="profileForm.name" 
-                type="text" 
-                class="form-input"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>职位</label>
-              <input 
-                v-model="profileForm.position" 
-                type="text" 
-                class="form-input"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>个人简介</label>
-              <textarea 
-                v-model="profileForm.bio" 
-                rows="3" 
-                class="form-input"
-              ></textarea>
-            </div>
-            
-            <div class="form-actions">
-              <button @click="saveProfile" class="btn primary">保存更改</button>
-            </div>
-          </div>
-        </div>
+      </div>
         
         <!-- <div class="settings-section">
           <h2>通知设置</h2>
@@ -208,7 +228,6 @@
        
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -224,6 +243,7 @@ import { useMessage,NQrCode } from 'naive-ui';
 import { postM, isSuccess } from '@/utils/request.js';
 import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
+import { useSettings } from '@/hooks/useSettings';
 
 const desktopToken = computed(() => localStorage.getItem('deskop_token'));
 const user = computed(() => localStorage.getItem('user'));
@@ -236,26 +256,34 @@ const router = useRouter();
 const store = useStore();
 const message = useMessage();
 
-// 表单数据
-const profileForm = ref({
-  username: '',
-  email: '',
-  name: '',
-  position: '',
-  bio: ''
-});
+// 使用useSettings hook
+const {
+  profileForm,
+  securitySettings,
+  notificationSettings,
+  themeSettings,
+  reminderTime,
+  getPageTitle,
+  getPageSubtitle,
+  saveProfile,
+  saveSecuritySettings,
+  saveNotifications,
+  saveTheme,
+  exportData,
+  importData,
+  clearAllData,
+  changePassword,
+  manageSessions,
+  onTwoFactorUpdate,
+  initUserData
+} = useSettings();
 
-// 通知设置
-const notificationSettings = ref({
-  emailEnabled: true,
-  desktopEnabled: true,
-  reminderEnabled: true
-});
+// 侧边栏导航控制
+const activeSection = ref('profile');
 
-const reminderTime = ref({
-  hours: 9,
-  minutes: 0
-});
+const setActiveSection = (section) => {
+  activeSection.value = section;
+};
 
 const reminderTimeString = computed({
   get: () => {
@@ -269,124 +297,6 @@ const reminderTimeString = computed({
     reminderTime.value.minutes = minutes;
   }
 });
-
-// 主题设置
-const themeSettings = ref({
-  mode: 'auto',
-  animationsEnabled: true
-});
-
-// 安全设置
-const securitySettings = ref({
-  twoFactorEnabled: false
-});
-
-// 处理双因素认证状态更新
-const onTwoFactorUpdate = (enabled: boolean) => {
-  securitySettings.value.twoFactorEnabled = enabled;
-};
-
-// 保存个人资料
-const saveProfile = () => {
-  // 这里应该调用API保存用户资料
-  console.log('保存个人资料:', profileForm.value);
-  message.success('个人资料已保存');
-};
-
-// 保存通知设置
-const saveNotifications = () => {
-  // 这里应该调用API保存通知设置
-  console.log('保存通知设置:', notificationSettings.value, reminderTime.value);
-  message.success('通知设置已保存');
-};
-
-// 保存主题设置
-const saveTheme = () => {
-  // 这里应该调用API保存主题设置
-  console.log('保存主题设置:', themeSettings.value);
-  
-  // 应用主题设置
-  if (themeSettings.value.mode === 'dark') {
-    // @ts-ignore
-    toggleTheme();
-    isDark.value = true;
-  } else if (themeSettings.value.mode === 'light') {
-    // @ts-ignore
-    toggleTheme();
-    isDark.value = false;
-  }
-  
-  message.success('主题设置已保存');
-};
-
-
-// 保存安全设置
-const saveSecuritySettings = () => {
-  message.success('安全设置已保存');
-};
-
-// 导出数据
-const exportData = () => {
-  message.info('正在导出数据...');
-  // 这里应该实现数据导出逻辑
-  setTimeout(() => {
-    message.success('数据导出成功');
-  }, 1000);
-};
-
-// 导入数据
-const importData = () => {
-  message.info('请选择要导入的数据文件');
-  // 这里应该实现数据导入逻辑
-};
-
-// 清空所有数据
-const clearAllData = () => {
-  if (confirm('确定要清空所有数据吗？此操作不可撤销。')) {
-    message.success('所有数据已清空');
-    // 这里应该实现清空数据逻辑
-  }
-};
-
-// 修改密码
-const changePassword = () => {
-  message.info('跳转到修改密码页面');
-  // 这里应该跳转到修改密码页面
-};
-
-// 管理登录会话
-const manageSessions = () => {
-  message.info('跳转到会话管理页面');
-  // 这里应该跳转到会话管理页面
-};
-
-// 退出登录
-const logout = async () => {
-  // 清除用户信息
-  store.commit('clearUser');
- await removeToken()
-  // 跳转到登录页面
-  router.push('/login');
-  message.success('已退出登录');
-};
-
-// 初始化用户数据
-const initUserData = () => {
-  // 从store获取用户信息
-  const user = store.state.user;
-  if (user) {
-    profileForm.value.username = user.username || '';
-    profileForm.value.email = user.email || '';
-    profileForm.value.name = user.name || '';
-    profileForm.value.position = user.position || '';
-    profileForm.value.bio = user.bio || '';
-    
-    // 初始化双因素认证状态
-    securitySettings.value.twoFactorEnabled = user.twoFactorEnabled || false;
-    // 通过组件内部维护hasTwoFactorEnabled和isTwoFactorVerified状态
-    // TwoFactorAuth组件会自己处理这些状态
-  }
-};
  
   
 
@@ -398,343 +308,262 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 强制滚动样式 */
 .settings-container {
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* .main-content {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  height: calc(100vh - 80px);
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-} */
-
-/* 自定义滚动条样式 */
-.main-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.main-content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-.main-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-.main-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.settings-container.dark .main-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.settings-container.dark .main-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.settings-container.dark .main-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-.settings-container.dark {
-  background-color: #0f0f13;
-  color: #ffffff;
-}
-
+/* 浅色主题变量 - 使用与App.vue一致的主题变量 */
 .settings-container.light {
-  background-color: #dadae3;
-  color: #000000;
+  --card-bg: var(--card-bg, #ffffff);
+  --border-color: var(--border-color, #e0e0e0);
+  --input-bg: var(--card-bg, #ffffff);
+  --text-color: var(--text-color, #333333);
+  --disabled-bg: var(--hover-color, #f5f5f5);
+  --nav-hover-bg: var(--hover-color, #f5f5f5);
+  --nav-hover-color: var(--text-color, #333333);
+  --nav-active-bg: var(--hover-color, #f5f5f5);
+  --nav-active-color: #66b278;
+  background-color: var(--background-color, #f5f5f5);
+  color: var(--text-color, #333333);
+}
+
+/* 深色主题变量 - 使用与App.vue一致的主题变量 */
+.settings-container.dark {
+  --card-bg: var(--card-bg, #1e1e1e);
+  --border-color: var(--border-color, #333333);
+  --input-bg: var(--card-bg, #1e1e1e);
+  --text-color: var(--text-color, #e0e0e0);
+  --disabled-bg: var(--hover-color, #2a2a2a);
+  --nav-hover-bg: var(--hover-color, #2a2a2a);
+  --nav-hover-color: var(--text-color, #e0e0e0);
+  --nav-active-bg: var(--hover-color, #2a2a2a);
+  --nav-active-color: #66b278;
+  background-color: var(--background-color, #121212);
+  color: var(--text-color, #e0e0e0);
 }
 
 .main-content {
-  padding: 20px;
-  /* max-width: 1200px; */
-  /* margin: 0 auto; */
-  max-height: 100%;
-  overflow-y: auto;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
-.page-header {
-  margin-bottom: 30px;
-  text-align: center;
+.settings-layout {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.settings-nav {
+  position: sticky;
+  top: 2rem;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin-bottom: 0.25rem;
+}
+
+.nav-item a {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-color);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-item a:hover {
+  background-color: var(--nav-hover-bg);
+  color: var(--nav-hover-color);
+}
+
+.nav-item.active a {
+  background-color: var(--nav-active-bg);
+  color: var(--nav-active-color);
+  font-weight: 600;
+}
+
+/* 主内容区域样式 */
+.content-area {
+  flex: 1;
+  min-width: 0;
 }
 
 .page-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 .page-header p {
-  font-size: 16px;
-  opacity: 0.8;
-}
-:deep .n-qr-code{
-  padding: 0% !important;
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 2rem;
 }
 
-.settings-content {
-  /* 将Grid布局改为简单的垂直堆叠布局 */
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 40px;
-  padding-left: 20%;
-  padding-right: 20%;
-}
-
-.settings-section h2 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  font-weight: 600;
+.settings-section {
+  margin-bottom: 2rem;
 }
 
 .settings-card {
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.token-info-card {
-  background-color: rgba(129, 198, 131, 0.1);
-  color: var(--text-color);
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.settings-container.dark .token-info-card {
-  background-color: rgba(30, 30, 40, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.settings-container.light .token-info-card {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.token-item {
-  display: flex;
-  margin-bottom: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.settings-container.dark .token-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.token-label {
+.settings-card h2 {
+  font-size: 1.25rem;
   font-weight: 600;
-  min-width: 100px;
-  display: inline-block;
-}
-
-.token-value {
-  flex: 1;
-  word-break: break-all;
-  font-family: 'Courier New', monospace;
-  background: rgba(129, 198, 131, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.settings-container.dark .token-value {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
-}
-
-.settings-container.light .token-value {
-  background: rgba(0, 0, 0, 0.05);
-  color: #333333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-color);
 }
 
 .form-input {
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.settings-container.dark .form-input {
-  background-color: rgba(20, 20, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.settings-container.light .form-input {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  color: #000000;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font-size: 0.875rem;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #81c683;
+  border-color: #0969da;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.2);
 }
 
 .form-input.disabled {
-  opacity: 0.6;
+  background-color: var(--disabled-bg);
   cursor: not-allowed;
 }
 
-.checkbox-group {
-  margin-bottom: 15px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.checkbox-input {
-  margin-right: 10px;
-  width: 18px;
-  height: 18px;
-}
-
-.checkbox-text {
-  font-size: 16px;
-}
-
-.radio-group {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap; /* 允许换行 */
-}
-
-.radio-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.radio-input {
-  margin-right: 8px;
-  width: 18px;
-  height: 18px;
-}
-
-.radio-text {
-  font-size: 16px;
-}
-
 .form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .btn {
-  padding: 12px 20px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
-  text-align: center;
-}
-
-.btn:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  color: var(--text-color);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
 }
 
 .btn.primary {
-  background-color: #81c683;
+  background-color: #2da44e;
   color: white;
 }
 
-.btn.danger {
-  background-color: #ff4d4f;
-  color: white;
+.btn.primary:hover {
+  background-color: #2c974b;
 }
 
-.btn {
-  background-color: #6c757d;
-  color: white;
+.btn:hover {
+  background-color: var(--hover-color);
 }
 
-.qr-code-section {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.05);
+.token-info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1.5rem;
 }
 
-.settings-container.dark .qr-code-section {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.qr-code-container {
+.token-item {
   display: flex;
-  justify-content: center;
-  margin: 15px 0;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
 }
 
-.qr-code {
-  max-width: 200px;
-  height: auto;
+.token-label {
+  font-weight: 600;
 }
 
-.verification-success {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  background-color: rgba(82, 196, 26, 0.1);
+.token-value {
+  font-family: monospace;
+  word-break: break-all;
 }
 
-/* 确保在小屏幕上也能正常显示 */
 @media (max-width: 768px) {
   .main-content {
-    padding: 15px;
-  }
-  
-  .settings-content {
-    grid-template-columns: 1fr;
-    gap: 15px;
+    padding: 1rem;
   }
   
   .page-header h1 {
-    font-size: 28px;
+    font-size: 1.5rem;
   }
   
-  .settings-section h2 {
-    font-size: 20px;
+  .settings-card {
+    padding: 1rem;
   }
   
-  .radio-group {
+  .settings-layout {
     flex-direction: column;
-    gap: 10px;
+  }
+  
+  .sidebar {
+    width: 100%;
+    order: 2;
+  }
+  
+  .content-area {
+    order: 1;
+  }
+  
+  .settings-nav {
+    position: static;
+  }
+  
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .nav-item {
+    margin-bottom: 0;
+  }
+  
+  .nav-item a {
+    padding: 0.5rem 0.75rem;
   }
 }
 </style>
