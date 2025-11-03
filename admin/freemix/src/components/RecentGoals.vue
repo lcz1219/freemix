@@ -8,7 +8,7 @@
     <div class="timeline-container">
       <n-timeline>
         <n-timeline-item 
-          v-for="(item, index) in goals.slice(0, 5)" 
+          v-for="(item, index) in recentGoals" 
           :title="item.title" 
           :time="formatDate(item.deadline)"
           :type="checktype(item)"
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,computed } from 'vue';
 import { NTimeline, NTimelineItem, NCard } from 'naive-ui';
 import * as echarts from 'echarts/core';
 import { BarChart } from 'echarts/charts';
@@ -60,6 +60,15 @@ const props = defineProps({
 
 // 图表引用
 const timelineChart = ref(null);
+// 计算最近的5个目标
+const recentGoals = computed(() => {
+  const res=props.goals.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5)
+  console.log("res",res);
+  
+  return res;
+});
+
+
 
 // 初始化图表
 onMounted(() => {

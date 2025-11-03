@@ -283,6 +283,10 @@ const handleSubmit = (e: Event) => {
         childGoalEndList.push(data);
 
       })
+      if(childGoalEndList.length==0){
+        message.error('请添加子目标');
+        return;
+      }
       goalForm.value.childGoals = childGoalEndList;
       // 这里可以添加实际的提交逻辑
       console.log('提交的表单数据:', goalForm.value);

@@ -20,7 +20,7 @@
             <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
               <!-- 侧边栏导航 -->
               <n-layout-sider v-if="!isMobileDevice" bordered collapse-mode="transform" :collapsed-width="64"
-                show-collapsed-content :width="isSidebarCollapsed ? 64 : 240" :native-scrollbar="false"
+                show-collapsed-content :width="isSidebarCollapsed ? 64 : 215" :native-scrollbar="false"
                 class="side-navbar">
                 <NavBar v-if="showContentByStoreUser" :active-tab="activeTab"
                   @update:collapsed="isSidebarCollapsed = $event" />

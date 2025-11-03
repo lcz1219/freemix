@@ -1,6 +1,14 @@
 <template>
   <div>
-    <n-card style="width: 50%; margin-top: 15vh ;margin-left: auto;margin-right: auto;" class="login-card">
+    <n-card :style="cardStyle" class="login-card">
+      <!-- 系统图标 -->
+      <div class="logo-container">
+        <div class="logo-wrapper">
+          <img src="/icons/icon.png" alt="系统图标" class="system-logo" />
+        </div>
+        <h2 class="app-title">FreeMix-目标管理系统</h2>
+      </div>
+      
       <!-- 登录表单 -->
       <div v-if="loginStep === 'login'">
         <n-tabs class="card-tabs" default-value="signin" size="large" animated pane-wrapper-style="margin: 0 -4px"
@@ -103,7 +111,7 @@ import {
   NInputOtp,
   NDivider
 } from 'naive-ui';
-import { onMounted, nextTick, ref, watch } from 'vue';
+import { onMounted, nextTick, ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // @ts-ignore
 import { useStore } from 'vuex';
@@ -118,6 +126,30 @@ const store = useStore();
 const route = useRoute();
 const router = useRouter();
 const message = useMessage();
+
+// 检查是否为生产环境（线上环境）
+const isProduction = import.meta.env.PROD;
+
+// 计算卡片样式
+const cardStyle = computed(() => {
+  if (isDesktop()) {
+    // 桌面端环境下卡片占满整个窗口
+    return {
+      width: '100%',
+      height: '100vh',
+      margin: 0,
+      borderRadius: 0
+    };
+  } else {
+    // Web端保持原有样式
+    return {
+      width: '50%',
+      marginTop: '10vh',
+      marginLeft: 'auto',
+      marginRight: 'auto'
+    };
+  }
+});
 
 // 登录步骤状态
 const loginStep = ref<'login' | '2fa-verify' | '2fa-bind'>('login');
@@ -140,16 +172,61 @@ const totpCode = ref<string[]>([]);
 const captchaExpression = ref('');
 const tempUserData = ref<any>(null); // 临时存储登录成功但未完成2FA验证的用户数据
 
+// 处理开发环境登录（跳过双因素认证）
+const handleDevLogin = async (userData) => {
+  // 开发环境中直接登录，跳过双因素认证
+  store.commit('saveUser', userData);
+  
+  // 如果是桌面端，生成并保存桌面端token
+  if (isDesktop()) {
+    // 桌面端使用持久化存储
+    
+    // 生成并保存桌面端token
+    const desktopToken = generateDesktopToken();
+    saveTokenUtil(desktopToken);//本地token保存
+    saveLocalStorageDesktopToken(desktopToken);
+    // 发送请求到服务器验证并保存桌面端token
+    try {
+      await postM('verify-desktop-token', { desktopToken, username: userData.username });
+      console.log('桌面端token已保存到服务器');
+    } catch (error) {
+      console.error('保存桌面端token失败:', error);
+    }
+  } else {
+    // 使用新的工具函数保存token
+    await saveTokenUtil(userData.token);
+  }
+  
+  message.success('登录成功');
+  router.push('/home');
+};
+
+// 处理生产环境登录（需要双因素认证）
+const handleProdLogin = async (userData) => {
+  // 生产环境中检查用户是否有secretKey
+  if (userData.secretKey && userData.secretKey.trim()) {
+    // 有secretKey，显示验证码输入框
+    loginStep.value = '2fa-verify';
+    message.info('请输入双因素认证码');
+  } else {
+    // 没有secretKey，显示绑定组件
+    loginStep.value = '2fa-bind';
+    message.info('请完成双因素认证绑定');
+  }
+};
+
 // 处理登录
 const handleLogin = async () => {
   const valid = await formRef.value?.validate();
   if (valid) {
     // 准备登录数据
-    const loginData = {
+    const loginData: any = {
       username: user.value.username,
       password: user.value.password,
       captcha: user.value.captcha
     };
+    
+   
 
     try {
       const res = await postM('login', loginData);
@@ -157,15 +234,13 @@ const handleLogin = async () => {
         const userData = res.data.data;
         tempUserData.value = userData; // 临时保存用户数据
 
-        // 检查用户是否有secretKey
-        if (userData.secretKey && userData.secretKey.trim()) {
-          // 有secretKey，显示验证码输入框
-          loginStep.value = '2fa-verify';
-          message.info('请输入双因素认证码');
+        // 根据环境变量决定登录处理方式
+        if (!isProduction) {
+          // 开发环境直接登录
+          await handleDevLogin(userData);
         } else {
-          // 没有secretKey，显示绑定组件
-          loginStep.value = '2fa-bind';
-          message.info('请完成双因素认证绑定');
+          // 生产环境需要双因素认证
+          await handleProdLogin(userData);
         }
       } else {
         message.error(res.data.msg);
@@ -329,9 +404,47 @@ watch(loginStep, (newStep) => {
 <style scoped>
 .card-tabs .n-tabs-nav--bar-type {
   padding-left: 4px;
-
 }
 
+.logo-container {
+  text-align: center;
+  margin-bottom: 7px;
+  padding: 2px 0;
+}
+
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.system-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.system-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #d6d2d2;
+  letter-spacing: 1px;
+}
+
+.app-subtitle {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
 
 .captcha-container {
   display: flex;
@@ -361,10 +474,89 @@ watch(loginStep, (newStep) => {
 .login-card {
   background-color: transparent !important;
   backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-card.desktop-fullscreen {
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .login-card :deep(.n-card__content) {
   background-color: transparent !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 7px;
+  padding: 2px 0;
+}
+
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.system-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.system-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #d6d2d2;
+  letter-spacing: 1px;
+}
+
+.app-subtitle {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.captcha-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.captcha-expression {
+  min-width: 120px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #d9d9d9;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.captcha-placeholder:hover {
+  background-color: #e6e6e6;
 }
 
 .github-login-btn {

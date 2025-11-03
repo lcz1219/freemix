@@ -1,6 +1,6 @@
 <template>
   
-    <n-card class="register-card">
+    <n-card class="register-card" :style="cardStyle">
       <step :current="currentStep"></step>
       <n-tabs type="line" animated>
         <n-tab-pane name="register" tab="注册">
@@ -134,7 +134,7 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import step from '@/views/step.vue'
   import { 
@@ -150,7 +150,8 @@
   } from 'naive-ui'
   import request from '@/utils/request'
   import { postM, isSuccess } from '@/utils/request'
-  
+  import { isDesktop } from '@/utils/device'
+
   const router = useRouter()
   const message = useMessage()
   const formRef = ref(null)
@@ -202,6 +203,25 @@
     ]
   }
   
+  // 计算属性：根据是否为桌面端返回不同的卡片样式
+  const cardStyle = computed(() => {
+    if (isDesktop()) {
+      return {
+        width: '100%',
+        height: '100vh',
+        margin: '0',
+        borderRadius: '0',
+        boxShadow: 'none'
+      }
+    } else {
+      return {
+        maxWidth: '1400px',
+        margin: '50px auto',
+        boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)'
+      }
+    }
+  })
+  
   const handleRegister = async () => {
     try {
       await formRef.value?.validate()
@@ -240,14 +260,33 @@
   
   <style scoped>
   .register-card {
-    max-width: 1400px;
-    margin: 50px auto;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .register-card :deep(.n-card__content) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* 桌面端全屏显示样式 */
+  .register-card.desktop-fullscreen {
+    border-radius: 0;
+    box-shadow: none;
   }
   
   .form-footer {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 24px;
+  }
+  
+  /* 响应式设计：在小屏幕上添加一些内边距 */
+  @media (max-width: 768px) {
+    .register-card :deep(.n-card__content) {
+      padding: 10px;
+    }
   }
   </style>

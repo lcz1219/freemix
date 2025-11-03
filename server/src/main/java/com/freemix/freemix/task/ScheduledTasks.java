@@ -24,7 +24,7 @@ public class ScheduledTasks {
 
         goals.stream().forEach(goal -> {
 
-            if(System.currentTimeMillis()>goal.getDeadline().getTime()&&!"expired".equals(goal.getStatus())){
+            if(System.currentTimeMillis()>goal.getDeadline().getTime()&&"in-progress".equals(goal.getStatus())) {
                 goal.setStatus("expired");
                 mongoTemplate.save(goal);
                 log.info("[ScheduledTasks] goal expired:{}", goal);
