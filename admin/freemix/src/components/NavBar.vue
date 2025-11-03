@@ -21,28 +21,28 @@
     </div>
 
     <nav class="nav-menu">
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'dashboard' }"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'dashboard' }" :title="isCollapsedTitle('仪表盘')"
         @click="goTo('/home')">
         <NIcon class="icon">
           <Desktop />
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">仪表盘</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalmanagement' }"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalmanagement' }" :title="isCollapsedTitle('目标管理')"
         @click="goTo('/goal-management')">
         <NIcon class="icon">
           <ClipboardSharp />
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">{{ '目标管理' }}</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'statistics' }"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'statistics' }" :title="isCollapsedTitle('统计数据')"
         @click="goTo('/statistics')">
         <NIcon class="icon">
           <Analytics />
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">统计数据</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalstructure' }"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalstructure' }" :title="isCollapsedTitle('目标结构')"
         @click="goTo('/goal-structure')">
         <NIcon class="icon">
           <Podium />
@@ -52,7 +52,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <n-button class="nav-link footer-button" :class="{ active: activeTab === 'messages' }"
+      <n-button class="nav-link footer-button" :class="{ active: activeTab === 'messages' }" :title="isCollapsedTitle('消息')"
         @click="goTo('/messages')">
         <NIcon class="icon">
           <ChatboxEllipses />
@@ -60,7 +60,7 @@
         <span class="nav-text" v-if="!isCollapsed">消息</span>
       </n-button>
       <n-dropdown :inverted="isDark" animated  inverted :options="options" placement="right-start" trigger="hover" @select="handleSelect" :loading="logoutLoading">
-        <n-button class="nav-link footer-button">
+        <n-button class="nav-link footer-button" :title="isCollapsedTitle('用户')">
           <n-icon>
             <PersonCircle />
           </n-icon>
@@ -79,6 +79,7 @@ import { useRouter, useRoute } from 'vue-router';
 import {
   SunnyOutline,
   IdCardSharp,
+  Person,
   MoonOutline,
   Settings,
   LogInOutline,
@@ -100,6 +101,8 @@ import TabsView from '@/components/TabsView.vue';
 import { baseURL, isSuccess, postM } from '@/utils/request.js'
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
+import { useUser } from '@/hooks/useUser';
+import { useNavigation } from '@/hooks/useNavigation';
 
 const emit = defineEmits(['update:collapsed'])
 
@@ -107,9 +110,11 @@ const dialog = useDialog();
 const loadingBar = useLoadingBar()
 const router = useRouter();
 const route = useRoute();
-const loading = () => {
-  loadingBar.start()
+const { loading, loadingFinish: loadingfinish } = useNavigation();
+const isCollapsedTitle=(title)=>{
+  return isCollapsed.value ? title : ''
 }
+
 onMounted(() => {
   console.log("初始路由:", route.path)
   loading()
@@ -117,9 +122,7 @@ onMounted(() => {
     loadingfinish()
   }, 1000)
 })
-const loadingfinish = () => {
-  loadingBar.finish()
-}
+
 const props = defineProps({
   activeTab: {
     type: String,
@@ -128,7 +131,9 @@ const props = defineProps({
 });
 const message = useMessage();
 const selectValue = ref('');
-const avatarUrl = ref(''); // 存储头像URL
+
+// 使用useUser hook
+const { avatarUrl, fashionTitle, uploadAvatar, renderCustomHeader, editFashionTitle, logout: userLogout } = useUser();
 
 // 添加折叠状态
 const isCollapsed = ref(false);
@@ -150,83 +155,16 @@ onMounted(() => {
     // 默认头像
     avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';
   }
+  toggleCollapse()
 });
 
-const uploadAvatar = () => {
-  dialog.info({
-    title: "头像上传",
-    style: { padding: '10px' },
-    content: () => h(upload, {
-      onUploadSuccess: (filename) => {
-        console.log("baseURL", baseURL());
-
-        // 更新头像URL
-        avatarUrl.value = `${baseURL()}/file/${filename}`;
-        store.commit('saveUser', { ...store.state.user, avatarUrl: "/file/" + filename });
-        // 保存到本地存储
-        // localStorage.setItem('userAvatar', avatarUrl.value);
-      }
-    })
-  })
-}
-
-const renderCustomHeader = () => {
-  return h(
-    'div',
-    {
-      style: 'display: flex; align-items: center; padding: 8px 12px;'
-    },
-    [
-      h(NAvatar, {
-        round: true,
-        style: 'margin-right: 12px;',
-        src: avatarUrl.value,
-        onClick: uploadAvatar
-      }),
-      h('div', null, [
-        h('div', null, [h(NText, { depth: 2 }, { default: () => store.state.user.chinesename })]),
-        h('div', { style: 'font-size: 12px;' }, {
-          default: () => [
-            store.state.user.fashionTitle ?
-              h(
-                NText,
-                { depth: 3 },
-                { default: () => store.state.user.fashionTitle }
-              ) : h(
-                NInput,
-                {
-                  onBlur: editFashionTitle,
-                  depth: 3,
-                  placeholder: '添加你的座右铭⛽️',
-                  value: fashionTitle.value,       // 绑定数据
-                  onUpdateValue: (newValue) => {   // 监听输入事件
-                    fashionTitle.value = newValue; // 更新数据源
-                  },
-
-                },
-                { default: () => '' }
-              )
-          ]
-        })
-      ])
-    ]
-  )
-}
-const fashionTitle = ref('')
-const editFashionTitle = async () => {
-  console.log("fashionTitle.value", fashionTitle.value);
 
 
-  const res = await postM('edituserinfo', { ...store.state.user, fashionTitle: fashionTitle.value });
-  if (isSuccess(res)) {
-    store.commit('saveUser', { ...store.state.user, fashionTitle: fashionTitle.value });
-    console.log("res", res);
-  }
-  message.success('保存成功')
-}
+
+
 
 const IconLogout = () => {
-  return h(NButton, { onClick: logout, style: 'width:100%' }, { default: () => [h(NIcon, null, { default: () => h(LogInOutline) }), '退出登录'] })
+  return h(NButton, { onClick: userLogout, style: 'width:100%' }, { default: () => [h(NIcon, null, { default: () => h(LogInOutline) }), '退出登录'] })
 }
 const IconSetting = () => {
   return h(NButton, { onClick: () => { loading(); router.push("/settings");loadingfinish() }, style: 'width:100%' }, { default: () => [h(NIcon, null, { default: () => h(Settings) }), '个人设置'] })
@@ -235,6 +173,11 @@ const IconRecycle = () => {
   return h(NButton,
    { onClick: () => { loading(); router.push("/recycle");loadingfinish() }, style: 'width:100%' },
     { default: () => [h(NIcon, null, { default: () => h(GitCompareOutline) }), '回收站'] })
+}
+const IconProfile = () => {
+  return h(NButton,
+   { onClick: () => { loading(); router.push("/profile"); loadingfinish() }, style: 'width:100%' },
+    { default: () => [h(NIcon, null, { default: () => h(Person) }), '个人主页'] })
 }
 const IconLoginLog = () => {
   return h(NButton,
@@ -250,6 +193,14 @@ const options = [
   {
     key: 'header-divider',
     type: 'divider'
+  },
+  {
+    type: 'render',
+    key: 'recycle',
+    props: {
+      type: 'error'
+    },
+    render: IconProfile
   },
   {
     type: 'render',
@@ -284,6 +235,7 @@ const options = [
     render: IconLoginLog
   },
 
+
 ];
 
 const store = useStore();
@@ -292,26 +244,9 @@ const handleSelect = (key) => {
   console.log(key);
 
   if (key === 'logout') {
-    logout();
+    userLogout();
   }
 }
- const logout = async () => {
-  try {
-    logoutLoading.value = true;
-   await store.dispatch('logout');
-    message.success('已退出登录');
-    router.push('/login');
-  } catch (error) {
-    console.log(error);
-
-    logoutLoading.value = false;
-    message.error('退出登录失败，请稍后重试');
-  }
-
-  finally {
-    logoutLoading.value = false;
-  }
-};
 // 检查是否为移动设备
 const isMobileDevice = ref(isMobile());
 
@@ -383,7 +318,7 @@ const goTo = async (path) => {
 
 .sidebar-container.collapsed .logo-section {
   padding: 0 0px 10px;
-  justify-content: center;
+  justify-content: right;
 }
 
 .logo {

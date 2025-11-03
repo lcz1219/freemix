@@ -96,7 +96,7 @@ function createWindow() {
       isMaximized: isMaximized
     };
     
-    // saveWindowConfig(configToSave);
+    saveWindowConfig(configToSave);
   });
 
   // 判断环境并加载页面
@@ -173,16 +173,16 @@ function createTrayIcon() {
           }
         }
       },
-      { 
-        label: '窗口设置', 
-        click: () => {
-          const mainWindow = BrowserWindow.getAllWindows()[0];
-          if (mainWindow) {
-            // 创建窗口大小设置窗口
-            createWindowSizeSettingsWindow(mainWindow);
-          }
-        }
-      },
+      // { 
+      //   label: '窗口设置', 
+      //   click: () => {
+      //     const mainWindow = BrowserWindow.getAllWindows()[0];
+      //     if (mainWindow) {
+      //       // 创建窗口大小设置窗口
+      //       createWindowSizeSettingsWindow(mainWindow);
+      //     }
+      //   }
+      // },
       { type: 'separator' },
       { 
         label: '退出', 

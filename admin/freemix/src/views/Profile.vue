@@ -111,90 +111,12 @@
                   </div>
                 </div>
                 
-                <div class="sidebar-section">
-                  <h3 class="sidebar-title">快速操作</h3>
-                  <div class="quick-actions">
-                    <n-button @click="createNewGoal" block class="action-btn">
-                      <n-icon><AddOutline /></n-icon>
-                      创建新目标
-                    </n-button>
-                    <n-button @click="viewAllGoals" block class="action-btn secondary">
-                      查看所有目标
-                    </n-button>
-                  </div>
-                </div>
+               
               </div>
             </div>
 
             <!-- Main Content -->
-            <div class="layout-main">
-              <!-- Progress Graph -->
-              <div class="progress-section">
-                <div class="section-header">
-                  <h2 class="section-title">目标进度</h2>
-                  <div class="progress-stats">
-                    <span class="progress-count">最近30天完成 {{ recentStats.recentCompleted }} 个目标</span>
-                    <div class="progress-settings">
-                      <button class="settings-btn" @click="viewProgressReport">查看详细报告</button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="progress-graph">
-                  <div class="graph-placeholder">
-                    <div class="months-row">
-                      <span v-for="month in progressMonths" :key="month" class="month-label">{{ month }}</span>
-                    </div>
-                    <div class="graph-grid">
-                      <div 
-                        v-for="day in 364" 
-                        :key="day" 
-                        class="progress-day"
-                        :class="`level-${getProgressLevel(day)}`"
-                        :title="`${getDayProgress(day)} 个目标完成于 ${getDateFromDay(day)}`"
-                      ></div>
-                    </div>
-                    <div class="graph-legend">
-                      <span>少</span>
-                      <div class="legend-levels">
-                        <div class="legend-level level-0"></div>
-                        <div class="legend-level level-1"></div>
-                        <div class="legend-level level-2"></div>
-                        <div class="legend-level level-3"></div>
-                      </div>
-                      <span>多</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Recent Goals Activity -->
-              <div class="activity-section">
-                <div class="section-header">
-                  <h2 class="section-title">最近目标动态</h2>
-                </div>
-                
-                <div class="activity-timeline">
-                  <div v-for="activity in goalActivities" :key="activity.id" class="activity-item">
-                    <div class="activity-date">
-                      {{ formatActivityDate(activity.time) }}
-                    </div>
-                    <div class="activity-content">
-                      <div class="activity-icon">
-                        <n-icon :component="activity.icon" />
-                      </div>
-                      <div class="activity-details">
-                        <p class="activity-description">{{ activity.description }}</p>
-                        <div class="activity-goal" v-if="activity.goal">
-                          <span class="goal-name">{{ activity.goal }}</span>
-                          <span class="goal-category">{{ activity.category }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HotMap></HotMap>
           </div>
         </div>
 
@@ -361,6 +283,7 @@ import { useDevice } from '@/hooks/useDevice';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useGoals } from '@/hooks/useGoals';
 import { useSettings } from '@/hooks/useSettings';
+import HotMap from '@/components/HotMap.vue';
 
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
@@ -485,7 +408,7 @@ const monthGoals = goalsStore.goals.value.filter(goal => {
 
 const weeklyStats =computed(() => { 
   return {
-    weeklyProgress: dailyStatsCom.value.weekGoalsCompletedGoals.length / dailyStatsCom.value.weekGoals.length * 100
+    weeklyProgress: dailyStatsCom.value.weekGoalsCompletedGoals.length / dailyStatsCom.value.weekGoals.length * 100||0,
   }
 });
 
@@ -507,13 +430,35 @@ const analytics = ref({
 });
 
 // 目标分类
-const goalCategories = ref([
-  { id: 1, name: '工作职业', color: '#1a7f37', count: 8 },
-  { id: 2, name: '学习成长', color: '#0969da', count: 6 },
-  { id: 3, name: '健康生活', color: '#8250df', count: 5 },
-  { id: 4, name: '财务理财', color: '#cf222e', count: 4 },
-  { id: 5, name: '人际关系', color: '#bf8700', count: 3 }
-]);
+// const goalCategories = ref([
+//   { id: 1, name: '工作职业', color: '#1a7f37', count: 8 },
+//   { id: 2, name: '学习成长', color: '#0969da', count: 6 },
+//   { id: 3, name: '健康生活', color: '#8250df', count: 5 },
+//   { id: 4, name: '财务理财', color: '#cf222e', count: 4 },
+//   { id: 5, name: '人际关系', color: '#bf8700', count: 3 }
+// ]);
+const goalCategories=computed(() => {
+  const colors=['#1a7f37','#0969da','#8250df','#cf222e','#bf8700']
+  let tabsa=ref([])
+   goalsStore.goals.value.forEach(goal => {
+    tabsa.value.push(...goal.tags)
+   });
+   let setTab=new Set()
+   tabsa.value.forEach(tag => {
+    if(!setTab.has(tag)){
+
+      setTab.add({name:tag,label:tag,count:1,color:colors[setTab.size%colors.length]})
+    }else{
+      setTab.forEach(item => {
+        if(item.name === tag){
+          item.count++
+        }
+      })
+    }
+   });
+   return setTab
+});
+
 
 // 月份标签
 const progressMonths = ref(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
