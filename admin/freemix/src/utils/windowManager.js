@@ -16,8 +16,10 @@ export async function createNewWindow(winId, options = {}, pageUrl = '/') {
       return result;
     } else {
       console.warn('Electron API 不可用，可能不在Electron环境中');
+      console.log('模拟窗口打开...',window.location);
+      console.log('模拟窗口打开...',pageUrl);
       // 在浏览器环境中模拟窗口打开
-      const url = `${window.location.origin}${pageUrl}`;
+      const url = `${window.location.origin}/#${pageUrl}`;
       window.open(url, '_blank');
       return null;
     }

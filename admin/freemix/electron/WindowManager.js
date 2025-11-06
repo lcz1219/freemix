@@ -55,12 +55,9 @@ class WindowManager {
         // 开发环境：加载Vue开发服务器
         win.loadURL(`http://localhost:5173${pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}`}`);
       } else {
-        // 生产环境：加载打包后的静态文件
-        // 修复路径问题：使用正确的相对路径
-        // const basePath = path.join(__dirname, '..');
+        // 生产环境：加载打包后的静态文件，并使用hash导航到指定页面
         const distPath = path.join(__dirname, '../dist/index.html');
-        // const fullPath = path.join(distPath, pageUrl.startsWith('/') ? pageUrl.substring(1) : pageUrl);
-        win.loadFile(distPath);
+        win.loadFile(distPath, { hash: pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}` });
       }
     }
 

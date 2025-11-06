@@ -19,7 +19,7 @@
             <!-- 路由视图 - 应用主题类 -->
             <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
               <!-- 侧边栏导航 -->
-              <n-layout-sider v-if="!isMobileDevice" bordered collapse-mode="transform" :collapsed-width="64"
+              <n-layout-sider v-if="!isMobileDevice&&isnAiPage" bordered collapse-mode="transform" :collapsed-width="64"
                 show-collapsed-content :width="isSidebarCollapsed ? 64 : 215" :native-scrollbar="false"
                 class="side-navbar">
                 <NavBar v-if="showContentByStoreUser" :active-tab="activeTab"
@@ -29,11 +29,11 @@
               <!-- 主内容区域 -->
               <n-layout class="main-layout">
 
-<TabsView></TabsView>
+                <TabsView v-if="isnAiPage"></TabsView>
                 <!-- 页面内容 -->
-                <n-layout-content class="content-wrapper">
-                  
-                  <router-view v-if="showContentByStoreUser||route.path=='/oauth/callback'" :class="themeClass" />
+                <n-layout-content :class="isnAiPage?content-wrapper:content-wrappe-ai">
+
+                  <router-view v-if="showContentByStoreUser || route.path == '/oauth/callback'" :class="themeClass" />
                   <!-- 应用加载页面 -->
                   <AppLoading v-else />
                 </n-layout-content>
@@ -55,21 +55,21 @@
             <!-- 移动端浮动导航组件 -->
             <MobileFloatingNav v-if="isMobileDevice" />
             <div style="display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    position: fixed;
-    bottom: 10px;
-    right: 10px;">
-            <!-- 备案信息 -->
-            <div class="">
-              <a href="https://beian.miit.gov.cn/" style="margin-top: 5px;" class="beian-link"
-                target="_blank">粤ICP备2025487297号-1</a>
-            </div>｜
-            <div class="">
-              <!-- <img src="/icons/beian.png" alt="粤公网安备" class="beian-icon" /> -->
-              <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44010602014148" rel="noreferrer" target="_blank"
-                class="beian-link">粤公网安备44010602014148号</a>
-            </div>
+              justify-content: flex-end;
+              align-items: flex-end;
+              position: fixed;
+              bottom: 10px;
+              right: 10px;" v-if="!isDesktop()">
+              <!-- 备案信息 -->
+              <div class="">
+                <a href="https://beian.miit.gov.cn/" style="margin-top: 5px;" class="beian-link"
+                  target="_blank">粤ICP备2025487297号-1</a>
+              </div>｜
+              <div class="">
+                <!-- <img src="/icons/beian.png" alt="粤公网安备" class="beian-icon" /> -->
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44010602014148" rel="noreferrer"
+                  target="_blank" class="beian-link">粤公网安备44010602014148号</a>
+              </div>
             </div>
           </n-message-provider>
         </n-loading-bar-provider>
@@ -115,15 +115,17 @@ import AppLoading from '@/components/AppLoading.vue'; // 导入加载页面组�
 import request, { postM, isSuccess, getM } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
 import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
-import {connect} from '@/utils/websocket.js'
-import {genMsg} from '@/utils/genMsg.js'
+import { connect } from '@/utils/websocket.js'
+import { genMsg } from '@/utils/genMsg.js'
 const showContentByStoreUser = computed(() => {
   return store.state.user && Object.keys(store.state.user).length !== 0
 });
 
 // 添加桌面token加载状态
 
-
+const isnAiPage = computed(() => {
+  return route.path != '/AIAssistantWindow'
+})
 const getDeskToken = async () => {
   // 将多个值拼接成一个字符串
   const res = await getToken()
@@ -233,8 +235,8 @@ const handleIncomingMessage = (messageStr) => {
 
         ElNotification({
           title: message.fromUserChinesename || message.fromUser,
-          message: h('i', { 
-            style: `color: ${isDarkTheme ? '#81c683' : '#81c683'}; font-style: normal; font-weight: 500;` 
+          message: h('i', {
+            style: `color: ${isDarkTheme ? '#81c683' : '#81c683'}; font-style: normal; font-weight: 500;`
           }, message.content),
           dangerouslyUseHTMLString: true,
           duration: 4500,
@@ -432,6 +434,11 @@ body {
   height: calc(100vh - 64px);
   overflow-y: auto;
 }
+.content-wrappe-ai {
+  /* padding: 10px; */
+  height: 100vh;
+  overflow-y: auto;
+}
 
 /* WebSocket通知样式 */
 .websocket-notification {
@@ -449,6 +456,7 @@ body {
 .websocket-notification .el-notification__content {
   font-size: 14px;
 }
+
 /* WebSocket通知样式 */
 .websocket-websocket-notification-dark {
   border-radius: 8px !important;
@@ -459,7 +467,7 @@ body {
 :deep .websocket-websocket-notification-dark .el-notification__title {
   font-weight: 600;
   font-size: 15px;
-  color: white!important;
+  color: white !important;
   margin-bottom: 4px;
 }
 
@@ -580,8 +588,8 @@ body {
 }
 
 .beian-link {
-     color: #aaaaaa40;
-    font-size: 10px;
+  color: #aaaaaa40;
+  font-size: 10px;
 }
 
 .beian-link:hover {
@@ -591,8 +599,8 @@ body {
 
 /* 暗黑主题下的备案信息样式 */
 .dark-theme .beian-link {
-      color: #aaaaaa40;
-    font-size: 10px;
+  color: #aaaaaa40;
+  font-size: 10px;
 }
 
 .dark-theme .beian-link:hover {

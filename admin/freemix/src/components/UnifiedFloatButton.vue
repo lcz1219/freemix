@@ -144,7 +144,7 @@ import RecentGoals from '@/components/RecentGoals.vue';
 import FeedbackCenter from '@/components/FeedbackCenter.vue';
 import { NFloatButton, NIcon, NButton, NModal, NCalendar, NInput } from 'naive-ui';
 import { CalendarSharp } from '@vicons/ionicons5';
-import WindowManager from '../../electron/WindowManager.js';
+import { createNewWindow, generateWindowId } from '@/utils/windowManager.js';
 
 // 定义属性
 const props = defineProps({
@@ -233,17 +233,22 @@ const toggleGoals = () => {
   showGoals.value = !showGoals.value;
 };
 
-const openAIAssistant = () => {
+const openAIAssistant = async () => {
   showMenu.value = false;
+ 
   
-  // const windowId = generateWindowId();
-  const windowId = WindowManager.generateWindowId();
-  WindowManager.createNewWindow(windowId, {
-    width: 500,
-    height: 700,
-    minWidth: 400,
-    minHeight: 500
-  }, '/AIAssistantWindow');
+  const windowId = generateWindowId();
+  try {
+    await createNewWindow(windowId, {
+      width: 500,
+      height: 700,
+      minWidth: 400,
+      minHeight: 500
+    }, '/AIAssistantWindow');
+    
+  } catch (error) {
+    console.error('创建AI助手窗口失败:', error);
+  }
 };
 
 const isDateDisabled = (timestamp) => {
