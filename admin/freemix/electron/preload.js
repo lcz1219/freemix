@@ -15,7 +15,7 @@ contextBridge.exposeInMainWorld('api', {
   getWindowSize: () => ipcRenderer.invoke('get-window-size'),
   
   // 新窗口API
-  createNewWindow: (options) => ipcRenderer.invoke('create-new-window', options),
+  createNewWindow: (winId, options, pageUrl) => ipcRenderer.invoke('create-new-window', { winId, options, pageUrl }),
   
   // 窗口管理API
   closeWindowById: (winId) => ipcRenderer.send('close-window', winId),

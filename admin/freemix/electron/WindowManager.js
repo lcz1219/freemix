@@ -46,14 +46,15 @@ class WindowManager {
 
     // 创建窗口实例
     const win = new BrowserWindow(winOptions);
-
+    console.log("wpageUrl",pageUrl);
+    
     // 加载指定的页面
     if (pageUrl) {
       // 开发环境下可能使用开发服务器URL，生产环境使用文件路径
       const isDev = !app.isPackaged;
       if (isDev) {
         // 开发环境：加载Vue开发服务器
-        win.loadURL(`http://localhost:5173${pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}`}`);
+        win.loadURL(`http://localhost:5173/#${pageUrl}`);
       } else {
         // 生产环境：加载打包后的静态文件，并使用hash导航到指定页面
         const distPath = path.join(__dirname, '../dist/index.html');

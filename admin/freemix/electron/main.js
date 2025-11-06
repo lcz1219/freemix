@@ -724,7 +724,9 @@ ipcMain.on('window-drag', (event, action) => {
 
 // IPC 监听：接收创建新窗口的请求
 ipcMain.handle('create-new-window', (event, { winId, options, pageUrl }) => {
-  return windowManager.createWindow(winId, options, pageUrl);
+  windowManager.createWindow(winId, options, pageUrl);
+  // 不返回 BrowserWindow 对象，因为它是不可序列化的
+  return { success: true };
 });
 
 // IPC 监听：接收关闭窗口的请求

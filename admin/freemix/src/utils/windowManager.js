@@ -8,11 +8,14 @@
  * @param {string} pageUrl - 窗口加载的页面路径
  * @returns {Promise} 返回窗口创建结果的Promise
  */
-export async function createNewWindow(winId, options = {}, pageUrl = '/') {
+export async function createNewWindow(winId, options = {}, pageUrl = '/AIAssistantWindow') {
   try {
     // 检查是否在Electron环境中
-    if (window.electronAPI && window.electronAPI.createNewWindow) {
-      const result = await window.electronAPI.createNewWindow({ winId, options, pageUrl });
+    console.log('window',window);
+    console.log('pageUrl',pageUrl);
+    
+    if (window.api) {
+      const result = await window.api.createNewWindow(winId, options, pageUrl);
       return result;
     } else {
       console.warn('Electron API 不可用，可能不在Electron环境中');
@@ -35,8 +38,8 @@ export async function createNewWindow(winId, options = {}, pageUrl = '/') {
  */
 export function closeWindow(winId) {
   try {
-    if (window.electronAPI && window.electronAPI.closeWindow) {
-      window.electronAPI.closeWindow(winId);
+    if (window.api && window.api.closeWindow) {
+      window.api.closeWindow(winId);
     } else {
       console.warn('Electron API 不可用，可能不在Electron环境中');
       // 在浏览器环境中无操作
@@ -52,8 +55,8 @@ export function closeWindow(winId) {
  */
 export function focusWindow(winId) {
   try {
-    if (window.electronAPI && window.electronAPI.focusWindow) {
-      window.electronAPI.focusWindow(winId);
+    if (window.api && window.api.focusWindow) {
+      window.api.focusWindow(winId);
     } else {
       console.warn('Electron API 不可用，可能不在Electron环境中');
     }
