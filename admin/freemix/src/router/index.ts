@@ -43,6 +43,11 @@ const routes = [
     name: 'recycle',
     component: () => import('@/views/recycle.vue'),
   },
+  {
+    path: '/AIAssistantWindow',
+    name: 'AIAssistantWindow',
+    component: () => import('@/components/AIAssistantWindow.vue'),
+  },
   { 
     path: '/login', 
     component: getComponent(Login, MobileLogin),
