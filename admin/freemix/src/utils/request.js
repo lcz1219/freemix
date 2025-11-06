@@ -191,7 +191,7 @@ const getMPaths=async function(val,data, loadingText = ''){
       if(res.data.code==200){
         return true
       }else{
-        if(res.data.msg.includes('token不正确')){
+        if(res.data.msg.includes('token不正确')||res.data.msg.includes('token无效')){
           store.dispatch('logout')
         }
         return false

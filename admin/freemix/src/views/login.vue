@@ -80,19 +80,6 @@
         </n-button>
       </div>
     </n-card>
-    <div v-if="!isDesktop()">
-      <div class="beian-container">
-        <a href="https://beian.miit.gov.cn/" style="margin-top: 5px;" class="beian-link"
-          target="_blank">粤ICP备2025487297号-1</a>
-      </div>
-      <div class="beian-container">
-
-        <img src="/icons/beian.png" alt="粤公网安备" class="beian-icon" />
-        <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44010602014148" rel="noreferrer" target="_blank"
-          class="beian-link">粤公网安备44010602014148号</a>
-      </div>
-    </div>
-
   </div>
 </template>
 

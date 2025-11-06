@@ -54,6 +54,23 @@
 
             <!-- 移动端浮动导航组件 -->
             <MobileFloatingNav v-if="isMobileDevice" />
+            <div style="display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;">
+            <!-- 备案信息 -->
+            <div class="">
+              <a href="https://beian.miit.gov.cn/" style="margin-top: 5px;" class="beian-link"
+                target="_blank">粤ICP备2025487297号-1</a>
+            </div>｜
+            <div class="">
+              <!-- <img src="/icons/beian.png" alt="粤公网安备" class="beian-icon" /> -->
+              <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44010602014148" rel="noreferrer" target="_blank"
+                class="beian-link">粤公网安备44010602014148号</a>
+            </div>
+            </div>
           </n-message-provider>
         </n-loading-bar-provider>
       </n-dialog-provider>
@@ -543,5 +560,42 @@ body {
 
 body {
   overflow-y: auto;
+}
+
+/* 备案信息样式 */
+.beian-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+}
+
+.beian-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.beian-link {
+     color: #aaaaaa40;
+    font-size: 10px;
+}
+
+.beian-link:hover {
+  color: #81c683;
+  text-decoration: underline;
+}
+
+/* 暗黑主题下的备案信息样式 */
+.dark-theme .beian-link {
+      color: #aaaaaa40;
+    font-size: 10px;
+}
+
+.dark-theme .beian-link:hover {
+  color: #81c683;
 }
 </style>
