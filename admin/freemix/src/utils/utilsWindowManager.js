@@ -11,13 +11,14 @@
 export async function createNewWindow(winId, options = {}, pageUrl = '/AIAssistantWindow') {
   try {
     // 检查是否在Electron环境中
-    console.log('window',window);
-    console.log('pageUrl',pageUrl);
-    
+    // console.log('window',window);
+    // console.log('pageUrl',pageUrl);
+    // 桌面端才调用 Electron API
     if (window.api) {
       const result = await window.api.createNewWindow(winId, options, pageUrl);
       return result;
     } else {
+      // 非桌面端，直接返回null
       console.warn('Electron API 不可用，可能不在Electron环境中');
       console.log('模拟窗口打开...',window.location);
       console.log('模拟窗口打开...',pageUrl);

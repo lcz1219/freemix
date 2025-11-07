@@ -1,265 +1,105 @@
 <template>
-  <div class="unified-float-container">
-    <!-- 主浮动按钮 -->
-    <n-float-button
-      :right="right"
-      :bottom="bottom"
-      :width="width"
-      :height="height"
-      :z-index="zIndex"
-      @click="toggleMenu"
-    >
-      <n-icon>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-          <path d="M12,7c-2.8,0-5,2.2-5,5s2.2,5,5,5s5-2.2,5-5S14.8,7,12,7z M12,14.5c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5 s2.5,1.1,2.5,2.5S13.4,14.5,12,14.5z" />
-          <path d="M12,5c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1s1,0.4,1,1v3C13,4.6,12.6,5,12,5z" />
-          <path d="M12,19c-0.6,0-1,0.4-1,1v3c0,0.6,0.4,1,1,1s1-0.4,1-1v-3C13,19.4,12.6,19,12,19z" />
-          <path d="M23,11h-3c-0.6,0-1,0.4-1,1s0.4,1,1,1h3c0.6,0,1-0.4,1-1S23.6,11,23,11z" />
-          <path d="M4,11H1c-0.6,0-1,0.4-1,1s0.4,1,1,1h3c0.6,0,1-0.4,1-1S4.6,11,4,11z" />
-          <path d="M18.7,6.3c0.4-0.4,0.4-1,0-1.4l-2.1-2.1c-0.4-0.4-1-0.4-1.4,0s-0.4,1,0,1.4l2.1,2.1C17.7,6.7,18.3,6.7,18.7,6.3z" />
-          <path d="M5.3,17.7c-0.4,0.4-0.4,1,0,1.4l2.1,2.1c0.4,0.4,1,0.4,1.4,0s0.4-1,0-1.4l-2.1-2.1C6.3,17.3,5.7,17.3,5.3,17.7z" />
-          <path d="M18.7,17.7c-0.4-0.4-1-0.4-1.4,0l-2.1,2.1c-0.4,0.4-0.4,1,0,1.4s1,0.4,1.4,0l2.1-2.1C19.1,18.7,19.1,18.1,18.7,17.7z" />
-          <path d="M5.3,6.3c0.4,0.4,1,0.4,1.4,0l2.1-2.1c0.4-0.4,0.4-1,0-1.4s-1-0.4-1.4,0L5.3,4.9C4.9,5.3,4.9,5.9,5.3,6.3z" />
-        </svg>
-      </n-icon>
-    </n-float-button>
-
-    <!-- 展开菜单 -->
-    <transition name="slide-up">
-      <div v-if="showMenu" class="float-menu" :style="{ right: right + 'px', bottom: bottom + height + 10 + 'px' }">
-        <!-- AI助手按钮 -->
-        <n-button
-          class="menu-button"
-          circle
-          :title="'AI助手'"
-          size="large"
-          @click="openAIAssistant"
-        >
-          <n-icon size="24" >
-            <LogoReddit />
-          </n-icon>
-        </n-button>
-        
-        <!-- 反馈中心按钮 -->
-        <n-button
-          class="menu-button"
-          circle
-          :title="'反馈中心'"
-          size="large"
-          @click="toggleFeedback"
-        >
-          <n-icon size="24">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-              <path d="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M20,16H5.2L4,17.2V4h16V16z" />
-              <path d="M11,8H9v2h2V8z M11,12H9v4h2V12z" />
-              <path d="M15,8h-2v6h2V8z" />
-            </svg>
-          </n-icon>
-        </n-button>
-        
-        <!-- 日历按钮 -->
-        <n-button
-          class="menu-button"
-          circle
-          size="large"
-          :title="'日历'"
-          @click="toggleCalendar"
-        >
-          <n-icon size="24">
-            <CalendarSharp />
-          </n-icon>
-        </n-button>
-        
-        <!-- 近期目标按钮 -->
-        <n-button
-          class="menu-button"
-          circle
-          size="large"
-          :title="'近期目标'"
-          @click="toggleGoals"
-        >
-          <n-icon size="24">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-              <path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M19,19H5V5h14V19z" />
-              <path d="M14,12h-4c-0.6,0-1-0.4-1-1s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,12,14,12z" />
-              <path d="M14,16h-4c-0.6,0-1-0.4-1-1s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,16,14,16z" />
-              <path d="M14,8h-4C9.4,8,9,7.6,9,7s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,8,14,8z" />
-            </svg>
-          </n-icon>
-        </n-button>
-      </div>
-    </transition>
-
-
-
-    <!-- 日历弹窗 -->
-    <n-modal
-      v-model:show="showCalendar"
-      :mask-closable="true"
-      preset="card"
-      draggable
-      :closable="false"
-      :style="{ width: calendarModalWidth, height: calendarModalHeight, overflowY: 'auto' }"
-      :class="isDark ? 'modal-dark' : 'modal-light'"
-    >
-      <n-calendar
-        v-model:value="calendarValue"
-        :is-date-disabled="isDateDisabled"
-        @update:value="handleCalendarUpdate"
-      />
-    </n-modal>
-
-    <!-- 反馈中心抽屉 -->
-    <FeedbackCenter v-model:show="showFeedback" />
+  <div class="ai-assistant-window" :class="isDark ? 'dark' : 'light'">
+    <div class="window-header">
+      <h2>AI助手</h2>
+      <!-- <n-button @click="closeWindow" class="close-button" quaternary circle>
+        <n-icon>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </n-icon>
+      </n-button> -->
+    </div>
     
-    <!-- 近期目标弹窗 -->
-    <n-modal
-      v-model:show="showGoals"
-      :mask-closable="true"
-      draggable
-      :closable="false"
-      :style="{ width: goalsModalWidth, height: goalsModalHeight, overflowY: 'auto'}"
-      :class="isDark ? 'modal-dark' : 'modal-light'"
-    >
-      <template #header>
-        <div class="modal-header">
-          <h2>近期目标</h2>
+    <!-- AI目标确认对话框
+    <AIGoalConfirmation 
+      v-model:show="showGoalConfirmation"
+      :ai-response="lastAIResponse"
+      :user-question="lastUserQuestion"
+      @goal-created="handleGoalCreated"
+    /> -->
+    
+    <div class="chat-container">
+      <div v-for="(message, index) in chatMessages" :key="index" :class="['message', message.type]">
+        <div class="message-content">
+          <!-- 显示不同类型的消息内容 -->
+          <div v-if="message.messageType === 'answer'">
+            <!-- 显示AI的回答内容 -->
+            <div v-if="message.thinkingContent" class="thinking-content">
+              <strong>AI思考过程：</strong>
+              {{ message.thinkingContent }}
+            </div>
+            <div class="answer-content">
+              {{ message.content }}
+            </div>
+          </div>
+          <div v-if="message.followUpQuestions" >
+            <!-- 显示推荐问题 -->
+            <div><strong>推荐问题：</strong></div>
+            <div class="follow-up-buttons">
+              <n-button 
+                v-for="(question, qIndex) in message.followUpQuestions" 
+                :key="qIndex" 
+                type="info" 
+                size="small" 
+                secondary
+                @click="sendFollowUpQuestion(question)"
+                class="follow-up-button"
+              >
+                {{ question }}
+              </n-button>
+            </div>
+          </div>
+          <div v-else-if="message.messageType === 'verbose'">
+            <!-- 显示AI思考过程 -->
+            <div><strong>AI思考中...</strong></div>
+            <div class="thinking-process">{{ message.content }}</div>
+          </div>
+          <div v-else-if="message.messageType === 'processing' || message.isProcessing">
+            <!-- 显示AI正在处理的提示 -->
+            <div class="processing-indicator">
+              <n-spin size="small" />
+              <span>AI正在处理中...</span>
+            </div>
+          </div>
+          <div v-else>
+            <!-- 默认显示内容 -->
+            {{ message.content }}
+          </div>
         </div>
-      </template>
-      
-      <div class="goals-content">
-        <RecentGoals v-if="showGoals" :goals="goals" :formatDate="formatDate" :checktype="checktype" />
+        <div class="message-time">{{ formatTime(message.timestamp) }}</div>
       </div>
-    </n-modal>
+    </div>
+    
+    <div class="input-container">
+      <n-input 
+        v-model:value="userInput" 
+        type="textarea" 
+        placeholder="请输入您的问题..." 
+        :autosize="{ minRows: 3, maxRows: 6 }"
+        @keyup.enter="sendMessage"
+      />
+      <n-button 
+        type="primary" 
+        @click="sendMessage" 
+        :disabled="isSending"
+        class="send-button"
+      >
+        {{ isSending ? '发送中...' : '发送' }}
+      </n-button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, inject, nextTick } from 'vue';
-import RecentGoals from '@/components/RecentGoals.vue';
-import FeedbackCenter from '@/components/FeedbackCenter.vue';
-import { NFloatButton, NIcon, NButton, NModal, NCalendar, NInput } from 'naive-ui';
-import { CalendarSharp,LogoDiscord,LogoReddit } from '@vicons/ionicons5';
-import { createNewWindow, generateWindowId } from '@/utils/utilsWindowManager.js';
-
-// 定义属性
-const props = defineProps({
-  goals: {
-    type: Array,
-    required: true
-  },
-  formatDate: {
-    type: Function,
-    required: true
-  },
-  checktype: {
-    type: Function,
-    required: true
-  },
-  right: {
-    type: Number,
-    default: 10
-  },
-  bottom: {
-    type: Number,
-    default: 50
-  },
-  width: {
-    type: Number,
-    default: 40
-  },
-  height: {
-    type: Number,
-    default: 40
-  },
-  zIndex: {
-    type: Number,
-    default: 100
-  },
-  calendarModalWidth: {
-    type: String,
-    default: '50%'
-  },
-  calendarModalHeight: {
-    type: String,
-    default: '90vh'
-  },
-  goalsModalWidth: {
-    type: String,
-    default: '50%'
-  },
-  goalsModalHeight: {
-    type: String,
-    default: '70vh'
-  }
-});
-
-// 定义事件
-const emit = defineEmits(['dateSelected']);
+import { ref, inject, nextTick, onMounted } from 'vue';
+import { NButton, NIcon, NInput, NSpin } from 'naive-ui';
 
 // 响应式数据
-const showMenu = ref(false);
-const showCalendar = ref(false);
-const showGoals = ref(false);
-const showFeedback = ref(false);
-const showAIAssistant = ref(false);
-const calendarValue = ref(null);
 const isDark = inject('isDark', ref(true));
 const userInput = ref('');
 const isSending = ref(false);
 const chatMessages = ref([]);
-
-// 方法
-const toggleMenu = () => {
-  showMenu.value = !showMenu.value;
-};
-
-const toggleFeedback = () => {
-  showMenu.value = false;
-  showFeedback.value = !showFeedback.value;
-};
-
-const toggleCalendar = () => {
-  showMenu.value = false;
-  showCalendar.value = !showCalendar.value;
-};
-
-const toggleGoals = () => {
-  showMenu.value = false;
-  showGoals.value = !showGoals.value;
-};
-
-const openAIAssistant = async () => {
-  showMenu.value = false;
- 
-  
-  const windowId = generateWindowId();
-  try {
-    await createNewWindow(windowId, {
-      width: 500,
-      height: 700,
-      minWidth: 400,
-      minHeight: 500
-    }, '/AIAssistantWindow');
-    
-  } catch (error) {
-    console.error('创建AI助手窗口失败:', error);
-  }
-};
-
-const isDateDisabled = (timestamp) => {
-  // 禁用过去的日期
-  const date = new Date(timestamp);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return date < today;
-};
-
-const handleCalendarUpdate = (value) => {
-  console.log('选择的日期:', value);
-  // 触发事件，将选择的日期传递给父组件
-  emit('dateSelected', value);
-};
 
 // 格式化时间
 const formatTime = (timestamp) => {
@@ -363,6 +203,17 @@ const scrollToBottom = () => {
   });
 };
 
+// 关闭窗口
+const closeWindow = () => {
+  if (window.electronAPI && window.electronAPI.closeWindow) {
+    // 在Electron环境中关闭当前窗口
+    window.electronAPI.closeWindow('ai-assistant');
+  } else {
+    // 在浏览器环境中关闭窗口
+    window.close();
+  }
+};
+
 // 调用自定义AI API
 const callCustomAIAPI = async (question, onUpdate) => {
   // 使用Coze平台的官方API端点
@@ -373,19 +224,6 @@ const callCustomAIAPI = async (question, onUpdate) => {
   const BOT_ID = '7569182284998524934'; // 您的Bot ID
   
   try {
-    // 首先验证Personal Access Token格式是否正确（应该以pat_开头）
-    // if (!PERSONAL_ACCESS_TOKEN || !PERSONAL_ACCESS_TOKEN.startsWith('pat_')) {
-    //   throw new Error('无效的Personal Access Token格式。请确保使用以"pat_"开头的正确令牌。您可以在Coze平台的开发者设置中生成新的Personal Access Token。');
-    // }
-    
-    // 输出调试信息到控制台
-    console.log('正在使用以下参数调用Coze API:');
-    console.log('- API端点:', API_ENDPOINT);
-    console.log('- Bot ID:', BOT_ID);
-    console.log('- 用户标识:', "ea16730874-single_user");
-    console.log('- 令牌格式正确:', PERSONAL_ACCESS_TOKEN.startsWith('pat_'));
-    console.log('- 令牌长度:', PERSONAL_ACCESS_TOKEN.length);
-    
     // 使用标准的Bearer Token认证方式
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
@@ -409,14 +247,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
       
       // 如果是认证错误，提供更具体的错误信息
       if (response.status === 401 || response.status === 403) {
-        throw new Error(`认证失败：${errorText}。请检查您的Personal Access Token是否正确且未过期。解决步骤：
-        1. 登录Coze平台 (https://www.coze.cn)
-        2. 进入个人设置或开发者设置
-        3. 找到API密钥或Personal Access Token部分
-        4. 删除旧的令牌并生成新的令牌
-        5. 将新令牌替换代码中的当前令牌
-        
-        注意：新生成的Personal Access Token必须以"pat_"开头。`);
+        throw new Error(`认证失败：${errorText}。请检查您的Personal Access Token是否正确且未过期。`);
       }
       
       throw new Error(`API请求失败: ${response.status} ${response.statusText} - ${errorText}`);
@@ -458,8 +289,6 @@ const callCustomAIAPI = async (question, onUpdate) => {
               
               // 检查是否是消息类型的响应
               if (jsonData.message) {
-                console.log('收到消息:', jsonData);
-                
                 // 根据消息类型处理不同内容
                 switch (jsonData.message.type) {
                   case 'answer':
@@ -469,7 +298,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
                     }
                     // 处理AI的思考过程
                     if (jsonData.message.reasoning_content) {
-                      thinkingContent += jsonData.message.reasoning_content ;
+                      thinkingContent += jsonData.message.reasoning_content;
                     }
                     // 实时更新聊天界面
                     if (onUpdate) {
@@ -509,27 +338,14 @@ const callCustomAIAPI = async (question, onUpdate) => {
                     // 处理AI思考过程
                     if (jsonData.message.reasoning_content) {
                       thinkingContent += jsonData.message.reasoning_content + '\n';
-                      // 实时更新聊天界面
-                      if (onUpdate) {
-                        onUpdate({
-                          messageType: 'verbose',
-                          content: thinkingContent,
-                          thinkingContent: thinkingContent,
-                          isProcessing: true
-                        });
-                      }
                     } else if (jsonData.message.content) {
                       try {
                         const verboseData = JSON.parse(jsonData.message.content);
                         if (verboseData.msg_type === 'reasoning') {
                           thinkingContent += verboseData.data + '\n';
-                          // 可以选择是否显示思考过程给用户
-                          console.log('AI思考过程:', verboseData.data);
                         }
                       } catch (e) {
-                        // 如果不是JSON格式，直接记录内容
                         thinkingContent += jsonData.message.content + '\n';
-                        console.log('AI思考过程:', jsonData.message.content);
                       }
                       // 实时更新聊天界面
                       if (onUpdate) {
@@ -542,10 +358,6 @@ const callCustomAIAPI = async (question, onUpdate) => {
                       }
                     }
                     break;
-                    
-                  default:
-                    // 处理其他类型的消息
-                    console.log('收到其他类型消息:', jsonData.message);
                 }
               } else if (jsonData.event === 'done') {
                 // 对话完成
@@ -620,7 +432,6 @@ const callCustomAIAPI = async (question, onUpdate) => {
     if (!fullResponse.trim() && followUpQuestions.length === 0 && !thinkingContent.trim()) {
       result.content = 'AI助手已处理您的问题，但未返回有效回复。';
     }
-    console.log("result:===>",result);
     
     return result;
   } catch (error) {
@@ -628,75 +439,42 @@ const callCustomAIAPI = async (question, onUpdate) => {
     // 返回更友好的错误提示
     throw new Error(`抱歉，AI助手暂时无法回应，请稍后再试。
     
-错误详情：${error.message}
-    
-解决建议：
-1. 检查您的网络连接是否正常
-2. 验证Personal Access Token是否正确且未过期（必须以"pat_"开头）
-3. 确保您已在Coze平台正确配置了Bot
-4. 查看浏览器控制台获取更多调试信息
-    
-获取新的Personal Access Token的步骤：
-1. 访问Coze平台 (https://www.coze.cn)
-2. 登录您的账户
-3. 进入个人设置或开发者设置
-4. 找到API密钥或Personal Access Token部分
-5. 删除旧的令牌并生成新的令牌
-6. 将新令牌替换代码中的当前令牌`);
+错误详情：${error.message}`);
   }
 };
+
+// 初始化欢迎消息
+onMounted(() => {
+  if (chatMessages.value.length === 0) {
+    chatMessages.value.push({
+      type: 'ai',
+      content: '您好！我是您的Freemix AI助手，请问有什么我可以帮助您的吗？',
+      timestamp: new Date()
+    });
+  }
+});
+
+// 暴露callCustomAIAPI方法供外部使用
+defineExpose({
+  callCustomAIAPI
+});
 </script>
 
 <style scoped>
-.float-menu {
-  position: fixed;
+.ai-assistant-window {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  z-index: 99;
-}
-
-.menu-button {
-  width: 40px;
-  height: 40px;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #81c683b6, #366237);
-  border: none;
-  box-shadow: 0 4px 12px rgba(129, 198, 131, 0.132);
-}
-
-.menu-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(129, 198, 131, 0.5);
-}
-
-/* 滑动动画 */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.modal-dark {
-  background: linear-gradient(135deg, #1a1a1a, #121212);
-  color: #ffffff;
-  border: 1px solid rgba(129, 198, 131, 0.2);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.modal-light {
+  height: 100%;
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   color: #333333;
-  border: 1px solid rgba(129, 198, 131, 0.3);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header {
+.ai-assistant-window.dark {
+  background: linear-gradient(135deg, #1a1a1a, #121212);
+  color: #ffffff;
+}
+
+.window-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -705,7 +483,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
   background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
 }
 
-.modal-header h2 {
+.window-header h2 {
   margin: 0;
   font-size: 1.5em;
   background: linear-gradient(90deg, #81c683, #4CAF50);
@@ -715,15 +493,9 @@ const callCustomAIAPI = async (question, onUpdate) => {
   font-weight: 700;
 }
 
-.goals-content {
-  padding: 20px 0;
-}
-
-.ai-assistant-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 16px;
+.close-button {
+  width: 32px;
+  height: 32px;
 }
 
 .chat-container {
@@ -731,8 +503,8 @@ const callCustomAIAPI = async (question, onUpdate) => {
   overflow-y: auto;
   padding: 16px;
   background: rgba(129, 198, 131, 0.05);
+  margin: 16px;
   border-radius: 12px;
-  margin-bottom: 16px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(129, 198, 131, 0.1);
 }
@@ -835,6 +607,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  margin: 16px;
   background: rgba(129, 198, 131, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(129, 198, 131, 0.1);
@@ -898,117 +671,3394 @@ const callCustomAIAPI = async (question, onUpdate) => {
 }
 
 /* 暗色主题适配 */
-.modal-dark .chat-container {
+.ai-assistant-window.dark .chat-container {
   background: rgba(42, 42, 42, 0.7);
   border: 1px solid rgba(129, 198, 131, 0.2);
 }
 
-.modal-dark .message.user {
+.ai-assistant-window.dark .message.user {
   background: linear-gradient(135deg, #1565c0, #0d47a1);
   color: white;
   border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
-.modal-dark .message.ai {
+.ai-assistant-window.dark .message.ai {
   background: linear-gradient(135deg, #424242, #2d2d2d);
   color: #e0e0e0;
   border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
-.modal-dark .message.error {
+.ai-assistant-window.dark .message.error {
   background: linear-gradient(135deg, #424242, #333333);
   color: #ef9a9a;
   border: 1px solid rgba(255, 0, 0, 0.3);
 }
 
-.modal-dark .message.processing {
+.ai-assistant-window.dark .message.processing {
   background: linear-gradient(135deg, #37474f, #263238);
   border: 1px solid rgba(129, 198, 131, 0.4);
 }
 
-.modal-dark .thinking-content {
+.ai-assistant-window.dark .thinking-content {
   background: linear-gradient(135deg, #37474f, #263238);
   color: #e0e0e0;
   border: 1px solid rgba(255, 193, 7, 0.4);
 }
 
-.modal-dark .thinking-process {
+.ai-assistant-window.dark .thinking-process {
   background: linear-gradient(135deg, #37474f, #263238);
   color: #e0e0e0;
   border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
-.modal-dark .input-container {
+.ai-assistant-window.dark .input-container {
   background: rgba(42, 42, 42, 0.7);
   border: 1px solid rgba(129, 198, 131, 0.2);
 }
 
-.modal-dark .follow-up-buttons {
+.ai-assistant-window.dark .follow-up-buttons {
   background: rgba(42, 42, 42, 0.7);
   border: 1px dashed rgba(129, 198, 131, 0.4);
 }
 
-.modal-dark .follow-up-button {
+.ai-assistant-window.dark .follow-up-button {
   background: linear-gradient(135deg, #424242, #333333);
   color: #e0e0e0;
   border: 1px solid rgba(129, 198, 131, 0.4);
 }
 
-.modal-dark .follow-up-button:hover {
+.ai-assistant-window.dark .follow-up-button:hover {
   background: linear-gradient(135deg, #37474f, #263238);
   border: 1px solid rgba(129, 198, 131, 0.6);
 }
-
-/* 透明模态框样式 */
-:deep(.n-modal) {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-:deep(.n-modal-content) {
-  background-color: transparent !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-:deep(.n-modal-body) {
-  background-color: transparent !important;
-  padding: 20px;
-}
-
-:deep(.n-timeline) {
-  padding-left: 20px;
-}
-
-:deep(.n-timeline-item) {
-  margin-bottom: 15px;
-}
-
-:deep(.n-timeline-item-content__title) {
-  font-weight: 600;
-}
-
-:deep(.n-timeline-item-content__time) {
-  font-size: 0.9em;
-  opacity: 0.8;
-}
-
-/* 添加一些装饰性元素 */
-.chat-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #81c683, transparent);
-}
-
-.modal-dark .chat-container::before {
-  background: linear-gradient(90deg, transparent, #81c683, transparent);
-}
 </style>
-<!-- </content> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
