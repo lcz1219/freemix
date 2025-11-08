@@ -95,15 +95,19 @@ export function parseAIResponseToSubGoals(aiResponse) {
     if (isStep && stepContent.length > 1) {
       // 清理步骤内容
       stepContent = stepContent
-        .replace(/^[-\*]\s*/, '')  // 移除开头的符号
-        .replace(/\s+/g, ' ')      // 合并多个空格
+       .replace(/^[-\*]\s*/, '')  // 移除开头的符号
+        .replace(/\*+/g, '')        // 移除所有星号（包括**强调**符号）
+        .replace(/\n/g, ' ')        // 将换行符替换为空格
+        .replace(/[`_~]/g, '')       // 移除其他Markdown符号：`代码`、_斜体_、~~删除线~~
+        .replace(/\s+/g, ' ')       // 合并多个空格
+        .replace(/^步骤\d+:\s*/, '') // 移除已有的"步骤X:"前缀，避免重复
         .trim();
 
       // 避免添加重复的步骤
       if (stepContent && !subGoals.some(goal => goal.message.includes(stepContent) || stepContent.includes(goal.message))) {
         subGoals.push({
           _id: `node-${Date.now()}-${stepCounter}`,
-          message: stepContent,
+          message: `步骤${stepCounter}: ${stepContent}`,
           finish: false,
           fileList: []
         });

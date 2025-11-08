@@ -19,57 +19,12 @@
       @goal-created="handleGoalCreated"
     /> -->
     
-    <div class="chat-container">
-      <div v-for="(message, index) in chatMessages" :key="index" :class="['message', message.type]">
-        <div class="message-content">
-          <!-- 显示不同类型的消息内容 -->
-          <div v-if="message.messageType === 'answer'">
-            <!-- 显示AI的回答内容 -->
-            <div v-if="message.thinkingContent" class="thinking-content">
-              <strong>AI思考过程：</strong>
-              {{ message.thinkingContent }}
-            </div>
-            <div class="answer-content">
-              {{ message.content }}
-            </div>
-          </div>
-          <div v-if="message.followUpQuestions" >
-            <!-- 显示推荐问题 -->
-            <div><strong>推荐问题：</strong></div>
-            <div class="follow-up-buttons">
-              <n-button 
-                v-for="(question, qIndex) in message.followUpQuestions" 
-                :key="qIndex" 
-                type="info" 
-                size="small" 
-                secondary
-                @click="sendFollowUpQuestion(question)"
-                class="follow-up-button"
-              >
-                {{ question }}
-              </n-button>
-            </div>
-          </div>
-          <div v-else-if="message.messageType === 'verbose'">
-            <!-- 显示AI思考过程 -->
-            <div><strong>AI思考中...</strong></div>
-            <div class="thinking-process">{{ message.content }}</div>
-          </div>
-          <div v-else-if="message.messageType === 'processing' || message.isProcessing">
-            <!-- 显示AI正在处理的提示 -->
-            <div class="processing-indicator">
-              <n-spin size="small" />
-              <span>AI正在处理中...</span>
-            </div>
-          </div>
-          <div v-else>
-            <!-- 默认显示内容 -->
-            {{ message.content }}
-          </div>
-        </div>
-        <div class="message-time">{{ formatTime(message.timestamp) }}</div>
-      </div>
-    </div>
+    <AIChatContainer 
+    ref="chatContainerRef"
+      :chat-messages="chatMessages" 
+      :format-time="formatTime" 
+      @send-follow-up-question="sendFollowUpQuestion" 
+    />
     
     <div class="input-container">
       <n-input 
@@ -94,12 +49,14 @@
 <script setup>
 import { ref, inject, nextTick, onMounted } from 'vue';
 import { NButton, NIcon, NInput, NSpin } from 'naive-ui';
+import AIChatContainer from './AIChatContainer.vue';
 
 // 响应式数据
 const isDark = inject('isDark', ref(true));
 const userInput = ref('');
 const isSending = ref(false);
 const chatMessages = ref([]);
+const chatContainerRef = ref(null);
 
 // 格式化时间
 const formatTime = (timestamp) => {
@@ -196,11 +153,16 @@ const sendMessage = async () => {
 const scrollToBottom = () => {
   // 使用nextTick确保DOM已更新
   nextTick(() => {
-    const chatContainer = document.querySelector('.chat-container');
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    // 方法1: 使用模板ref
+    if (chatContainerRef.value) {
+      console.log("滚动到底部",chatContainerRef.value);
+      
+      chatContainerRef.value.scrollToBottom()
+      return;
     }
-  });
+    
+    
+  })
 };
 
 // 关闭窗口

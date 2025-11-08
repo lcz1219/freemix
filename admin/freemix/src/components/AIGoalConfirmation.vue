@@ -116,6 +116,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  subGoals: {
+    type: String,
+    default: ''
+  },
   userQuestion: {
     type: String,
     default: ''
@@ -169,7 +173,9 @@ watch(showModal, (newVal) => {
 // 初始化目标数据
 const initializeGoalData = () => {
   // 解析AI响应为子目标
-  const subGoals = parseAIResponseToSubGoals(props.aiResponse)
+  const subGoals = props.subGoals
+  console.log("initializeGoalData,subGoals:", subGoals);
+  
   
   // 提取目标标题
   const title = extractGoalTitle(props.aiResponse, props.userQuestion)
@@ -259,6 +265,7 @@ const confirm = async () => {
 
 <style scoped>
 .ai-goal-confirmation-modal {
+  color: white;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -273,7 +280,7 @@ const confirm = async () => {
 
 .confirmation-content :deep(.n-form-item-label) {
   font-weight: 500;
-  color: #333;
+  color: #e5e0e0;
 }
 
 .confirmation-content :deep(.n-form-item-label)::after {
