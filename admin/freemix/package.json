@@ -40,6 +40,7 @@
     "element-plus": "^2.10.6",
     "is-electron": "^2.2.2",
     "lucide-vue-next": "^0.525.0",
+    "markdown-it": "^14.1.0",
     "marked": "^16.3.0",
     "pinia": "^3.0.3",
     "qrcode": "^1.5.4",

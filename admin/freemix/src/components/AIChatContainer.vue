@@ -7,11 +7,9 @@
           <!-- 显示AI的回答内容 -->
           <div v-if="message.thinkingContent" class="thinking-content">
             <strong>AI思考过程：</strong>
-            {{ message.thinkingContent }}
+            <div v-html="parseMarkdown(message.thinkingContent)"></div>
           </div>
-          <div class="answer-content">
-            {{ message.content }}
-          </div>
+          <div class="answer-content" v-html="parseMarkdown(message.content)"></div>
         </div>
         <div v-if="message.followUpQuestions">
           <!-- 显示推荐问题 -->
@@ -31,10 +29,10 @@
           </div>
         </div>
         <div v-else-if="message.messageType === 'verbose'">
-          <!-- 显示AI思考过程 -->
-          <div><strong>AI思考中...</strong></div>
-          <div class="thinking-process">{{ message.content }}</div>
-        </div>
+            <!-- 显示AI思考过程 -->
+            <div><strong>AI思考中...</strong></div>
+            <div class="thinking-process" v-html="parseMarkdown(message.content)"></div>
+          </div>
         <div v-else-if="message.messageType === 'processing' || message.isProcessing">
           <!-- 显示AI正在处理的提示 -->
           <div class="processing-indicator">
@@ -43,9 +41,9 @@
           </div>
         </div>
         <div v-else>
-          <!-- 默认显示内容 -->
-          {{ message.content }}
-        </div>
+            <!-- 默认显示内容 -->
+            <div v-html="parseMarkdown(message.content)"></div>
+          </div>
       </div>
       <div class="message-time">{{ formatTime(message.timestamp) }}</div>
     </div>
@@ -53,8 +51,11 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, onMounted, nextTick } from 'vue';
+import { defineProps, defineEmits, ref, onMounted, nextTick, computed } from 'vue';
 import { NButton, NSpin } from 'naive-ui';
+import MarkdownIt from 'markdown-it';
+
+const md = new MarkdownIt();
 
 // 定义props
 const props = defineProps({
@@ -78,6 +79,12 @@ const emit = defineEmits(['send-follow-up-question']);
 // 发送推荐问题
 const sendFollowUpQuestion = (question) => {
   emit('send-follow-up-question', question);
+};
+
+// 解析Markdown内容
+const parseMarkdown = (content) => {
+  if (!content) return '';
+  return md.render(content);
 };
 const chatContainerRef = ref(null);
 const scrollToBottom = () => {
