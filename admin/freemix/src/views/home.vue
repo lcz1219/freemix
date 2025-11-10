@@ -505,9 +505,7 @@
 
     <!-- 主内容区域 -->
 
-    <!-- 整合浮动按钮组件 -->
-    <UnifiedFloatButton :goals="goals" :formatDate="formatDate" :checktype="checktype"
-      @dateSelected="handleCalendarUpdate" />
+
   </n-layout>
 </template>
 
@@ -563,7 +561,7 @@ import { getMPaths, isSuccess } from '@/utils/request'
 import { useStore } from 'vuex'
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
-import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue';
+
 import { useUser } from '@/hooks/useUser';
 import { useSettings } from '@/hooks/useSettings';
 // import { log } from 'echarts/types/src/util/log.js';

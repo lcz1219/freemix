@@ -55,7 +55,12 @@ import { defineProps, defineEmits, ref, onMounted, nextTick, computed } from 'vu
 import { NButton, NSpin } from 'naive-ui';
 import MarkdownIt from 'markdown-it';
 
-const md = new MarkdownIt();
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  breaks: true
+});
 
 // 定义props
 const props = defineProps({
@@ -88,7 +93,7 @@ const parseMarkdown = (content) => {
 };
 const chatContainerRef = ref(null);
 const scrollToBottom = () => {
-  console.log("滚动到底部111");
+  // console.log("滚动到底部111");
   // 使用nextTick确保DOM已更新
   nextTick(() => {
     // 方法1: 使用模板ref
@@ -158,6 +163,12 @@ defineExpose({
   margin-right: 30%;
   border: 1px solid rgba(129, 198, 131, 0.2);
 }
+.message.ai-gen {
+  background: linear-gradient(135deg, #252525, #242424);
+  border: 1px solid rgba(129, 198, 131, 0.2);
+  height: 64vh;
+  overflow-y: auto;
+}
 
 .message.error {
   background: linear-gradient(135deg, #ffebee, #ffcdd2);
@@ -174,6 +185,227 @@ defineExpose({
 .message-content {
   margin-bottom: 8px;
   line-height: 1.6;
+}
+
+/* Markdown内容样式优化 */
+.answer-content,
+.thinking-process {
+  line-height: 1.8;
+}
+
+.answer-content h1,
+.answer-content h2,
+.answer-content h3,
+.answer-content h4,
+.answer-content h5,
+.answer-content h6,
+.thinking-process h1,
+.thinking-process h2,
+.thinking-process h3,
+.thinking-process h4,
+.thinking-process h5,
+.thinking-process h6 {
+  margin: 24px 0 16px 0;
+  font-weight: 600;
+  line-height: 1.25;
+  position: relative;
+}
+
+.answer-content h1,
+.thinking-process h1 {
+  font-size: 2em;
+  border-bottom: 2px solid #eaecef;
+  padding-bottom: 0.3em;
+  color: #0969da;
+  padding-left: 8px;
+  margin-left: -8px;
+}
+
+.answer-content h2,
+.thinking-process h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+  color: #0969da;
+  padding-left: 6px;
+  margin-left: -6px;
+}
+
+.answer-content h3,
+.thinking-process h3 {
+  font-size: 1.25em;
+  color: #0969da;
+  padding-left: 4px;
+  border-left: 3px solid #0969da;
+  padding-left: 12px;
+}
+
+.answer-content h4,
+.thinking-process h4 {
+  font-size: 1.1em;
+  color: #0969da;
+  padding-left: 4px;
+  border-left: 2px solid #0969da;
+  padding-left: 10px;
+}
+
+.answer-content h5,
+.thinking-process h5 {
+  font-size: 1em;
+  color: #0969da;
+  padding-left: 4px;
+}
+
+.answer-content h6,
+.thinking-process h6 {
+  font-size: 0.9em;
+  color: #0969da;
+  padding-left: 4px;
+}
+
+.answer-content p,
+.thinking-process p {
+  margin: 16px 0;
+  padding: 0 4px;
+}
+
+.answer-content div > h1:first-child,
+.thinking-process div > h1:first-child,
+.answer-content div > h2:first-child,
+.thinking-process div > h2:first-child,
+.answer-content div > h3:first-child,
+.thinking-process div > h3:first-child {
+  margin-top: 0;
+}
+
+.answer-content ul,
+.answer-content ol,
+.thinking-process ul,
+.thinking-process ol {
+  margin: 16px 0;
+  padding-left: 32px;
+}
+
+.answer-content li,
+.thinking-process li {
+  margin: 8px 0;
+  padding-left: 4px;
+}
+
+.answer-content li > p,
+.thinking-process li > p {
+  margin: 0;
+}
+
+.answer-content code,
+.thinking-process code {
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-size: 85%;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.answer-content pre,
+.thinking-process pre {
+  padding: 16px;
+  overflow: auto;
+  background-color: #161b22;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+
+.answer-content pre > code,
+.thinking-process pre > code {
+  background: transparent;
+  padding: 0;
+  font-size: 100%;
+}
+
+.answer-content blockquote,
+.thinking-process blockquote {
+  margin: 16px 0;
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+}
+
+.answer-content table,
+.thinking-process table {
+  border-collapse: collapse;
+  margin: 16px 0;
+  width: 100%;
+}
+
+.answer-content th,
+.answer-content td,
+.thinking-process th,
+.thinking-process td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+.answer-content tr:nth-child(2n),
+.thinking-process tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+/* 暗色主题下的Markdown样式 */
+.dark .answer-content h1,
+.dark .answer-content h2,
+.dark .answer-content h3,
+.dark .answer-content h4,
+.dark .answer-content h5,
+.dark .answer-content h6,
+.dark .thinking-process h1,
+.dark .thinking-process h2,
+.dark .thinking-process h3,
+.dark .thinking-process h4,
+.dark .thinking-process h5,
+.dark .thinking-process h6 {
+  color: #58a6ff;
+  border-bottom-color: #30363d;
+}
+
+.dark .answer-content h1 {
+  border-bottom: 2px solid #30363d;
+}
+
+.dark .answer-content h2 {
+  border-bottom: 1px solid #30363d;
+}
+
+.dark .answer-content h3,
+.dark .answer-content h4 {
+  border-left-color: #58a6ff;
+}
+
+.dark .answer-content code,
+.dark .thinking-process code {
+  background-color: rgba(110, 118, 129, 0.4);
+}
+
+.dark .answer-content pre,
+.dark .thinking-process pre {
+  background-color: #161b22;
+}
+
+.dark .answer-content blockquote,
+.dark .thinking-process blockquote {
+  color: #8b949e;
+  border-left-color: #30363d;
+}
+
+.dark .answer-content tr:nth-child(2n),
+.dark .thinking-process tr:nth-child(2n) {
+  background-color: rgba(110, 118, 129, 0.1);
+}
+
+.dark .answer-content th,
+.dark .answer-content td,
+.dark .thinking-process th,
+.dark .thinking-process td {
+  border-color: #30363d;
 }
 
 .message-time {

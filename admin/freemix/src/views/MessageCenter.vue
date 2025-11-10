@@ -16,7 +16,7 @@
         </n-button> -->
     </n-layout-header>
     
-    <n-layout has-sider style="height: 100%; ">
+    <n-layout has-sider style="height: calc(100vh - 64px);; ">
       <!-- 侧边栏 - 用户列表 -->
       <n-layout-sider 
         bordered 

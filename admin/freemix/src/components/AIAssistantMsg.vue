@@ -197,7 +197,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: "ea16730874-single_user", // 用户标识
-        query: question,
+        query: `${question}用markdown的格式返回`,
         stream: true // 启用流式响应
       })
     });

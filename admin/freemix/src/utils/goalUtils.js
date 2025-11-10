@@ -38,7 +38,7 @@ export const createGoalObject = (params) => {
     assignee: currentUser.username || '', // 当前用户名
     owner: currentUser.username || '', // 所有者
     deadline: finalDeadline.toISOString(),
-    priority: level || 'medium', // 优先级
+    level: level || 'medium', // 优先级
     tags: tags || ['ai生成'], // 分类标签
     progress: 0,
     status: '进行中'

@@ -54,6 +54,10 @@
 
             <!-- 移动端浮动导航组件 -->
             <MobileFloatingNav v-if="isMobileDevice" />
+            
+            <!-- 全局浮动按钮组件 -->
+            <UnifiedFloatButton v-if="showContentByStoreUser" :goals="goals" :formatDate="formatDate" :checktype="checktype"
+              @dateSelected="handleCalendarUpdate" />
             <div style="display: flex;
               justify-content: flex-end;
               align-items: flex-end;
@@ -111,8 +115,9 @@ import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
-import AppLoading from '@/components/AppLoading.vue'; // 导入加载页面组件
-import request, { postM, isSuccess, getM } from '@/utils/request'
+import AppLoading from '@/components/AppLoading.vue';
+import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue'; // 导入加载页面组件
+import request, { postM, isSuccess, getM,getMPaths } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
 import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
 import { connect } from '@/utils/websocket.js'
@@ -250,6 +255,9 @@ const handleIncomingMessage = (messageStr) => {
     console.error('解析WebSocket消息失败:', error);
   }
 }
+
+const store = useStore()
+
 // 初始化时读取保存的主题状态
 onMounted(async () => {
   getDeskToken();
@@ -262,8 +270,10 @@ onMounted(async () => {
   window.handleWebSocketMessage = handleIncomingMessage;
   // 启动全局消息监听器
   // globalMessageListener.startListening();
+  
+  // 获取目标数据
+  await getGoals();
 });
-const store = useStore()
 
 // 判断当前用户是否为开发者 (linchengzhong)
 const isShowSidebar = computed(() => {
@@ -271,6 +281,66 @@ const isShowSidebar = computed(() => {
   return !list.includes(route.path)
 
 })
+
+// 目标数据
+const goals = ref([]);
+
+// 获取目标数据
+const getGoals = async () => {
+  console.log("store.state.user ",store.state.user.username);
+  
+  if (!store.state.user || !store.state.user.username) return;
+  
+  const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
+  if (isSuccess(res)) {
+    goals.value = res.data.data;
+    goals.value?.forEach(goal => {
+      goal.deadlineString = formatDate(goal.deadline);
+    });
+  }
+}
+
+// 格式化日期
+const formatDate = (goal) => {
+  // 检查deadline是否存在且为有效日期
+  if (!goal) {
+    return '未设置';
+  }
+
+  const date = new Date(goal);
+
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '日期无效';
+  }
+
+  return `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, '0')}月${date.getDate().toString().padStart(2, '0')}日`;
+}
+
+// 检查目标类型
+const checktype = (val) => {
+  if (!val || !val.tags || !val.tags[0]) return 'default';
+  
+  switch (val.tags[0]) {
+    case '学习':
+      return 'success';
+    case '工作':
+      return 'info';
+    case '生活':
+      return 'warning';
+    case '运动':
+      return 'error';
+    default:
+      return 'default';
+  }
+}
+
+// 处理日历日期选择
+const handleCalendarUpdate = (value) => {
+  console.log('选择的日期:', value);
+  // 可以在这里添加处理日期选择的逻辑
+  // 例如：显示该日期的目标或任务
+}
 
 // loading 状态
 const isLoading = computed(() => store.state.loading.loading);

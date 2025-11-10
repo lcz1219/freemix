@@ -31,7 +31,7 @@
     </n-popover>
 
 
-    <n-modal v-model:show="showChatContainer" title="创建目标" style="width: 50%;height: 50vh;">
+    <n-modal v-model:show="showChatContainer" title="创建目标" style="width: 50%;height: 65vh;">
       <div>
         <AIChatContainer v-if="chatMessages.length > 0" :chat-messages="chatMessages" :format-time="formatTime"
           :isShowThinking="false" />
@@ -159,7 +159,7 @@ const generateGoal = async () => {
   // 创建处理中的消息索引
   const processingMessageIndex = chatMessages.value.length;
   chatMessages.value.push({
-    type: 'ai',
+    type: 'ai-gen',
     messageType: 'processing',
     content: '',
     isProcessing: true,
