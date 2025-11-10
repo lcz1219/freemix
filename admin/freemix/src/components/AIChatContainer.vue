@@ -132,7 +132,7 @@ defineExpose({
   overflow-y: auto;
   padding: 16px;
   background: rgba(129, 198, 131, 0.05);
-  margin: 16px;
+  margin: 11px 16px -4px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(129, 198, 131, 0.1);
@@ -485,7 +485,7 @@ defineExpose({
 }
 
 .follow-up-button:hover {
-  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  background: linear-gradient(135deg, #222523, #234224);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(129, 198, 131, 0.3);
 }

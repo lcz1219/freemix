@@ -34,22 +34,24 @@
         :autosize="{ minRows: 3, maxRows: 6 }"
         @keyup.enter="sendMessage"
       />
-      <n-button 
+      <!-- <n-button 
         type="primary" 
         @click="sendMessage" 
         :disabled="isSending"
         class="send-button"
       >
         {{ isSending ? '发送中...' : '发送' }}
-      </n-button>
+      </n-button> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, inject, nextTick, onMounted } from 'vue';
+import { ref, inject, nextTick, onMounted, computed } from 'vue';
 import { NButton, NIcon, NInput, NSpin } from 'naive-ui';
 import AIChatContainer from './AIChatContainer.vue';
+import { useStore } from 'vuex';
+import { postM, getM } from '@/utils/request.js';
 
 // 响应式数据
 const isDark = inject('isDark', ref(true));
@@ -57,6 +59,118 @@ const userInput = ref('');
 const isSending = ref(false);
 const chatMessages = ref([]);
 const chatContainerRef = ref(null);
+
+// 获取用户信息
+const store = useStore();
+const currentUser = computed(() => {
+  return store.state.user;
+});
+
+// AI对话历史管理
+const STORAGE_KEY = 'ai_chat_history';
+
+// 保存聊天记录到本地存储
+const saveChatHistory = () => {
+  try {
+    const historyData = {
+      messages: chatMessages.value,
+      lastUpdated: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(historyData));
+  } catch (error) {
+    console.error('保存聊天记录失败:', error);
+  }
+};
+
+// 从本地存储加载聊天记录
+const loadChatHistory = () => {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const historyData = JSON.parse(savedData);
+      if (historyData.messages && Array.isArray(historyData.messages)) {
+        // 转换时间戳字符串回Date对象
+        chatMessages.value = historyData.messages.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+      }
+    }
+  } catch (error) {
+    console.error('加载聊天记录失败:', error);
+  }
+};
+
+// 清除聊天记录
+const clearChatHistory = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    chatMessages.value = [];
+  } catch (error) {
+    console.error('清除聊天记录失败:', error);
+  }
+};
+
+// 保存AI消息到服务器
+const saveAIMessageToServer = async (userQuestion, aiAnswer, thinkingContent,followUpQuestions,messageType ) => {
+  try {
+    const messageData = {
+      username: currentUser.value.username,
+      userQuestion: userQuestion.userQuestion,
+      aiAnswer: userQuestion.aiAnswer,
+      thinkingContent: thinkingContent,
+      followUpQuestions:JSON.parse(userQuestion.followUpQuestions),
+      messageType:userQuestion.messageType,
+      createdAt: Date.now()
+    };
+    
+    const response = await postM('ai-messages/save', messageData);
+    console.log('AI消息保存成功:', response);
+    return response;
+  } catch (error) {
+    console.error('保存AI消息到服务器失败:', error);
+    // 不抛出错误，避免影响用户体验
+    return null;
+  }
+};
+
+// 从服务器获取用户历史AI记录
+const loadAIMessagesFromServer = async () => {
+  try {
+    const response = await getM(`ai-messages/${currentUser.value.username}/history`);
+    if (response && response.data) {
+      const historyMessages = response.data.data.map(item => ({
+        type: 'user',
+        content: item.userQuestion,
+        timestamp: new Date(item.createdAt)
+      }));
+      
+      // 添加AI回复
+      response.data.data.forEach(item => {
+        if (item.aiAnswer) {
+          historyMessages.push({
+            messageType: 'answer',
+            type: 'ai',
+            content: item.aiAnswer,
+            thinkingContent: item.thinkingContent,
+            followUpQuestions: item.followUpQuestions,
+            timestamp: new Date(item.createdAt)
+          });
+        }
+      });
+      
+      // 按时间排序
+      historyMessages.sort((a, b) => a.timestamp - b.timestamp);
+      console.log('历史消息:', historyMessages);
+      
+      return historyMessages;
+    }
+    return [];
+  } catch (error) {
+    console.error('从服务器加载AI历史记录失败:', error);
+    return [];
+  }
+};
 
 // 格式化时间
 const formatTime = (timestamp) => {
@@ -128,6 +242,22 @@ const sendMessage = async () => {
       message.followUpQuestions = aiResponse.followUpQuestions;
       message.isProcessing = false;
     }
+    
+    // 保存AI对话历史到后端
+    try {
+      await saveAIMessageToServer({
+        userQuestion: userQuestion,
+        aiAnswer: aiResponse.content,
+        thinkingContent: aiResponse.thinkingContent,
+        followUpQuestions: aiResponse.followUpQuestions ? JSON.stringify(aiResponse.followUpQuestions) : null,
+        messageType: aiResponse.messageType
+      });
+    } catch (error) {
+      console.error('保存AI对话历史失败:', error);
+    }
+    
+    // 保存聊天记录到本地存储
+    saveChatHistory();
     
     // 滚动到底部
     scrollToBottom();
@@ -405,9 +535,30 @@ const callCustomAIAPI = async (question, onUpdate) => {
   }
 };
 
-// 初始化欢迎消息
-onMounted(() => {
-  if (chatMessages.value.length === 0) {
+// 初始化欢迎消息和加载历史记录
+onMounted(async () => {
+  try {
+    // 尝试从服务器加载用户的AI历史记录
+    const historyMessages = await loadAIMessagesFromServer();
+    console.log('历史记录:', historyMessages);
+    if (historyMessages.length > 0) {
+      // 如果有历史记录，加载到聊天界面
+      chatMessages.value = historyMessages;
+      // 滚动到底部
+      nextTick(() => {
+        scrollToBottom();
+      });
+    } else {
+      // 如果没有历史记录，显示欢迎消息
+      chatMessages.value.push({
+        type: 'ai',
+        content: '您好！我是您的Freemix AI助手，请问有什么我可以帮助您的吗？',
+        timestamp: new Date()
+      });
+    }
+  } catch (error) {
+    console.error('初始化AI助手失败:', error);
+    // 如果加载历史记录失败，至少显示欢迎消息
     chatMessages.value.push({
       type: 'ai',
       content: '您好！我是您的Freemix AI助手，请问有什么我可以帮助您的吗？',
@@ -440,7 +591,8 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 2px 2px 2px 16px;
+
   border-bottom: 1px solid rgba(129, 198, 131, 0.3);
   background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
 }
@@ -465,7 +617,7 @@ defineExpose({
   overflow-y: auto;
   padding: 16px;
   background: rgba(129, 198, 131, 0.05);
-  margin: 16px;
+  margin: 11px 16px -4px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(129, 198, 131, 0.1);

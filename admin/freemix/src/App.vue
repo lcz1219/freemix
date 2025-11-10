@@ -56,7 +56,7 @@
             <MobileFloatingNav v-if="isMobileDevice" />
             
             <!-- 全局浮动按钮组件 -->
-            <UnifiedFloatButton v-if="showContentByStoreUser" :goals="goals" :formatDate="formatDate" :checktype="checktype"
+            <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage" :goals="goals" :formatDate="formatDate" :checktype="checktype"
               @dateSelected="handleCalendarUpdate" />
             <div style="display: flex;
               justify-content: flex-end;

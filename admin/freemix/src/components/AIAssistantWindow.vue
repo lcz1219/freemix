@@ -1,8 +1,6 @@
 <template>
   <div class="ai-menu-page">
-    <div class="page-header">
-      <h1>AI功能</h1>
-    </div>
+    
     
     <div class="ai-menu-container">
       <!-- 左侧菜单 -->
@@ -88,7 +86,7 @@ onMounted(() => {
 .ai-menu-page {
   padding-left: 20px;
   padding-right: 20px;
-  padding-top: 20px;
+  padding-top: 5px;
   height: calc(100vh - 60px);
   display: flex;
   flex-direction: row;
@@ -107,7 +105,6 @@ onMounted(() => {
 .ai-menu-container {
   display: flex;
   flex: 1;
-  gap: 20px;
 }
 
 .menu-sidebar {
