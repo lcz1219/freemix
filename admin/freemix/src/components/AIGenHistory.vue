@@ -2,7 +2,7 @@
   <div class="ai-gen-history">
     <n-card title="AI生成记录" class="history-card">
       <!-- 搜索和筛选 -->
-      <div class="search-section">
+      <n-space class="search-section" align="center">
         <n-input
           v-model:value="searchKeyword"
           placeholder="搜索记录..."
@@ -19,17 +19,15 @@
             <n-icon><Refresh /></n-icon>
           </template>
         </n-button>
-      </div>
+      </n-space>
 
       <!-- 记录列表 -->
       <div class="history-list" v-if="!loading">
-        <div v-if="filteredHistory.length === 0" class="empty-state">
-          <n-empty description="暂无历史记录">
-            <template #extra>
-              <p>请先使用AI目标生成器创建一些记录</p>
-            </template>
-          </n-empty>
-        </div>
+        <n-empty v-if="filteredHistory.length === 0" description="暂无历史记录">
+          <template #extra>
+            <n-text depth="3">请先使用AI目标生成器创建一些记录</n-text>
+          </template>
+        </n-empty>
 
         <div v-else class="records-container">
           <div
@@ -39,7 +37,7 @@
             :class="{ expired: isExpired(record) }"
           >
             <div class="record-header">
-              <h4 class="record-title">{{ record.goalTitle }}</h4>
+              <h4 class="record-title">{{ record.goalTitle || '未命名目标' }}</h4>
               <div class="record-actions">
                 <n-tag
                   :type="getStatusTagType(record.status)"
@@ -54,6 +52,7 @@
                 >
                   <n-button quaternary circle size="small">
                     <template #icon>
+                      <n-icon><More /></n-icon>
                     </template>
                   </n-button>
                 </n-dropdown>
@@ -94,7 +93,7 @@
         </div>
 
         <!-- 分页 -->
-        <div v-if="filteredHistory.length > pageSize" class="pagination-section">
+        <n-space v-if="filteredHistory.length > pageSize" justify="center" class="pagination-section">
           <n-pagination
             v-model:page="currentPage"
             :page-count="Math.ceil(filteredHistory.length / pageSize)"
@@ -104,7 +103,7 @@
             @update:page="currentPage = $event"
             @update:page-size="pageSize = $event"
           />
-        </div>
+        </n-space>
       </div>
 
       <!-- 加载状态 -->
@@ -146,6 +145,7 @@ import {
   NDropdown,
   NTag,
   NEmpty,
+  NText,
   NCollapse,
   NCollapseItem,
   NList,
@@ -160,6 +160,15 @@ import {
   useMessage
 } from 'naive-ui';
 import { Refresh } from '@vicons/ionicons5';
+import {useStore} from 'vuex'
+import {
+  postM,
+  getMPaths,
+  uploadFile,
+  baseURL,
+  isSuccess,
+  getM
+} from '@/utils/request';
 
 // Props
 const props = defineProps({
@@ -169,6 +178,7 @@ const props = defineProps({
     default: null
   }
 });
+const store = useStore()
 
 // Emits
 const emit = defineEmits(['record-used']);
@@ -224,17 +234,21 @@ const paginatedHistory = computed(() => {
 const loadHistory = async () => {
   loading.value = true;
   try {
-    const params = new URLSearchParams();
-    params.append('page', '0');
-    params.append('size', '100'); // 加载较多数据，前端分页
+    // const params = new URLSearchParams();
+    // params.append('page', '0');
+    // params.append('size', '100');
+    // params.append('username',store.state.user.username) // 加载较多数据，前端分页
+    let data={
+      page:0,
+      size:100,
+      username:store.state.user.username
+    }
+    const response = await getM('/api/aiGen/list',data);
     
-    const response = await fetch(`/api/aiGen/list?${params}`);
-    const result = await response.json();
-    
-    if (result.success) {
-      history.value = result.data.records || [];
+    if (isSuccess(response)) {
+      history.value = response.data.data.records || [];
     } else {
-      message.error(result.message || '加载历史记录失败');
+      message.error(response.data.msg || '加载历史记录失败');
     }
   } catch (error) {
     console.error('加载历史记录失败:', error);
@@ -249,7 +263,7 @@ const getActionOptions = (record) => {
   const options = [];
   
   // 确认使用（仅限未过期的待确认记录）
-  if (record.status === 'pending' && !isExpired(record)) {
+  if (record.status === 'pending') {
     options.push({ label: '确认使用', key: 'confirm' });
   }
   
@@ -292,19 +306,17 @@ const confirmRecord = async () => {
   if (!selectedRecord.value) return;
   
   try {
-    const response = await fetch(`/api/aiGen/confirm/${selectedRecord.value.id}`, {
-      method: 'POST'
+    const response = await postM(`/api/aiGen/confirm/${selectedRecord.value.id}`, { 
+      username: store.state.user.username 
     });
     
-    const result = await response.json();
-    
-    if (result.success) {
+    if (isSuccess(response)) {
       message.success('记录已确认');
       showConfirmModal.value = false;
       loadHistory();
       emit('record-used', selectedRecord.value);
     } else {
-      message.error(result.message || '确认失败');
+      message.error(response.data.msg || '确认失败');
     }
   } catch (error) {
     console.error('确认记录失败:', error);
@@ -315,14 +327,13 @@ const confirmRecord = async () => {
 // 方法：分享记录
 const shareRecord = async (record) => {
   try {
-    const response = await fetch(`/api/aiGen/share/${record.id}`, {
-      method: 'POST'
+    const response = await getM(`/api/aiGen/share/${record.id}`, { 
+      username: store.state.user.username 
     });
     
-    const result = await response.json();
-    
-    if (result.success) {
-      const shareUrl = `${window.location.origin}/share/${result.data.shareToken}`;
+    if (isSuccess(response)) {
+      const shareToken = response.data.data.shareToken;
+      const shareUrl = `${window.location.origin}/#/share/${shareToken}`;
       
       // 复制到剪贴板
       if (navigator.clipboard) {
@@ -333,7 +344,7 @@ const shareRecord = async (record) => {
         message.info(`分享链接：${shareUrl}`);
       }
     } else {
-      message.error(result.message || '生成分享链接失败');
+      message.error(response.data.msg || '生成分享链接失败');
     }
   } catch (error) {
     console.error('生成分享链接失败:', error);
@@ -350,17 +361,17 @@ const viewRecord = (record) => {
 // 方法：删除记录
 const deleteRecord = async (record) => {
   try {
-    const response = await fetch(`/api/aiGen/delete/${record.id}`, {
-      method: 'DELETE'
+    // 这里需要修改后端API来支持DELETE请求传递username参数
+    // 暂时使用一个通用的删除方法，或者您可以修改后端来处理这个问题
+    const response = await postM(`/api/aiGen/delete/${record.id}`, { 
+      username: store.state.user.username 
     });
     
-    const result = await response.json();
-    
-    if (result.success) {
+    if (isSuccess(response)) {
       message.success('记录已删除');
       loadHistory();
     } else {
-      message.error(result.message || '删除失败');
+      message.error(response.data.msg || '删除失败');
     }
   } catch (error) {
     console.error('删除记录失败:', error);
@@ -431,10 +442,7 @@ onMounted(() => {
 }
 
 .search-section {
-  display: flex;
-  gap: 12px;
   margin-bottom: 20px;
-  align-items: center;
 }
 
 .history-list {

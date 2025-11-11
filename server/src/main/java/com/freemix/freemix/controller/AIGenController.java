@@ -138,11 +138,13 @@ public class AIGenController extends BaseController {
     /**
      * 确认AI生成记录
      * @param id 记录ID
+     * @param username 用户名（从请求体中获取）
      * @return 操作结果
      */
     @PostMapping("/confirm/{id}")
     @CheckToken
-    public ApiResponse confirmAIGen(@PathVariable String id, @RequestParam String username) {
+    public ApiResponse confirmAIGen(@PathVariable String id, @RequestBody JSONObject requestBody) {
+        String username = requestBody.getString("username");
         try {
             
             Query query = new Query();
@@ -176,11 +178,13 @@ public class AIGenController extends BaseController {
     /**
      * 删除AI生成记录
      * @param id 记录ID
+     * @param username 用户名（从请求体中获取）
      * @return 操作结果
      */
-    @DeleteMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     @CheckToken
-    public ApiResponse deleteAIGen(@PathVariable String id, @RequestParam String username) {
+    public ApiResponse deleteAIGen(@PathVariable String id, @RequestBody JSONObject requestBody) {
+        String username = requestBody.getString("username");
         try {
             
             Query query = new Query();
@@ -206,7 +210,7 @@ public class AIGenController extends BaseController {
      * @param id 记录ID
      * @return 分享信息
      */
-    @PostMapping("/share/{id}")
+    @GetMapping("/share/{id}")
     @CheckToken
     public ApiResponse shareAIGen(@PathVariable String id, @RequestParam String username) {
         try {
@@ -247,7 +251,7 @@ public class AIGenController extends BaseController {
      * @param token 分享token
      * @return 记录信息（公开部分）
      */
-    @GetMapping("/share/{token}")
+    @GetMapping("/share/user/{token}")
     public ApiResponse getSharedAIGen(@PathVariable String token) {
         try {
             Query query = new Query();

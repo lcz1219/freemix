@@ -129,7 +129,7 @@ const showContentByStoreUser = computed(() => {
 // 添加桌面token加载状态
 
 const isnAiPage = computed(() => {
-  return route.path != '/AIAssistantWindow'
+  return route.path != '/AIAssistantWindow'&&!route.path.includes('/share/')
 })
 const getDeskToken = async () => {
   // 将多个值拼接成一个字符串

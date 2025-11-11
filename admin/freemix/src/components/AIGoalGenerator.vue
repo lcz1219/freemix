@@ -4,7 +4,13 @@
     <div class="input-section">
       <n-input v-model:value="userInput" type="textarea" placeholder="请输入您想要生成的目标，例如：学习Web开发"
         :autosize="{ minRows: 3, maxRows: 6 }" :disabled="isGenerating" />
-      <n-space justify="end" class="action-buttons">
+      <n-space justify="space-between" class="action-buttons">
+         <n-button @click="showHistory" quaternary size="small" class="history-button">
+        <template #icon>
+          <n-icon><Time /></n-icon>
+        </template>
+        历史记录
+      </n-button>
         <n-button @click="generateGoal" :loading="isGenerating" :disabled="!userInput.trim() || isGenerating"
           type="primary">
           {{ isGenerating ? '生成中...' : '生成目标' }}
@@ -40,15 +46,7 @@
     
     <!-- AI聊天容器 -->
 
-    <!-- 历史记录快速访问 -->
-    <div class="history-quick-access">
-      <n-button @click="showHistory" quaternary size="small" class="history-button">
-        <template #icon>
-          <n-icon><Time /></n-icon>
-        </template>
-        历史记录
-      </n-button>
-    </div>
+
 
 
     <!-- AI生成结果展示 -->
@@ -122,6 +120,7 @@ import AIGenHistory from '@/components/AIGenHistory.vue';
 import { parseAIResponseToSubGoals, extractGoalTitle } from '@/utils/aiGoalParser.js';
 import { ChatboxEllipsesSharp, Time } from '@vicons/ionicons5';
 import { useStore } from 'vuex';
+import { getM, postM, isSuccess, uploadFile, uploadGeneralFile } from '@/utils/request.js';
 // Props定义
 const props = defineProps({
   aiAssistantRef: {
@@ -294,17 +293,11 @@ const saveForLater = async () => {
       saveData:saveData
     }
 
-    const response = await fetch('/api/aiGen/save', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
+    const response = await postM('api/aiGen/save',data);
 
-    const result = await response.json();
+    const result = await response.data.data;
     
-    if (result.success) {
+    if (isSuccess(response)) {
       window.$message?.success('记录已保存，30天内可随时决定是否使用');
       resetGeneration();
     } else {
@@ -430,13 +423,13 @@ const handleRecordUsed = (record) => {
 .history-button {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 25px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.148);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
 .history-button:hover {
-  background: rgba(255, 255, 255, 1);
+  background: rgba(7, 107, 57, 0.112);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }

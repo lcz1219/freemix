@@ -92,6 +92,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useMessage, NCard, NList, NListItem, NThing, NButton, NIcon, NSpace, NSpin, NResult } from 'naive-ui';
 import { Sparkles, ArrowBack } from '@vicons/ionicons5';
 import { marked } from 'marked';
+import { postM,getM ,isSuccess} from '@/utils/request';
 
 // Props
 const props = defineProps({
@@ -111,10 +112,11 @@ const router = useRouter();
 // 方法：加载分享内容
 const loadShareContent = async () => {
   try {
-    const response = await fetch(`/api/aiGen/share/${props.token}`);
-    const result = await response.json();
+    const response = await getM(`/api/aiGen/share/user/${props.token}`);
     
-    if (result.success) {
+    const result = await response.data;
+    
+    if (isSuccess(response)) {
       sharedRecord.value = result.data;
     } else {
       message.error(result.message || '加载分享内容失败');
@@ -183,39 +185,65 @@ onMounted(() => {
 <style scoped>
 .share-view {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #121212 50%, #0d1b0d 100%);
   padding: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.share-view::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(129, 198, 131, 0.1) 0%, transparent 50%, rgba(76, 175, 80, 0.05) 100%);
+  pointer-events: none;
 }
 
 .share-container {
   width: 100%;
   max-width: 800px;
+  position: relative;
+  z-index: 1;
 }
 
 .share-card {
   max-height: 90vh;
   overflow-y: auto;
+  background: rgba(37, 37, 37, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(129, 198, 131, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(129, 198, 131, 0.1);
 }
 
 .share-header {
   text-align: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(129, 198, 131, 0.2);
+  background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
+  border-radius: 12px;
+  padding: 20px;
+  margin: -16px -16px 30px -16px;
 }
 
 .share-title {
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  background: linear-gradient(90deg, #81c683, #4CAF50);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0 0 8px 0;
 }
 
 .share-subtitle {
-  color: #666;
+  color: #a0a0a0;
   font-size: 16px;
   margin: 0;
 }
@@ -236,22 +264,26 @@ onMounted(() => {
 }
 
 .goal-description {
-  background: #f8f9fa;
+  background: rgba(129, 198, 131, 0.1);
   padding: 16px;
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-radius: 12px;
+  border-left: 4px solid #4CAF50;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(129, 198, 131, 0.2);
 }
 
 .goal-description h4 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: #81c683;
   font-size: 16px;
+  font-weight: 600;
 }
 
 .goal-description p {
   margin: 0;
-  color: #555;
+  color: #e0e0e0;
   font-size: 16px;
+  line-height: 1.6;
 }
 
 .ai-response-section {
@@ -259,17 +291,20 @@ onMounted(() => {
 }
 
 .ai-response-section h4 {
-  color: #333;
+  color: #81c683;
   font-size: 18px;
   margin: 0 0 12px 0;
+  font-weight: 600;
 }
 
 .ai-response {
-  background: #f5f5f5;
+  background: rgba(37, 37, 37, 0.6);
   padding: 20px;
-  border-radius: 8px;
-  color: #444;
+  border-radius: 12px;
+  color: #e0e0e0;
   line-height: 1.7;
+  border: 1px solid rgba(129, 198, 131, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .subgoals-section {
@@ -277,20 +312,27 @@ onMounted(() => {
 }
 
 .subgoals-section h4 {
-  color: #333;
+  color: #81c683;
   font-size: 18px;
   margin: 0 0 12px 0;
+  font-weight: 600;
 }
 
 .share-footer {
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid rgba(129, 198, 131, 0.2);
   text-align: center;
+  background: rgba(129, 198, 131, 0.05);
+  border-radius: 12px;
+  padding: 24px 20px;
+  margin-left: -16px;
+  margin-right: -16px;
+  margin-bottom: -16px;
 }
 
 .share-time {
-  color: #666;
+  color: #a0a0a0;
   font-size: 14px;
   margin: 0 0 20px 0;
 }
@@ -314,6 +356,11 @@ onMounted(() => {
 .error-card {
   width: 100%;
   max-width: 500px;
+  background: rgba(37, 37, 37, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(129, 198, 131, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .loading-content {
@@ -323,11 +370,13 @@ onMounted(() => {
 
 .loading-text {
   margin: 16px 0 0 0;
-  color: #666;
+  color: #a0a0a0;
+  font-size: 16px;
 }
 
 .error-content {
   padding: 20px;
+  color: #e0e0e0;
 }
 
 /* 响应式设计 */
@@ -349,41 +398,73 @@ onMounted(() => {
   }
 }
 
-/* 暗色主题适配 */
-.dark .share-view {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .share-view {
+    padding: 10px;
+  }
+  
+  .share-title {
+    font-size: 24px;
+  }
+  
+  .share-actions {
+    flex-direction: column;
+  }
+  
+  .share-actions .n-button {
+    width: 100%;
+  }
 }
 
-.dark .share-title {
-  color: #e0e0e0;
+/* 亮色主题适配（可选） */
+.light .share-card {
+  background: rgba(248, 249, 250, 0.95);
+  border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
-.dark .share-subtitle {
-  color: #a0a0a0;
+.light .share-title {
+  background: linear-gradient(90deg, #4CAF50, #388E3C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.dark .goal-description {
-  background: #2a2a2a;
-  border-left-color: #667eea;
+.light .share-subtitle {
+  color: #666;
 }
 
-.dark .goal-description h4,
-.dark .ai-response-section h4,
-.dark .subgoals-section h4 {
-  color: #e0e0e0;
+.light .goal-description {
+  background: rgba(129, 198, 131, 0.1);
+  border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
-.dark .goal-description p {
-  color: #a0a0a0;
+.light .goal-description h4 {
+  color: #4CAF50;
 }
 
-.dark .ai-response {
-  background: #2a2a2a;
-  color: #a0a0a0;
+.light .goal-description p {
+  color: #333;
 }
 
-.dark .share-time {
-  color: #a0a0a0;
+.light .ai-response-section h4,
+.light .subgoals-section h4 {
+  color: #4CAF50;
+}
+
+.light .ai-response {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(129, 198, 131, 0.2);
+  color: #333;
+}
+
+.light .share-time {
+  color: #666;
+}
+
+.light .share-footer {
+  background: rgba(129, 198, 131, 0.05);
+  border-top: 1px solid rgba(129, 198, 131, 0.3);
 }
 
 /* Markdown样式 */
@@ -391,44 +472,143 @@ onMounted(() => {
 .ai-response :deep(h2),
 .ai-response :deep(h3) {
   margin: 16px 0 8px 0;
-  color: #333;
+  color: #81c683;
+  font-weight: 600;
+}
+
+.ai-response :deep(h1) {
+  font-size: 1.5em;
+  border-bottom: 1px solid rgba(129, 198, 131, 0.3);
+  padding-bottom: 8px;
+}
+
+.ai-response :deep(h2) {
+  font-size: 1.3em;
+}
+
+.ai-response :deep(h3) {
+  font-size: 1.1em;
 }
 
 .ai-response :deep(p) {
-  margin: 8px 0;
+  margin: 12px 0;
+  line-height: 1.7;
 }
 
 .ai-response :deep(ul),
 .ai-response :deep(ol) {
-  margin: 8px 0;
-  padding-left: 20px;
+  margin: 12px 0;
+  padding-left: 24px;
 }
 
 .ai-response :deep(li) {
-  margin: 4px 0;
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.ai-response :deep(strong) {
+  color: #81c683;
+  font-weight: 600;
+}
+
+.ai-response :deep(em) {
+  color: #a0a0a0;
+  font-style: italic;
 }
 
 .ai-response :deep(code) {
-  background: #f1f1f1;
-  padding: 2px 4px;
-  border-radius: 3px;
-  font-family: monospace;
+  background: rgba(129, 198, 131, 0.2);
+  color: #81c683;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.9em;
 }
 
 .ai-response :deep(pre) {
-  background: #f1f1f1;
-  padding: 12px;
-  border-radius: 6px;
+  background: rgba(37, 37, 37, 0.8);
+  border: 1px solid rgba(129, 198, 131, 0.3);
+  border-radius: 8px;
+  padding: 16px;
   overflow-x: auto;
-  margin: 12px 0;
+  margin: 16px 0;
 }
 
-.dark .ai-response :deep(code) {
-  background: #3a3a3a;
+.ai-response :deep(pre code) {
+  background: transparent;
+  padding: 0;
   color: #e0e0e0;
 }
 
-.dark .ai-response :deep(pre) {
-  background: #3a3a3a;
+.ai-response :deep(blockquote) {
+  border-left: 4px solid rgba(129, 198, 131, 0.5);
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: rgba(129, 198, 131, 0.1);
+  border-radius: 0 8px 8px 0;
+  color: #a0a0a0;
+}
+
+.ai-response :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  border: 1px solid rgba(129, 198, 131, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ai-response :deep(th),
+.ai-response :deep(td) {
+  border: 1px solid rgba(129, 198, 131, 0.2);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.ai-response :deep(th) {
+  background: rgba(129, 198, 131, 0.1);
+  color: #81c683;
+  font-weight: 600;
+}
+
+.ai-response :deep(tr:nth-child(even)) {
+  background: rgba(129, 198, 131, 0.05);
+}
+
+/* 亮色主题的Markdown样式 */
+.light .ai-response :deep(h1),
+.light .ai-response :deep(h2),
+.light .ai-response :deep(h3) {
+  color: #4CAF50;
+}
+
+.light .ai-response :deep(code) {
+  background: rgba(129, 198, 131, 0.2);
+  color: #388E3C;
+}
+
+.light .ai-response :deep(pre) {
+  background: rgba(248, 249, 250, 0.9);
+  border: 1px solid rgba(129, 198, 131, 0.3);
+  color: #333;
+}
+
+.light .ai-response :deep(pre code) {
+  color: #333;
+}
+
+.light .ai-response :deep(blockquote) {
+  border-left-color: #4CAF50;
+  background: rgba(129, 198, 131, 0.1);
+  color: #666;
+}
+
+.light .ai-response :deep(th) {
+  background: rgba(129, 198, 131, 0.1);
+  color: #4CAF50;
+}
+
+.light .ai-response :deep(tr:nth-child(even)) {
+  background: rgba(129, 198, 131, 0.05);
 }
 </style>
