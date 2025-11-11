@@ -121,8 +121,38 @@ const scrollToBottom = () => {
     }, 50);
   });
 };
+
+// 滚动到指定消息
+const scrollToMessage = (messageIndex) => {
+  nextTick(() => {
+    if (chatContainerRef.value) {
+      // 获取所有消息元素
+      const messageElements = chatContainerRef.value.querySelectorAll('.message');
+      
+      if (messageIndex >= 0 && messageIndex < messageElements.length) {
+        const targetElement = messageElements[messageIndex];
+        
+        // 滚动到目标元素
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        
+        // 添加高亮效果
+        targetElement.classList.add('highlighted');
+        
+        // 3秒后移除高亮效果
+        setTimeout(() => {
+          targetElement.classList.remove('highlighted');
+        }, 3000);
+      }
+    }
+  });
+};
+
 defineExpose({
-  scrollToBottom
+  scrollToBottom,
+  scrollToMessage
 });
 </script>
 
@@ -180,6 +210,12 @@ defineExpose({
   background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
   border: 1px solid rgba(129, 198, 131, 0.3);
   text-align: center;
+}
+
+.message.highlighted {
+  box-shadow: 0 0 0 2px rgba(129, 198, 131, 0.5);
+  transform: scale(1.02);
+  transition: all 0.3s ease;
 }
 
 .message-content {

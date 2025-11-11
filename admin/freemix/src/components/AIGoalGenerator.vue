@@ -37,7 +37,18 @@
           :isShowThinking="false" />
       </div>
     </n-modal>
+    
     <!-- AI聊天容器 -->
+
+    <!-- 历史记录快速访问 -->
+    <div class="history-quick-access">
+      <n-button @click="showHistory" quaternary size="small" class="history-button">
+        <template #icon>
+          <n-icon><Time /></n-icon>
+        </template>
+        历史记录
+      </n-button>
+    </div>
 
 
     <!-- AI生成结果展示 -->
@@ -59,6 +70,7 @@
 
         <n-space justify="end" class="confirmation-buttons">
           <n-button @click="resetGeneration">重新生成</n-button>
+          <n-button @click="saveForLater" :loading="isSaving">稍后决定</n-button>
           <n-button @click="confirmGoal" type="primary">确认创建</n-button>
         </n-space>
       </n-card>
@@ -76,11 +88,19 @@
     <!-- 目标确认模态框 -->
     <AIGoalConfirmation v-if="generatedGoal" v-model:show="showConfirmationModal" :ai-response="aiResponse"
       :user-question="userInput" @goal-created="handleGoalCreated" :subGoals="generatedGoal.childGoals" />
+
+    <!-- 历史记录弹窗 -->
+    <n-modal v-model:show="showHistoryModal" title="AI生成记录" style="width: 90%; height: 80vh;">
+      <div class="history-modal-content">
+        <AIGenHistory @record-used="handleRecordUsed" />
+      </div>
+    </n-modal>
   </div>
 </template>
 
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
+import { useRouter } from 'vue-router';
 import AIChatContainer from './AIChatContainer.vue';
 import {
   NEmpty,
@@ -98,8 +118,10 @@ import {
   useDialog
 } from 'naive-ui';
 import AIGoalConfirmation from '@/components/AIGoalConfirmation.vue';
+import AIGenHistory from '@/components/AIGenHistory.vue';
 import { parseAIResponseToSubGoals, extractGoalTitle } from '@/utils/aiGoalParser.js';
-import { ChatboxEllipsesSharp } from '@vicons/ionicons5';
+import { ChatboxEllipsesSharp, Time } from '@vicons/ionicons5';
+import { useStore } from 'vuex';
 // Props定义
 const props = defineProps({
   aiAssistantRef: {
@@ -112,6 +134,7 @@ const props = defineProps({
 const emit = defineEmits(['goal-created']);
 const chatMessages = ref([]);
 const showChatContainer = ref(false);
+const store = useStore();
 // 时间格式化函数
 const formatTime = (timestamp) => {
   const date = new Date(timestamp);
@@ -144,6 +167,8 @@ const generatedGoal = ref(null);
 const aiResponse = ref('');
 const errorMessage = ref('');
 const showConfirmationModal = ref(false);
+const isSaving = ref(false);
+const showHistoryModal = ref(false);
 
 // 生成目标
 const generateGoal = async () => {
@@ -251,6 +276,48 @@ const resetGeneration = () => {
   errorMessage.value = '';
 };
 
+// 稍后决定：保存生成记录
+const saveForLater = async () => {
+  if (!generatedGoal.value) return;
+  
+  isSaving.value = true;
+  try {
+    const saveData = {
+      userInput: userInput.value,
+      aiResponse: aiResponse.value,
+      goalTitle: generatedGoal.value.title,
+      childGoals: generatedGoal.value.childGoals,
+      chatMessages: chatMessages.value,
+    };
+    let data={
+      username:store.state.user.username,
+      saveData:saveData
+    }
+
+    const response = await fetch('/api/aiGen/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      window.$message?.success('记录已保存，30天内可随时决定是否使用');
+      resetGeneration();
+    } else {
+      window.$message?.error(result.message || '保存失败，请重试');
+    }
+  } catch (error) {
+    console.error('保存记录失败:', error);
+    window.$message?.error('保存失败，请检查网络连接');
+  } finally {
+    isSaving.value = false;
+  }
+};
+
 // 确认创建目标
 const confirmGoal = () => {
   showConfirmationModal.value = true;
@@ -262,6 +329,21 @@ const handleGoalCreated = (goal) => {
   resetGeneration();
   // 触发父组件的事件
   emit('goal-created', goal);
+};
+
+// 显示历史记录
+const showHistory = () => {
+  // 显示历史记录弹窗
+  showHistoryModal.value = true;
+};
+
+// 处理历史记录被使用
+const handleRecordUsed = (record) => {
+  showHistoryModal.value = false;
+  // 将历史记录填充到当前输入框
+  userInput.value = record.userInput;
+  // 可以选择自动开始生成或让用户手动点击生成
+  // 这里选择不自动生成，保持用户体验
 };
 </script>
 
@@ -336,5 +418,54 @@ const handleGoalCreated = (goal) => {
   /* height: 400px; */
   border-radius: 12px;
   /* overflow: hidden; */
+}
+
+.history-quick-access {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.history-button {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.history-button:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 暗色主题适配 */
+.dark .history-button {
+  background: rgba(45, 45, 45, 0.9);
+  color: #e0e0e0;
+}
+
+.dark .history-button:hover {
+  background: rgba(45, 45, 45, 1);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .history-quick-access {
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .history-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
+
+.history-modal-content {
+  height: 100%;
+  overflow: hidden;
 }
 </style>

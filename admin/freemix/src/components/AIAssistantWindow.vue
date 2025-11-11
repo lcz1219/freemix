@@ -84,8 +84,7 @@ onMounted(() => {
 
 <style scoped>
 .ai-menu-page {
-  padding-left: 20px;
-  padding-right: 20px;
+ 
   padding-top: 5px;
   height: calc(100vh - 60px);
   display: flex;

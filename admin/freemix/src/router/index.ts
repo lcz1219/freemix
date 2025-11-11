@@ -15,6 +15,8 @@ import MobileAddGoal from '@/views/mobile-add-goal.vue'
 import MobileSettings from '@/views/mobile-settings.vue'
 import MobileStatistics from '@/views/mobile-statistics.vue'
 import GitHubOAuthCallback from '@/views/github-oauth-callback.vue'
+import ShareView from '@/views/ShareView.vue';
+import AIGenHistory from '@/components/AIGenHistory.vue';
 import { isDesktop } from '@/utils/device.js'
 // import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -100,9 +102,22 @@ const routes = [
     component: GitHubOAuthCallback
   },
   {
+    path: '/share/:token',
+    name: 'ShareView',
+    component: ShareView,
+    props: true,
+    meta: { requiresAuth: false } // 分享页面不需要登录
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/views/Profile.vue')
+  },
+  {
+    path: '/ai-gen-history',
+    name: 'AIGenHistory',
+    component: AIGenHistory,
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -117,10 +132,18 @@ router.beforeEach(async (to, from, next) => {
   // 使用tokenUtils工具函数获取token（推荐）
   const token = await getToken();
   const isAuthenticated = !!token;
+  
   if(to.path==='/oauth/callback'){
     next()
     return
   }
+  
+  // 允许访问分享页面，无论是否已认证
+  if (to.path.startsWith('/share/')) {
+    next()
+    return
+  }
+  
   // 允许访问登录和注册页面，无论是否已认证
   if (to.path === '/login' || to.path === '/register') {
     // 如果已经登录，重定向到主页

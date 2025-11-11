@@ -19,29 +19,40 @@
       @goal-created="handleGoalCreated"
     /> -->
     
-    <AIChatContainer 
-    ref="chatContainerRef"
-      :chat-messages="chatMessages" 
-      :format-time="formatTime" 
-      @send-follow-up-question="sendFollowUpQuestion" 
-    />
-    
-    <div class="input-container">
-      <n-input 
-        v-model:value="userInput" 
-        type="textarea" 
-        placeholder="请输入您的问题..." 
-        :autosize="{ minRows: 3, maxRows: 6 }"
-        @keyup.enter="sendMessage"
+    <div class="chat-layout">
+      <!-- 历史记录侧边栏 -->
+      <HistorySidebar 
+        :chat-messages="chatMessages"
+        @scroll-to-history="handleScrollToHistory"
       />
-      <!-- <n-button 
-        type="primary" 
-        @click="sendMessage" 
-        :disabled="isSending"
-        class="send-button"
-      >
-        {{ isSending ? '发送中...' : '发送' }}
-      </n-button> -->
+      
+      <!-- 聊天容器 -->
+      <div class="chat-main">
+        <AIChatContainer 
+        ref="chatContainerRef"
+          :chat-messages="chatMessages" 
+          :format-time="formatTime" 
+          @send-follow-up-question="sendFollowUpQuestion" 
+        />
+        
+        <div class="input-container">
+          <n-input 
+            v-model:value="userInput" 
+            type="textarea" 
+            placeholder="请输入您的问题..." 
+            :autosize="{ minRows: 3, maxRows: 6 }"
+            @keyup.enter="sendMessage"
+          />
+          <!-- <n-button 
+            type="primary" 
+            @click="sendMessage" 
+            :disabled="isSending"
+            class="send-button"
+          >
+            {{ isSending ? '发送中...' : '发送' }}
+          </n-button> -->
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -50,6 +61,7 @@
 import { ref, inject, nextTick, onMounted, computed } from 'vue';
 import { NButton, NIcon, NInput, NSpin } from 'naive-ui';
 import AIChatContainer from './AIChatContainer.vue';
+import HistorySidebar from './HistorySidebar.vue';
 import { useStore } from 'vuex';
 import { postM, getM } from '@/utils/request.js';
 
@@ -293,6 +305,23 @@ const scrollToBottom = () => {
     
     
   })
+};
+
+// 处理历史记录导航
+const handleScrollToHistory = (historyIndex) => {
+  // 获取历史记录中对应的用户消息索引
+  const userMessages = chatMessages.value
+    .map((message, index) => ({ message, index }))
+    .filter(item => item.message.type === 'user');
+  
+  if (historyIndex >= 0 && historyIndex < userMessages.length) {
+    const messageIndex = userMessages[historyIndex].index;
+    
+    // 调用AIChatContainer的scrollToMessage方法
+    if (chatContainerRef.value && chatContainerRef.value.scrollToMessage) {
+      chatContainerRef.value.scrollToMessage(messageIndex);
+    }
+  }
 };
 
 // 关闭窗口
@@ -612,6 +641,19 @@ defineExpose({
   height: 32px;
 }
 
+.chat-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .chat-container {
   flex: 1;
   overflow-y: auto;
@@ -721,7 +763,7 @@ defineExpose({
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  margin: 16px;
+  margin: 16px 16px 0px 16px;
   background: rgba(129, 198, 131, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(129, 198, 131, 0.1);
