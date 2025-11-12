@@ -1,11 +1,18 @@
 <template>
-  <div class="user-guide-layout">
-    <!-- 顶部导航栏 -->
-    
-
-    <div class="guide-container">
+  <n-layout has-sider class="user-guide-layout">
+    <!-- 左侧导航栏 -->
+    <n-layout-sider
+      class="guide-sidebar"
+      bordered
+      collapse-mode="width"
+      :collapsed-width="64"
+      :width="260"
+      :collapsed="sidebarCollapsed"
+      show-trigger
+      @collapse="sidebarCollapsed = true"
+      @expand="sidebarCollapsed = false"
+    >
       <!-- 左侧导航菜单 -->
-      <div class="guide-sidebar">
         <div class="sidebar-header">
           <h3>功能导航</h3>
         </div>
@@ -84,49 +91,49 @@
             </n-button>
           </div>
         </div>
-      </div>
+    </n-layout-sider>
 
-      <!-- 右侧内容区域 -->
-      <div class="guide-main">
-        <!-- <div class="content-header">
-          <n-breadcrumb>
-            <n-breadcrumb-item @click="activeMenu = 'welcome'">首页</n-breadcrumb-item>
-            <n-breadcrumb-item>{{ getCurrentMenuTitle() }}</n-breadcrumb-item>
-          </n-breadcrumb>
-          <div class="header-actions">
-            <n-button text @click="printGuide">
-              <n-icon size="18"><PrintOutline /></n-icon>
-              打印
-            </n-button>
-            <n-button text @click="downloadGuide">
-              <n-icon size="18"><DownloadOutline /></n-icon>
-              下载
-            </n-button>
-          </div>
-        </div> -->
+    <!-- 右侧内容区域 -->
+    <n-layout-content class="guide-main">
+      <!-- <div class="content-header">
+        <n-breadcrumb>
+          <n-breadcrumb-item @click="activeMenu = 'welcome'">首页</n-breadcrumb-item>
+          <n-breadcrumb-item>{{ getCurrentMenuTitle() }}</n-breadcrumb-item>
+        </n-breadcrumb>
+        <div class="header-actions">
+          <n-button text @click="printGuide">
+            <n-icon size="18"><PrintOutline /></n-icon>
+            打印
+          </n-button>
+          <n-button text @click="downloadGuide">
+            <n-icon size="18"><DownloadOutline /></n-icon>
+            下载
+          </n-button>
+        </div>
+      </div> -->
 
-        <div class="guide-content-wrapper">
-          <!-- 欢迎页面 -->
-          <div v-if="activeMenu === 'welcome'" class="guide-section">
-            <!-- 英雄区域 -->
-            <div class="hero-section">
-              <div class="hero-background">
-                <div class="floating-shapes">
-                  <div class="shape shape-1"></div>
-                  <div class="shape shape-2"></div>
-                  <div class="shape shape-3"></div>
-                </div>
+      <div class="guide-content-wrapper">
+        <!-- 欢迎页面 -->
+        <div v-if="activeMenu === 'welcome'" class="guide-section">
+          <!-- 英雄区域 -->
+          <div class="hero-section">
+            <div class="hero-background">
+              <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
               </div>
-              <div class="hero-content">
-                <div class="hero-icon animate-bounce">
-                  <div class="icon-container">
-                    <n-icon size="72" color="#81c683" class="pulse-animation">
-                      <HomeOutline />
-                    </n-icon>
-                  </div>
+            </div>
+            <div class="hero-content">
+              <!-- <div class="hero-icon animate-bounce">
+                <div class="icon-container">
+                  <n-icon size="72" color="#81c683" class="pulse-animation">
+                    <HomeOutline />
+                  </n-icon>
                 </div>
-                <h1 class="hero-title animate-fade-in-up">欢迎使用 FreeMix</h1>
-                <p class="hero-subtitle animate-fade-in-up" style="animation-delay: 0.2s">智能目标管理系统，让目标管理变得简单高效</p>
+              </div> -->
+              <h1 class="hero-title animate-fade-in-up">欢迎使用 FreeMix</h1>
+              <p class="hero-subtitle animate-fade-in-up" style="animation-delay: 0.2s">智能目标管理系统，让目标管理变得简单高效</p>
                 <div class="hero-stats">
                   <div class="stat-item animate-fade-in-up" style="animation-delay: 0.4s">
                     <div class="stat-number">100K+</div>
@@ -206,155 +213,7 @@
 
 
 
-            <div class="quick-start-section">
-              <div class="section-title">
-                <h2>快速开始</h2>
-                <p>几分钟内上手 FreeMix</p>
-              </div>
-              <div class="steps-container">
-                <n-steps :current="demoStep - 1" size="small" class="quick-steps">
-                  <n-step title="注册账户" description="创建您的FreeMix账户" />
-                  <n-step title="设置个人资料" description="完善您的个人信息" />
-                  <n-step title="创建第一个目标" description="使用AI助手或手动创建目标" />
-                  <n-step title="跟踪进度" description="实时监控目标完成情况" />
-                </n-steps>
-                
-                <!-- 交互式演示控制台 -->
-                <div class="demo-console">
-                  <div class="demo-header">
-                    <div class="demo-title">
-                      <n-icon size="20" color="#81c683"><PlayCircleOutline /></n-icon>
-                      交互式演示 - 第 {{ demoStep }} 步
-                    </div>
-                    <div class="demo-controls">
-                      <n-button-group size="small">
-                        <n-button @click="previousDemoStep" :disabled="demoStep <= 1">
-                          <n-icon size="14"><ChevronBackOutline /></n-icon>
-                          上一步
-                        </n-button>
-                        <n-button @click="nextDemoStep" :disabled="demoStep >= 4">
-                          下一步
-                          <n-icon size="14"><ChevronForwardOutline /></n-icon>
-                        </n-button>
-                      </n-button-group>
-                    </div>
-                  </div>
-                  
-                  <!-- 演示内容区域 -->
-                  <div class="demo-content">
-                    <div v-if="demoStep === 1" class="demo-step">
-                      <div class="demo-step-icon">
-                        <n-icon size="48" color="#81c683"><PersonAddOutline /></n-icon>
-                      </div>
-                      <h4>注册账户</h4>
-                      <p>创建您的FreeMix账户，开始目标管理之旅</p>
-                      <div class="demo-features">
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          支持邮箱注册
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          GitHub一键登录
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          邮箱验证保护
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div v-if="demoStep === 2" class="demo-step">
-                      <div class="demo-step-icon">
-                        <n-icon size="48" color="#81c683"><SettingsOutline /></n-icon>
-                      </div>
-                      <h4>设置个人资料</h4>
-                      <p>完善个人信息，获得个性化体验</p>
-                      <div class="demo-features">
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          头像和个人简介
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          偏好设置
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          通知和提醒
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div v-if="demoStep === 3" class="demo-step">
-                      <div class="demo-step-icon">
-                        <n-icon size="48" color="#81c683"><TargetOutline /></n-icon>
-                      </div>
-                      <h4>创建第一个目标</h4>
-                      <p>使用AI助手或手动创建您的第一个目标</p>
-                      <div class="demo-features">
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          AI智能生成目标
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          SMART目标原则
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          自定义分类标签
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div v-if="demoStep === 4" class="demo-step">
-                      <div class="demo-step-icon">
-                        <n-icon size="48" color="#81c683"><BarChartOutline /></n-icon>
-                      </div>
-                      <h4>跟踪进度</h4>
-                      <p>实时监控目标完成情况，保持动力</p>
-                      <div class="demo-features">
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          可视化进度图表
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          智能提醒系统
-                        </div>
-                        <div class="feature-item">
-                          <n-icon size="16" color="#52c41a"><CheckmarkOutline /></n-icon>
-                          完成成就奖励
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- 进度条动画 -->
-                  <div class="demo-progress">
-                    <div class="progress-label">完成度: {{ Math.round((demoStep / 4) * 100) }}%</div>
-                    <n-progress 
-                      type="line" 
-                      :percentage="(demoStep / 4) * 100" 
-                      :show-indicator="false"
-                      :status="demoStep === 4 ? 'success' : 'default'"
-                      :height="8"
-                    />
-                  </div>
-                </div>
-                
-                <div class="step-actions">
-                  <n-button type="primary" size="large" class="btn-primary-gradient" @click="navigateTo('auth')">
-                    <n-icon size="18"><FlashOutline /></n-icon>
-                    立即开始
-                  </n-button>
-                  <n-button size="large" @click="resetDemo">
-                    重新演示
-                  </n-button>
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           <!-- 其他页面内容保持不变 -->
@@ -1154,9 +1013,9 @@
           </div>
 
         </div>
-      </div>
-    </div>
-  </div>
+      </n-layout-content>
+    </n-layout>
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
@@ -1185,6 +1044,9 @@ const message = useMessage();
 // 当前主题状态
 const currentTheme = ref('dark');
 const activeMenu = ref('welcome');
+
+// 侧边栏折叠状态
+const sidebarCollapsed = ref(false);
 
 // 菜单配置
 const menuOptions = computed(() => [
@@ -1465,11 +1327,12 @@ onMounted(() => {
 <style scoped>
 /* 整体布局 */
 .user-guide-layout {
-  height: 100%;
+  height: calc(100vh - 94px);
   background: #121212;
   color: #e0e0e0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  overflow: hidden;
 }
 
 /* 英雄区域动画样式 */
@@ -1922,9 +1785,14 @@ onMounted(() => {
   width: 260px;
   background: #1e1e1e;
   border-right: 1px solid #333333;
-  padding: 24px 0;
-  overflow-y: auto;
+  padding: 6% 0;
+  overflow-x: hidden;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  height: 100vh;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -1942,6 +1810,7 @@ onMounted(() => {
   margin-top: auto;
   padding: 20px;
   border-top: 1px solid #333333;
+  flex-shrink: 0;
 }
 
 .help-section h4 {
@@ -2026,7 +1895,18 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  /* 确保内容区域不会被遮挡 */
+  width: calc(100vw - 260px) !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 确保n-layout-content样式正确 */
+:deep(.n-layout-content) {
+  flex: 1;
   overflow: hidden;
 }
 
@@ -2473,23 +2353,35 @@ kbd {
 
 /* 响应式设计 */
 @media (max-width: 1024px) {
+  .guide-sidebar {
+    position: static;
+    height: auto;
+    width: 100%;
+    left: 0;
+    z-index: auto;
+  }
+  
+  .guide-main {
+    margin-left: 0;
+  }
+  
   .guide-container {
     flex-direction: column;
   }
   
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 适配现有导航栏的不同状态 */
+@media (max-width: 1200px) {
   .guide-sidebar {
-    width: 100%;
-    height: auto;
-    position: static;
-    order: 2;
+    left: 220px; /* 对应NavBar展开状态 */
   }
   
   .guide-main {
-    order: 1;
-  }
-  
-  .features-grid {
-    grid-template-columns: 1fr;
+    margin-left: 480px;
   }
 }
 
