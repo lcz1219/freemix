@@ -26,14 +26,11 @@
                 </n-button>
                 <n-button size="large" round @click="showGuide">
                   <template #icon>
-                    <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                        fill="currentColor">
-                        <path
-                          d="M13.5,4.5c0,0.8-0.7,1.5-1.5,1.5s-1.5-0.7-1.5-1.5S11.2,3,12,3S13.5,3.7,13.5,4.5z M13.5,12c0,0.8-0.7,1.5-1.5,1.5 s-1.5-0.7-1.5-1.5S11.2,10.5,12,10.5S13.5,11.2,13.5,12z M13.5,19.5c0,0.8-0.7,1.5-1.5,1.5s-1.5-0.7-1.5-1.5s0.7-1.5,1.5-1.5 S13.5,18.7,13.5,19.5z">
-                        </path>
-                      </svg></n-icon>
+                   <n-icon size="24" >
+            <LogoReddit />
+          </n-icon>
                   </template>
-                  使用指南
+                  AI助手
                 </n-button>
               </div>
             </section>
@@ -555,10 +552,11 @@ import {
 import StatsOverview from '@/components/StatsOverview.vue';
 import RecentGoals from '@/components/RecentGoals.vue';
 import { CanvasRenderer } from 'echarts/renderers';
-import { AccessibilitySharp, CalendarSharp } from '@vicons/ionicons5';
+import { AccessibilitySharp, CalendarSharp,LogoReddit } from '@vicons/ionicons5';
 import { useRouter } from 'vue-router'
 import { getMPaths, isSuccess } from '@/utils/request'
 import { useStore } from 'vuex'
+import { createNewWindow, generateWindowId } from '@/utils/utilsWindowManager.js'
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 
@@ -801,8 +799,18 @@ const addGoal = () => {
 };
 
 // 显示使用指南
-const showGuide = () => {
-  showGuideModal.value = true;
+const showGuide = async () => {
+  const windowId = generateWindowId();
+  try {
+    await createNewWindow(windowId, {
+      width: 500,
+      height: 700,
+      minWidth: 400,
+      minHeight: 500
+    }, '/AIAssistantWindow');
+  } catch (error) {
+    console.error('创建AI助手窗口失败:', error);
+  }
 };
 
 // 重置指南

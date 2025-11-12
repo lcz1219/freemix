@@ -4,7 +4,7 @@
     :mask-closable="false"
     preset="card"
     title="确认创建目标"
-    style="width: 800px; max-width: 90vw"
+    style="width: 800px; max-width: 95vw; height: 80vh;"
     :bordered="false"
     class="ai-goal-confirmation-modal"
   >
@@ -25,50 +25,51 @@
           v-model:value="goalData.description" 
           type="textarea"
           placeholder="请输入目标描述（可选）"
-          :autosize="{ minRows: 2, maxRows: 4 }"
+          :autosize="{ minRows: 2, maxRows: 3 }"
         />
       </n-form-item>
       
       <!-- 子目标列表 -->
       <n-form-item label="子目标">
-        <n-dynamic-input
-          v-model:value="goalData.childGoals"
-          preset="pair"
-          key-placeholder="子目标内容"
-          :min="1"
-          :max="50"
-        >
-          <template #default="{ value }">
-            <n-input 
-              v-model:value="value.message" 
-              type="textarea"
-              placeholder="请输入子目标内容"
-              :autosize="{ minRows: 2, maxRows: 4 }"
-            />
-          </template>
-        </n-dynamic-input>
+        <div class="sub-goals-container">
+          <n-dynamic-input
+            v-model:value="goalData.childGoals"
+            preset="pair"
+            key-placeholder="子目标内容"
+            :min="1"
+            :max="10"
+          >
+            <template #default="{ value }">
+              <n-input 
+                v-model:value="value.message" 
+                type="textarea"
+                placeholder="请输入子目标内容"
+                :autosize="{ minRows: 1, maxRows: 3 }"
+              />
+            </template>
+          </n-dynamic-input>
+        </div>
       </n-form-item>
       
       <!-- 其他设置 -->
-      <n-grid :cols="2" :x-gap="12">
-        <n-gi>
-          <n-form-item label="截止日期">
-            <n-date-picker 
-              v-model:value="goalData.deadline" 
-              type="date" 
-              clearable
-            />
-          </n-form-item>
-        </n-gi>
-        <n-gi>
-          <n-form-item label="优先级">
-            <n-select
-              v-model:value="goalData.level"
-              :options="priorityOptions"
-            />
-          </n-form-item>
-        </n-gi>
-      </n-grid>
+      <div class="other-settings">
+        <n-form-item label="截止日期" class="setting-item">
+          <n-date-picker 
+            v-model:value="goalData.deadline" 
+            type="date" 
+            clearable
+            style="width: 100%;"
+          />
+        </n-form-item>
+        
+        <n-form-item label="优先级" class="setting-item">
+          <n-select
+            v-model:value="goalData.level"
+            :options="priorityOptions"
+            style="width: 100%;"
+          />
+        </n-form-item>
+      </div>
       
       <n-form-item label="标签">
         <n-dynamic-tags v-model:value="goalData.tags" />
@@ -113,10 +114,6 @@ const props = defineProps({
     default: false
   },
   aiResponse: {
-    type: String,
-    default: ''
-  },
-  subGoals: {
     type: String,
     default: ''
   },
@@ -173,9 +170,7 @@ watch(showModal, (newVal) => {
 // 初始化目标数据
 const initializeGoalData = () => {
   // 解析AI响应为子目标
-  const subGoals = props.subGoals
-  console.log("initializeGoalData,subGoals:", subGoals);
-  
+  const subGoals = parseAIResponseToSubGoals(props.aiResponse)
   
   // 提取目标标题
   const title = extractGoalTitle(props.aiResponse, props.userQuestion)
@@ -265,22 +260,23 @@ const confirm = async () => {
 
 <style scoped>
 .ai-goal-confirmation-modal {
-  color: white;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .confirmation-content {
   padding: 16px 0;
+  max-height: 60vh;
 }
 
 .confirmation-content :deep(.n-form-item) {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .confirmation-content :deep(.n-form-item-label) {
   font-weight: 500;
-  color: #e5e0e0;
+  color: #333;
+  font-size: 14px;
 }
 
 .confirmation-content :deep(.n-form-item-label)::after {
@@ -290,5 +286,74 @@ const confirm = async () => {
 
 .dark .confirmation-content :deep(.n-form-item-label) {
   color: #e0e0e0;
+}
+
+/* 子目标容器优化 */
+.sub-goals-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sub-goals-container :deep(.n-dynamic-input) {
+  width: 100%;
+}
+
+.sub-goals-container :deep(.n-dynamic-input-item) {
+  margin-bottom: 8px;
+}
+
+/* 其他设置布局 */
+.other-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.setting-item {
+  margin-bottom: 0;
+}
+
+.setting-item :deep(.n-form-item-label) {
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ai-goal-confirmation-modal {
+    width: 95vw !important;
+    height: 90vh !important;
+  }
+  
+  .confirmation-content {
+    padding: 12px 0;
+    max-height: 65vh;
+  }
+  
+  .other-settings {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .confirmation-content :deep(.n-form-item) {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-goal-confirmation-modal {
+    width: 98vw !important;
+    height: 95vh !important;
+  }
+  
+  .confirmation-content {
+    padding: 8px 0;
+    max-height: 70vh;
+  }
+  
+  .confirmation-content :deep(.n-form-item) {
+    margin-bottom: 8px;
+  }
 }
 </style>

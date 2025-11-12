@@ -118,6 +118,12 @@ const routes = [
     name: 'AIGenHistory',
     component: AIGenHistory,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-guide',
+    name: 'UserGuide',
+    component: () => import('@/views/user-guide.vue'),
+    meta: { requiresAuth: false }
   }
 ]
 

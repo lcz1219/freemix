@@ -114,23 +114,7 @@
       </div>
     </n-card>
 
-    <!-- 确认模态框 -->
-    <n-modal v-model:show="showConfirmModal" preset="dialog" title="确认使用记录">
-      <n-form>
-        <n-form-item label="目标标题">
-          <n-input :value="selectedRecord?.goalTitle" disabled />
-        </n-form-item>
-        <n-form-item label="用户输入">
-          <n-input :value="selectedRecord?.userInput" type="textarea" disabled />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-space>
-          <n-button @click="showConfirmModal = false">取消</n-button>
-          <n-button @click="confirmRecord" type="primary">确认使用</n-button>
-        </n-space>
-      </template>
-    </n-modal>
+    <!-- 使用AIGoalConfirmation组件显示确认框 -->
   </div>
 </template>
 
@@ -181,7 +165,7 @@ const props = defineProps({
 const store = useStore()
 
 // Emits
-const emit = defineEmits(['record-used']);
+const emit = defineEmits(['record-used', 'show-confirmation']);
 
 // 响应式数据
 const history = ref([]);
@@ -271,7 +255,7 @@ const getActionOptions = (record) => {
   options.push({ label: '生成分享链接', key: 'share' });
   
   // 查看详情
-  options.push({ label: '查看详情', key: 'view' });
+  // options.push({ label: '查看详情', key: 'view' });
   
   // 删除
   if (record.status === 'pending') {
@@ -287,7 +271,7 @@ const handleAction = async (action, record) => {
   
   switch (action) {
     case 'confirm':
-      showConfirmModal.value = true;
+     await confirmRecord()
       break;
     case 'share':
       await shareRecord(record);
@@ -322,6 +306,11 @@ const confirmRecord = async () => {
     console.error('确认记录失败:', error);
     message.error('确认失败');
   }
+  // 显示确认模态框传递数据给AIGoalConfirmation组件
+  showConfirmModal.value = false;
+  
+  // 触发父组件显示AIGoalConfirmation组件
+  emit('show-confirmation', selectedRecord.value);
 };
 
 // 方法：分享记录
@@ -439,6 +428,7 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 
 .search-section {
@@ -490,7 +480,7 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #f7f0f0;
 }
 
 .record-actions {
@@ -500,7 +490,7 @@ onMounted(() => {
 }
 
 .record-description {
-  color: #666;
+  color: #e6e0e0;
   margin: 8px 0;
   line-height: 1.5;
 }

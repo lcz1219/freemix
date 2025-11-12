@@ -35,7 +35,7 @@
           
           <div class="share-footer">
             <p class="share-time">创建时间：{{ formatDate(sharedRecord.createdAt) }}</p>
-            <div class="share-actions">
+            <!-- <div class="share-actions">
               <n-button @click="generateSimilar" type="primary">
                 <template #icon>
                   <n-icon><Sparkles /></n-icon>
@@ -48,7 +48,7 @@
                 </template>
                 返回首页
               </n-button>
-            </div>
+            </div> -->
           </div>
         </div>
       </n-card>

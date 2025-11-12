@@ -92,7 +92,8 @@ import {
   Desktop,
   ChatboxEllipses,
   ChevronBack,
-  ChevronForward
+  ChevronForward,
+  HelpCircleOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
@@ -184,6 +185,11 @@ const IconLoginLog = () => {
    { onClick: () => { loading(); router.push("/login-log");loadingfinish() }, style: 'width:100%' },
     { default: () => [h(NIcon, null, { default: () => h(IdCardSharp) }), '登录日志'] })
 }
+const IconUserGuide = () => {
+  return h(NButton,
+   { onClick: () => { loading(); router.push("/user-guide");loadingfinish() }, style: 'width:100%' },
+    { default: () => [h(NIcon, null, { default: () => h(HelpCircleOutline) }), '使用指引'] })
+}
 const options = [
   {
     key: 'header',
@@ -212,10 +218,12 @@ const options = [
   },
   {
     type: 'render',
-    key: ' setting',
-    props: {
-      type: 'error'
-    },
+    key: 'user-guide',
+    render: IconUserGuide
+  },
+  {
+    type: 'render',
+    key: 'setting',
     render: IconSetting
   },
   {

@@ -90,9 +90,14 @@
     <!-- 历史记录弹窗 -->
     <n-modal v-model:show="showHistoryModal" title="AI生成记录" style="width: 90%; height: 80vh;">
       <div class="history-modal-content">
-        <AIGenHistory @record-used="handleRecordUsed" />
+        <AIGenHistory @record-used="handleRecordUsed" @show-confirmation="handleShowConfirmation" />
       </div>
     </n-modal>
+    
+    <!-- 目标确认模态框（处理历史记录确认） -->
+    <AIGoalConfirmation  v-model:show="showHistoryConfirmation" 
+      :ai-response="historyRecord.aiResponse" :sub-goals="historyRecord.subGoals" 
+      :user-question="historyRecord.userQuestion" @goal-created="handleHistoryGoalCreated" />
   </div>
 </template>
 
@@ -168,6 +173,10 @@ const errorMessage = ref('');
 const showConfirmationModal = ref(false);
 const isSaving = ref(false);
 const showHistoryModal = ref(false);
+
+// 处理历史记录确认的数据
+const showHistoryConfirmation = ref(false);
+const historyRecord = ref({});
 
 // 生成目标
 const generateGoal = async () => {
@@ -337,6 +346,38 @@ const handleRecordUsed = (record) => {
   userInput.value = record.userInput;
   // 可以选择自动开始生成或让用户手动点击生成
   // 这里选择不自动生成，保持用户体验
+};
+
+// 处理显示历史记录确认框
+const handleShowConfirmation = (record) => {
+  console.log('handleShowConfirmation, record:', record);
+  
+  // 组装传递给AIGoalConfirmation的数据格式
+  historyRecord.value = {
+    aiResponse: record.aiResponse ,
+    subGoals: record.childGoals ? record.childGoals: [],
+    userQuestion: record.userInput || record.goalTitle
+  };
+  
+  // 显示确认模态框
+  showHistoryConfirmation.value = true;
+  showHistoryModal.value = false;
+};
+
+// 处理历史记录确认后创建目标
+const handleHistoryGoalCreated = (goalObject) => {
+  console.log('handleHistoryGoalCreated:', goalObject);
+  
+  // 关闭确认模态框
+  showHistoryConfirmation.value = false;
+  
+  // 显示成功消息
+  
+  // 重置历史记录数据
+  historyRecord.value = {};
+  
+  // 可以选择性地触发父组件的goal-created事件
+  emit('goal-created', goalObject);
 };
 </script>
 
