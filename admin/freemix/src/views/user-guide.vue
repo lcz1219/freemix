@@ -116,50 +116,7 @@
         <!-- 欢迎页面 -->
         <div v-if="activeMenu === 'welcome'" class="guide-section">
           <!-- 英雄区域 -->
-          <div class="hero-section">
-            <div class="hero-background">
-              <div class="floating-shapes">
-                <div class="shape shape-1"></div>
-                <div class="shape shape-2"></div>
-                <div class="shape shape-3"></div>
-              </div>
-            </div>
-            <div class="hero-content">
-              <!-- <div class="hero-icon animate-bounce">
-                <div class="icon-container">
-                  <n-icon size="72" color="#81c683" class="pulse-animation">
-                    <HomeOutline />
-                  </n-icon>
-                </div>
-              </div> -->
-              <h1 class="hero-title animate-fade-in-up">欢迎使用 FreeMix</h1>
-              <p class="hero-subtitle animate-fade-in-up" style="animation-delay: 0.2s">智能目标管理系统，让目标管理变得简单高效</p>
-                <div class="hero-stats">
-                  <div class="stat-item animate-fade-in-up" style="animation-delay: 0.4s">
-                    <div class="stat-number">100K+</div>
-                    <div class="stat-label">活跃用户</div>
-                  </div>
-                  <div class="stat-item animate-fade-in-up" style="animation-delay: 0.5s">
-                    <div class="stat-number">500K+</div>
-                    <div class="stat-label">已实现目标</div>
-                  </div>
-                  <div class="stat-item animate-fade-in-up" style="animation-delay: 0.6s">
-                    <div class="stat-number">98%</div>
-                    <div class="stat-label">用户满意度</div>
-                  </div>
-                </div>
-                <div class="hero-actions animate-fade-in-up" style="animation-delay: 0.8s">
-                  <n-button type="primary" size="large" class="btn-primary-gradient" @click="navigateTo('auth')">
-                    <n-icon size="20"><FlashOutline /></n-icon>
-                    开始使用
-                  </n-button>
-                  <n-button size="large" class="btn-secondary-outline" @click="navigateTo('faq')">
-                    <n-icon size="18"><HelpCircleOutline /></n-icon>
-                    常见问题
-                  </n-button>
-                </div>
-              </div>
-            </div>
+        
 
             <!-- 功能特色展示 -->
             <div class="features-showcase">
@@ -1692,26 +1649,7 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .demo-header {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
-  
-  .demo-controls {
-    justify-content: center;
-  }
-  
-  .demo-content {
-    padding: 24px 16px;
-  }
-  
-  .demo-features {
-    max-width: 100%;
-  }
-}
+
 
 /* 顶部导航栏样式 */
 .guide-header {
@@ -2352,30 +2290,10 @@ kbd {
 }
 
 /* 响应式设计 */
-@media (max-width: 1024px) {
-  .guide-sidebar {
-    position: static;
-    height: auto;
-    width: 100%;
-    left: 0;
-    z-index: auto;
-  }
-  
-  .guide-main {
-    margin-left: 0;
-  }
-  
-  .guide-container {
-    flex-direction: column;
-  }
-  
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-}
+
 
 /* 适配现有导航栏的不同状态 */
-@media (max-width: 1200px) {
+
   .guide-sidebar {
     left: 220px; /* 对应NavBar展开状态 */
   }
@@ -2383,91 +2301,8 @@ kbd {
   .guide-main {
     margin-left: 480px;
   }
-}
 
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    height: auto;
-    padding: 10px 0;
-    gap: 10px;
-  }
-  
-  .header-left,
-  .header-center,
-  .header-right {
-    flex: none;
-    justify-content: center;
-  }
-  
-  .guide-title {
-    font-size: 20px;
-  }
-  
-  .guide-content-wrapper {
-    padding: 20px;
-  }
-  
-  .hero-section {
-    padding: 40px 20px;
-  }
-  
-  .hero-title {
-    font-size: 32px;
-  }
-  
-  .hero-subtitle {
-    font-size: 16px;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .content-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  
-  .header-actions {
-    align-self: flex-end;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-  
-  .goal-types {
-    grid-template-columns: 1fr;
-  }
-  
-  .quick-start-section {
-    padding: 24px;
-  }
-}
 
-@media (max-width: 480px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .feature-card {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .hero-title {
-    font-size: 28px;
-  }
-  
-  .section-title h2 {
-    font-size: 28px;
-  }
-}
 
 /* 主题适配样式 */
 .dark-theme {
@@ -2518,10 +2353,10 @@ kbd {
   background: transparent;
 }
 
-.guide-section {
+/* .guide-section {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-}
+} */
 
 .section-title {
   color: var(--text-primary);
