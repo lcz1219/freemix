@@ -67,6 +67,13 @@
           <span class="nav-text" v-if="!isCollapsed">用户</span>
         </n-button>
       </n-dropdown>
+       <n-button class="nav-link footer-button" :class="{ active: activeTab === 'user-guide' }" :title="isCollapsedTitle('使用指引')"
+        @click="goTo('/user-guide')">
+        <NIcon class="icon">
+          <HelpCircleOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">使用指引</span>
+      </n-button>
 
     </div>
   </div>
@@ -216,11 +223,11 @@ const options = [
     },
     render: IconLogout
   },
-  {
-    type: 'render',
-    key: 'user-guide',
-    render: IconUserGuide
-  },
+  // {
+  //   type: 'render',
+  //   key: 'user-guide',
+  //   render: IconUserGuide
+  // },
   {
     type: 'render',
     key: 'setting',
