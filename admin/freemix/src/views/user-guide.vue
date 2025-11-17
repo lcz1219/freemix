@@ -976,7 +976,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, h } from 'vue';
+import { ref, onMounted, onUnmounted, computed, h, watch    ,inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessage } from 'naive-ui';
 import {
@@ -997,9 +997,10 @@ import {
 
 const router = useRouter();
 const message = useMessage();
+const isDark = inject('isDark', ref(true))
 
-// 当前主题状态
-const currentTheme = ref('dark');
+// 当前主题状态（与isDark保持同步）
+const currentTheme = computed(() => isDark.value ? 'dark' : 'light');
 const activeMenu = ref('welcome');
 
 // 侧边栏折叠状态
