@@ -14,6 +14,21 @@ export default defineConfig({
     vueJsx(),
     vueDevTools(),
   ],
+  css: {
+    preprocessorOptions: {
+      less: {
+        modifyVars: {
+          'green': '#00c9a7',
+          // 其他自定义变量
+          'blue': '#00c9a7',
+          'button-primary-background-color': '#00c9a7',
+          'button-primary-border-color': '#00c9a7',
+        },
+        javascriptEnabled: true,
+        additionalData: `@import "@/assets/vant-theme.less";`,
+      },
+    },
+  },
    server: {
     proxy: {
       '/freemix': { // 拦截所有以 /freemix 开头的请求

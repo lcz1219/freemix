@@ -8,12 +8,8 @@ import GoalManagement from '@/views/goal-management.vue'
 import Statistics from '@/views/statistics.vue'
 import Settings from '@/views/settings.vue'
 import LoginLog from '@/views/login-log.vue'
-import MobileLogin from '@/views/mobile-login.vue'
-import MobileRegister from '@/views/mobile-register.vue'
-import MobileHome from '@/views/mobile-home.vue'
-import MobileAddGoal from '@/views/mobile-add-goal.vue'
-import MobileSettings from '@/views/mobile-settings.vue'
-import MobileStatistics from '@/views/mobile-statistics.vue'
+import MobileExample from '@/views/mobile-example.vue'
+import MobileVantHome from '@/views/mobile-vant-home.vue'
 import GitHubOAuthCallback from '@/views/github-oauth-callback.vue'
 import ShareView from '@/views/ShareView.vue';
 import AIGenHistory from '@/components/AIGenHistory.vue';
@@ -50,26 +46,22 @@ const routes = [
     name: 'AIAssistantWindow',
     component: () => import('@/components/AIAssistantWindow.vue'),
   },
-  { 
-    path: '/login', 
-    component: getComponent(Login, MobileLogin),
-    name: 'Login'
-  },
-  { 
-    path: '/register', 
-    component: getComponent(Register, MobileRegister),
-    name: 'Register'
-  },
   { path: '/', redirect: '/login' },
   { 
     path: '/home', 
     name: 'Home', 
-    component: getComponent(HomePage, MobileHome) 
+    component: getComponent(HomePage, MobileVantHome) 
   },
+  { 
+    path: '/example', 
+    name: 'Example', 
+    component: getComponent(null, MobileExample) 
+  },
+  
   { 
     path: '/add-goal', 
     name: 'AddGoal', 
-    component: getComponent(AddGoal, MobileAddGoal) 
+    component: getComponent(AddGoal, null) 
   },
   { 
     path: '/goal-management', 
@@ -84,12 +76,12 @@ const routes = [
   { 
     path: '/statistics', 
     name: 'Statistics', 
-    component: getComponent(Statistics, MobileStatistics) 
+    component: getComponent(Statistics, null) 
   },
   { 
     path: '/settings', 
     name: 'Settings', 
-    component: getComponent(Settings, MobileSettings) 
+    component: getComponent(Settings, null) 
   },
   { 
     path: '/login-log', 

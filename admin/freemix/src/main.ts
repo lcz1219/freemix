@@ -8,6 +8,7 @@ import './assets/main.css'
 // 引入 Vant 组件库
 import Vant from 'vant'
 import 'vant/lib/index.css'
+import './assets/vant-theme.less'
 
 // 引入 Element Plus 组件库
 import ElementPlus from 'element-plus'
