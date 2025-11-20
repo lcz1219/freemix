@@ -34,7 +34,7 @@
           <div class="core-features-grid">
             <div class="core-feature-item" @click="navigateTo('auth')">
               <div class="core-feature-icon">
-                <n-icon size="20" :color="getIconColor()"><PersonCircleOutline /></n-icon>
+                <n-icon size="20" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><PersonCircleOutline /></n-icon>
               </div>
               <div class="core-feature-content">
                 <span>用户认证</span>
@@ -42,7 +42,7 @@
             </div>
             <div class="core-feature-item" @click="navigateTo('goals')">
               <div class="core-feature-icon">
-                <n-icon size="20" :color="getIconColor()"><FlagOutline /></n-icon>
+                <n-icon size="20" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><FlagOutline /></n-icon>
               </div>
               <div class="core-feature-content">
                 <span>目标管理</span>
@@ -50,7 +50,7 @@
             </div>
             <div class="core-feature-item" @click="navigateTo('ai')">
               <div class="core-feature-icon">
-                <n-icon size="20" :color="getIconColor()"><LogoReddit /></n-icon>
+                <n-icon size="20" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><LogoReddit /></n-icon>
               </div>
               <div class="core-feature-content">
                 <span>AI助手</span>
@@ -58,7 +58,7 @@
             </div>
             <div class="core-feature-item" @click="navigateTo('statistics')">
               <div class="core-feature-icon">
-                <n-icon size="20" :color="getIconColor()"><BarChartOutline /></n-icon>
+                <n-icon size="20" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><BarChartOutline /></n-icon>
               </div>
               <div class="core-feature-content">
                 <span>数据分析</span>
@@ -66,7 +66,7 @@
             </div>
             <div class="core-feature-item" @click="navigateTo('collaboration')">
               <div class="core-feature-icon">
-                <n-icon size="20" :color="getIconColor()"><PeopleOutline /></n-icon>
+                <n-icon size="20" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><PeopleOutline /></n-icon>
               </div>
               <div class="core-feature-content">
                 <span>团队协作</span>
@@ -74,7 +74,7 @@
             </div>
             <div class="core-feature-item" @click="navigateTo('settings')">
               <div class="core-feature-icon">
-                <n-icon size="20" :color="getIconColor()"><SettingsOutline /></n-icon>
+                <n-icon size="20" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><SettingsOutline /></n-icon>
               </div>
               <div class="core-feature-content">
                 <span>个性化设置</span>
@@ -86,7 +86,10 @@
           <div class="help-section">
             <h4>需要帮助？</h4>
             <p>联系客服或查看文档获取更多支持</p>
-            <n-button type="primary" size="small" class="help-button">
+            <n-button type="primary" size="small" class="help-button" :color="isDark ? '#00c9a7' : '#008c72'">
+              <template #icon>
+                <n-icon><HelpCircleOutline /></n-icon>
+              </template>
               获取帮助
             </n-button>
           </div>
@@ -127,42 +130,42 @@
               <div class="features-grid-enhanced">
                 <div class="feature-card-enhanced">
                   <div class="feature-icon-enhanced">
-                    <n-icon size="40" :color="getIconColor()"><LogoReddit /></n-icon>
+                    <n-icon size="40" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><LogoReddit /></n-icon>
                   </div>
                   <h3>AI智能助手</h3>
                   <p>24/7智能问答，个性化目标生成</p>
                   <div class="feature-progress">
-                    <n-progress type="line" :percentage="95" :show-indicator="false" processing />
+                    <n-progress type="line" :percentage="95" :show-indicator="false" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'" processing />
                   </div>
                 </div>
                 <div class="feature-card-enhanced">
                   <div class="feature-icon-enhanced">
-                    <n-icon size="40" :color="getIconColor()"><BarChartOutline /></n-icon>
+                    <n-icon size="40" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><BarChartOutline /></n-icon>
                   </div>
                   <h3>数据可视化</h3>
                   <p>直观图表分析，进度一目了然</p>
                   <div class="feature-progress">
-                    <n-progress type="line" :percentage="88" :show-indicator="false" processing />
+                    <n-progress type="line" :percentage="88" :show-indicator="false" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'" processing />
                   </div>
                 </div>
                 <div class="feature-card-enhanced">
                   <div class="feature-icon-enhanced">
-                    <n-icon size="40" :color="getIconColor()"><PeopleOutline /></n-icon>
+                    <n-icon size="40" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><PeopleOutline /></n-icon>
                   </div>
                   <h3>团队协作</h3>
                   <p>多人协作，实时同步目标进度</p>
                   <div class="feature-progress">
-                    <n-progress type="line" :percentage="92" :show-indicator="false" processing />
+                    <n-progress type="line" :percentage="92" :show-indicator="false" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'" processing />
                   </div>
                 </div>
                 <div class="feature-card-enhanced">
                   <div class="feature-icon-enhanced">
-                    <n-icon size="40" :color="getIconColor()"><SettingsOutline /></n-icon>
+                    <n-icon size="40" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><SettingsOutline /></n-icon>
                   </div>
                   <h3>个性化定制</h3>
                   <p>主题切换，打造专属工作空间</p>
                   <div class="feature-progress">
-                    <n-progress type="line" :percentage="85" :show-indicator="false" processing />
+                    <n-progress type="line" :percentage="85" :show-indicator="false" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'" processing />
                   </div>
                 </div>
               </div>
@@ -178,7 +181,7 @@
           <div v-if="activeMenu === 'auth'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><PersonCircleOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><PersonCircleOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">用户认证系统</h2>
@@ -217,7 +220,6 @@
                     <h4>安全设置</h4>
                     <p>启用双因素认证，设置安全问题，配置登录偏好</p>
                   </div>
-                  <div class="flow-arrow" v-if="authStep > 3">→</div>
                 </div>
               </div>
               
@@ -234,26 +236,38 @@
                 <div class="mock-content">
                   <div v-if="authStep === 1">
                     <h5 style="color: var(--text-primary); margin-bottom: 16px;">📝 注册信息</h5>
-                    <div class="mock-input" style="margin-bottom: 12px;">邮箱地址</div>
-                    <div class="mock-input" style="margin-bottom: 12px;">用户名</div>
-                    <div class="mock-input" style="margin-bottom: 16px;">密码</div>
-                    <button class="mock-button">发送验证邮件</button>
+                    <n-input class="mock-input" placeholder="邮箱地址" style="margin-bottom: 12px;" />
+                    <n-input class="mock-input" placeholder="用户名" style="margin-bottom: 12px;" />
+                    <n-input class="mock-input" placeholder="密码" type="password" style="margin-bottom: 16px;" />
+                    <n-button type="primary" class="mock-button">
+                      发送验证邮件
+                    </n-button>
                   </div>
                   
                   <div v-else-if="authStep === 2">
                     <h5 style="color: var(--text-primary); margin-bottom: 16px;">🔐 邮箱验证</h5>
                     <p style="color: var(--text-secondary); margin-bottom: 16px;">请检查您的邮箱并点击验证链接</p>
-                    <div class="mock-input" style="margin-bottom: 12px;">输入验证码</div>
-                    <button class="mock-button">验证邮箱</button>
-                    <button class="mock-button" style="background: var(--border-color); color: var(--text-secondary);">重新发送</button>
+                    <n-input class="mock-input" placeholder="输入验证码" style="margin-bottom: 12px;" />
+                    <n-button type="primary" class="mock-button" style="margin-right: 8px;">
+                      验证邮箱
+                    </n-button>
+                    <n-button class="mock-button">
+                      重新发送
+                    </n-button>
                   </div>
                   
                   <div v-else-if="authStep === 3">
                     <h5 style="color: var(--text-primary); margin-bottom: 16px;">🛡️ 安全设置</h5>
                     <p style="color: var(--text-secondary); margin-bottom: 16px;">配置您的账户安全选项</p>
-                    <button class="mock-button">启用双因素认证</button>
-                    <button class="mock-button">设置安全问题</button>
-                    <button class="mock-button">登录通知设置</button>
+                    <n-button type="primary" class="mock-button" style="margin-right: 8px; margin-bottom: 8px;">
+                      启用双因素认证
+                    </n-button>
+                    <n-button type="primary" class="mock-button" style="margin-right: 8px; margin-bottom: 8px;">
+                      设置安全问题
+                    </n-button>
+                    <n-button type="primary" class="mock-button" style="margin-bottom: 8px;">
+                      登录通知设置
+                    </n-button>
                   </div>
                 </div>
               </div>
@@ -269,7 +283,10 @@
                 </p>
               </div>
 
-              <n-card title="注册账户" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>注册账户</h4>
+                </template>
                 <h4>注册步骤</h4>
                 <ol>
                   <li>访问注册页面</li>
@@ -283,7 +300,10 @@
                 </n-alert>
               </n-card>
 
-              <n-card title="登录系统" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>登录系统</h4>
+                </template>
                 <h4>登录方式</h4>
                 <n-tabs type="line">
                   <n-tab-pane name="password" tab="密码登录">
@@ -306,7 +326,10 @@
                 </n-tabs>
               </n-card>
 
-              <n-card title="安全设置" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>安全设置</h4>
+                </template>
                 <h4>两步验证 (2FA)</h4>
                 <p>增强账户安全性的重要措施</p>
                 <ul>
@@ -326,7 +349,7 @@
           <div v-if="activeMenu === 'goals'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><FlagOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><FlagOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">目标管理系统</h2>
@@ -343,7 +366,7 @@
                 
                 <div class="flow-node" :class="{ selected: goalStep === 1 }" @click="goalStep = 1">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                  <div style="width: 40px; height: 40px; background: var(--success-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">1</div>
+                  <div style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">1</div>
                   <div style="flex: 1;">
                     <div class="flow-node-title">📝 基本信息设置</div>
                     <div class="flow-node-description">设定目标名称、描述、类型分类，建立目标框架</div>
@@ -355,7 +378,7 @@
                 
                 <div class="flow-node" :class="{ selected: goalStep === 2 }" @click="goalStep = 2">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                  <div style="width: 40px; height: 40px; background: var(--info-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">2</div>
+                  <div style="width: 40px; height: 40px; background: var(--primary-green-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">2</div>
                   <div style="flex: 1;">
                     <div class="flow-node-title">⚙️ SMART目标设定</div>
                     <div class="flow-node-description">定义具体的、可衡量的、有时间限制的目标指标</div>
@@ -367,7 +390,7 @@
                 
                 <div class="flow-node" :class="{ selected: goalStep === 3 }" @click="goalStep = 3">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                  <div style="width: 40px; height: 40px; background: var(--warning-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">3</div>
+                  <div style="width: 40px; height: 40px; background: #00a085; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">3</div>
                   <div style="flex: 1;">
                     <div class="flow-node-title">📅 时间规划</div>
                     <div class="flow-node-description">设定开始时间、截止日期和里程碑节点</div>
@@ -379,7 +402,7 @@
                 
                 <div class="flow-node" :class="{ selected: goalStep === 4 }" @click="goalStep = 4">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                  <div style="width: 40px; height: 40px; background: var(--purple-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">4</div>
+                  <div style="width: 40px; height: 40px; background: #007a65; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: bold;">4</div>
                   <div style="flex: 1;">
                     <div class="flow-node-title">🏷️ 优先级设置</div>
                     <div class="flow-node-description">设定目标重要性和紧急程度，配置提醒机制</div>
@@ -439,16 +462,25 @@
                   </div>
                 </div>
                 <div class="video-controls">
-                  <button class="enhanced-button">
-                    ▶️ 播放演示
-                  </button>
-                  <button class="enhanced-button" style="margin-left: 12px; background: var(--border-color);">
-                    📖 查看文档
-                  </button>
+                  <n-button type="primary" class="enhanced-button" :color="isDark ? '#00c9a7' : '#008c72'">
+                    <template #icon>
+                      <n-icon><PlayOutline /></n-icon>
+                    </template>
+                    播放演示
+                  </n-button>
+                  <n-button type="primary" class="enhanced-button" style="margin-left: 12px;" :color="isDark ? '#00c9a7' : '#008c72'">
+                    <template #icon>
+                      <n-icon><DocumentTextOutline /></n-icon>
+                    </template>
+                    查看文档
+                  </n-button>
                 </div>
               </div>
 
-              <n-card title="创建目标" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>创建目标</h4>
+                </template>
                 <h4>创建步骤</h4>
                 <n-steps :current="4" size="small" vertical>
                   <n-step title="基本信息" description="目标名称、描述、类别" />
@@ -461,7 +493,10 @@
                 </n-alert>
               </n-card>
 
-              <n-card title="目标分类" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>目标分类</h4>
+                </template>
                 <h4>目标类型</h4>
                 <div class="goal-types">
                   <div class="type-item">
@@ -483,7 +518,10 @@
                 </div>
               </n-card>
 
-              <n-card title="进度跟踪" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>进度跟踪</h4>
+                </template>
                 <h4>跟踪方法</h4>
                 <n-tabs type="line">
                   <n-tab-pane name="manual" tab="手动更新">
@@ -511,7 +549,7 @@
           <div v-if="activeMenu === 'ai'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><LogoReddit /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><LogoReddit /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">AI智能助手</h2>
@@ -582,7 +620,7 @@
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 24px 0;">
                 <div style="background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
                   <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <div style="width: 40px; height: 40px; background: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">💬</div>
+                    <div style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">💬</div>
                     <h4 style="color: var(--text-primary); margin: 0;">智能对话</h4>
                   </div>
                   <p style="color: var(--text-secondary); margin: 0;">支持自然语言交互，理解上下文语境</p>
@@ -590,7 +628,7 @@
                 
                 <div style="background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
                   <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <div style="width: 40px; height: 40px; background: var(--info-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">🎯</div>
+                    <div style="width: 40px; height: 40px; background: var(--primary-green-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">🎯</div>
                     <h4 style="color: var(--text-primary); margin: 0;">目标生成</h4>
                   </div>
                   <p style="color: var(--text-secondary); margin: 0;">基于SMART原则生成个性化目标</p>
@@ -598,7 +636,7 @@
                 
                 <div style="background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
                   <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <div style="width: 40px; height: 40px; background: var(--warning-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white);">⚡</div>
+                    <div style="width: 40px; height: 40px; background: #00a085; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white);">⚡</div>
                     <h4 style="color: var(--text-primary); margin: 0;">实时响应</h4>
                   </div>
                   <p style="color: var(--text-secondary); margin: 0;">快速提供准确的答案和建议</p>
@@ -607,12 +645,43 @@
               
               <!-- 交互式功能切换 -->
               <div style="text-align: center; margin: 24px 0;">
-                <button class="enhanced-button" @click="aiStep = 1" :style="{ background: aiStep === 1 ? 'var(--accent-color)' : 'var(--border-color)' }">
-                  💬 智能对话
-                </button>
-                <button class="enhanced-button" @click="aiStep = 2" :style="{ marginLeft: '12px', background: aiStep === 2 ? 'var(--accent-color)' : 'var(--border-color)' }">
-                  🎯 目标生成
-                </button>
+                <n-button 
+                  type="primary" 
+                  @click="aiStep = 1" 
+                  :style="{ 
+                    background: aiStep === 1 ? 'var(--primary-green)' : 'var(--n-card-color)', 
+                    color: aiStep === 1 ? 'white' : 'var(--text-light)',
+                    border: aiStep === 1 ? 'none' : '1px solid var(--border-light)',
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    fontWeight: '500'
+                  }"
+                  :focusable="false"
+                >
+                  <template #icon>
+                    <n-icon><ChatbubbleOutline /></n-icon>
+                  </template>
+                  智能对话
+                </n-button>
+                <n-button 
+                  type="primary" 
+                  @click="aiStep = 2" 
+                  :style="{ 
+                    marginLeft: '12px',
+                    background: aiStep === 2 ? 'var(--primary-green)' : 'var(--n-card-color)', 
+                    color: aiStep === 2 ? 'white' : 'var(--text-light)',
+                    border: aiStep === 2 ? 'none' : '1px solid var(--border-light)',
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    fontWeight: '500'
+                  }"
+                  :focusable="false"
+                >
+                  <template #icon>
+                    <n-icon><SparklesOutline /></n-icon>
+                  </template>
+                  目标生成
+                </n-button>
               </div>
               
               <!-- 悬停提示系统 -->
@@ -626,7 +695,10 @@
                 </p>
               </div>
 
-              <n-card title="AI问答助手" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>AI问答助手</h4>
+                </template>
                 <h4>功能介绍</h4>
                 <p>AI助手提供24/7智能问答服务，帮助您快速获得解答和建议</p>
                 <ul>
@@ -645,7 +717,10 @@
                 </n-steps>
               </n-card>
 
-              <n-card title="AI目标生成" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>AI目标生成</h4>
+                </template>
                 <h4>目标生成器</h4>
                 <p>基于您的需求和偏好，AI智能生成个性化目标</p>
                 <ul>
@@ -678,7 +753,7 @@
           <div v-if="activeMenu === 'statistics'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><BarChartOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><BarChartOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">数据统计分析</h2>
@@ -687,7 +762,10 @@
             </div>
 
             <div class="section-content">
-              <n-card title="概览面板" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>概览面板</h4>
+                </template>
                 <h4>统计概览</h4>
                 <p>直观展示您的目标完成情况和趋势分析</p>
                 <ul>
@@ -698,7 +776,10 @@
                 </ul>
               </n-card>
 
-              <n-card title="图表分析" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>图表分析</h4>
+                </template>
                 <h4>可视化图表</h4>
                 <n-tabs type="line">
                   <n-tab-pane name="trend" tab="趋势分析">
@@ -720,7 +801,10 @@
                 </n-tabs>
               </n-card>
 
-              <n-card title="详细数据" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>详细数据</h4>
+                </template>
                 <h4>数据表格</h4>
                 <p>详细的目标完成数据，支持筛选和导出</p>
                 <ul>
@@ -737,7 +821,7 @@
           <div v-if="activeMenu === 'collaboration'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><PeopleOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><PeopleOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">团队协作管理</h2>
@@ -746,7 +830,10 @@
             </div>
 
             <div class="section-content">
-              <n-card title="协作人管理" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>协作人管理</h4>
+                </template>
                 <h4>添加协作人</h4>
                 <p>邀请团队成员参与目标管理和执行</p>
                 <ul>
@@ -757,7 +844,10 @@
                 </ul>
               </n-card>
 
-              <n-card title="权限管理" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>权限管理</h4>
+                </template>
                 <h4>协作权限</h4>
                 <n-tabs type="line">
                   <n-tab-pane name="view" tab="查看权限">
@@ -779,7 +869,10 @@
                 </n-tabs>
               </n-card>
 
-              <n-card title="协作功能" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>协作功能</h4>
+                </template>
                 <h4>协作工具</h4>
                 <ul>
                   <li><strong>实时更新：</strong>目标进度实时同步给所有协作人</li>
@@ -795,7 +888,7 @@
           <div v-if="activeMenu === 'settings'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><SettingsOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><SettingsOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">个性化设置</h2>
@@ -804,7 +897,10 @@
             </div>
 
             <div class="section-content">
-              <n-card title="个人资料" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>个人资料</h4>
+                </template>
                 <h4>账户信息</h4>
                 <ul>
                   <li>头像上传和个人信息编辑</li>
@@ -814,7 +910,10 @@
                 </ul>
               </n-card>
 
-              <n-card title="主题设置" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>主题设置</h4>
+                </template>
                 <h4>界面定制</h4>
                 <n-tabs type="line">
                   <n-tab-pane name="theme" tab="主题切换">
@@ -836,7 +935,10 @@
                 </n-tabs>
               </n-card>
 
-              <n-card title="通知设置" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>通知设置</h4>
+                </template>
                 <h4>消息通知</h4>
                 <ul>
                   <li><strong>目标提醒：</strong>截止日期和重要节点提醒</li>
@@ -846,7 +948,10 @@
                 </ul>
               </n-card>
 
-              <n-card title="隐私安全" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>隐私安全</h4>
+                </template>
                 <h4>安全设置</h4>
                 <ul>
                   <li>两步验证(2FA)启用和管理</li>
@@ -865,7 +970,7 @@
           <div v-if="activeMenu === 'mobile'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><PhonePortraitOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><PhonePortraitOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">移动端使用指南</h2>
@@ -874,7 +979,10 @@
             </div>
 
             <div class="section-content">
-              <n-card title="响应式设计" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>响应式设计</h4>
+                </template>
                 <h4>移动端适配</h4>
                 <ul>
                   <li>完全响应式设计，适配所有屏幕尺寸</li>
@@ -884,7 +992,10 @@
                 </ul>
               </n-card>
 
-              <n-card title="移动端设置" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>移动端设置</h4>
+                </template>
                 <h4>移动端特有功能</h4>
                 <ul>
                   <li><strong>语音输入：</strong>支持语音创建和更新目标</li>
@@ -900,7 +1011,7 @@
           <div v-if="activeMenu === 'shortcuts'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><FlashOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><FlashOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">快捷功能</h2>
@@ -909,7 +1020,10 @@
             </div>
 
             <div class="section-content">
-              <n-card title="键盘快捷键" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>键盘快捷键</h4>
+                </template>
                 <h4>常用快捷键</h4>
                 <ul>
                   <li><kbd>Ctrl + N</kbd>：创建新目标</li>
@@ -920,7 +1034,10 @@
                 </ul>
               </n-card>
 
-              <n-card title="批量操作" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>批量操作</h4>
+                </template>
                 <h4>高效管理</h4>
                 <ul>
                   <li>批量选择多个目标进行操作</li>
@@ -936,7 +1053,7 @@
           <div v-if="activeMenu === 'faq'" class="guide-section">
             <div class="section-header">
               <div class="section-icon">
-                <n-icon size="48" :color="getIconColor()"><HelpCircleOutline /></n-icon>
+                <n-icon size="48" :color="currentTheme === 'dark' ? '#00c9a7' : '#008c72'"><HelpCircleOutline /></n-icon>
               </div>
               <div class="section-title-content">
                 <h2 class="section-title">常见问题</h2>
@@ -945,7 +1062,10 @@
             </div>
 
             <div class="section-content">
-              <n-card title="账户相关" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>账户相关</h4>
+                </template>
                 <h4>Q: 忘记密码怎么办？</h4>
                 <p>A: 在登录页面点击"忘记密码"，输入邮箱后按提示重置密码。</p>
                 
@@ -956,7 +1076,10 @@
                 <p>A: 立即在设置-隐私安全中重置密码，启用两步验证。</p>
               </n-card>
 
-              <n-card title="目标管理" size="small" class="content-card">
+              <n-card class="content-card">
+                <template #header>
+                  <h4>目标管理</h4>
+                </template>
                 <h4>Q: 如何恢复已删除的目标？</h4>
                 <p>A: 已删除的目标可在回收站中恢复，保留30天。</p>
                 
@@ -992,7 +1115,11 @@ import {
   FlashOutline,
   HelpCircleOutline,
   PrintOutline,
-  DownloadOutline
+  DownloadOutline,
+  PlayOutline,
+  DocumentTextOutline,
+  ChatbubbleOutline,
+  SparklesOutline
 } from '@vicons/ionicons5';
 
 const router = useRouter();
@@ -1291,11 +1418,28 @@ onMounted(() => {
 /* 整体布局 */
 .user-guide-layout {
   height: calc(100vh - 94px);
-  background: var(--gray-900);
-  color: var(--gray-200);
   display: flex;
   flex-direction: row;
   overflow: hidden;
+  background: var(--n-layout-color);
+  transition: background-color 0.3s ease;
+}
+
+/* 黑绿/白绿主题变量 */
+:root {
+  --primary-green: #00c9a7; /* 项目主要绿色 - 深色主题 */
+  --primary-green-light: #3cb371;
+  --primary-green-dark: #008c72; /* 项目主要绿色 - 浅色主题 */
+  --text-light: #333333;
+  --text-dark: #f0f0f0;
+  --bg-light: #ffffff;
+  --bg-dark: #1a1a1a;
+  --border-light: #e0e0e0;
+  --border-dark: #333333;
+  --card-bg-light: #fafafa;
+  --card-bg-dark: #2a2a2a;
+  --hover-light: #f5f5f5;
+  --hover-dark: #333333;
 }
 
 /* 英雄区域动画样式 */
@@ -1318,7 +1462,6 @@ onMounted(() => {
 .shape {
   position: absolute;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--video-placeholder-gradient-start), var(--video-placeholder-gradient-end));
   opacity: 0.1;
   animation: float 6s ease-in-out infinite;
 }
@@ -1329,6 +1472,7 @@ onMounted(() => {
   top: 20%;
   left: 10%;
   animation-delay: 0s;
+  background: var(--primary-green);
 }
 
 .shape-2 {
@@ -1337,6 +1481,7 @@ onMounted(() => {
   top: 50%;
   right: 15%;
   animation-delay: 2s;
+  background: var(--primary-green);
 }
 
 .shape-3 {
@@ -1345,6 +1490,7 @@ onMounted(() => {
   bottom: 30%;
   left: 20%;
   animation-delay: 4s;
+  background: var(--primary-green);
 }
 
 @keyframes float {
@@ -1397,47 +1543,80 @@ onMounted(() => {
 .stat-item {
   text-align: center;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(46, 139, 87, 0.1);
+  border: 1px solid rgba(46, 139, 87, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 201, 167, 0.2);
 }
 
 .stat-number {
   font-size: 28px;
   font-weight: 700;
-  color: var(--video-placeholder-color);
   margin-bottom: 4px;
+  color: var(--primary-green);
 }
 
 .stat-label {
   font-size: 14px;
-  color: var(--text-primary);
+  color: var(--text-light);
 }
 
 .btn-primary-gradient {
-  background: linear-gradient(135deg, var(--accent-color), var(--success-color)) !important;
-  border: none !important;
-  box-shadow: 0 4px 15px var(--accent-shadow) !important;
-  transition: all 0.3s ease !important;
+  background: linear-gradient(135deg, var(--primary-green), var(--primary-green-light));
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
 }
 
 .btn-primary-gradient:hover {
-  box-shadow: 0 6px 20px var(--accent-shadow-hover) !important;
-  transform: translateY(-2px) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 201, 167, 0.4);
+}
+
+.btn-primary-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary-gradient:hover::before {
+  left: 100%;
 }
 
 .btn-secondary-outline {
-  background: transparent !important;
-  border: 2px solid rgba(255, 255, 255, 0.6) !important;
-  color: var(--white) !important;
-  transition: all 0.3s ease !important;
+  background: transparent;
+  border: 2px solid var(--primary-green);
+  color: var(--primary-green);
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .btn-secondary-outline:hover {
-  border-color: #fff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  transform: translateY(-2px) !important;
+  background: var(--primary-green);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 139, 87, 0.2);
 }
 
 .features-showcase {
@@ -1453,15 +1632,15 @@ onMounted(() => {
 }
 
 .feature-card-enhanced {
-  background: var(--white);
-  padding: 32px 24px;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--gray-100);
   text-align: center;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  padding: 32px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .feature-card-enhanced::before {
@@ -1471,14 +1650,14 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+  background: var(--primary-green);
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
 
 .feature-card-enhanced:hover {
   transform: translateY(-8px);
-  box-shadow: 0 16px 48px rgba(129, 198, 131, 0.2);
+  box-shadow: 0 12px 30px rgba(0, 201, 167, 0.15);
 }
 
 .feature-card-enhanced:hover::before {
@@ -1489,34 +1668,31 @@ onMounted(() => {
   width: 80px;
   height: 80px;
   margin: 0 auto 24px;
-  background: linear-gradient(135deg, var(--accent-light), var(--success-light));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 201, 167, 0.1);
+  color: var(--primary-green);
   transition: all 0.3s ease;
 }
 
 .feature-card-enhanced:hover .feature-icon-enhanced {
-  transform: scale(1.1) rotate(5deg);
-  background: linear-gradient(135deg, var(--enhanced-button-gradient-start), var(--enhanced-button-gradient-end));
-}
-
-.feature-card-enhanced:hover .feature-icon-enhanced .n-icon {
-  color: var(--white) !important;
+  background: var(--primary-green);
+  color: white;
 }
 
 .feature-card-enhanced h3 {
   font-size: 20px;
   font-weight: 600;
-  color: var(--gray-700);
   margin-bottom: 12px;
+  color: var(--text-light);
 }
 
 .feature-card-enhanced p {
-  color: var(--gray-500);
   line-height: 1.6;
   margin-bottom: 24px;
+  color: #666;
 }
 
 .feature-progress {
@@ -1525,26 +1701,26 @@ onMounted(() => {
 
 /* 交互式演示控制台样式 */
 .demo-console {
-  background: var(--white);
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--gray-100);
   margin: 32px 0;
   overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .demo-console:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 201, 167, 0.1);
 }
 
 .demo-header {
-  background: linear-gradient(135deg, var(--gray-100), #e9ecef);
   padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: rgba(46, 139, 87, 0.05);
 }
 
 .demo-title {
@@ -1552,8 +1728,8 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: var(--gray-700);
   font-size: 16px;
+  color: var(--text-light);
 }
 
 .demo-controls {
@@ -1588,11 +1764,12 @@ onMounted(() => {
   width: 80px;
   height: 80px;
   margin: 0 auto 24px;
-  background: linear-gradient(135deg, #e8f5e8, #f0f9f0);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(46, 139, 87, 0.1);
+  color: var(--primary-green);
   animation: iconFloat 3s ease-in-out infinite;
 }
 
@@ -1604,15 +1781,15 @@ onMounted(() => {
 .demo-step h4 {
   font-size: 20px;
   font-weight: 600;
-  color: var(--gray-700);
   margin-bottom: 12px;
+  color: var(--text-light);
 }
 
 .demo-step p {
-  color: var(--gray-500);
   line-height: 1.6;
   margin-bottom: 24px;
   font-size: 14px;
+  color: #666;
 }
 
 .demo-features {
@@ -1628,92 +1805,31 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: var(--gray-600);
   padding: 8px 0;
+  color: #666;
 }
 
 .feature-item .n-icon {
   flex-shrink: 0;
+  color: var(--primary-green);
 }
 
 .demo-progress {
-  background: var(--gray-100);
   padding: 20px 24px;
-  border-top: 1px solid var(--gray-200);
+  border-top: 1px solid var(--border-light);
 }
 
 .progress-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--gray-700);
   margin-bottom: 8px;
   text-align: center;
+  color: #666;
 }
 
 /* 快速开始步骤样式 */
 .quick-steps {
   margin-bottom: 24px;
-}
-
-
-
-/* 顶部导航栏样式 */
-.guide-header {
-  background: var(--white);
-  border-bottom: 1px solid var(--gray-200);
-  padding: 0 24px;
-  box-shadow: 0 2px 8px var(--header-shadow);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 100%;
-  margin: 0 auto;
-  height: 60px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.back-button {
-  color: var(--flow-connection-color);
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.back-button:hover {
-  background: var(--back-button-hover-bg);
-}
-
-.header-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.guide-title {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(90deg, var(--accent-color), var(--success-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
-}
-
-.header-right {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
 }
 
 /* 主容器 */
@@ -1727,50 +1843,66 @@ onMounted(() => {
 /* 左侧边栏 */
 .guide-sidebar {
   width: 260px;
-  background: var(--gray-800);
-  border-right: 1px solid var(--gray-700);
   padding: 6% 0;
   overflow-x: hidden;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   height: 100vh;
   top: 0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  background: var(--n-layout-color);
+  border-right: 1px solid var(--n-border-color);
 }
 
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--section-header-border);
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--n-border-color);
+  margin: 0 16px 16px;
 }
 
 .sidebar-header h3 {
   margin: 0;
-  color: var(--flow-connection-color);
   font-size: 18px;
+  color: var(--text-light);
+  font-weight: 600;
 }
 
 .sidebar-footer {
   margin-top: auto;
   padding: 20px;
-  border-top: 1px solid var(--gray-700);
+  border-top: 1px solid var(--n-border-color);
   flex-shrink: 0;
+  margin: 0 16px;
 }
 
 .help-section h4 {
-  color: var(--accent-color);
   margin: 0 0 8px 0;
   font-size: 16px;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
 .help-section p {
-  color: var(--text-secondary);
   font-size: 14px;
   margin: 0 0 16px 0;
+  color: #666;
 }
 
 .help-button {
   width: 100%;
+  background: var(--primary-green);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.help-button:hover {
+  background: var(--primary-green-dark);
+  transform: translateY(-1px);
 }
 
 /* 核心功能快捷入口 */
@@ -1778,9 +1910,8 @@ onMounted(() => {
   margin: 20px 16px;
   padding: 20px;
   border-radius: 12px;
-  background: var(--core-features-bg);
-  border: 1px solid var(--core-features-border);
-  border-bottom: none;
+  border: 1px solid var(--n-border-color);
+  background: var(--n-card-color);
 }
 
 .core-features-header {
@@ -1788,16 +1919,16 @@ onMounted(() => {
 }
 
 .core-features-header h4 {
-  color: var(--accent-color);
   margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 600;
+  color: var(--text-light);
 }
 
 .core-features-header p {
-  color: var(--text-tertiary);
   font-size: 12px;
   margin: 0;
+  color: #666;
 }
 
 .core-features-grid {
@@ -1814,14 +1945,14 @@ onMounted(() => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--gray-800);
-  border: 1px solid var(--core-feature-item-border);
+  border: 1px solid var(--n-border-color);
+  background: var(--n-card-color);
 }
 
 .core-feature-item:hover {
-  background: var(--gray-800);
-  border-color: var(--core-feature-item-hover-border);
   transform: translateY(-2px);
+  border-color: var(--primary-green);
+  box-shadow: 0 4px 12px rgba(46, 139, 87, 0.1);
 }
 
 .core-feature-icon {
@@ -1829,9 +1960,9 @@ onMounted(() => {
 }
 
 .core-feature-content span {
-  color: var(--text-primary);
   font-size: 12px;
   font-weight: 500;
+  color: var(--text-light);
 }
 
 /* 右侧主内容区域 */
@@ -1839,13 +1970,8 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 60px);
   overflow: hidden;
-  /* 确保内容区域不会被遮挡 */
-  width: calc(100vw - 260px) !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  background: var(--n-layout-color);
 }
 
 /* 确保n-layout-content样式正确 */
@@ -1859,8 +1985,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 30px;
-  background: var(--gray-800);
-  border-bottom: 1px solid var(--gray-700);
+  border-bottom: 1px solid var(--n-border-color);
 }
 
 .header-actions {
@@ -1873,21 +1998,26 @@ onMounted(() => {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
+  background: var(--n-layout-color);
 }
 
 /* 欢迎页面样式 */
 .hero-section {
-  background: var(--gray-800);
-  border: 1px solid var(--gray-700);
   border-radius: 16px;
   padding: 60px 40px;
   text-align: center;
   margin-bottom: 50px;
+  background: linear-gradient(135deg, rgba(46, 139, 87, 0.05), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(46, 139, 87, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-content {
   max-width: 600px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-icon {
@@ -1897,18 +2027,19 @@ onMounted(() => {
 .hero-title {
   font-size: 48px;
   font-weight: 700;
-  background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+  margin: 0 0 16px 0;
+  color: var(--text-light);
+  background: linear-gradient(to right, var(--primary-green), #008c72);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0 0 16px 0;
 }
 
 .hero-subtitle {
   font-size: 20px;
-  color: var(--text-primary);
   margin: 0 0 32px 0;
   line-height: 1.6;
+  color: #666;
 }
 
 .hero-actions {
@@ -1930,14 +2061,18 @@ onMounted(() => {
 .section-title h2 {
   font-size: 36px;
   font-weight: 700;
-  color: var(--enhanced-button-color);
   margin: 0 0 8px 0;
+  color: var(--text-light);
+  background: linear-gradient(to right, var(--primary-green), #008c72);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .section-title p {
   font-size: 18px;
-  color: var(--text-secondary);
   margin: 0;
+  color: #666;
 }
 
 .features-grid {
@@ -1947,8 +2082,6 @@ onMounted(() => {
 }
 
 .feature-card {
-  background: var(--gray-800);
-  border: 1px solid var(--gray-700);
   border-radius: 12px;
   padding: 24px;
   display: flex;
@@ -1956,38 +2089,55 @@ onMounted(() => {
   gap: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .feature-card:hover {
-  border-color: var(--feature-card-hover-border);
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px var(--feature-card-hover-shadow);
+  box-shadow: 0 8px 20px rgba(0, 201, 167, 0.1);
 }
 
 .feature-icon {
   flex-shrink: 0;
+  background: rgba(46, 139, 87, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  background: var(--primary-green);
+  color: white;
 }
 
 .feature-content h3 {
-  color: var(--accent-color);
   font-size: 20px;
   margin: 0 0 8px 0;
   font-weight: 600;
+  color: var(--text-light);
 }
 
 .feature-content p {
-  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.5;
   margin: 0;
+  color: #666;
 }
 
 /* 快速开始区域 */
 .quick-start-section {
-  background: var(--gray-800);
-  border: 1px solid var(--gray-700);
   border-radius: 16px;
   padding: 40px;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
+  margin-bottom: 40px;
 }
 
 .steps-container {
@@ -2007,7 +2157,7 @@ onMounted(() => {
   gap: 20px;
   margin-bottom: 40px;
   padding-bottom: 30px;
-  border-bottom: 1px solid var(--gray-700);
+  border-bottom: 1px solid var(--n-border-color);
 }
 
 .section-title-content {
@@ -2018,16 +2168,13 @@ onMounted(() => {
   font-size: 32px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  background: linear-gradient(90deg, var(--accent-color), var(--success-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-light);
 }
 
 .section-subtitle {
   font-size: 18px;
-  color: var(--text-secondary);
   margin: 0;
+  color: #666;
 }
 
 /* 章节内容 */
@@ -2053,16 +2200,16 @@ onMounted(() => {
 }
 
 .content-card {
-  background: var(--gray-800);
-  border: 1px solid var(--gray-700);
   border-radius: 12px;
   transition: all 0.3s ease;
+  background: var(--n-card-color);
+  border: 1px solid var(--n-border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .content-card:hover {
-  border-color: var(--content-card-hover-border);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--content-card-hover-shadow);
+  box-shadow: 0 8px 20px rgba(0, 201, 167, 0.08);
 }
 
 /* 目标类型卡片 */
@@ -2074,29 +2221,32 @@ onMounted(() => {
 }
 
 .type-item {
-  background: var(--type-item-bg);
-  border: 1px solid var(--type-item-border);
   border-radius: 8px;
   padding: 16px;
   transition: all 0.3s ease;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
+  text-align: center;
 }
 
 .type-item:hover {
-  background: var(--gray-800);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 201, 167, 0.1);
 }
 
 .type-item strong {
-  color: var(--accent-color);
   display: block;
   margin-bottom: 8px;
   font-size: 16px;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
 .type-item p {
-  color: var(--text-secondary);
   font-size: 14px;
   margin: 0;
   line-height: 1.4;
+  color: #666;
 }
 
 /* 功能特点网格 */
@@ -2108,63 +2258,62 @@ onMounted(() => {
 }
 
 .feature-item {
-  background: var(--feature-item-bg);
-  border: 1px solid var(--feature-item-border);
   border-radius: 8px;
   padding: 20px;
   transition: all 0.3s ease;
   text-align: center;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
 }
 
 .feature-item:hover {
-  background: var(--feature-item-hover-bg);
-  border-color: var(--feature-item-hover-border);
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 201, 167, 0.1);
 }
 
 .feature-item strong {
-  color: var(--accent-color);
   display: block;
   margin-bottom: 12px;
   font-size: 16px;
   font-weight: 600;
+  color: var(--text-light);
 }
 
 .feature-item p {
-  color: var(--text-secondary);
   font-size: 14px;
   margin: 0;
   line-height: 1.5;
+  color: #666;
 }
 
 /* 键盘按键样式 */
 kbd {
-  background: var(--kbd-bg);
-  border: 1px solid var(--kbd-border);
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
   border-radius: 4px;
   padding: 2px 6px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
-  color: var(--gray-200);
   display: inline-block;
   margin: 0 2px;
+  color: var(--text-light);
 }
 
 /* 增强的标题样式 */
 .section-content h4 {
-  color: var(--accent-color);
   font-size: 18px;
   margin: 0 0 16px 0;
   font-weight: 600;
-  border-bottom: 1px solid var(--section-content-h4-border);
+  border-bottom: 1px solid var(--n-border-color);
   padding-bottom: 8px;
+  color: var(--text-light);
 }
 
 .section-content h5 {
-  color: var(--text-tertiary);
   font-size: 16px;
   margin: 24px 0 12px 0;
   font-weight: 600;
+  color: var(--text-light);
 }
 
 /* 增强的列表样式 */
@@ -2174,21 +2323,17 @@ kbd {
 }
 
 .section-content li {
-  color: var(--text-primary);
   line-height: 1.6;
   margin-bottom: 8px;
   position: relative;
-}
-
-.section-content li::marker {
-  color: var(--accent-color);
+  color: #666;
 }
 
 /* 增强的段落样式 */
 .section-content p {
-  color: var(--text-primary);
   line-height: 1.6;
   margin: 12px 0;
+  color: #666;
 }
 
 /* 优化内容间距 */
@@ -2200,57 +2345,31 @@ kbd {
   margin-top: 24px;
 }
 
-/* 增强的警告框样式 */
-:deep(.n-alert) {
-  border-radius: 8px;
-  border-width: 1px;
-}
-
-:deep(.n-alert--success) {
-  background: var(--success-bg-light);
-  border-color: var(--success-color);
-}
-
-:deep(.n-alert--warning) {
-  background: var(--warning-bg-light);
-  border-color: var(--warning-color);
-}
-
-:deep(.n-alert--info) {
-  background: var(--info-bg-light);
-  border-color: var(--info-color);
-}
-
 /* 样式覆盖 */
 :deep(.n-menu-item) {
-  color: var(--n-menu-item-color);
   margin: 4px 12px;
   border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 :deep(.n-menu-item:hover) {
-  color: var(--accent-color);
-  background: var(--gray-800);
-}
-
-:deep(.n-menu-item--selected) {
-  color: var(--accent-color) !important;
-  background: var(--gray-800) !important;
-  font-weight: 600;
+  background: rgba(46, 139, 87, 0.1) !important;
+  color: var(--primary-green) !important;
 }
 
 :deep(.n-card) {
-  background: transparent !important;
+  border-radius: 12px;
+  background: var(--n-card-color);
+  border: 1px solid var(--n-border-color);
 }
 
 :deep(.n-card__header) {
-  background: var(--gray-800);
   border-radius: 12px 12px 0 0;
   padding: 20px !important;
+  background: rgba(46, 139, 87, 0.03);
 }
 
 :deep(.n-card__content) {
-  background: transparent !important;
   padding: 20px !important;
 }
 
@@ -2258,175 +2377,42 @@ kbd {
   margin-top: 20px;
 }
 
-:deep(.n-step-title) {
-  color: var(--accent-color) !important;
-}
-
-:deep(.n-step-description) {
-  color: var(--text-secondary) !important;
-}
-
 :deep(.n-alert) {
   margin-top: 16px;
+  border-radius: 8px;
 }
 
-:deep(.n-tabs-tab) {
-  color: var(--n-tabs-tab-color);
+:deep(.n-input) {
+  margin-bottom: 12px;
+  border-radius: 8px;
 }
 
-:deep(.n-tabs-tab--active) {
-  color: var(--accent-color) !important;
+:deep(.n-button) {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
 }
 
-:deep(.n-breadcrumb) {
-  font-size: 16px;
+/* 主题适配样式 - 使用Naive UI变量 */
+:deep(.n-card) {
+  backdrop-filter: blur(10px);
 }
 
-:deep(.n-breadcrumb-item) {
-  color: var(--text-secondary);
-  cursor: pointer;
+:deep(.n-card__header) {
+  backdrop-filter: blur(10px);
 }
 
-:deep(.n-breadcrumb-item:hover) {
-  color: var(--accent-color);
-}
-
-:deep(.n-breadcrumb-item--clickable) {
-  color: var(--accent-color);
-}
-
-/* 响应式设计 */
-
-
-/* 适配现有导航栏的不同状态 */
-
-  .guide-sidebar {
-    left: 220px; /* 对应NavBar展开状态 */
-  }
-  
-  .guide-main {
-    margin-left: 480px;
-  }
-
-
-
-/* 主题适配样式 */
-.dark-theme {
-  --primary-bg: #0f0f13;
-  --secondary-bg: #1e1e1e;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
-  --border-color: #333333;
-  --card-bg: rgba(30, 30, 40, 0.6);
-  --accent-color: #81c683;
-  --success-color: #4caf50;
-  --warning-color: #ff9800;
-  --error-color: #f44336;
-  --white: #ffffff;
-  --gray-100: #f5f5f7;
-  --gray-200: #e0e0e0;
-  --gray-300: #cccccc;
-  --gray-400: #999999;
-  --gray-500: #666666;
-  --gray-600: #444444;
-  --gray-700: #333333;
-  --gray-800: #1e1e1e;
-  --gray-900: #0f0f13;
-}
-
-.light-theme {
-  --primary-bg: #f5f5f7;
-  --secondary-bg: #ffffff;
-  --text-primary: #000000;
-  --text-secondary: rgba(0, 0, 0, 0.7);
-  --text-tertiary: rgba(0, 0, 0, 0.5);
-  --border-color: #e0e0e0;
-  --card-bg: rgba(255, 255, 255, 0.8);
-  --accent-color: #81c683;
-  --success-color: #4caf50;
-  --warning-color: #ff9800;
-  --error-color: #f44336;
-  --white: #ffffff;
-  --gray-100: #f5f5f7;
-  --gray-200: #e0e0e0;
-  --gray-300: #cccccc;
-  --gray-400: #999999;
-  --gray-500: #666666;
-  --gray-600: #444444;
-  --gray-700: #333333;
-  --gray-800: #1e1e1e;
-  --gray-900: #0f0f13;
-}
-
-/* 应用主题样式 */
-.guide-container {
-  background: var(--primary-bg);
-  color: var(--text-primary);
-}
-
-.guide-header {
-  background: var(--card-bg);
-  border-bottom-color: var(--border-color);
-}
-
-.guide-sidebar {
-  background: var(--card-bg);
-  border-right-color: var(--border-color);
-}
-
-.guide-main {
-  background: transparent;
-}
-
-/* .guide-section {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-} */
-
-.section-title {
-  color: var(--text-primary);
-}
-
-.section-subtitle {
-  color: var(--text-secondary);
-}
-
-.content-card {
-  background: var(--secondary-bg) !important;
-  border: 1px solid var(--border-color) !important;
-}
-
-.content-card h4 {
-  color: var(--text-primary);
-}
-
-.content-card p {
-  color: var(--text-secondary);
-}
-
-.hero-section {
-  background: var(--card-bg);
-}
-
-.hero-title {
-  background: linear-gradient(135deg, var(--accent-color), var(--success-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-subtitle {
-  color: var(--text-secondary);
+:deep(.n-card__content) {
+  backdrop-filter: blur(10px);
 }
 
 /* 流程图组件样式 */
 .flow-chart {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 24px;
   margin: 24px 0;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
 }
 
 .flow-step {
@@ -2434,55 +2420,54 @@ kbd {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
   cursor: pointer;
+  border: 1px solid var(--border-light);
 }
 
 .flow-step:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--flow-step-hover-shadow);
-  border-color: var(--accent-color);
+  border-color: var(--primary-green);
+  box-shadow: 0 4px 12px rgba(46, 139, 87, 0.1);
 }
 
 .flow-step.active {
-  border-color: var(--accent-color);
-  background: var(--flow-step-active-bg);
+  background: rgba(46, 139, 87, 0.05);
+  border-color: var(--primary-green);
 }
 
 .flow-number {
   width: 40px;
   height: 40px;
-  background: var(--step-connector-completed-bg);
-  color: var(--flow-number-color);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   flex-shrink: 0;
+  background: var(--primary-green);
+  color: white;
 }
 
 .flow-content h4 {
-  color: var(--text-primary);
   margin-bottom: 8px;
   font-size: 16px;
+  color: var(--text-light);
 }
 
 .flow-content p {
-  color: var(--text-secondary);
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
+  color: #666;
 }
 
 .flow-arrow {
-  color: var(--accent-color);
   margin: 0 16px;
   font-size: 20px;
+  color: var(--primary-green);
 }
 
 /* 渐进式步骤样式 */
@@ -2496,6 +2481,12 @@ kbd {
   margin-bottom: 24px;
   cursor: pointer;
   transition: all 0.3s ease;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.step-container:hover {
+  background: rgba(46, 139, 87, 0.05);
 }
 
 .step-container:hover .step-circle {
@@ -2506,8 +2497,6 @@ kbd {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--accent-color);
-  color: var(--step-circle-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2515,15 +2504,8 @@ kbd {
   margin-right: 20px;
   position: relative;
   transition: all 0.3s ease;
-}
-
-.step-circle.completed {
-  background: var(--success-color);
-  color: var(--step-circle-completed-color);
-}
-
-.step-circle.active {
-  animation: pulse 2s infinite;
+  background: var(--primary-green-light);
+  color: white;
 }
 
 .step-content {
@@ -2531,16 +2513,16 @@ kbd {
 }
 
 .step-title {
-  color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 16px;
+  color: var(--text-light);
 }
 
 .step-description {
-  color: var(--text-secondary);
   line-height: 1.5;
   font-size: 14px;
+  color: #666;
 }
 
 .step-connector {
@@ -2549,95 +2531,82 @@ kbd {
   top: 50px;
   width: 2px;
   height: 30px;
-  background: var(--border-color);
   margin-left: -1px;
-}
-
-.step-connector.completed {
-  background: var(--accent-color);
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 var(--pulse-animation-shadow-0); }
-  70% { box-shadow: 0 0 0 10px var(--pulse-animation-shadow-70); }
-  100% { box-shadow: 0 0 0 0 var(--pulse-animation-shadow-100); }
+  background: var(--primary-green);
 }
 
 /* 模拟界面样式 */
 .mock-interface {
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   margin: 24px 0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-light);
+  background: var(--card-bg-light);
 }
 
 .mock-header {
-  background: var(--mock-header-background);
   padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 8px;
+  background: #f0f0f0;
 }
 
 .mock-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--red-500);
+  background: #ff5f56;
 }
 
 .mock-dot:nth-child(2) {
-  background: var(--yellow-500);
+  background: #ffbd2e;
 }
 
 .mock-dot:nth-child(3) {
-  background: var(--green-500);
+  background: #27c93f;
 }
 
 .mock-content {
   padding: 20px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mock-button {
-  background: var(--step-circle-active-bg);
-  color: var(--step-circle-active-color);
+  background: var(--primary-green);
   border: none;
+  color: white;
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-right: 8px;
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .mock-button:hover {
+  background: var(--primary-green-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--mock-button-hover-shadow);
 }
 
 .mock-input {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 8px 12px;
   border-radius: 6px;
   margin: 4px 0;
   width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-light);
 }
 
 /* 悬停提示系统 */
 .tooltip-trigger {
   position: relative;
   cursor: help;
-  border-bottom: 1px dotted var(--tooltip-trigger-border-bottom);
-}
-
-.tooltip-trigger:hover .tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+  border-bottom: 1px dotted var(--primary-green);
+  color: var(--primary-green);
 }
 
 .tooltip {
@@ -2645,18 +2614,16 @@ kbd {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(8px);
-  background: var(--tooltip-bg);
-  color: var(--tooltip-color);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
   white-space: nowrap;
-  border: 1px solid var(--tooltip-border);
-  box-shadow: var(--tooltip-shadow);
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
   z-index: 1000;
+  background: var(--primary-green);
+  color: white;
 }
 
 .tooltip::after {
@@ -2666,7 +2633,13 @@ kbd {
   left: 50%;
   transform: translateX(-50%);
   border: 4px solid transparent;
-  border-top-color: var(--tooltip-arrow-border);
+  border-top-color: var(--primary-green);
+}
+
+.tooltip-trigger:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
 }
 
 /* 可交互的流程图样式 */
@@ -2675,66 +2648,66 @@ kbd {
 }
 
 .flow-node {
-  background: var(--card-bg);
-  border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
   margin: 16px 0;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
 }
 
 .flow-node:hover {
-  border-color: var(--accent-color);
   transform: scale(1.02);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-green);
+  box-shadow: 0 6px 16px rgba(0, 201, 167, 0.15);
 }
 
 .flow-node.selected {
-  border-color: var(--accent-color);
-  background: var(--accent-bg-light);
+  background: rgba(0, 201, 167, 0.1);
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(0, 201, 167, 0.2);
 }
 
 .flow-node-title {
-  color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 16px;
+  color: var(--text-light);
 }
 
 .flow-node-description {
-  color: var(--text-secondary);
   line-height: 1.5;
   font-size: 14px;
+  color: #666;
 }
 
 .flow-connection {
   display: flex;
   justify-content: center;
   margin: 16px 0;
-  color: var(--accent-color);
   font-size: 24px;
+  color: var(--primary-green);
 }
 
 /* 视频演示区域 */
 .video-demo {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   margin: 24px 0;
+  border: 1px solid var(--border-light);
 }
 
 .video-placeholder {
-  background: linear-gradient(135deg, var(--accent-color), var(--success-color));
   height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--video-placeholder-color);
-  font-size: 18px;
   position: relative;
+  background: linear-gradient(135deg, var(--primary-green), var(--primary-green-light));
+  color: white;
+  font-size: 18px;
 }
 
 .video-placeholder::before {
@@ -2746,15 +2719,15 @@ kbd {
 
 .video-controls {
   padding: 16px;
-  background: var(--secondary-bg);
   text-align: center;
+  background: var(--card-bg-light);
 }
 
 /* 增强的按钮样式 */
 .enhanced-button {
-  background: linear-gradient(135deg, var(--accent-color), var(--success-color));
+  background: linear-gradient(135deg, var(--primary-green), var(--primary-green-light));
   border: none;
-  color: var(--enhanced-button-color);
+  color: white;
   padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
@@ -2762,11 +2735,12 @@ kbd {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
 }
 
 .enhanced-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 201, 167, 0.4);
 }
 
 .enhanced-button::before {
@@ -2776,11 +2750,145 @@ kbd {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, var(--enhanced-button-before-gradient-middle), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
   transition: left 0.5s;
 }
 
 .enhanced-button:hover::before {
   left: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .guide-sidebar {
+    width: 70px;
+  }
+  
+  .sidebar-header, .core-features-header, .core-feature-content, .help-section {
+    display: none;
+  }
+  
+  .core-features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-title {
+    font-size: 36px;
+  }
+  
+  .hero-subtitle {
+    font-size: 18px;
+  }
+  
+  .features-grid-enhanced {
+    grid-template-columns: 1fr;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-section {
+    padding: 40px 20px;
+  }
+  
+  .guide-content-wrapper {
+    padding: 20px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .section-icon {
+    align-self: center;
+  }
+  
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 暗色主题适配 */
+:deep(.n-theme--dark) {
+  --text-light: #f0f0f0;
+  --text-dark: #f0f0f0;
+  --bg-light: #1a1a1a;
+  --bg-dark: #1a1a1a;
+  --border-light: #333333;
+  --border-dark: #333333;
+  --card-bg-light: #2a2a2a;
+  --card-bg-dark: #2a2a2a;
+  --hover-light: #333333;
+  --hover-dark: #333333;
+}
+
+:deep(.n-theme--dark) .stat-item {
+  background: rgba(0, 201, 167, 0.15);
+  border: 1px solid rgba(0, 201, 167, 0.3);
+}
+
+:deep(.n-theme--dark) .feature-card-enhanced {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .feature-icon-enhanced {
+  background: rgba(0, 201, 167, 0.2);
+}
+
+:deep(.n-theme--dark) .demo-console {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .content-card {
+  background: var(--n-card-color);
+  border: 1px solid var(--n-border-color);
+}
+
+:deep(.n-theme--dark) .flow-chart {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .flow-step {
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .mock-interface {
+  border: 1px solid var(--border-dark);
+  background: var(--card-bg-dark);
+}
+
+:deep(.n-theme--dark) .mock-header {
+  background: #333;
+}
+
+:deep(.n-theme--dark) .type-item,
+:deep(.n-theme--dark) .feature-item {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .hero-section {
+  background: linear-gradient(135deg, rgba(0, 201, 167, 0.1), rgba(0, 0, 0, 0.2));
+  border: 1px solid rgba(0, 201, 167, 0.2);
+}
+
+:deep(.n-theme--dark) .quick-start-section {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .feature-card {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-dark);
+}
+
+:deep(.n-theme--dark) .core-feature-item {
+  background: var(--n-card-color);
 }
 </style>
