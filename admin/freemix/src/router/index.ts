@@ -8,11 +8,21 @@ import GoalManagement from '@/views/goal-management.vue'
 import Statistics from '@/views/statistics.vue'
 import Settings from '@/views/settings.vue'
 import LoginLog from '@/views/login-log.vue'
+import MobileLogin from '@/views/mobile/mobile-login.vue'
+import MobileRegister from '@/views/mobile/mobile-register.vue'
 import MobileExample from '@/views/mobile-example.vue'
 import MobileVantHome from '@/views/mobile-vant-home.vue'
 import GitHubOAuthCallback from '@/views/github-oauth-callback.vue'
 import ShareView from '@/views/ShareView.vue';
 import AIGenHistory from '@/components/AIGenHistory.vue';
+
+// 移动端页面
+import MobileGoalManagement from '@/views/mobile/mobile-goal-management.vue'
+import MobileStatistics from '@/views/mobile/mobile-statistics.vue'
+import MobileAddGoal from '@/views/mobile/mobile-add-goal.vue'
+import MobileSettings from '@/views/mobile/mobile-settings.vue'
+import MobileMessageCenter from '@/views/mobile/mobile-MessageCenter.vue'
+import MobileUserGuide from '@/views/mobile/mobile-user-guide.vue'
 import { isDesktop } from '@/utils/device.js'
 // import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -46,6 +56,16 @@ const routes = [
     name: 'AIAssistantWindow',
     component: () => import('@/components/AIAssistantWindow.vue'),
   },
+  {
+    path: '/login',
+    component: getComponent(Login, MobileLogin),
+    name: 'Login'
+  },
+  {
+    path: '/register',
+    component: getComponent(Register, MobileRegister),
+    name: 'Register'
+  },
   { path: '/', redirect: '/login' },
   { 
     path: '/home', 
@@ -53,35 +73,29 @@ const routes = [
     component: getComponent(HomePage, MobileVantHome) 
   },
   { 
-    path: '/example', 
-    name: 'Example', 
-    component: getComponent(null, MobileExample) 
-  },
-  
-  { 
     path: '/add-goal', 
     name: 'AddGoal', 
-    component: getComponent(AddGoal, null) 
+    component: getComponent(AddGoal, MobileAddGoal) 
   },
   { 
     path: '/goal-management', 
     name: 'GoalManagement', 
-    component: getComponent(GoalManagement, GoalManagement) 
+    component: getComponent(GoalManagement, MobileGoalManagement) 
   },
   { 
     path: '/messages', 
     name: 'Messages', 
-     component: () => import('@/views/MessageCenter.vue')
+    component: getComponent(() => import('@/views/MessageCenter.vue'), MobileMessageCenter)
   },
   { 
     path: '/statistics', 
     name: 'Statistics', 
-    component: getComponent(Statistics, null) 
+    component: getComponent(Statistics, MobileStatistics) 
   },
   { 
     path: '/settings', 
     name: 'Settings', 
-    component: getComponent(Settings, null) 
+    component: getComponent(Settings, MobileSettings) 
   },
   { 
     path: '/login-log', 
@@ -114,7 +128,7 @@ const routes = [
   {
     path: '/user-guide',
     name: 'UserGuide',
-    component: () => import('@/views/user-guide.vue'),
+    component: getComponent(() => import('@/views/user-guide.vue'), MobileUserGuide),
     meta: { requiresAuth: false }
   }
 ]

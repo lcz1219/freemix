@@ -22,14 +22,14 @@
               <n-layout-sider v-if="!isMobileDevice&&isnAiPage" bordered collapse-mode="transform" :collapsed-width="64"
                 show-collapsed-content :width="isSidebarCollapsed ? 64 : 215" :native-scrollbar="false"
                 class="side-navbar">
-                <NavBar v-if="showContentByStoreUser" :active-tab="activeTab"
+                <NavBar v-if="showContentByStoreUser&&!isMobileDevice" :active-tab="activeTab"
                   @update:collapsed="isSidebarCollapsed = $event" />
               </n-layout-sider>
 
               <!-- 主内容区域 -->
               <n-layout class="main-layout">
 
-                <TabsView v-if="isnAiPage"></TabsView>
+                <TabsView v-if="isnAiPage&&!isMobileDevice"></TabsView>
                 <!-- 页面内容 -->
                 <n-layout-content :class="isnAiPage?content-wrapper:content-wrappe-ai">
 
@@ -53,10 +53,10 @@
             </n-modal>
 
             <!-- 移动端浮动导航组件 -->
-            <MobileFloatingNav v-if="isMobileDevice" />
+            <MobileFloatingNav v-if="false" />
             
             <!-- 全局浮动按钮组件 -->
-            <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage" :goals="goals" :formatDate="formatDate" :checktype="checktype"
+            <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage&&!isMobileDevice" :goals="goals" :formatDate="formatDate" :checktype="checktype"
               @dateSelected="handleCalendarUpdate" />
             <div style="display: flex;
               justify-content: flex-end;
