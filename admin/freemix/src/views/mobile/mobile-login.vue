@@ -1,104 +1,86 @@
 <template>
-  <van-config-provider :theme="currentTheme">
-    <div class="mobile-login" :class="currentTheme">
-      <!-- 背景装饰元素 -->
-      <div class="background-elements">
-        <div class="gradient-circle blue"></div>
-        <div class="gradient-circle green"></div>
-        <div class="gradient-circle purple"></div>
-      </div>
+  <van-config-provider :theme="currentTheme" class="apple-style-provider">
+    <div class="mobile-login">
+      <!-- 背景装饰 -->
+      <div class="background-blur-circle-1"></div>
+      <div class="background-blur-circle-2"></div>
 
       <div class="login-container">
-        <div class="login-header">
-          <h1 class="app-title">FreeMix</h1>
-          <p class="app-subtitle">目标管理系统</p>
+        <div class="header-section">
+          <!-- <img src="@/assets/logo.png" alt="App Logo" class="app-logo" /> -->
+          <h1 class="app-title">欢迎回来</h1>
+          <p class="app-subtitle">登录以继续管理您的目标</p>
         </div>
 
-        <van-card class="login-card" :class="currentTheme">
-          <van-form ref="formRef" :model="user" :rules="rules" @submit="onSubmit">
-            <van-cell-group inset>
+        <div class="form-card">
+          <van-form ref="formRef" @submit="onSubmit">
+            <van-cell-group inset class="apple-cell-group">
               <van-field
                 v-model="user.username"
                 name="username"
-                label="用户名"
-                placeholder="请输入用户名"
+                placeholder="用户名"
                 :rules="[{ required: true, message: '请输入用户名' }]"
+                left-icon="user-o"
+                clearable
+                class="apple-field"
                 @blur="loadCaptcha"
-              >
-                <template #left-icon>
-                  <van-icon name="manager-o" />
-                </template>
-              </van-field>
-
+              />
               <van-field
                 v-model="user.password"
                 type="password"
                 name="password"
-                label="密码"
-                placeholder="请输入密码"
+                placeholder="密码"
                 :rules="[{ required: true, message: '请输入密码' }]"
-              >
-                <template #left-icon>
-                  <van-icon name="lock" />
-                </template>
-              </van-field>
-
+                left-icon="lock"
+                clearable
+                class="apple-field"
+              />
               <van-field
                 v-model="user.captcha"
                 name="captcha"
-                label="验证码"
-                placeholder="请输入计算结果"
+                placeholder="验证码"
                 :rules="[{ required: true, message: '请输入验证码' }]"
+                left-icon="shield-o"
+                clearable
+                class="apple-field"
               >
-                <template #left-icon>
-                  <van-icon name="shield-o" />
-                </template>
                 <template #button>
-                  <div class="captcha-expression" @click="loadCaptcha">
-                    {{ captchaExpression || '点击刷新' }}
-                  </div>
+                  <div 
+                    class="captcha-container"
+                    @click="loadCaptcha"
+                    v-html="captchaExpression || '获取验证码'"
+                  ></div>
                 </template>
               </van-field>
             </van-cell-group>
 
-            <div class="login-buttons">
-              <van-button 
-                round 
-                block 
-                type="primary" 
+            <div class="action-buttons">
+              <van-button
+                round
+                block
+                type="primary"
                 native-type="submit"
                 :loading="loading"
-                loading-text="登录中..."
-                class="login-button"
+                class="apple-gradient-button login-button"
               >
-                登录
-              </van-button>
-
-              <van-button 
-                round 
-                block 
-                plain 
-                @click="toRegister"
-                class="register-button"
-              >
-                注册账号
-              </van-button>
-
-              <van-button 
-                round 
-                block 
-                plain 
-                @click="handleGitHubLogin"
-                class="github-login-button"
-              >
-                <svg slot="icon" viewBox="0 0 24 24" width="16" height="16" style="margin-right: 5px; vertical-align: middle;">
-                  <path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                </svg>
-                GitHub登录
+                {{ loading ? '登录中...' : '登录' }}
               </van-button>
             </div>
           </van-form>
-        </van-card>
+
+          <div class="social-login-divider">或通过以下方式登录</div>
+
+          <div class="social-login-buttons">
+            <van-button round block class="social-button github-button" @click="handleGitHubLogin">
+              <van-icon name="github" />
+              使用 GitHub 登录
+            </van-button>
+          </div>
+
+          <div class="footer-links">
+            <a href="#" @click.prevent="toRegister">没有帐户？<span class="link-highlight">立即注册</span></a>
+          </div>
+        </div>
       </div>
     </div>
   </van-config-provider>
@@ -204,7 +186,7 @@ const onSubmit = async () => {
 
 // 跳转到注册页面
 const toRegister = () => {
-  router.replace('/mobile/register')
+  router.replace('/register')
 }
 
 // 处理GitHub登录
@@ -242,166 +224,192 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 全局和根元素 */
+.apple-style-provider {
+  --van-background-color: #f7f8fa;
+  --van-background-color-light: #ffffff;
+  --van-text-color: #333;
+  --van-text-color-2: #666;
+  --van-border-color: #ebedf0;
+  --apple-gradient-color: linear-gradient(135deg, #00c9a7, #00a98f);
+}
+
+.van-theme-dark .apple-style-provider {
+  --van-background-color: #1c1c1e;
+  --van-background-color-light: #2c2c2e;
+  --van-text-color: #f5f5f7;
+  --van-text-color-2: #a9a9b0;
+  --van-border-color: #3a3a3c;
+}
+
 .mobile-login {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--van-background-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
-.mobile-login.light {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-/* 背景装饰元素 */
-.background-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.gradient-circle {
+/* 背景装饰 */
+.background-blur-circle-1, .background-blur-circle-2 {
   position: absolute;
   border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.3;
+  filter: blur(80px);
+  pointer-events: none;
 }
-
-.gradient-circle.blue {
-  width: 300px;
-  height: 300px;
-  background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
-  top: -100px;
-  right: -100px;
-}
-
-.gradient-circle.green {
-  width: 200px;
-  height: 200px;
-  background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%);
-  bottom: -80px;
-  left: 10%;
-}
-
-.gradient-circle.purple {
+.background-blur-circle-1 {
   width: 250px;
   height: 250px;
-  background: linear-gradient(45deg, #fa709a 0%, #fee140 100%);
-  top: 30%;
-  left: -80px;
+  background: rgba(0, 201, 167, 0.3);
+  top: -50px;
+  right: -80px;
+}
+.background-blur-circle-2 {
+  width: 200px;
+  height: 200px;
+  background: rgba(118, 75, 162, 0.3);
+  bottom: -60px;
+  left: -70px;
 }
 
 .login-container {
-  position: relative;
+  width: 100%;
+  max-width: 400px;
   z-index: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  justify-content: center;
 }
 
-.login-header {
+/* 头部 */
+.header-section {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
+}
+
+.app-logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  border-radius: 12px;
 }
 
 .app-title {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
-  color: #fff;
-  margin: 0 0 10px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.light .app-title {
-  color: #333;
+  color: var(--van-text-color);
+  margin: 0 0 8px;
 }
 
 .app-subtitle {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--van-text-color-2);
   margin: 0;
 }
 
-.light .app-subtitle {
-  color: #666;
-}
-
-.login-card {
+/* 表单卡片 */
+.form-card {
+  background-color: var(--van-background-color-light);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.85) !important;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
-.login-card.dark {
-  background: rgba(30, 30, 30, 0.85) !important;
+.van-theme-dark .form-card {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-:deep(.van-field__label) {
-  font-weight: 500;
-  width: 60px;
+.apple-cell-group {
+  background: none;
 }
 
-.captcha-expression {
-  min-width: 80px;
-  padding: 5px 10px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
+.apple-field {
+  background-color: var(--van-background-color);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+:deep(.van-field__left-icon) {
+  margin-right: 8px;
+  color: var(--van-text-color-2);
+}
+
+/* 验证码 */
+.captcha-container {
   cursor: pointer;
-  border: 1px solid #e0e0e0;
-  font-size: 14px;
-  font-weight: bold;
-  color: #333;
+  min-width: 90px;
   text-align: center;
 }
 
-.captcha-expression:hover {
-  background-color: #e6e6e6;
-}
-
-.login-buttons {
-  padding: 20px;
-}
-
-.login-button {
-  margin-bottom: 15px;
-  height: 44px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.register-button,
-.github-login-button {
-  margin-bottom: 15px;
-  height: 44px;
-  font-size: 16px;
-}
-
-.github-login-button :deep(.van-icon) {
-  margin-right: 5px;
-  width: 16px;
-  height: 16px;
+.captcha-container :deep(svg) {
   vertical-align: middle;
 }
 
-/* 深色主题样式 */
-.dark .login-card {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+/* 按钮 */
+.action-buttons {
+  margin-top: 24px;
 }
 
-.dark .captcha-expression {
-  background-color: #444;
-  border-color: #555;
-  color: #fff;
+.apple-gradient-button {
+  border: none;
+  color: white;
+  font-weight: 500;
+  background: var(--apple-gradient-color);
+  height: 48px;
+  font-size: 16px;
 }
 
-.dark .captcha-expression:hover {
-  background-color: #555;
+.social-login-divider {
+  margin: 24px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--van-text-color-2);
+  display: flex;
+  align-items: center;
+}
+
+.social-login-divider::before, .social-login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--van-border-color);
+}
+
+.social-login-divider::before {
+  margin-right: 8px;
+}
+
+.social-login-divider::after {
+  margin-left: 8px;
+}
+
+.social-button {
+  height: 48px;
+  font-size: 16px;
+  background-color: var(--van-background-color);
+  border: 1px solid var(--van-border-color);
+  color: var(--van-text-color);
+}
+
+.social-button .van-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+/* 底部链接 */
+.footer-links {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+}
+
+.footer-links a {
+  color: var(--van-text-color-2);
+  text-decoration: none;
+}
+
+.link-highlight {
+  color: #00c9a7;
+  font-weight: 500;
 }
 </style>

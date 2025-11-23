@@ -76,7 +76,8 @@
                       </template>
                       <template #label>
                         <div class="goal-meta">
-                          <span>{{ formatDate(goal.deadline) }} 截止</span>
+                          <span>截止: {{ goal.deadlineString }}</span>
+                          <span>负责人: {{ goal.owner }}</span>
                           <van-tag :type="getGoalStatusType(goal.status)" plain class="status-tag">{{ getGoalStatusText(goal.status) }}</van-tag>
                         </div>
                         <div class="goal-progress">
@@ -128,25 +129,59 @@
         <van-tabbar-item replace to="/profile" icon="user-o">我的</van-tabbar-item>
       </van-tabbar>
 
-      <van-popup v-model:show="showDetailModal" position="bottom" :style="{ height: '80%' }" round>
-        <div class="goal-detail">
-          <van-nav-bar title="目标详情" left-text="返回" @click-left="showDetailModal = false" />
-          <div class="detail-content">
-            <h2>{{ selectedGoal?.title }}</h2>
-            <p>{{ selectedGoal?.description }}</p>
-            <van-divider />
-            <div class="sub-goals">
-              <h3>子目标</h3>
-              <van-checkbox-group v-model="checkedSubGoals">
-                <van-cell-group>
-                  <van-cell v-for="subGoal in (selectedGoal?.subGoals || [])" :key="subGoal.id" clickable @click="toggleSubGoal(subGoal.id)">
-                    <template #title>
-                      <van-checkbox :name="subGoal.id" @click.stop checked-color="#00c9a7">{{ subGoal.title }}</van-checkbox>
-                    </template>
-                  </van-cell>
-                </van-cell-group>
-              </van-checkbox-group>
+      <van-popup v-model:show="showDetailModal" position="bottom" :style="{ height: '92%', padding: '0' }" round closeable>
+        <div class="goal-detail-apple">
+          <div class="apple-header">
+            <div class="apple-title-row">
+              <h2 class="apple-title">{{ selectedGoal?.title }}</h2>
+              <van-tag :type="getGoalStatusType(selectedGoal?.status)" plain class="apple-status">{{ getGoalStatusText(selectedGoal?.status) }}</van-tag>
             </div>
+            <div class="apple-meta-row">
+              <div class="apple-meta-item">
+                <van-icon name="user-o" size="16" />
+                <span>{{ selectedGoal?.owner }}</span>
+              </div>
+              <div class="apple-meta-item">
+                <van-icon name="clock-o" size="16" />
+                <span>{{ selectedGoal?.deadlineString }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="apple-content">
+            <van-tabs v-model:active="detailTab" shrink>
+              <van-tab title="详情">
+                <div class="apple-tab-content">
+                  <p class="apple-description">{{ selectedGoal?.description || '暂无描述' }}</p>
+                  <div class="apple-progress-section">
+                    <div class="apple-progress-label">
+                      <van-icon name="award-o" size="16" />
+                      <span>总进度</span>
+                    </div>
+                    <van-progress :percentage="goalProgress(selectedGoal)" stroke-width="6" pivot-text="" color="#00c9a7" track-color="#23232a" />
+                  </div>
+                </div>
+              </van-tab>
+              <van-tab title="子目标">
+                <div class="apple-tab-content">
+                  <van-empty v-if="!(selectedGoal?.subGoals && selectedGoal.subGoals.length > 0)" description="暂无子目标" />
+                  <van-checkbox-group v-else v-model="checkedSubGoals">
+                    <van-cell-group inset class="apple-subgoal-group">
+                      <van-cell v-for="subGoal in (selectedGoal?.subGoals || [])" :key="subGoal.id" class="apple-subgoal-cell" clickable @click="toggleSubGoal(subGoal.id)">
+                        <template #title>
+                          <div class="apple-subgoal-row">
+                            <van-checkbox :name="subGoal.id" shape="round" size="18" checked-color="#00c9a7" @click.stop />
+                            <span class="apple-subgoal-title">{{ subGoal.title }}</span>
+                          </div>
+                        </template>
+                      </van-cell>
+                    </van-cell-group>
+                  </van-checkbox-group>
+                </div>
+              </van-tab>
+            </van-tabs>
+          </div>
+          <div class="apple-footer">
+            <van-button type="primary" block round class="apple-main-btn" @click="markGoalFinished(selectedGoal)">标记为完成</van-button>
           </div>
         </div>
       </van-popup>
@@ -182,6 +217,7 @@ const goals = ref<any[]>([])
 const showDetailModal = ref(false)
 const selectedGoal = ref<any | null>(null)
 const checkedSubGoals = ref<any[]>([])
+const detailTab = ref(0)
 
 const goalFinishCount = ref(0)
 const goalExpireCount = ref(0)
@@ -193,6 +229,7 @@ const listLoading = ref(false)
 const listFinished = ref(true)
 const { userInfo } = useUser();
 onMounted(async () => {
+  
   await fetchGoals()
 })
 
@@ -200,10 +237,10 @@ const fetchGoals = async () => {
   try {
     isLoading.value = true
     const response = await await getMPaths("getGoals", userInfo.value.username, "正在获取目标数据...");
-    goals.value = response.data || []
-    goalFinishCount.value = goals.value.filter(g => g.status === 'finished').length
+    goals.value = response.data.data || []
+    goalFinishCount.value = goals.value.filter(g => g.status === 'completed').length
     goalExpireCount.value = goals.value.filter(g => g.status === 'expired').length
-    goalIngCount.value = goals.value.filter(g => g.status === 'ongoing').length
+    goalIngCount.value = goals.value.filter(g => g.status === 'in-progress').length
     listFinished.value = true
   } catch (error) {
     showToast('获取目标列表失败')
@@ -237,7 +274,7 @@ const goToGuide = () => router.push('/user-guide')
 
 const showGoalDetail = (goal: any) => {
   selectedGoal.value = goal
-  const subs = goal?.subGoals || []
+  const subs = goal?.childGoals || []
   checkedSubGoals.value = subs.filter((sub: any) => sub.completed).map((sub: any) => sub.id)
   showDetailModal.value = true
 }
@@ -295,7 +332,7 @@ const getGoalStatusText = (status: string) => {
 }
 
 const goalProgress = (goal: any) => {
-  const subs = goal?.subGoals || []
+  const subs = goal?.childGoals || []
   if (!subs.length) return goal.status === 'finished' ? 100 : 0
   const done = subs.filter((s: any) => s.completed).length
   return Math.round((done / subs.length) * 100)
@@ -335,12 +372,123 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
 .goal-progress{margin-top:8px}
 .skeleton-wrap{padding:16px}
 .detail-content{padding:15px}
-.detail-content h2{color:var(--van-text-color);margin-bottom:8px}
-.detail-content p{color:var(--van-text-color-2);line-height:1.6;margin-bottom:16px}
-.sub-goals h3{color:var(--van-text-color);margin-bottom:12px}
+.detail-title{font-size:20px;font-weight:700;color:var(--van-text-color);margin-bottom:8px}
+.detail-description{font-size:14px;color:var(--van-text-color-2);line-height:1.6;margin-bottom:16px}
+.sub-goals-title{font-size:16px;font-weight:600;color:var(--van-text-color);margin-bottom:12px}
 .dark .hero{background:linear-gradient(135deg,#0f0f13,#1b1f23)}
 .light .hero {
   background: linear-gradient(135deg, #f5f7fa, #e0e5ec);
 }
 .swipe-btn{height:100%}
+.goal-detail-new{display:flex;flex-direction:column;height:100%;background:var(--van-background-color-light)}
+.detail-header{padding:20px 16px 12px;border-bottom:1px solid var(--van-border-color)}
+.detail-title-new{font-size:20px;font-weight:700;margin-bottom:12px;color:var(--van-text-color)}
+.detail-meta{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--van-text-color-2)}
+.meta-item{display:flex;align-items:center;gap:4px}
+.detail-content-new{flex:1;overflow-y:auto}
+.tab-content{padding:16px}
+.detail-description-new{font-size:14px;line-height:1.7;color:var(--van-text-color-2);margin-bottom:20px}
+.progress-section h4{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--van-text-color)}
+.detail-footer{padding:12px 16px;border-top:1px solid var(--van-border-color)}
+
+.goal-detail-apple {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: rgba(30,32,36,0.85);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+.apple-header {
+  padding: 24px 20px 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.apple-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.apple-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.apple-status {
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 2px 10px;
+}
+.apple-meta-row {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+}
+.apple-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #cfd3dc;
+  font-size: 13px;
+}
+.apple-content {
+  flex: 1;
+  overflow-y: auto;
+  background: none;
+}
+.apple-tab-content {
+  padding: 18px 20px;
+}
+.apple-description {
+  font-size: 15px;
+  color: #e2e2ea;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
+.apple-progress-section {
+  margin-top: 10px;
+}
+.apple-progress-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #cfd3dc;
+  margin-bottom: 8px;
+}
+.apple-subgoal-cell {
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.apple-subgoal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.apple-subgoal-title {
+  font-size: 14px;
+  color: #e2e2ea;
+}
+.apple-footer {
+  padding: 18px 20px 24px 20px;
+  background: none;
+  box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
+}
+.apple-main-btn {
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(90deg,#00c9a7 0%,#00b686 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,201,167,0.18);
+}
+
+.dark .goal-detail-apple {
+  background: rgba(30,32,36,0.92);
+}
+.dark .apple-header {
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
 </style>

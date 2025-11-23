@@ -1,229 +1,117 @@
 <template>
-  <!-- <van-config-provider :theme="currentTheme"> -->
-    <div class="mobile-message-center">
-      <!-- 顶部导航栏 -->
-      <van-nav-bar
-        title="消息中心"
-        left-text="返回"
-        left-arrow
-        @click-left="goBack"
-      >
-        <template #right>
-          <van-icon 
-            name="more-o" 
-            size="18" 
-            @click="showMoreActions = true" 
-          />
-        </template>
-      </van-nav-bar>
+  <div class="mobile-message-center-apple">
+    <van-nav-bar
+      title="消息中心"
+      left-arrow
+      @click-left="goBack"
+      class="apple-nav-bar"
+    >
+      <template #right>
+        <van-icon name="ellipsis" size="22" @click="showMoreActions = true" />
+      </template>
+    </van-nav-bar>
 
-      <!-- 消息类型标签 -->
-      <div class="message-tabs">
-        <van-tabs v-model:active="activeTab" sticky @change="handleTabChange">
-          <van-tab title="全部">
-            <template #title>
-              <van-badge :content="unreadCount > 0 ? unreadCount : ''">
-                全部
-              </van-badge>
-            </template>
-          </van-tab>
-          <van-tab title="系统通知">
-            <template #title>
-              <van-badge :content="systemUnreadCount > 0 ? systemUnreadCount : ''">
-                系统通知
-              </van-badge>
-            </template>
-          </van-tab>
-          <van-tab title="目标提醒">
-            <template #title>
-              <van-badge :content="goalUnreadCount > 0 ? goalUnreadCount : ''">
-                目标提醒
-              </van-badge>
-            </template>
-          </van-tab>
-          <van-tab title="协作消息">
-            <template #title>
-              <van-badge :content="collabUnreadCount > 0 ? collabUnreadCount : ''">
-                协作消息
-              </van-badge>
-            </template>
-          </van-tab>
-        </van-tabs>
-      </div>
-
-      <!-- 消息列表 -->
-      <div class="message-list">
-        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-          <van-list
-            v-model:loading="loading"
-            :finished="finished"
-            finished-text="没有更多消息了"
-            @load="onLoad"
-          >
-            <van-swipe-cell
-              v-for="message in filteredMessages"
-              :key="message.id"
-              class="message-item"
-            >
-              <van-cell
-                :class="['message-cell', { 'unread': !message.read }]"
-                @click="openMessage(message)"
-                is-link
-              >
-                <template #title>
-                  <div class="message-header">
-                    <div class="message-title">{{ message.title }}</div>
-                    <van-tag
-                      :type="getMessageTypeColor(message.type)"
-                      size="small"
-                      plain
-                    >
-                      {{ getMessageTypeText(message.type) }}
-                    </van-tag>
-                  </div>
-                </template>
-                
-                <template #label>
-                  <div class="message-content">{{ message.content }}</div>
-                  <div class="message-meta">
-                    <span class="message-time">{{ formatTime(message.createdAt) }}</span>
-                    <span v-if="message.sender" class="message-sender">
-                      来自: {{ message.sender }}
-                    </span>
-                  </div>
-                </template>
-                
-                <template #right-icon>
-                  <div class="message-status">
-                    <van-icon
-                      v-if="!message.read"
-                      name="circle"
-                      color="#1989fa"
-                      size="8"
-                    />
-                  </div>
-                </template>
-              </van-cell>
-              
-              <!-- 左滑操作 -->
-              <template #left>
-                <van-button
-                  square
-                  type="primary"
-                  text="标记已读"
-                  @click="markAsRead(message)"
-                />
-              </template>
-              
-              <template #right>
-                <van-button
-                  square
-                  type="danger"
-                  text="删除"
-                  @click="deleteMessage(message)"
-                />
-              </template>
-            </van-swipe-cell>
-          </van-list>
-        </van-pull-refresh>
-      </div>
-
-      <!-- 空状态 -->
-      <div v-if="filteredMessages.length === 0 && !loading" class="empty-state">
-        <van-empty description="暂无消息">
-          <van-button type="primary" round @click="goToHome">
-            返回首页
-          </van-button>
-        </van-empty>
-      </div>
-
-      <!-- 底部操作栏 -->
-      <div v-if="filteredMessages.length > 0" class="bottom-actions">
-        <van-button
-          type="primary"
-          size="small"
-          @click="markAllAsRead"
-          :disabled="unreadCount === 0"
-        >
-          全部已读
-        </van-button>
-        <van-button
-          type="danger"
-          size="small"
-          @click="showClearConfirm = true"
-        >
-          清空消息
-        </van-button>
-      </div>
-
-      <!-- 更多操作弹出菜单 -->
-      <van-action-sheet
-        v-model:show="showMoreActions"
-        :actions="moreActions"
-        @select="onActionSelect"
-        cancel-text="取消"
-      />
-
-      <!-- 消息详情弹窗 -->
-      <van-popup
-        v-model:show="showMessageDetail"
-        position="bottom"
-        :style="{ height: '70%' }"
-        round
-      >
-        <div v-if="selectedMessage" class="message-detail">
-          <div class="detail-header">
-            <h3>{{ selectedMessage.title }}</h3>
-            <van-button
-              type="primary"
-              size="small"
-              @click="closeMessageDetail"
-            >
-              关闭
-            </van-button>
-          </div>
-          
-          <div class="detail-content">
-            <div class="detail-meta">
-              <van-tag :type="getMessageTypeColor(selectedMessage.type)">
-                {{ getMessageTypeText(selectedMessage.type) }}
-              </van-tag>
-              <span class="detail-time">{{ formatTime(selectedMessage.createdAt) }}</span>
-              <span v-if="selectedMessage.sender" class="detail-sender">
-                发送人: {{ selectedMessage.sender }}
-              </span>
-            </div>
-            
-            <div class="detail-text">
-              {{ selectedMessage.content }}
-            </div>
-            
-            <div v-if="selectedMessage.actionUrl" class="detail-actions">
-              <van-button
-                type="primary"
-                block
-                @click="handleMessageAction(selectedMessage)"
-              >
-                查看详情
-              </van-button>
-            </div>
-          </div>
-        </div>
-      </van-popup>
-
-      <!-- 清空确认弹窗 -->
-      <van-dialog
-        v-model:show="showClearConfirm"
-        title="确认清空"
-        show-cancel-button
-        @confirm="clearAllMessages"
-      >
-        <div style="padding: 20px; text-align: center;">
-          确定要清空所有消息吗？此操作不可恢复。
-        </div>
-      </van-dialog>
+    <div class="apple-tabs-container">
+      <van-tabs v-model:active="activeTab" shrink animated>
+        <van-tab>
+          <template #title>
+            <van-badge :content="unreadCount > 0 ? unreadCount : ''" class="apple-badge">全部</van-badge>
+          </template>
+        </van-tab>
+        <van-tab>
+          <template #title>
+            <van-badge :content="systemUnreadCount > 0 ? systemUnreadCount : ''" class="apple-badge">系统通知</van-badge>
+          </template>
+        </van-tab>
+        <van-tab>
+          <template #title>
+            <van-badge :content="goalUnreadCount > 0 ? goalUnreadCount : ''" class="apple-badge">目标提醒</van-badge>
+          </template>
+        </van-tab>
+        <van-tab>
+          <template #title>
+            <van-badge :content="collabUnreadCount > 0 ? collabUnreadCount : ''" class="apple-badge">协作消息</van-badge>
+          </template>
+        </van-tab>
+      </van-tabs>
     </div>
-  <!-- </van-config-provider> -->
+
+    <div class="apple-list-container">
+      <van-pull-refresh v-model="refreshing" @refresh="onRefresh" class="apple-pull-refresh">
+        <van-list
+          v-model:loading="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          @load="onLoad"
+        >
+          <van-swipe-cell
+            v-for="message in filteredMessages"
+            :key="message.id"
+            class="apple-swipe-cell"
+          >
+            <div :class="['apple-message-card', { 'unread': !message.read }]" @click="openMessage(message)">
+              <div class="card-header">
+                <div class="card-title-row">
+                  <van-icon :name="getMessageTypeIcon(message.type)" size="18" class="card-icon" />
+                  <h4 class="card-title">{{ message.title }}</h4>
+                </div>
+                <span class="card-time">{{ formatTime(message.createdAt) }}</span>
+              </div>
+              <p class="card-content">{{ message.content }}</p>
+              <div v-if="!message.read" class="unread-dot"></div>
+            </div>
+            <template #left>
+              <van-button square type="primary" text="已读" class="swipe-btn-read" @click="markAsRead(message)" />
+            </template>
+            <template #right>
+              <van-button square type="danger" text="删除" class="swipe-btn-delete" @click="deleteMessage(message)" />
+            </template>
+          </van-swipe-cell>
+        </van-list>
+      </van-pull-refresh>
+    </div>
+
+    <van-empty v-if="filteredMessages.length === 0 && !loading" description="暂无消息" class="apple-empty-state" />
+
+    <van-action-sheet
+      v-model:show="showMoreActions"
+      :actions="moreActions"
+      cancel-text="取消"
+      class="apple-action-sheet"
+      @select="onActionSelect"
+    />
+
+    <van-popup
+      v-model:show="showMessageDetail"
+      position="bottom"
+      round
+      closeable
+      :style="{ height: '85%' }"
+      class="apple-message-popup"
+    >
+      <div v-if="selectedMessage" class="apple-popup-content">
+        <div class="popup-header">
+          <van-icon :name="getMessageTypeIcon(selectedMessage.type)" size="24" class="popup-icon" />
+          <h3 class="popup-title">{{ selectedMessage.title }}</h3>
+          <span class="popup-time">{{ formatTime(selectedMessage.createdAt) }}</span>
+        </div>
+        <div class="popup-body">
+          <p class="popup-text">{{ selectedMessage.content }}</p>
+        </div>
+        <div v-if="selectedMessage.actionUrl" class="popup-footer">
+          <van-button
+            type="primary"
+            block
+            round
+            class="apple-main-btn"
+            @click="handleMessageAction(selectedMessage)"
+          >
+            查看详情
+          </van-button>
+        </div>
+      </div>
+    </van-popup>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -369,6 +257,16 @@ const getMessageTypeText = (type) => {
     'reminder': '提醒'
   }
   return typeMap[type] || '未知'
+}
+
+const getMessageTypeIcon = (type) => {
+  const iconMap = {
+    'system': 'setting-o',
+    'goal': 'bullhorn-o',
+    'collaboration': 'friends-o',
+    'reminder': 'clock-o'
+  }
+  return iconMap[type] || 'chat-o'
 }
 
 // 数据加载方法
@@ -547,146 +445,189 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.mobile-message-center {
+.mobile-message-center-apple {
+  background-color: #f7f8fa;
   min-height: 100vh;
-  background-color: var(--van-background-color);
 }
 
-.message-tabs {
-  position: sticky;
-  top: 46px;
-  z-index: 1;
+.apple-nav-bar {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
 }
 
-.message-list {
-  padding: 0 12px;
+.apple-tabs-container {
+  padding: 0 16px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
 }
 
-.message-item {
-  margin-bottom: 8px;
-  border-radius: 8px;
+.apple-badge {
+  font-weight: 600;
+}
+
+.apple-list-container {
+  padding: 16px;
+}
+
+.apple-swipe-cell {
+  margin-bottom: 16px;
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 
-.message-cell {
-  background-color: var(--van-background-color-light);
-  border-radius: 8px;
+.apple-message-card {
+  position: relative;
+  padding: 16px;
+  background: #fff;
+  border-radius: 16px;
+  transition: transform 0.2s ease;
 }
 
-.message-cell.unread {
-  background-color: var(--van-primary-color-light);
+.apple-message-card.unread {
+  background: #fff;
 }
 
-.message-header {
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
-}
-
-.message-title {
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--van-text-color);
-  flex: 1;
-  margin-right: 8px;
-}
-
-.message-content {
-  color: var(--van-text-color-2);
-  font-size: 14px;
   margin-bottom: 8px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-icon {
+  color: #007aff;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1c1e;
+}
+
+.card-time {
+  font-size: 12px;
+  color: #8e8e93;
+}
+
+.card-content {
+  font-size: 14px;
+  color: #3c3c43;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.message-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--van-text-color-3);
+.unread-dot {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 8px;
+  height: 8px;
+  background: #007aff;
+  border-radius: 50%;
 }
 
-.message-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-}
-
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.bottom-actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px;
-  background-color: var(--van-background-color);
-  border-top: 1px solid var(--van-border-color);
-  display: flex;
-  gap: 12px;
-  z-index: 100;
-}
-
-.message-detail {
+.swipe-btn-read, .swipe-btn-delete {
   height: 100%;
+}
+
+.apple-empty-state {
+  padding-top: 80px;
+}
+
+.apple-action-sheet {
+  --van-action-sheet-border-radius: 24px;
+}
+
+.apple-message-popup {
+  background: rgba(242,242,247,0.95);
+  backdrop-filter: blur(12px);
+}
+
+.apple-popup-content {
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
-.detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--van-border-color);
-}
-
-.detail-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--van-text-color);
-}
-
-.detail-content {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.detail-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  font-size: 12px;
-  color: var(--van-text-color-2);
-}
-
-.detail-text {
-  line-height: 1.6;
-  color: var(--van-text-color);
+.popup-header {
+  text-align: center;
   margin-bottom: 20px;
 }
 
-.detail-actions {
-  margin-top: auto;
+.popup-icon {
+  color: #007aff;
+  margin-bottom: 8px;
 }
 
-/* 深色主题适配 */
-:deep(.van-theme-dark) {
-  --van-background-color: #1a1a1a;
-  --van-background-color-light: #2a2a2a;
-  --van-text-color: #f5f5f5;
-  --van-text-color-2: #a0a0a0;
-  --van-text-color-3: #808080;
-  --van-primary-color-light: rgba(25, 137, 250, 0.1);
+.popup-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1c1c1e;
+}
+
+.popup-time {
+  font-size: 13px;
+  color: #8e8e93;
+}
+
+.popup-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.popup-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3c3c43;
+}
+
+.popup-footer {
+  margin-top: 20px;
+}
+
+.apple-main-btn {
+  background: linear-gradient(90deg, #007aff 0%, #0052d9 100%);
+  border: none;
+}
+
+/* Dark Mode */
+.van-theme-dark .mobile-message-center-apple {
+  background-color: #000;
+}
+
+.van-theme-dark .apple-nav-bar, .van-theme-dark .apple-tabs-container {
+  background: rgba(28,28,30,0.85);
+}
+
+.van-theme-dark .apple-message-card {
+  background: #1c1c1e;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+
+.van-theme-dark .card-title, .van-theme-dark .popup-title {
+  color: #fff;
+}
+
+.van-theme-dark .card-content, .van-theme-dark .popup-text {
+  color: #e5e5ea;
+}
+
+.van-theme-dark .card-time, .van-theme-dark .popup-time {
+  color: #8d8d93;
+}
+
+.van-theme-dark .apple-message-popup {
+  background: rgba(28,28,30,0.95);
 }
 </style>

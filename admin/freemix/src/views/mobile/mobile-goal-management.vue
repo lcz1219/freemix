@@ -1,15 +1,26 @@
 <template>
-  <van-config-provider :theme="currentTheme">
+  <van-config-provider :theme="currentTheme" class="apple-style-provider">
     <div class="mobile-goal-management">
       <!-- 顶部导航栏 -->
       <van-nav-bar
         title="目标管理"
-        left-text="返回"
         left-arrow
         @click-left="goBack"
+        class="apple-nav-bar"
       >
+        <template #left>
+          <van-icon name="arrow-left" size="18" color="var(--van-text-color)" />
+        </template>
         <template #right>
-          <van-icon name="plus" size="18" @click="addNewGoal" />
+          <van-button
+            round
+            size="small"
+            class="apple-gradient-button"
+            @click="addNewGoal"
+          >
+            <van-icon name="plus" style="margin-right: 4px;" />
+            新目标
+          </van-button>
         </template>
       </van-nav-bar>
 
@@ -17,107 +28,87 @@
       <div class="search-filter-section">
         <van-search
           v-model="searchQuery"
-          placeholder="搜索目标..."
+          placeholder="搜索目标标题或描述..."
           @search="handleSearch"
           @clear="handleClear"
+          shape="round"
+          background="transparent"
         />
-        
-        <van-dropdown-menu>
-          <van-dropdown-item 
-            v-model="statusFilter" 
-            :options="statusOptions" 
-            title="状态筛选"
+        <van-dropdown-menu class="apple-dropdown-menu">
+          <van-dropdown-item
+            v-model="statusFilter"
+            :options="statusOptions"
             @change="handleFilterChange"
           />
         </van-dropdown-menu>
       </div>
 
       <!-- 目标列表 -->
-      <div class="goals-list">
-        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+      <div class="goals-list-container">
+        <van-pull-refresh v-model="refreshing" @refresh="onRefresh" class="apple-pull-refresh">
           <van-list
             v-model:loading="loading"
             :finished="finished"
-            finished-text="没有更多了"
+            finished-text="已经到底了 ✨"
             @load="onLoad"
+            :immediate-check="false"
           >
-            <van-cell
-              v-for="goal in filteredGoals"
-              :key="goal.id"
-              class="goal-item"
-              @click="showGoalDetail(goal)"
-              is-link
-            >
-              <template #title>
-                <div class="goal-header">
-                  <span class="goal-title">{{ goal.title }}</span>
-                  <van-tag
-                    :type="getGoalStatusType(goal.status)"
-                    plain
-                    size="small"
-                  >
+            <div v-for="goal in filteredGoals" :key="goal.id" class="apple-card-wrapper">
+              <div class="apple-card goal-card" @click="showGoalDetail(goal)">
+                <div class="card-header">
+                  <h4 class="goal-title">{{ goal.title }}</h4>
+                  <van-tag :type="getGoalStatusType(goal.status)" round>
                     {{ getGoalStatusText(goal.status) }}
                   </van-tag>
                 </div>
-              </template>
-              
-              <template #label>
-                <div class="goal-meta">
-                  <div class="goal-deadline">
-                    <van-icon name="calendar-o" size="14" />
-                    <span>{{ formatDate(goal.deadline) }}</span>
+                <div class="card-body">
+                  <div class="goal-meta">
+                    <span><van-icon name="calendar-o" /> {{ formatDate(goal.deadline) }}</span>
+                    <span><van-icon name="user-o" /> {{ goal.owner }}</span>
                   </div>
-                  <div class="goal-owner">
-                    <van-icon name="contact" size="14" />
-                    <span>{{ goal.owner }}</span>
+                  <div class="progress-section">
+                    <van-progress
+                      :percentage="goal.progress"
+                      stroke-width="8"
+                      :show-pivot="false"
+                      color="var(--apple-gradient-color)"
+                      track-color="var(--van-background-color)"
+                    />
+                    <span class="progress-text">{{ goal.progress }}%</span>
+                  </div>
+                  <div class="goal-tags" v-if="goal.tags && goal.tags.length">
+                    <van-tag
+                      v-for="tag in goal.tags"
+                      :key="tag"
+                      plain
+                      round
+                      :color="getTagColor(tag)"
+                      class="tag-item"
+                    >
+                      {{ tag }}
+                    </van-tag>
                   </div>
                 </div>
-                
-                <!-- 进度条 -->
-                <div class="progress-section">
-                  <van-progress
-                    :percentage="goal.progress"
-                    stroke-width="6"
-                    :show-pivot="false"
-                    color="linear-gradient(90deg, #81c683, #4b0082)"
-                  />
-                  <span class="progress-text">{{ goal.progress }}%</span>
-                </div>
-                
-                <!-- 标签 -->
-                <div class="goal-tags" v-if="goal.tags && goal.tags.length">
-                  <van-tag
-                    v-for="tag in goal.tags"
-                    :key="tag"
-                    :type="getTagType(tag)"
-                    plain
-                    size="small"
-                    class="tag-item"
-                  >
-                    {{ tag }}
-                  </van-tag>
-                </div>
-              </template>
-            </van-cell>
+              </div>
+            </div>
           </van-list>
         </van-pull-refresh>
       </div>
 
       <!-- 空状态 -->
-      <div v-if="filteredGoals.length === 0 && !loading" class="empty-state">
-        <van-empty description="暂无目标">
-          <van-button type="primary" round @click="addNewGoal">
-            添加第一个目标
+      <div v-if="!loading && filteredGoals.length === 0" class="empty-state">
+        <van-empty description="还没有任何目标哦">
+          <van-button
+            round
+            class="apple-gradient-button"
+            @click="addNewGoal"
+          >
+            <van-icon name="plus" style="margin-right: 4px;" />
+            创建第一个目标
           </van-button>
         </van-empty>
       </div>
 
-      <!-- 悬浮操作按钮 -->
-      <van-floating-bubble
-        axis="xy"
-        icon="plus"
-        @click="addNewGoal"
-      />
     </div>
   </van-config-provider>
 </template>
@@ -138,7 +129,6 @@ const { isDark } = useSettings()
 const goalsHook = useGoals()
 
 // 主题配置
-const currentTheme = computed(() => isDark.value ? 'dark' : 'light')
 
 // 响应式数据
 const goals = ref([])
@@ -216,14 +206,14 @@ const getGoalStatusText = (status) => {
   return statusMap[status] || '未知'
 }
 
-const getTagType = (tag) => {
-  const tagMap = {
-    '学习': 'success',
-    '工作': 'primary',
-    '生活': 'warning',
-    '运动': 'danger'
+const getTagColor = (tag) => {
+  const tagColorMap = {
+    '学习': '#4CAF50',
+    '工作': '#2196F3',
+    '生活': '#FF9800',
+    '运动': '#f44336',
   }
-  return tagMap[tag] || 'default'
+  return tagColorMap[tag] || '#757575'
 }
 
 // 数据加载方法
@@ -292,52 +282,144 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 全局和根元素 */
+.apple-style-provider {
+  --van-background-color: #f7f8fa;
+  --van-background-color-light: #ffffff;
+  --van-text-color: #333;
+  --van-text-color-2: #666;
+  --van-border-color: #ebedf0;
+  --apple-gradient-color: linear-gradient(135deg, #00c9a7, #00a98f);
+}
+
+.van-theme-dark .apple-style-provider {
+  --van-background-color: #1c1c1e;
+  --van-background-color-light: #2c2c2e;
+  --van-text-color: #f5f5f7;
+  --van-text-color-2: #a9a9b0;
+  --van-border-color: #3a3a3c;
+}
+
 .mobile-goal-management {
   min-height: 100vh;
   background-color: var(--van-background-color);
-}
-
-.search-filter-section {
-  padding: 8px 0;
-  background-color: var(--van-background-color-light);
-  position: sticky;
-  top: 46px;
-  z-index: 1;
-}
-
-.goals-list {
-  padding: 0 12px;
-}
-
-.goal-item {
-  margin-bottom: 8px;
-  border-radius: 8px;
-  background-color: var(--van-background-color-light);
-}
-
-.goal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.goal-title {
-  font-weight: 600;
-  font-size: 16px;
   color: var(--van-text-color);
 }
 
-.goal-meta {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 8px;
-  font-size: 12px;
-  color: var(--van-text-color-2);
+/* 导航栏 */
+.apple-nav-bar {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--van-border-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.goal-deadline,
-.goal-owner {
+.van-theme-dark .apple-nav-bar {
+  background-color: rgba(28, 28, 30, 0.7);
+}
+
+:deep(.van-nav-bar__title) {
+  font-weight: 600;
+  color: var(--van-text-color);
+}
+
+/* 渐变按钮 */
+.apple-gradient-button {
+  border: none;
+  color: white;
+  font-weight: 500;
+  background: var(--apple-gradient-color);
+  transition: all 0.3s ease;
+}
+
+.apple-gradient-button:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* 搜索和筛选 */
+.search-filter-section {
+  padding: 8px 16px;
+  background-color: var(--van-background-color-light);
+  border-bottom: 1px solid var(--van-border-color);
+  position: sticky;
+  top: 46px; /* 与 van-nav-bar 高度一致 */
+  z-index: 9;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+:deep(.van-search) {
+  flex-grow: 1;
+  padding: 0;
+}
+
+.apple-dropdown-menu {
+  flex-shrink: 0;
+  width: 100px;
+  height: 34px;
+  border-radius: 17px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+:deep(.van-dropdown-menu__bar) {
+  height: 100%;
+  background-color: var(--van-background-color);
+}
+
+/* 列表和卡片 */
+.goals-list-container {
+  padding: 16px;
+}
+
+.apple-card-wrapper {
+  margin-bottom: 16px;
+}
+
+.apple-card {
+  background-color: var(--van-background-color-light);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.apple-card:active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.van-theme-dark .apple-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.goal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--van-text-color);
+  margin: 0;
+}
+
+.card-body .goal-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--van-text-color-2);
+  margin-bottom: 12px;
+}
+
+.goal-meta span {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -347,35 +429,32 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .progress-text {
   font-size: 12px;
+  font-weight: 500;
   color: var(--van-text-color-2);
-  min-width: 36px;
 }
 
 .goal-tags {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .tag-item {
-  margin: 0;
+  padding: 2px 8px;
 }
 
+/* 空状态 */
 .empty-state {
   padding: 60px 20px;
   text-align: center;
 }
 
-/* 深色主题适配 */
-:deep(.van-theme-dark) {
-  --van-background-color: #1a1a1a;
-  --van-background-color-light: #2a2a2a;
-  --van-text-color: #f5f5f5;
-  --van-text-color-2: #a0a0a0;
+.apple-pull-refresh {
+  min-height: calc(100vh - 200px); /* 估算值，确保可滚动 */
 }
 </style>
