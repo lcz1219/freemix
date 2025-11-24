@@ -364,7 +364,7 @@ const prevStep = () => {
 
 // 跳转到登录页面
 const toLogin = () => {
-  router.replace('/mobile/login')
+  router.replace('/login')
 }
 
 // 返回上一页

@@ -172,7 +172,7 @@ const onSubmit = async () => {
       }
       
       showSuccessToast('登录成功')
-      router.push('/mobile/home')
+      router.push('/home')
     } else {
       showToast(res.data.msg || '登录失败')
       await loadCaptcha() // 刷新验证码
