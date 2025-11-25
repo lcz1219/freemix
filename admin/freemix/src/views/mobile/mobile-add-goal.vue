@@ -1,321 +1,320 @@
 <template>
-  <van-config-provider :theme="currentTheme" class="apple-style-provider">
-    <div class="mobile-add-goal">
+  <!-- 强制使用 dark 主题，确保 Vant 组件内部组件（如 Picker）变黑 -->
+  <van-config-provider theme="dark">
+    <div class="freemix-page dark-mode">
+      
+      <!-- 顶部背景装饰 (保持绿色渐变，但在暗黑下更显眼) -->
+      <div class="header-bg"></div>
+
       <!-- 顶部导航栏 -->
       <van-nav-bar
-        title="添加目标"
-        left-arrow
-        @click-left="goBack"
-        class="apple-nav-bar"
+        fixed
+        placeholder
+        :border="false"
+        class="custom-nav"
+        z-index="100"
       >
         <template #left>
-          <van-icon name="arrow-left" size="18" color="var(--van-text-color)" />
+          <div class="nav-btn-text white" @click="router.back()">
+            <van-icon name="arrow-left" /> 返回
+          </div>
+        </template>
+        <template #title>
+          <span class="nav-title white">新建目标</span>
         </template>
         <template #right>
-          <van-button
-            round
-            size="small"
-            class="apple-gradient-button"
-            @click="saveGoal"
-            :loading="saving"
-          >
-            <van-icon name="success" style="margin-right: 4px;" />
-            保存
-          </van-button>
+          <van-loading v-if="saving" type="spinner" size="20" color="#fff" />
+          <div v-else class="nav-btn-text white bold" @click="saveGoal">保存</div>
         </template>
       </van-nav-bar>
 
-      <!-- 表单内容 -->
-      <div class="form-container">
-        <van-form @submit="saveGoal">
-          <!-- 基本信息 -->
-          <div class="apple-card">
-            <van-cell-group inset title="基本信息">
-              <van-field
-                v-model="goal.title"
-                name="title"
-                label="目标标题"
-                placeholder="请输入目标标题"
-                :rules="formRules.title"
-                required
-                class="apple-field"
-                maxlength="30"
-                show-word-limit
-              />
-              <van-field
-                v-model="goal.description"
-                name="description"
-                label="目标描述"
-                type="textarea"
-                placeholder="请输入目标描述"
-                rows="3"
-                autosize
-                class="apple-field"
-              />
-            </van-cell-group>
+      <!-- 主要内容区域 -->
+      <div class="content-wrapper">
+        <van-form @submit="saveGoal" ref="formRef" scroll-to-error>
+          
+          <!-- 核心卡片：标题与描述 -->
+          <div class="main-card">
+            <div class="card-header">
+              <van-icon name="flag-o" class="header-icon" />
+              <span>核心目标</span>
+            </div>
+            <van-field
+              v-model="goal.title"
+              name="title"
+              placeholder="定个小目标 (例如: 学习 Vue3)"
+              :rules="formRules.title"
+              class="freemix-input title-input"
+              maxlength="30"
+              :border="false"
+            />
+            <div class="divider"></div>
+            <van-field
+              v-model="goal.description"
+              name="description"
+              type="textarea"
+              placeholder="添加详细描述，让目标更清晰..."
+              rows="3"
+              autosize
+              class="freemix-input desc-input"
+              :border="false"
+            />
           </div>
 
-          <!-- 子目标 -->
-          <div class="apple-card">
-            <van-cell-group inset title="子目标">
-              <div v-if="goal.childGoals.length === 0" class="apple-empty-placeholder">
-                <van-empty description="暂无子目标" image-size="60" />
-              </div>
-              <div v-else class="apple-subgoal-list">
-                <div v-for="(childGoal, index) in goal.childGoals" :key="index" class="apple-subgoal-item">
-                  <van-field
-                    v-model="childGoal.message"
-                    :placeholder="`子目标 ${index + 1}`"
-                    class="apple-subgoal-field"
-                  />
-                  <van-icon
-                    name="minus"
-                    class="apple-remove-icon"
-                    @click="removeChildGoal(index)"
-                  />
-                </div>
-              </div>
-              <div class="apple-add-button-container">
-                <van-button
-                  round
-                  icon="plus"
-                  class="apple-gradient-button-small"
-                  @click="addChildGoal"
-                >
-                  添加子目标
-                </van-button>
-              </div>
-            </van-cell-group>
-          </div>
-
-          <!-- 文件上传 -->
-          <div class="apple-card">
-            <van-cell-group inset title="文件上传">
-              <van-cell title="附件" class="apple-field">
-                <template #value>
-                  <MobileUpload
-                    @uploadSuccess="fileChange"
-                    @fileRemove="fileChange"
-                    @uploadError="handleFileUploadError"
-                    :fileList="goal.fileList"
-                  />
-                </template>
-              </van-cell>
-            </van-cell-group>
-          </div>
-
-          <!-- 负责人与时间 -->
-          <div class="apple-card">
-            <van-cell-group inset title="负责人与时间">
+          <!-- 属性设置卡片 -->
+          <div class="info-card">
+            <div class="card-title">属性设置</div>
+            <div class="grid-fields">
               <van-field
                 v-model="goal.owner"
-                name="owner"
                 label="负责人"
-                placeholder="请选择负责人"
-                :rules="formRules.owner"
-                required
+                placeholder="点击选择"
                 readonly
                 is-link
+                input-align="right"
                 @click="showOwnerPicker = true"
-                class="apple-field"
-              />
+                class="grid-field"
+                :border="false"
+              >
+                <template #left-icon><van-icon name="manager-o" color="#00Cba5" /></template>
+              </van-field>
+
               <van-field
-                v-model="formattedDeadline"
-                name="deadline"
+                v-model="formattedDeadlineStr"
                 label="截止日期"
-                placeholder="请选择截止日期"
-                :rules="formRules.deadline"
-                required
+                placeholder="点击选择"
                 readonly
                 is-link
-                @click=" showDatePicker = true"
-                class="apple-field"
-              />
-            </van-cell-group>
-          </div>
+                input-align="right"
+                @click="showDatePicker = true"
+                class="grid-field"
+                :border="false"
+              >
+                 <template #left-icon><van-icon name="calender-o" color="#FF9F43" /></template>
+              </van-field>
 
-          <!-- 优先级与分类 -->
-          <div class="apple-card">
-            <van-cell-group inset title="优先级与分类">
               <van-field
-                v-model="goal.level"
-                name="level"
+                v-model="levelLabel"
                 label="优先级"
-                placeholder="请选择优先级"
-                :rules="formRules.level"
-                required
-                is-link
+                placeholder="点击选择"
                 readonly
+                is-link
+                input-align="right"
                 @click="showLevelPicker = true"
-                class="apple-field"
-              />
-              <van-field
-                v-model="goalTagsText"
-                name="tags"
-                label="分类标签"
-                placeholder="添加标签（回车确认）"
-                class="apple-field"
+                class="grid-field"
+                :border="false"
               >
-                <template #button>
-                  <van-button 
-                    size="small" 
-                    class="apple-gradient-button-small" 
-                    @click="addCustomTag"
-                  >
-                    添加
-                  </van-button>
+                <template #left-icon><van-icon name="fire-o" color="#FF6B6B" /></template>
+                <template #right-icon>
+                  <van-tag :color="getLevelColor(goal.level)" v-if="goal.level" round size="medium">{{ levelLabel }}</van-tag>
+                  <van-icon name="arrow" class="van-badge__wrapper" style="margin-left: 4px; color: #555;" />
                 </template>
               </van-field>
-              <div v-if="goal.tags.length > 0" class="apple-tags-container">
-                <van-tag
-                  v-for="(tag, index) in goal.tags"
-                  :key="index"
-                  type="primary"
-                  size="medium"
-                  closeable
-                  @close="removeTag(index)"
-                  class="apple-tag"
-                >
-                  {{ tag }}
-                </van-tag>
-              </div>
-            </van-cell-group>
-          </div>
 
-          <!-- 预计工时 -->
-          <div class="apple-card">
-            <van-cell-group inset title="工时估算">
-              <van-field
+               <van-field
                 v-model="goal.estimatedHours"
-                name="estimatedHours"
                 label="预计工时"
-                placeholder="请输入预计工时"
+                placeholder="0"
                 type="number"
-                class="apple-field"
+                input-align="right"
+                class="grid-field"
+                :border="false"
               >
+                <template #left-icon><van-icon name="clock-o" color="#54A0FF" /></template>
                 <template #extra>
-                  小时
+                  <span class="suffix-text">小时</span>
                 </template>
               </van-field>
-            </van-cell-group>
+            </div>
           </div>
 
-          <!-- 备注 -->
-          <div class="apple-card">
-            <van-cell-group inset title="备注">
-              <van-field
-                v-model="goal.notes"
-                name="notes"
-                label="备注"
-                type="textarea"
-                placeholder="有什么需要补充的吗？"
-                rows="2"
-                autosize
-                class="apple-field"
-              />
-            </van-cell-group>
+          <!-- 子任务清单 -->
+          <div class="info-card">
+            <div class="section-header-row">
+              <div class="card-title">子任务清单 <span class="count-badge" v-if="goal.childGoals.length">{{goal.childGoals.length}}</span></div>
+              <div class="header-action" @click="addChildGoal">
+                <van-icon name="plus" /> 添加任务
+              </div>
+            </div>
+            
+            <div class="subgoal-container">
+              <transition-group name="list">
+                <div v-for="(childGoal, index) in goal.childGoals" :key="index" class="subgoal-item">
+                  <div class="subgoal-index">{{ index + 1 }}</div>
+                  <div class="subgoal-content">
+                    <van-field
+                      v-model="childGoal.message"
+                      :placeholder="`输入第 ${index + 1} 步计划`"
+                      :border="false"
+                      class="subgoal-input"
+                    />
+                  </div>
+                  <div class="subgoal-del" @click="removeChildGoal(index)">
+                    <van-icon name="delete-o" />
+                  </div>
+                </div>
+              </transition-group>
+              
+              <div v-if="goal.childGoals.length === 0" class="empty-placeholder" @click="addChildGoal">
+                <!-- 这里的图片建议替换为暗色系占位图，此处用 CSS 滤镜简单处理 -->
+                <img src="https://fastly.jsdelivr.net/npm/@vant/assets/custom-empty-image.png" alt="empty" class="dark-invert" />
+                <p>拆解目标是成功的第一步</p>
+                <van-button size="small" round color="rgba(0, 203, 165, 0.2)" class="empty-btn">添加子任务</van-button>
+              </div>
+            </div>
           </div>
 
-          <!-- 操作按钮 -->
-          <div class="apple-card">
-            <van-cell-group inset>
-              <div class="apple-action-buttons">
-                <van-button 
-                  type="default" 
-                  size="large" 
-                  @click="handleReset"
-                  class="apple-reset-button"
-                >
-                  重置
-                </van-button>
-                <van-button 
-                  type="primary" 
-                  size="large" 
-                  @click="saveGoal"
-                  :loading="saving"
-                  class="apple-submit-button"
-                >
-                  创建目标
-                </van-button>
+          <!-- 附件与标签 -->
+          <div class="info-card">
+            <div class="card-title">更多信息</div>
+            <van-cell-group :border="false" style="background: transparent;">
+              <div class="upload-section">
+                <div class="sub-label">附件上传</div>
+                <MobileUpload
+                  @uploadSuccess="fileChange"
+                  @fileRemove="fileChange"
+                  @uploadError="handleFileUploadError"
+                  :fileList="goal.fileList"
+                />
+              </div>
+              
+              <div class="tag-section">
+                <div class="sub-label">标签</div>
+                <div class="tag-input-row">
+                   <van-field
+                    v-model="goalTagsText"
+                    placeholder="输入标签后点击添加"
+                    class="freemix-input tag-field"
+                    :border="false"
+                    @keyup.enter="addCustomTag"
+                  >
+                    <template #button>
+                      <van-button 
+                        size="small" 
+                        color="#00Cba5"
+                        @click="addCustomTag"
+                        :disabled="!goalTagsText"
+                        round
+                      >
+                        添加
+                      </van-button>
+                    </template>
+                  </van-field>
+                </div>
+                
+                <div v-if="goal.tags.length > 0" class="tags-wrapper">
+                  <van-tag
+                    v-for="(tag, index) in goal.tags"
+                    :key="index"
+                    closeable
+                    size="medium"
+                    color="#2C2C2E"
+                    text-color="#00Cba5"
+                    @close="removeTag(index)"
+                    class="custom-tag"
+                  >
+                    # {{ tag }}
+                  </van-tag>
+                </div>
+              </div>
+              
+              <div class="notes-section">
+                 <div class="sub-label">备注</div>
+                 <van-field
+                  v-model="goal.notes"
+                  type="textarea"
+                  placeholder="其他需要注意的事项..."
+                  rows="2"
+                  autosize
+                  class="freemix-input note-input"
+                  :border="false"
+                />
               </div>
             </van-cell-group>
           </div>
+
+          <!-- 底部占位 -->
+          <div class="bottom-spacer"></div>
+
         </van-form>
       </div>
 
-      <!-- 日期选择器 -->
-      <van-popup v-model:show="showDatePicker" position="bottom" round class="apple-popup">
+      <!-- 底部悬浮按钮栏 -->
+      <div class="bottom-action-bar">
+        <div class="action-btn secondary" @click="handleReset">
+          <van-icon name="replay" /> 重置
+        </div>
+        <div class="action-btn primary" @click="saveGoal">
+          <van-loading v-if="saving" type="spinner" size="20" color="#fff" />
+          <span v-else>立即创建目标</span>
+        </div>
+      </div>
+
+      <!-- 弹窗组件区 -->
+      <van-popup v-model:show="showDatePicker" position="bottom" round>
         <van-date-picker
           v-model="selectedDate"
-          @confirm="onDateConfirm"
-          @cancel=" showDatePicker = false"
           title="选择截止日期"
+          :min-date="new Date()"
+          @confirm="onDateConfirm"
+          @cancel="showDatePicker = false"
+          confirm-button-text="确定"
+          cancel-button-text="取消"
         />
       </van-popup>
 
-      <!-- 负责人选择器 -->
-      <van-popup v-model:show="showOwnerPicker" position="bottom" round class="apple-popup">
+      <van-popup v-model:show="showOwnerPicker" position="bottom" round>
         <van-picker
+          title="选择负责人"
           :columns="owerOptions"
           @confirm="onOwnerConfirm"
           @cancel="showOwnerPicker = false"
-          title="选择负责人"
         />
       </van-popup>
 
-      <!-- 优先级选择器 -->
-      <van-popup v-model:show="showLevelPicker" position="bottom" round class="apple-popup">
+      <van-popup v-model:show="showLevelPicker" position="bottom" round>
         <van-picker
+          title="目标优先级"
           :columns="levelOptions"
           @confirm="onLevelConfirm"
           @cancel="showLevelPicker = false"
-          title="选择优先级"
         />
       </van-popup>
+
     </div>
   </van-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useUser } from '@/hooks/useUser'
 import { showToast, showLoadingToast, closeToast, showSuccessToast, showDialog } from 'vant'
-import { createGoal, postM, getM, isSuccess } from '@/utils/request'
-import { useGoals } from '@/hooks'
+import { getM, postM, isSuccess } from '@/utils/request'
 import type { FormInstance } from 'vant'
 // @ts-ignore
 import MobileUpload from '@/components/MobileUpload.vue'
 
-// 路由和状态管理
+// 路由和状态
 const router = useRouter()
-const { user } = useUser()
-const { createGoal } = useGoals()
 const store = useStore()
+const { user } = useUser()
 
-// 表单引用
+// 主题与表单引用
 const formRef = ref<FormInstance>()
 
-// 主题配置 - 使用默认的vant主题
-const currentTheme = ref('light')
-
-// 响应式数据
+// UI 状态控制
 const saving = ref(false)
 const showDatePicker = ref(false)
-const showTimePicker = ref(false)
-const showLevelPicker = ref(false)
-const selectedDate = ref([
-  `${new Date().getFullYear()}`,
-  `${new Date().getMonth() + 1}`.padStart(2, '0'),
-  `${new Date().getDate()}`.padStart(2, '0')
-]) // 改为数组格式，Vant DatePicker 要求
-const customTag = ref('')
-const goalTagsText = ref('')
-const owerOptions = ref<Array<{ label: string; value: string }>>([])
 const showOwnerPicker = ref(false)
+const showLevelPicker = ref(false)
 
-// 目标数据 - 迁移电脑端完整表单结构
+// 临时状态
+const goalTagsText = ref('')
+const selectedDate = ref<string[]>([]) 
+const owerOptions = ref<Array<{ text: string; value: string }>>([])
+
+// 数据模型
 const goal = reactive({
   title: '',
   description: '',
@@ -329,540 +328,575 @@ const goal = reactive({
   notes: ''
 })
 
-// 优先级选项
+// 常量定义
 const levelOptions = [
-  { label: '低', value: 'low' },
-  { label: '中', value: 'medium' },
-  { label: '高', value: 'high' },
-  { label: '紧急', value: 'urgent' }
+  { text: '低优先级', value: 'low' },
+  { text: '中优先级', value: 'medium' },
+  { text: '高优先级', value: 'high' },
+  { text: '紧急', value: 'urgent' }
 ]
 
-// 表单验证规则
 const formRules = {
   title: [{ required: true, message: '请输入目标标题', trigger: 'onBlur' }],
-  owner: [{ required: true, message: '请选择负责人', trigger: 'onBlur' }],
-  deadline: [{ required: true, message: '请选择截止日期', trigger: 'onBlur' }],
-  level: [{ required: true, message: '请选择优先级', trigger: 'onBlur' }]
 }
 
 // 计算属性
-const formattedDeadline = computed(() => {
-  const date = new Date(goal.deadline)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return goal.deadline ? [`${year}`, `${month}`, `${day}`] : []
+const formattedDeadlineStr = computed(() => {
+  return goal.deadline ? formatDate(goal.deadline) : ''
 })
 
 const levelLabel = computed(() => {
   const option = levelOptions.find(opt => opt.value === goal.level)
-  return option ? option.label : ''
+  return option ? option.text : ''
 })
 
-// 获取负责人列表
+// 辅助函数
+const formatDate = (timestamp: number | null) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const getLevelColor = (level: string | null) => {
+  if(level === 'urgent') return '#FF6B6B'
+  if(level === 'high') return '#FF9F43'
+  if(level === 'medium') return '#54A0FF'
+  return '#1DD1A1' 
+}
+
+// 业务逻辑
 const getOwerList = async () => {
   try {
     const res = await getM('getOwerList')
     if (isSuccess(res)) {
       owerOptions.value = res.data.data.map((e: any) => ({
-        text: e.text || e.label,
-        value: e.value || e.id
+        text: e.text || e.label || e.username || e.name,
+        value: e.value || e.id || e.username
       }))
     }
   } catch (error) {
-    console.error('获取负责人列表失败:', error)
-    showToast('获取负责人列表失败')
+    console.error('获取负责人失败', error)
   }
 }
 
-// 日期处理
-const onDateConfirm = (date: { getValues: () => Date[] }) => {
-  // Vant DatePicker 返回的是包含日期数组的对象
-  const selectedDates = date.getValues()
-  if (selectedDates && selectedDates.length > 0) {
-    goal.deadline = selectedDates[0].getTime()
-  }
+// 事件处理
+const onDateConfirm = ({ selectedValues }: { selectedValues: string[] }) => {
+  const [year, month, day] = selectedValues
+  goal.deadline = new Date(`${year}-${month}-${day}`).getTime()
   showDatePicker.value = false
 }
 
-// 负责人选择
-const onOwnerConfirm = (value: any, index: number) => {
-  goal.owner = value.label || value
+const onOwnerConfirm = ({ selectedOptions }: any) => {
+  goal.owner = selectedOptions[0]?.value
   showOwnerPicker.value = false
 }
 
-// 优先级选择
-const onLevelConfirm = (value: any, index: number) => {
-  goal.level = value.value || value
+const onLevelConfirm = ({ selectedOptions }: any) => {
+  goal.level = selectedOptions[0]?.value
   showLevelPicker.value = false
 }
 
-const formatDate = (timestamp: number | null) => {
-  if (!timestamp) return ''
-  const date = new Date(timestamp)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-// 标签管理
+// 标签操作
 const addCustomTag = () => {
-  if (goalTagsText.value.trim()) {
-    const newTag = goalTagsText.value.trim()
-    if (!goal.tags.includes(newTag)) {
-      goal.tags.push(newTag)
-    }
-    goalTagsText.value = ''
+  const val = goalTagsText.value.trim()
+  if (val && !goal.tags.includes(val)) {
+    goal.tags.push(val)
   }
+  goalTagsText.value = ''
 }
 
 const removeTag = (index: number) => {
   goal.tags.splice(index, 1)
 }
 
-// 子目标管理 - 迁移电脑端格式
+// 子目标操作
 const addChildGoal = () => {
-  goal.childGoals.push({
-    message: '',
-    finish: false,
-    finishTime: ''
-  })
+  goal.childGoals.push({ message: '', finish: false, finishTime: '' })
 }
 
 const removeChildGoal = (index: number) => {
   goal.childGoals.splice(index, 1)
 }
 
-// 文件上传处理
+// 文件回调
 const fileChange = (files: any[]) => {
   goal.fileList = files
 }
-
-const handleFileUploadError = (errorMsg: string) => {
-  showToast(`文件上传失败: ${errorMsg}`)
-}
-
-// 表单验证
-const validateGoal = async () => {
-  try {
-    await formRef.value?.validate()
-    
-    // 验证子目标
-    if (goal.childGoals.length === 0) {
-      showToast('请至少添加一个子目标')
-      return false
-    }
-    
-    const hasEmptyChildGoal = goal.childGoals.some(child => !child.message.trim())
-    if (hasEmptyChildGoal) {
-      showToast('请填写所有子目标内容')
-      return false
-    }
-    
-    return true
-  } catch (error) {
-    return false
-  }
-}
+const handleFileUploadError = (msg: string) => showToast(msg)
 
 // 表单提交
-const saveGoal = async () => {
-  if (!await validateGoal()) {
-    return
+const validateData = () => {
+  if(!goal.owner) {
+    showToast('请选择负责人')
+    return false
   }
+  if(!goal.deadline) {
+    showToast('请选择截止日期')
+    return false
+  }
+  if(goal.childGoals.length > 0 && goal.childGoals.some(c => !c.message.trim())) {
+    showToast('请完善子任务内容')
+    return false
+  }
+  return true
+}
 
+const saveGoal = async () => {
   try {
+    await formRef.value?.validate()
+    if(!validateData()) return
+
     saving.value = true
-    showLoadingToast('保存中...')
-    
-    // 格式化子目标数据
-    const childGoalEndList = goal.childGoals.map(childGoal => ({
-      message: childGoal.message,
-      finish: false,
-      finishTime: ''
-    }))
-    
-    const goalData = {
+    showLoadingToast({ message: '创建中...', forbidClick: true })
+
+    const payload = {
       ...goal,
-      childGoals: childGoalEndList,
-      deadline: goal.deadline ? formatDate(goal.deadline) : null
+      deadline: formatDate(goal.deadline) // 保持原有格式化逻辑
     }
+
+    const res = await postM('editGoal', payload)
     
-    const res = await postM('editGoal', goalData)
     if (isSuccess(res)) {
-      showSuccessToast('目标创建成功')
-      // 延迟返回，让用户看到成功提示
-      setTimeout(() => {
-        router.back()
-      }, 1500)
+      showSuccessToast('目标已创建')
+      setTimeout(() => router.back(), 1000)
     } else {
-      showToast('保存失败，请重试')
+      showToast(res.msg || '保存失败')
     }
-    
   } catch (error) {
-    console.error('保存目标失败:', error)
-    showToast('保存失败，请重试')
+    console.error(error)
   } finally {
     saving.value = false
     closeToast()
   }
 }
 
-// 重置表单
-const resetForm = () => {
-  goal.title = ''
-  goal.description = ''
-  goal.deadline = null
-  goal.owner = ''
-  goal.level = null
-  goal.childGoals = []
-  goal.tags = []
-  goal.estimatedHours = null
-  goal.fileList = []
-  goal.notes = ''
-}
-
 const handleReset = () => {
   showDialog({
-    title: '确认重置',
-    message: '确定要重置所有表单内容吗？',
-    showCancelButton: true
+    title: '重置',
+    message: '确定清空当前所有输入吗？',
+    showCancelButton: true,
+    confirmButtonColor: '#00Cba5',
+    theme: 'round-button', // 使用 Vant 的圆角按钮主题
   }).then(() => {
-    resetForm()
-    showToast('表单已重置')
+    Object.assign(goal, {
+      title: '',
+      description: '',
+      deadline: null,
+      owner: store.state.user?.username || '',
+      level: null,
+      childGoals: [],
+      tags: [],
+      estimatedHours: null,
+      fileList: [],
+      notes: ''
+    })
+    initDate()
   })
+}
+
+const initDate = () => {
+  const d = new Date()
+  d.setDate(d.getDate() + 7)
+  goal.deadline = d.getTime()
+  selectedDate.value = [
+    String(d.getFullYear()),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0')
+  ]
 }
 
 // 生命周期
 onMounted(() => {
-  // 设置默认截止日期为30天后
-  const defaultDeadline = new Date()
-  defaultDeadline.setDate(defaultDeadline.getDate() + 30)
-  selectedDate.value = [
-    `${defaultDeadline.getFullYear()}`,
-    `${defaultDeadline.getMonth() + 1}`.padStart(2, '0'),
-    `${defaultDeadline.getDate()}`.padStart(2, '0')
-  ]
-  goal.deadline = defaultDeadline.getTime()
-  
-  // 获取负责人列表
+  initDate()
   getOwerList()
-  
-  // 设置默认负责人为当前用户
   if (store.state.user?.username) {
     goal.owner = store.state.user.username
   }
+  // 设置文档根节点主题为 dark
+  document.documentElement.setAttribute('data-theme', 'dark')
 })
 </script>
 
-<style scoped>
-/* 全局和根元素 */
-.apple-style-provider {
-  --van-background-color: #f7f8fa;
-  --van-background-color-light: #ffffff;
-  --van-text-color: #333;
-  --van-text-color-2: #666;
-  --van-border-color: #ebedf0;
-}
+<style scoped lang="scss">
+/* --- 纯暗黑模式变量 --- */
+$theme-green: #00Cba5;
+$theme-green-dark: #008f72;
+$bg-color: #050505; /* 页面深黑背景 */
+$card-bg: #1C1C1E; /* 卡片背景 */
+$field-bg: #2C2C2E; /* 输入框/列表项背景 */
+$text-main: #FFFFFF; /* 主文字白色 */
+$text-sub: #8E8E93; /* 辅助文字灰色 */
+$border-color: #2C2C2E;
+$card-radius: 16px;
 
-.van-theme-dark .apple-style-provider {
-  --van-background-color: #1c1c1e;
-  --van-background-color-light: #2c2c2e;
-  --van-text-color: #f5f5f7;
-  --van-text-color-2: #a9a9b0;
-  --van-border-color: #3a3a3c;
-}
-
-.mobile-add-goal {
+.freemix-page {
   min-height: 100vh;
-  background-color: var(--van-background-color);
-  color: var(--van-text-color);
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
+  background-color: $bg-color;
+  position: relative;
+  font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, sans-serif;
+  padding-bottom: 20px;
+  color: $text-main;
 }
 
-/* 导航栏 - 优化移动端触摸区域 */
-.apple-nav-bar {
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--van-border-color);
-  padding-top: env(safe-area-inset-top);
+/* --- 头部区域 --- */
+.header-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 220px;
+  /* 调整渐变让其在暗黑模式下不刺眼但有氛围 */
+  background: linear-gradient(135deg, rgba(0, 210, 180, 0.4) 0%, rgba(0, 203, 165, 0.1) 100%);
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  z-index: 0;
 }
 
-.van-theme-dark .apple-nav-bar {
-  background-color: rgba(28, 28, 30, 0.7);
+.custom-nav {
+  background: transparent !important;
+  
+  .nav-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  .white {
+    color: #FFFFFF !important;
+  }
+  
+  .bold {
+    font-weight: 600;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+  }
 }
 
-:deep(.van-nav-bar__title) {
-  font-weight: 600;
-  color: var(--van-text-color);
-  font-size: 18px;
+/* --- 内容区域 --- */
+.content-wrapper {
+  position: relative;
+  z-index: 10;
+  padding: 12px 16px;
 }
 
-:deep(.van-nav-bar__left),
-:deep(.van-nav-bar__right) {
-  padding: 0 16px;
-}
-
-:deep(.van-nav-bar .van-button) {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* 表单容器 - 响应式设计 */
-.form-container {
-  padding: 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
-}
-
-/* Apple 卡片样式 - 优化移动端显示 */
-.apple-card {
-  background-color: var(--van-background-color-light);
-  border-radius: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+/* 卡片通用样式 */
+.main-card, .info-card {
+  background: $card-bg;
+  border-radius: $card-radius;
+  /* 暗黑模式阴影更深更虚 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: 16px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.apple-card:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+.main-card {
+  margin-top: 50px;
+  padding: 24px 20px;
+  text-align: center;
+  
+  .card-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $theme-green;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    
+    .header-icon {
+      font-size: 18px;
+      margin-right: 6px;
+    }
+  }
+
+  .title-input {
+    padding: 10px 0;
+    background: transparent;
+    
+    :deep(.van-field__control) {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: $text-main !important; /* 强制白色 */
+      
+      &::placeholder {
+        color: #555555;
+        font-weight: 400;
+      }
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: $border-color;
+    margin: 10px 40px;
+  }
+
+  .desc-input {
+    background: transparent;
+    :deep(.van-field__control) {
+      text-align: center;
+      color: $text-sub !important;
+      font-size: 15px;
+    }
+  }
 }
 
-.van-theme-dark .apple-card {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+.info-card {
+  padding: 20px;
+  
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-main;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: $theme-green;
+      border-radius: 2px;
+      margin-right: 8px;
+    }
+  }
 }
 
-:deep(.van-cell-group) {
-  background: none;
+/* 属性网格 */
+.grid-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-:deep(.van-cell-group__title) {
-  padding: 20px 20px 12px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--van-text-color);
+.grid-field {
+  background: $field-bg;
+  border-radius: 12px;
+  padding: 14px 12px;
+  align-items: center;
+  
+  :deep(.van-field__label) {
+    color: $text-sub;
+    font-weight: 500;
+  }
+  
+  /* 修复属性输入框文字颜色为白 */
+  :deep(.van-field__control) {
+    font-weight: 500;
+    color: $text-main !important;
+    &::placeholder { color: #555; }
+  }
 }
 
-.apple-field {
-  --van-field-label-width: 100px;
-  background-color: transparent;
-  padding: 16px 20px;
+/* 子任务部分 */
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  .count-badge {
+    background: rgba(0, 203, 165, 0.2);
+    color: $theme-green;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+
+  .header-action {
+    color: $theme-green;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
 }
 
-:deep(.van-field__label) {
-  color: var(--van-text-color-2);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-:deep(.van-field__control) {
-  font-size: 16px;
-}
-
-:deep(.van-field__body) {
-  min-height: 48px;
-}
-
-/* 渐变按钮 - 优化触摸区域 */
-.apple-gradient-button,
-.apple-gradient-button-small {
-  border: none;
-  color: white;
-  font-weight: 600;
-  background: linear-gradient(135deg, #00c9a7, #00a98f);
-  transition: all 0.2s ease;
-  min-height: 44px;
-  min-width: 44px;
-  font-size: 16px;
-}
-
-.apple-gradient-button:active,
-.apple-gradient-button-small:active {
-  transform: scale(0.96);
-  opacity: 0.9;
-}
-
-.apple-gradient-button-small {
-  padding: 0 20px;
-  height: 36px;
-  border-radius: 18px;
-}
-
-/* 子目标样式优化 */
-.apple-subgoal-list {
-  padding: 0 20px 12px;
-}
-
-.apple-subgoal-item {
+.subgoal-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding: 12px;
-  background-color: var(--van-background-color);
-  border-radius: 12px;
-  transition: background-color 0.2s ease;
+  background: $field-bg;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  
+  .subgoal-index {
+    width: 20px;
+    height: 20px;
+    background: $theme-green;
+    color: #000;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    flex-shrink: 0;
+    font-weight: bold;
+  }
+  
+  .subgoal-content {
+    flex: 1;
+    .subgoal-input {
+      background: transparent;
+      padding: 0;
+      
+      /* 修复子目标输入框文字颜色为白 */
+      :deep(.van-field__control) {
+        color: $text-main !important; 
+        &::placeholder { color: #666; }
+      }
+    }
+  }
+  
+  .subgoal-del {
+    color: #FF453A; /* iOS Dark Mode Red */
+    padding: 5px;
+    font-size: 18px;
+  }
 }
 
-.apple-subgoal-item:active {
-  background-color: var(--van-active-color);
-}
-
-.apple-subgoal-field {
-  flex-grow: 1;
-  background-color: transparent;
-}
-
-.apple-remove-icon {
-  font-size: 22px;
-  color: #ff4d4f;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-}
-
-.apple-remove-icon:active {
-  background-color: rgba(255, 77, 79, 0.1);
-}
-
-.apple-add-button-container {
+.empty-placeholder {
   text-align: center;
-  padding: 16px 0;
+  padding: 20px 0;
+  
+  .dark-invert {
+    width: 80px;
+    margin-bottom: 10px;
+    opacity: 0.3;
+    filter: invert(1) grayscale(1); /* 反转颜色使其在黑背景下合适 */
+  }
+  p {
+    color: $text-sub;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .empty-btn {
+    color: $theme-green !important;
+    border: 1px solid rgba(0, 203, 165, 0.3);
+    font-weight: 600;
+  }
 }
 
-.apple-empty-placeholder {
-  padding: 30px 20px;
+/* 附件与标签 */
+.sub-label {
+  font-size: 14px;
+  color: $text-sub;
+  margin-bottom: 8px;
+  margin-top: 16px;
+  &:first-child { margin-top: 0; }
 }
 
-/* 标签容器 */
-.apple-tags-container {
-  padding: 0 20px 16px;
+.tag-input-row {
+  margin-bottom: 12px;
+  .tag-field {
+    background: $field-bg;
+    border-radius: 20px;
+    padding: 4px 4px 4px 16px;
+    
+    /* 修复标签输入框文字颜色为白 */
+    :deep(.van-field__control) {
+      color: $text-main !important;
+      &::placeholder { color: #666; }
+    }
+  }
+}
+
+.tags-wrapper {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.apple-tag {
-  margin: 4px;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
+.custom-tag {
+  /* 覆盖 tag 内部样式 */
+  border: 1px solid rgba(0, 203, 165, 0.3);
 }
 
-/* 操作按钮组 */
-.apple-action-buttons {
-  display: flex;
-  gap: 16px;
-  padding: 20px;
-}
-
-.apple-reset-button,
-.apple-submit-button {
-  flex: 1;
-  height: 52px;
-  border-radius: 26px;
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.apple-reset-button {
-  border: 2px solid var(--van-border-color);
-  background: transparent;
-}
-
-/* 弹出层优化 */
-.apple-popup {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px 24px 0 0;
-}
-
-.van-theme-dark .apple-popup {
-  background-color: rgba(44, 44, 46, 0.95);
-}
-
-:deep(.van-picker__toolbar) {
-  background-color: transparent;
-  height: 60px;
-  padding: 0 20px;
-}
-
-:deep(.van-picker__title) {
-  font-weight: 700;
-  color: var(--van-text-color);
-  font-size: 18px;
-}
-
-:deep(.van-picker__confirm),
-:deep(.van-picker__cancel) {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-:deep(.van-picker-column__item) {
-  font-size: 18px;
-  padding: 16px 0;
-}
-
-/* 移动端优化 - 防止输入框被键盘遮挡 */
-@media (max-height: 600px) {
-  .form-container {
-    padding-bottom: 300px;
-  }
-}
-
-/* 横屏适配 */
-@media (orientation: landscape) {
-  .form-container {
-    max-width: 600px;
-    margin: 0 auto;
-  }
+.note-input {
+  background: $field-bg;
+  border-radius: 12px;
+  padding: 12px;
   
-  .apple-action-buttons {
-    max-width: 400px;
-    margin: 0 auto;
+  /* 修复备注输入框文字颜色为白 */
+  :deep(.van-field__control) {
+    color: $text-main !important;
+    min-height: 60px;
+    &::placeholder { color: #666; }
   }
 }
 
-/* 大屏设备适配 */
-@media (min-width: 768px) {
-  .form-container {
-    max-width: 600px;
-    margin: 0 auto;
+/* --- 底部悬浮操作栏 --- */
+.bottom-spacer {
+  height: 80px;
+}
+
+.bottom-action-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 16px;
+  right: 16px;
+  height: 60px;
+  background: #1C1C1E; /* 纯暗黑背景 */
+  border: 1px solid #333;
+  border-radius: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  z-index: 99;
+  
+  .action-btn {
+    height: 48px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.secondary {
+      width: 30%;
+      color: $text-sub;
+      background: transparent;
+      &:active { background: #333; }
+    }
+    
+    &.primary {
+      flex: 1;
+      background: $theme-green;
+      color: #000; /* 绿色背景用黑色文字对比度更高 */
+      margin-left: 8px;
+      box-shadow: 0 4px 12px rgba(0, 203, 165, 0.2);
+      &:active { transform: scale(0.98); }
+    }
   }
 }
 
-/* 手势优化 - 滑动关闭支持 */
-.apple-popup {
-  overflow: hidden;
+/* 列表动画 */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
 }
-
-:deep(.van-popup) {
-  touch-action: pan-y;
-}
-
-/* 输入优化 - 移动端键盘类型 */
-:deep(input[type="number"]) {
-  -webkit-appearance: none;
-  -moz-appearance: textfield;
-}
-
-:deep(input[type="number"])::-webkit-outer-spin-button,
-:deep(input[type="number"])::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* 加载状态优化 */
-:deep(.van-loading__spinner) {
-  width: 24px;
-  height: 24px;
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
