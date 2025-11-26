@@ -63,7 +63,7 @@
               align-items: flex-end;
               position: fixed;
               bottom: 10px;
-              right: 10px;" v-if="!isDesktop()">
+              right: 10px;" v-if="!isDesktop()&&!isMobileDevice">
               <!-- 备案信息 -->
               <div class="">
                 <a href="https://beian.miit.gov.cn/" style="margin-top: 5px;" class="beian-link"
