@@ -16,7 +16,7 @@
       >
         <template #left>
           <div class="nav-btn-text white" @click="router.back()">
-            <van-icon name="arrow-left" /> 返回
+            <van-icon name="arrow-left" /> 
           </div>
         </template>
         <template #title>
