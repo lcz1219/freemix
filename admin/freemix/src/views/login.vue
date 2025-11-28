@@ -540,7 +540,7 @@ const loadCaptcha = async () => {
     return;
   }
   try {
-    const res = await postM('/captcha', { "username": user.value.username });
+    const res = await postM('captcha', { "username": user.value.username });
     if (isSuccess(res)) {
       captchaExpression.value = res.data.data.expression;
     }
