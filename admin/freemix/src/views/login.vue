@@ -1,29 +1,39 @@
 <template>
   <div>
+    <!-- 背景光效 (可选，增加高级感) -->
+    <div class="ambient-light" v-if="isDesktopEnv"></div>
+
     <n-card :style="cardStyle" class="login-card">
       <!-- 系统图标 -->
       <div class="logo-container">
         <div class="logo-wrapper">
+          <div class="logo-glow"></div>
           <img src="/icons/icon.png" alt="系统图标" class="system-logo" />
         </div>
         <h2 class="app-title">FreeMix-目标管理系统</h2>
       </div>
-      
-      <!-- 登录表单 -->
-      <div v-if="loginStep === 'login'">
+
+      <!-- 1. 初始登录表单 -->
+      <div v-if="loginStep === 'login'" class="fade-in-up">
         <n-tabs class="card-tabs" default-value="signin" size="large" animated pane-wrapper-style="margin: 0 -4px"
           pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;">
           <n-tab-pane name="signin" tab="登录">
-            <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="handleLogin">
+            <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="prepareLogin">
               <n-form-item-row label="用户名" path="username">
-                <n-input placeholder="请输入用户名" v-model:value="user.username" @blur="loadCaptcha" />
+                <n-input placeholder="请输入用户名" v-model:value="user.username" @blur="loadCaptcha">
+                  <template #prefix><n-icon :component="PersonOutline" /></template>
+                </n-input>
               </n-form-item-row>
               <n-form-item-row label="密码" path="password">
-                <n-input placeholder="请输入密码" type="password" show-password-on="click" v-model:value="user.password" />
+                <n-input placeholder="请输入密码" type="password" show-password-on="click" v-model:value="user.password">
+                  <template #prefix><n-icon :component="LockClosedOutline" /></template>
+                </n-input>
               </n-form-item-row>
               <n-form-item-row label="验证码" path="captcha">
                 <div class="captcha-container">
-                  <n-input placeholder="请输入计算结果" v-model:value="user.captcha" maxlength="10" style="flex: 1;" />
+                  <n-input placeholder="请输入计算结果" v-model:value="user.captcha" maxlength="10" style="flex: 1;">
+                    <template #prefix><n-icon :component="KeyOutline" /></template>
+                  </n-input>
                   <div class="captcha-expression" @click="loadCaptcha">
                     {{ captchaExpression || '点击刷新' }}
                   </div>
@@ -34,7 +44,7 @@
               注册
             </n-button>
 
-            <n-button type="primary" block secondary strong @click="handleLogin">
+            <n-button type="primary" block secondary strong @click="prepareLogin" class="login-btn-gradient">
               登录
             </n-button>
             <n-divider dashed style="margin: 20px 0;">或</n-divider>
@@ -51,18 +61,79 @@
               <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
             </n-button>
           </n-tab-pane>
-
         </n-tabs>
-
       </div>
 
-      <!-- 双因素认证验证码输入 -->
-      <div v-else-if="loginStep === '2fa-verify'" class="two-factor-auth-section">
+      <!-- 2. 点选验证 (Click Sequence Captcha) - 替换了原来的滑块 -->
+      <div v-else-if="loginStep === 'human-verify'" class="verify-section fade-in-scale">
+        <div class="verify-header">
+          <n-icon size="36" color="#409eff" style="margin-bottom: 8px;">
+            <finger-print-outline />
+          </n-icon>
+          <h3>安全验证</h3>
+          <p v-if="clickStatus !== 'success'">
+            请 <span class="highlight-text">顺序点击</span> 图中的：
+            <span class="target-chars">
+              <span v-for="(char, index) in targetChars" :key="index" class="target-char">
+                「{{ char }}」
+              </span>
+            </span>
+          </p>
+          <p v-else class="success-text">验证通过</p>
+        </div>
+
+        <!-- 验证码容器 -->
+        <div class="click-captcha-container" :class="{ 'is-shaking': isShake }">
+          <!-- 图片 Canvas -->
+          <canvas 
+            ref="captchaCanvasRef" 
+            width="320" 
+            height="160" 
+            class="captcha-canvas"
+            @click="handleCanvasClick"
+          ></canvas>
+
+          <!-- 点击标记点 (Markers) -->
+          <div 
+            v-for="(point, index) in clickPoints" 
+            :key="index"
+            class="click-marker"
+            :style="{ left: point.x + 'px', top: point.y + 'px' }"
+          >
+            {{ index + 1 }}
+          </div>
+
+          <!-- 刷新按钮 -->
+          <div class="refresh-btn" @click="initClickCaptcha" title="看不清？换一张">
+            <n-icon size="18"><refresh /></n-icon>
+          </div>
+
+          <!-- 成功覆盖层 -->
+          <div class="success-overlay" v-if="clickStatus === 'success'">
+            <n-icon size="48" color="#10b981"><checkmark-circle /></n-icon>
+          </div>
+        </div>
+
+        <div class="verify-footer">
+          <n-button quaternary size="small" @click="backToLogin" class="back-btn">
+            <template #icon><n-icon><arrow-back /></n-icon></template>
+            返回修改
+          </n-button>
+        </div>
+      </div>
+
+      <!-- 3. 双因素认证验证码输入 -->
+      <div v-else-if="loginStep === '2fa-verify'" class="two-factor-auth-section fade-in-right">
+        <div class="auth-icon-circle">
+          <n-icon size="32"><lock-closed /></n-icon>
+        </div>
         <h3>双因素认证</h3>
         <p>请输入Google Authenticator应用中的6位验证码：</p>
-        <n-input-otp v-model:value="totpCode" ref="totpInputRef" style="margin-bottom: 20px;"
+        <div class="otp-wrapper">
+          <n-input-otp v-model:value="totpCode" ref="totpInputRef" size="large" :length="6"
           @keydown.enter="verifyTwoFactorAuth" />
-        <n-button type="primary" block @click="verifyTwoFactorAuth">
+        </div>
+        <n-button type="primary" block @click="verifyTwoFactorAuth" class="verify-btn">
           验证并登录
         </n-button>
         <n-button quaternary @click="backToLogin">
@@ -70,8 +141,8 @@
         </n-button>
       </div>
 
-      <!-- 双因素认证绑定 -->
-      <div v-else-if="loginStep === '2fa-bind'" class="two-factor-auth-section">
+      <!-- 4. 双因素认证绑定 -->
+      <div v-else-if="loginStep === '2fa-bind'" class="two-factor-auth-section fade-in-right">
         <h3>设置双因素认证</h3>
         <p>请完成双因素认证绑定以提升账户安全性：</p>
         <TwoFactorAuth :userId="tempUserData.id" parent="login" @update:router="updateTwoFactorAuth" />
@@ -98,15 +169,24 @@ import {
   NInputOtp,
   NDivider
 } from 'naive-ui';
-import { onMounted, nextTick, ref, watch, computed } from 'vue';
+import { 
+  PersonOutline, 
+  LockClosedOutline, 
+  KeyOutline, 
+  Refresh, 
+  CheckmarkCircle, 
+  ArrowBack, 
+  FingerPrintOutline, 
+  LockClosed 
+} from '@vicons/ionicons5';
+import { onMounted, nextTick, ref, watch, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // @ts-ignore
 import { useStore } from 'vuex';
 import { postM, isSuccess } from '@/utils/request';
 import { isDesktop } from '@/utils/device.js';
 import { generateDesktopToken, saveLocalStorageDesktopToken } from '@/utils/desktopToken.js';
-import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js'; // 导入token工具函数
-import { RefreshOutline } from '@vicons/ionicons5';
+import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js';
 import TwoFactorAuth from '@/components/TwoFactorAuth.vue';
 
 const store = useStore();
@@ -114,12 +194,13 @@ const route = useRoute();
 const router = useRouter();
 const message = useMessage();
 
-// 检查是否为生产环境（线上环境）
+// 检查是否为生产环境
 const isProduction = import.meta.env.PROD;
+const isDesktopEnv = isDesktop();
 
 // 计算卡片样式
 const cardStyle = computed(() => {
-  if (isDesktop()) {
+  if (isDesktopEnv) {
     // 桌面端环境下卡片占满整个窗口
     return {
       width: '100%',
@@ -130,7 +211,7 @@ const cardStyle = computed(() => {
   } else {
     // Web端保持原有样式
     return {
-      width: '50%',
+      width: '480px', // 稍微固定宽度以适应Canvas
       marginTop: '10vh',
       marginLeft: 'auto',
       marginRight: 'auto'
@@ -139,7 +220,7 @@ const cardStyle = computed(() => {
 });
 
 // 登录步骤状态
-const loginStep = ref<'login' | '2fa-verify' | '2fa-bind'>('login');
+const loginStep = ref<'login' | 'human-verify' | '2fa-verify' | '2fa-bind'>('login');
 
 // 表单验证规则
 const rules = ref({
@@ -157,30 +238,210 @@ const user = ref({
 });
 const totpCode = ref<string[]>([]);
 const captchaExpression = ref('');
-const tempUserData = ref<any>(null); // 临时存储登录成功但未完成2FA验证的用户数据
+const tempUserData = ref<any>(null);
+
+// --- 点选验证相关状态 (Click Captcha) ---
+const captchaCanvasRef = ref<HTMLCanvasElement | null>(null);
+const clickPoints = ref<{x: number, y: number}[]>([]);
+const targetChars = ref<string[]>([]); // 需要点击的字
+const allChars = ref<{char: string, x: number, y: number}[]>([]); // 画布上所有的字坐标
+const clickStatus = ref<'pending' | 'verifying' | 'success'>('pending');
+const isShake = ref(false);
+
+// 第一步：点击登录按钮，先验证表单
+const prepareLogin = async () => {
+  const valid = await formRef.value?.validate();
+  if (valid) {
+    // 表单验证通过，进入点选验证步骤
+    loginStep.value = 'human-verify';
+    nextTick(initClickCaptcha);
+  }
+};
+
+// --- Canvas 绘图与逻辑 (前端模拟生成验证码) ---
+const initClickCaptcha = () => {
+  clickPoints.value = [];
+  clickStatus.value = 'pending';
+  const canvas = captchaCanvasRef.value;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const width = 320;
+  const height = 160;
+  
+  // 1. 绘制背景 (浅色带杂色)
+  ctx.fillStyle = '#f0f2f5';
+  ctx.fillRect(0, 0, width, height);
+  
+  // 2. 绘制干扰线
+  for (let i = 0; i < 7; i++) {
+    ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255}, 0.3)`;
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * width, Math.random() * height);
+    ctx.lineTo(Math.random() * width, Math.random() * height);
+    ctx.stroke();
+  }
+  // 3. 绘制干扰点
+  for (let i = 0; i < 30; i++) {
+    ctx.fillStyle = `rgba(${Math.random()*200},${Math.random()*200},${Math.random()*200}, 0.2)`;
+    ctx.beginPath();
+    ctx.arc(Math.random() * width, Math.random() * height, 1, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
+  // 4. 生成随机汉字
+  const chars = "山水火木土金日月星辰风雨雷电天地人一二三四五上下左右".split("");
+  
+  allChars.value = [];
+  const charCount = 4; // 画布上总共生成4个字
+  const verifyCount = 3; // 要求用户点击3个
+  
+  ctx.font = 'bold 26px "Microsoft YaHei"';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  
+  for (let i = 0; i < charCount; i++) {
+    const char = chars[Math.floor(Math.random() * chars.length)];
+    // 分区布局防止重叠：将画布分为4块区域
+    const margin = 30;
+    const sectionW = (width - margin * 2) / charCount;
+    const x = margin + i * sectionW + Math.random() * (sectionW - 30) + 15;
+    const y = margin + Math.random() * (height - margin * 2);
+    
+    // 随机旋转
+    const angle = (Math.random() - 0.5) * 0.8; // -0.4 ~ 0.4 rad
+    
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.fillStyle = `rgb(${Math.random()*150}, ${Math.random()*150}, ${Math.random()*150})`;
+    ctx.fillText(char, 0, 0);
+    ctx.restore();
+    
+    // 保存真实坐标用于校验
+    allChars.value.push({ char, x, y });
+  }
+
+  // 5. 随机选取其中的 3 个作为目标
+  const shuffled = [...allChars.value].sort(() => 0.5 - Math.random());
+  targetChars.value = shuffled.slice(0, verifyCount).map(item => item.char);
+};
+
+// 处理画布点击
+const handleCanvasClick = (e: MouseEvent) => {
+  if (clickStatus.value !== 'pending') return;
+  if (clickPoints.value.length >= targetChars.value.length) return;
+
+  const canvas = captchaCanvasRef.value;
+  if (!canvas) return;
+  
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // 添加标记点
+  clickPoints.value.push({ x, y });
+
+  // 如果点够了，触发校验
+  if (clickPoints.value.length === targetChars.value.length) {
+    verifyCaptcha();
+  }
+};
+
+// 校验逻辑
+const verifyCaptcha = () => {
+  clickStatus.value = 'verifying';
+  
+  // 模拟网络延迟和校验过程
+  setTimeout(() => {
+    let isCorrect = true;
+    
+    for (let i = 0; i < clickPoints.value.length; i++) {
+      const targetChar = targetChars.value[i];
+      // 找到这个字在图上的真实位置
+      const realPos = allChars.value.find(c => c.char === targetChar);
+      
+      if (realPos) {
+        const dx = clickPoints.value[i].x - realPos.x;
+        const dy = clickPoints.value[i].y - realPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        // 允许误差范围 (35px半径)
+        if (dist > 35) {
+          isCorrect = false;
+          break;
+        }
+      }
+    }
+
+    if (isCorrect) {
+      clickStatus.value = 'success';
+      message.success('验证通过');
+      setTimeout(executeRealLogin, 800); // 成功后执行真正的登录
+    } else {
+      // 失败处理：抖动、提示、重置
+      clickStatus.value = 'pending';
+      isShake.value = true;
+      message.error('验证失败，请按顺序点击');
+      setTimeout(() => {
+        isShake.value = false;
+        clickPoints.value = []; // 清空标记
+        initClickCaptcha(); // 刷新图片
+      }, 500);
+    }
+  }, 600);
+};
+// --- 点选验证逻辑结束 ---
+
+// 执行真正的后端登录请求
+const executeRealLogin = async () => {
+  const loginData: any = {
+    username: user.value.username,
+    password: user.value.password,
+    captcha: user.value.captcha
+  };
+
+  try {
+    const res = await postM('login', loginData);
+    if (isSuccess(res)) {
+      const userData = res.data.data;
+      tempUserData.value = userData; // 临时保存用户数据
+
+      // 根据环境变量决定登录处理方式
+      if (!isProduction) {
+        // 开发环境
+        await handleDevLogin(userData);
+      } else {
+        // 生产环境
+        await handleProdLogin(userData);
+      }
+    } else {
+      message.error(res.data.msg);
+      await loadCaptcha(); // 刷新验证码
+      loginStep.value = 'login'; // 失败则退回
+    }
+  } catch (error) {
+    console.error('登录请求失败:', error);
+    message.error('登录失败，请稍后重试');
+    loginStep.value = 'login';
+  }
+};
 
 // 处理开发环境登录（跳过双因素认证）
 const handleDevLogin = async (userData) => {
-  // 开发环境中直接登录，跳过双因素认证
   store.commit('saveUser', userData);
   
-  // 如果是桌面端，生成并保存桌面端token
-  if (isDesktop()) {
-    // 桌面端使用持久化存储
-    
-    // 生成并保存桌面端token
+  if (isDesktopEnv) {
     const desktopToken = generateDesktopToken();
-    saveTokenUtil(desktopToken);//本地token保存
+    saveTokenUtil(desktopToken);
     saveLocalStorageDesktopToken(desktopToken);
-    // 发送请求到服务器验证并保存桌面端token
     try {
       await postM('verify-desktop-token', { desktopToken, username: userData.username });
-      console.log('桌面端token已保存到服务器');
     } catch (error) {
       console.error('保存桌面端token失败:', error);
     }
   } else {
-    // 使用新的工具函数保存token
     await saveTokenUtil(userData.token);
   }
   
@@ -190,86 +451,31 @@ const handleDevLogin = async (userData) => {
 
 // 处理生产环境登录（需要双因素认证）
 const handleProdLogin = async (userData) => {
-  // 生产环境中检查用户是否有secretKey
   if (userData.secretKey && userData.secretKey.trim()) {
-    // 有secretKey，显示验证码输入框
     loginStep.value = '2fa-verify';
     message.info('请输入双因素认证码');
   } else {
-    // 没有secretKey，显示绑定组件
     loginStep.value = '2fa-bind';
     message.info('请完成双因素认证绑定');
   }
 };
 
-// 处理登录
-const handleLogin = async () => {
-  const valid = await formRef.value?.validate();
-  if (valid) {
-    // 准备登录数据
-    const loginData: any = {
-      username: user.value.username,
-      password: user.value.password,
-      captcha: user.value.captcha
-    };
-    
-   
-
-    try {
-      const res = await postM('login', loginData);
-      if (isSuccess(res)) {
-        const userData = res.data.data;
-        tempUserData.value = userData; // 临时保存用户数据
-
-        // 根据环境变量决定登录处理方式
-        if (!isProduction) {
-          // 开发环境直接登录
-          await handleDevLogin(userData);
-        } else {
-          // 生产环境需要双因素认证
-          await handleProdLogin(userData);
-        }
-      } else {
-        message.error(res.data.msg);
-        await loadCaptcha(); // 刷新验证码
-      }
-    } catch (error) {
-      console.error('登录请求失败:', error);
-      message.error('登录失败，请稍后重试');
-    }
-  }
-};
 const updateTwoFactorAuth = async (val, secretKeyval) => {
-  console.log(val, secretKeyval);
-
-  // 方法1：使用 split('') 将字符串拆成字符数组
-  const charArray = val.split(''); // ["6", "0", "6", "0", "6"]
-  console.log("charArray:", charArray);
-
+  const charArray = val.split('');
   tempUserData.value.secretKey = secretKeyval
-  // 方法2：将每个字符转为数字
   totpCode.value = await charArray.map(char => Number(char));
-  console.log("tot", totpCode.value);
-
   verifyTwoFactorAuth();
 };
+
 // 验证双因素认证码
 const verifyTwoFactorAuth = async () => {
-  // 检查验证码是否完整
   if (!totpCode.value) {
-    console.log(!totpCode.value);
-    console.log(totpCode.value.filter(Boolean).length !== 6);
-
     message.error('请输入完整的6位验证码');
     return;
   }
 
   try {
-    // 合并验证码
     const code = totpCode.value.join('');
-    console.log("tempUserData", tempUserData.value);
-
-    // 发送验证请求
     const res = await postM('verify2fa', {
       userId: tempUserData.value.id,
       totpCode: code,
@@ -278,27 +484,18 @@ const verifyTwoFactorAuth = async () => {
 
     if (isSuccess(res)) {
       let user = res.data.data
-      // 验证成功，完成登录流程
       store.commit('saveUser', user);
 
-
-      // 如果是桌面端，生成并保存桌面端token
-      if (isDesktop()) {
-        // 桌面端使用持久化存储
-
-        // 生成并保存桌面端token
+      if (isDesktopEnv) {
         const desktopToken = generateDesktopToken();
-        saveTokenUtil(desktopToken);//本地token保存
+        saveTokenUtil(desktopToken);
         saveLocalStorageDesktopToken(desktopToken);
-        // 发送请求到服务器验证并保存桌面端token
         try {
           await postM('verify-desktop-token', { desktopToken, username: user.username });
-          console.log('桌面端token已保存到服务器');
         } catch (error) {
           console.error('保存桌面端token失败:', error);
         }
       } else {
-        // 使用新的工具函数保存token
         await saveTokenUtil(user.token);
       }
 
@@ -306,7 +503,6 @@ const verifyTwoFactorAuth = async () => {
       router.push('/home');
     } else {
       message.error(res.data.msg || '验证码错误');
-      // 清空验证码输入框
       totpCode.value = [];
     }
   } catch (error) {
@@ -316,23 +512,11 @@ const verifyTwoFactorAuth = async () => {
   }
 };
 
-// 处理双因素认证绑定完成
-// const handleTwoFactorBind = (enabled: boolean) => {
-//   if (enabled) {
-//     message.success('双因素认证绑定成功');
-//     // 绑定成功后，保存用户数据并跳转到主页
-//     if (tempUserData.value) {
-//       store.commit('saveUser', tempUserData.value);
-//       localStorage.setItem('token', tempUserData.value.token);
-//       router.push('/home');
-//     }
-//   }
-// };
-
 // 返回登录页面
 const backToLogin = () => {
   loginStep.value = 'login';
   totpCode.value = [];
+  clickPoints.value = [];
   tempUserData.value = null;
 };
 
@@ -343,12 +527,9 @@ const toRegister = () => {
 
 // 处理GitHub登录
 const handleGitHubLogin = () => {
-  // 检查是否为桌面端
-  if (isDesktop()) {
-    // 桌面端直接访问后端服务器的完整URL
+  if (isDesktopEnv) {
     window.location.href = 'https://freemix.bond/oauth2/authorization/github';
   } else {
-    // Web端保持原有行为
     window.location.href = '/oauth2/authorization/github';
   }
 };
@@ -369,17 +550,13 @@ const loadCaptcha = async () => {
   }
 };
 
-
-// 监听登录步骤变化，当切换到双因素认证时自动聚焦
+// 监听登录步骤变化
 watch(loginStep, (newStep) => {
   if (newStep === '2fa-verify') {
     nextTick(() => {
       setTimeout(() => {
         if (totpInputRef.value) {
-          console.log("Focusing 2FA input via watch", totpInputRef.value.inputRefList[0].focus);
-
           totpInputRef.value.inputRefList[0].focus();
-          console.log("Focused on 2FA input via watch");
         }
       }, 100);
     });
@@ -387,75 +564,23 @@ watch(loginStep, (newStep) => {
 });
 </script>
 
-
 <style scoped>
+/* 增加氛围光效 */
+.ambient-light {
+  position: absolute;
+  top: -20%; left: 20%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(64, 158, 255, 0.15) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: floatLight 10s infinite alternate;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes floatLight { from { transform: translate(0,0); } to { transform: translate(-50px, 50px); } }
+
+/* 基础卡片样式 */
 .card-tabs .n-tabs-nav--bar-type {
   padding-left: 4px;
-}
-
-.logo-container {
-  text-align: center;
-  margin-bottom: 7px;
-  padding: 2px 0;
-}
-
-.logo-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 5px;
-}
-
-.system-logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.system-logo:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-.app-title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: #d6d2d2;
-  letter-spacing: 1px;
-}
-
-.app-subtitle {
-  margin: 8px 0 0 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.captcha-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.captcha-expression {
-  min-width: 120px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid #d9d9d9;
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-.captcha-placeholder:hover {
-  background-color: #e6e6e6;
 }
 
 .login-card {
@@ -466,6 +591,8 @@ watch(loginStep, (newStep) => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* 增加边框发光感 */
+  border: 1px solid rgba(255, 255, 255, 0.1); 
 }
 
 .login-card.desktop-fullscreen {
@@ -481,6 +608,7 @@ watch(loginStep, (newStep) => {
   justify-content: center;
 }
 
+/* Logo 区域 */
 .logo-container {
   text-align: center;
   margin-bottom: 7px;
@@ -491,6 +619,14 @@ watch(loginStep, (newStep) => {
   display: flex;
   justify-content: center;
   margin-bottom: 5px;
+  position: relative;
+}
+
+.logo-glow {
+  position: absolute; top: 50%; left: 50%; width: 70px; height: 70px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(64, 158, 255, 0.5) 0%, transparent 70%);
+  filter: blur(10px); z-index: 0;
 }
 
 .system-logo {
@@ -500,6 +636,7 @@ watch(loginStep, (newStep) => {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  z-index: 1;
 }
 
 .system-logo:hover {
@@ -513,12 +650,6 @@ watch(loginStep, (newStep) => {
   font-weight: 600;
   color: #d6d2d2;
   letter-spacing: 1px;
-}
-
-.app-subtitle {
-  margin: 8px 0 0 0;
-  font-size: 14px;
-  color: #666;
 }
 
 .captcha-container {
@@ -542,8 +673,11 @@ watch(loginStep, (newStep) => {
   color: #333;
 }
 
-.captcha-placeholder:hover {
-  background-color: #e6e6e6;
+/* 登录按钮渐变 */
+.login-btn-gradient {
+  background: linear-gradient(92deg, #2563eb 0%, #3b82f6 100%);
+  border: none;
+  box-shadow: 0 4px 10px rgba(37,99,235,0.3);
 }
 
 .github-login-btn {
@@ -567,28 +701,99 @@ watch(loginStep, (newStep) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.beian-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* margin-top: 20px;
-  padding: 10px; */
+/* --- 2FA 区域 --- */
+.two-factor-auth-section {
+  text-align: center;
+}
+.auth-icon-circle {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(16, 185, 129, 0.1); color: #10b981;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
+}
+.otp-wrapper { margin: 20px auto; max-width: 300px; display: flex; justify-content: center; }
+
+/* --- 验证区域样式 (Click Captcha) --- */
+.verify-section {
+  text-align: center;
+  padding: 10px 20px 30px;
 }
 
-.beian-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
+.verify-header { margin-bottom: 20px; }
+.verify-header h3 { margin: 0 0 10px; color: #d6d2d2; font-size: 20px; }
+.verify-header p { color: #999; font-size: 14px; margin-top: 5px; }
+
+.highlight-text { color: #409eff; font-weight: bold; }
+.target-chars {
+  display: inline-flex; gap: 5px; background: rgba(255,255,255,0.1);
+  padding: 2px 8px; border-radius: 4px; margin-left: 5px;
+  vertical-align: middle;
+}
+.target-char { color: #fff; font-weight: bold; font-size: 16px; }
+.success-text { color: #10b981; font-weight: bold; font-size: 16px; }
+
+/* 验证码容器 */
+.click-captcha-container {
+  position: relative; 
+  width: 320px; 
+  height: 160px; 
+  margin: 0 auto 20px;
+  border-radius: 8px; 
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 2px solid rgba(255,255,255,0.1);
+  user-select: none;
+}
+.captcha-canvas { display: block; cursor: crosshair; width: 100%; height: 100%; }
+
+/* 点击标记点 */
+.click-marker {
+  position: absolute; width: 24px; height: 24px;
+  background: #409eff; color: #fff; border-radius: 50%;
+  border: 2px solid #fff;
+  transform: translate(-50%, -50%) scale(0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: bold;
+  pointer-events: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  animation: popMarker 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes popMarker { to { transform: translate(-50%, -50%) scale(1); } }
+
+/* 刷新按钮 */
+.refresh-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px; background: rgba(0,0,0,0.6);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff; transition: all 0.3s;
+}
+.refresh-btn:hover { background: #409eff; transform: rotate(180deg); }
+
+/* 成功动画层 */
+.success-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255,255,255,0.9);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.3s;
 }
 
-.beian-link {
-  color: #666;
-  text-decoration: none;
-  font-size: 14px;
+/* 错误抖动 */
+.is-shaking { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #f56c6c; }
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-.beian-link:hover {
-  color: #dfd8d8;
-  text-decoration: underline;
-}
+/* 动画工具类 */
+.fade-in-up { animation: fadeInUp 0.5s ease-out; }
+.fade-in-scale { animation: fadeInScale 0.4s ease-out; }
+.fade-in-right { animation: fadeInRight 0.4s ease-out; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+.back-btn { color: #999; }
+.back-btn:hover { color: #fff; }
 </style>
