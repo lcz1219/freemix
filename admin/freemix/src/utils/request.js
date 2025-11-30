@@ -8,8 +8,8 @@ import { saveToken, getToken } from './tokenUtils.js';
 import { showFailToast } from 'vant'; // 引入Vant Toast
 
 const request = axios.create({
-  // baseURL: import.meta.env.PROD ? 'https://freemix.bond' : 'http://localhost:5173',
-  baseURL: import.meta.env.PROD ? 'http://172.20.10.3:5173' : 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'https://freemix.bond' : 'http://localhost:5173',
+  // baseURL: import.meta.env.PROD ? 'http://192.168.1.36:5173' : 'http://localhost:5173',
   headers: {
     'Content-Type': 'application/json'
   },

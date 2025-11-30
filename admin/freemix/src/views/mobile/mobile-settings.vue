@@ -252,6 +252,7 @@ import {
   showSuccessToast,
   showConfirmDialog 
 } from 'vant'
+import { postM, getMPaths, isSuccess,baseURL } from '@/utils/request'
 
 // 路由和状态管理
 const router = useRouter()
@@ -289,7 +290,7 @@ const currentLanguage = computed(() => {
 })
 
 const userAvatar = computed(() => {
-  return store.state.user?.avatarUrl || 'https://api.dicebear.com/7.x/miniavs/svg?seed=user'
+  return  `${baseURL()}${user.value.avatarUrl}` || 'https://api.dicebear.com/7.x/miniavs/svg?seed=user'
 })
 
 // 方法

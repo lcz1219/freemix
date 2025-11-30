@@ -231,7 +231,7 @@
                     <van-cell v-for="(subGoal, index) in (selectedGoal?.childGoals || [])" :key="subGoal._id"
                       class="subgoal-item">
                       <van-checkbox v-model="subGoal.finish" :name="subGoal._id" shape="round" checked-color="#00c9a7"
-                        @click="()=>handleSubGoalChange(subGoal, index)">
+                        @click="()=>handleSubGoalChange(subGoal, index)" :disabled="isExp">
                         <span :class="{ 'text-crossed': checkedSubGoals.includes(subGoal._id) }">{{ subGoal.message
                           }}</span>
                       </van-checkbox>
@@ -245,7 +245,7 @@
 
           <div class="popup-footer">
             <van-button type="primary" block round color="linear-gradient(to right, #00c9a7, #00e0b0)" size="large"
-              class="shadow-btn" @click="markGoalFinished(selectedGoal)">
+              class="shadow-btn" @click="markGoalFinished(selectedGoal)" :disabled="isExp">
               标记为完成
             </van-button>
           </div>
@@ -260,7 +260,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
-import { postM, getMPaths, isSuccess } from '@/utils/request'
+import { postM, getMPaths, isSuccess,baseURL } from '@/utils/request'
 import { useUser } from '@/hooks'
 
 const isDark = ref(false)
@@ -288,7 +288,7 @@ const showDetailModal = ref(false)
 const selectedGoal = ref<any | null>(null)
 const checkedSubGoals = ref<any[]>([])
 const detailTab = ref(0)
-
+const isExp = computed(() => selectedGoal?.value?.status === 'expired')
 const goalFinishCount = ref(0)
 const goalExpireCount = ref(0)
 const goalIngCount = ref(0)
@@ -397,7 +397,7 @@ const toggleSubGoal = async (sGoal: any,index: number) => {
 }
 // 修改方法
 const handleSubGoalChange = async (subGoal, index) => {
- 
+ if(isExp.value) return
   
   // 调用 API
   try {
