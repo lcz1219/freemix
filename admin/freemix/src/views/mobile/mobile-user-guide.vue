@@ -9,6 +9,7 @@
         @click-left="goBack"
         :border="false"
         class="glass-nav-bar"
+        :safe-area-inset-top="true"
       >
         <template #title>
           <span class="nav-title">用户指南</span>

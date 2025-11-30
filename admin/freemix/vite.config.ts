@@ -47,7 +47,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/oauth2/, '/oauth2')
       },
-    }
+    },
+    host: '0.0.0.0',
   },
   
   define: {

@@ -7,6 +7,7 @@
         left-arrow
         @click-left="goBack"
         class="apple-nav-bar"
+        :safe-area-inset-top="true"
       >
         <template #left>
           <van-icon name="arrow-left" size="18" color="var(--van-text-color)" />

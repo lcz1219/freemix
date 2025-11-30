@@ -526,7 +526,7 @@ const cleanupCharts = () => {
   /* border-bottom: 0.5px solid var(--ios-separator); Optional */
 }
 
-[data-theme="light"] .apple-nav-bar { background: rgba(255,255,255,0.75); }
+[data-theme="light"] .apple-nav-bar { background: rgba(var(--ios-card), 0.8); }
 [data-theme="dark"] .apple-nav-bar { background: rgba(28,28,30,0.75); }
 
 .nav-left {

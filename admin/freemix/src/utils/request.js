@@ -5,12 +5,15 @@ import router from '../router/index.js';
 import { isDesktop } from './device.js';
 import { getLocalStorageDesktopToken } from './desktopToken.js';
 import { saveToken, getToken } from './tokenUtils.js';
+import { showFailToast } from 'vant'; // 引入Vant Toast
 
 const request = axios.create({
-  baseURL: import.meta.env.PROD ? 'https://freemix.bond' : 'http://localhost:5173',
+  // baseURL: import.meta.env.PROD ? 'https://freemix.bond' : 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'http://172.20.10.3:5173' : 'http://localhost:5173',
   headers: {
     'Content-Type': 'application/json'
   },
+  timeout: 15000 // 增加超时设置
 });
 
 // 添加请求拦截器，动态设置token
@@ -18,8 +21,14 @@ const NO_AUTH_PATHS = ['/login', '/register', '/captcha','/enable2fa', '/file/up
 
 request.interceptors.request.use(
  async config => {
+    // 记录请求URL以便调试
+    console.log(`Request: ${config.method?.toUpperCase()} ${config.url}`);
+    
+    // 处理URL可能带参数的情况
+    const urlPath = config.url ? config.url.split('?')[0] : '';
+    
     const needsAuth = !NO_AUTH_PATHS.some(path => 
-      config.url.endsWith(path) // 精确匹配路径结尾
+      urlPath.endsWith(path) // 精确匹配路径结尾
     );
     
     if (needsAuth) {
@@ -113,7 +122,9 @@ fileRequest.interceptors.request.use(
        };
      }
      
-     const res= await request.post(`/freemix/${val}`,data, config)
+     // 处理路径，避免双斜杠
+     const cleanVal = val.startsWith('/') ? val.slice(1) : val;
+     const res= await request.post(`/freemix/${cleanVal}`,data, config)
       if(res.data.msg=='token过期'){
          await store.dispatch('logout')
          router.push('/login')
@@ -125,6 +136,23 @@ fileRequest.interceptors.request.use(
        }
       return res
    } catch (error) {
+     // 详细错误日志
+     console.error(`Request Error (POST ${val}):`, error);
+     if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+     } else if (error.request) {
+        console.error('No response received:', error.request);
+     } else {
+        console.error('Error setup:', error.message);
+     }
+     
+     // 用户友好提示
+     if (!isDesktop()) { // 仅在移动端显示Toast，避免桌面端重复
+        const msg = error.message === 'Network Error' ? '网络连接失败，请检查网络' : (error.response?.data?.msg || '请求失败');
+        showFailToast(msg);
+     }
+
      // 隐藏loading
      if (loadingText != '') {
        store.dispatch('loading/hideLoading');
@@ -139,7 +167,9 @@ fileRequest.interceptors.request.use(
    }
    
    try {
-     const res=await  request.get(`/freemix/${val}`,{params:data},)
+     // 处理路径，避免双斜杠
+     const cleanVal = val.startsWith('/') ? val.slice(1) : val;
+     const res=await  request.get(`/freemix/${cleanVal}`,{params:data},)
       if(res.data.msg=='token过期'){
          await store.dispatch('logout')
          router.push('/login')
@@ -151,6 +181,9 @@ fileRequest.interceptors.request.use(
        }
       return res
    } catch (error) {
+     // 详细错误日志
+     console.error(`Request Error (GET ${val}):`, error);
+     
      // 隐藏loading
      if (loadingText != '') {
        store.dispatch('loading/hideLoading');
@@ -165,7 +198,9 @@ const getMPaths=async function(val,data, loadingText = ''){
    }
    
    try {
-     const res=await request.get(`/freemix/${val}/${data}`)
+     // 处理路径，避免双斜杠
+     const cleanVal = val.startsWith('/') ? val.slice(1) : val;
+     const res=await request.get(`/freemix/${cleanVal}/${data}`)
       if(res.data.msg=='token过期'){
         
         // console.log('token过期');
@@ -180,6 +215,9 @@ const getMPaths=async function(val,data, loadingText = ''){
        }
       return res
    } catch (error) {
+     // 详细错误日志
+     console.error(`Request Error (GET Paths ${val}):`, error);
+     
      // 隐藏loading
      if (loadingText != '') {
        store.dispatch('loading/hideLoading');

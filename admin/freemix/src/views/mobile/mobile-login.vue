@@ -428,6 +428,8 @@ $text-sub: #b0bac9;
   display: flex;
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
 }
 
 /* 动态背景动画 */

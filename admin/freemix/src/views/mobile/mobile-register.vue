@@ -391,6 +391,8 @@ $text-sub: #b0bac9;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
 }
 
 .animated-bg {

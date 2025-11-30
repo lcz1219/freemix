@@ -7,6 +7,7 @@
         <van-nav-bar
           :border="false"
           class="custom-nav-bar"
+          :safe-area-inset-top="true"
         >
           <template #left>
             <span class="page-title">消息</span>
@@ -594,10 +595,11 @@ watch(() => messages.value.length, () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 60px; /* Header高度 */
+  height: calc(60px + env(safe-area-inset-top)); /* 适配刘海屏高度 */
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: env(safe-area-inset-top) 12px 0; /* 顶部增加安全距离 */
+  box-sizing: border-box; /* 确保高度包含 padding */
   z-index: 100;
   border-bottom: 0.5px solid var(--divider);
 }
@@ -646,7 +648,7 @@ watch(() => messages.value.length, () => {
 }
 
 .spacer-top {
-  height: 70px; /* 留出 header 空间 */
+  height: calc(70px + env(safe-area-inset-top)); /* 留出 header 空间 (含安全区域) */
 }
 
 .chat-start-tip {

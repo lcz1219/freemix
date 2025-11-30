@@ -9,6 +9,7 @@ import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.enetiy.childGoals;
 import com.freemix.freemix.util.ApiResponse;
 import io.netty.util.internal.StringUtil;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -32,6 +33,13 @@ public class GoalController extends BaseController {
     @CheckToken
     public ApiResponse editGoal(@RequestBody String body) {
         Goal goal = JSONObject.parseObject(body, Goal.class);
+        ApiResponse<Object> res = getObjectApiResponse(goal);
+        if (res != null) return res;
+
+        return ApiResponse.success(body);
+    }
+
+    private ApiResponse<Object> getObjectApiResponse(Goal goal) {
         Goal one = mongoTemplate.findOne(new Query(Criteria.where("title").is(goal.getTitle())
                 .and("description").is(goal.getDescription()).and("ower").is(goal.getOwner())), Goal.class);
         if (one != null) {
@@ -71,8 +79,7 @@ public class GoalController extends BaseController {
         }
         //插入创建者到关系表里面
         editCollaborator(goal.get_id(), Arrays.asList(goal.getOwner()), "owner");
-
-        return ApiResponse.success(body);
+        return null;
     }
 
 
@@ -677,6 +684,40 @@ public class GoalController extends BaseController {
         }
 
         return mostCentral;
+    }
+
+
+    @PostMapping("/finishGoal")
+    @CheckToken
+    public ApiResponse finishGoal(@RequestBody String body){
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String goalId = jsonObject.getString("goalId");
+        String type = jsonObject.getString("type");
+
+        Goal id = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("_id").is(goalId)), Goal.class);
+
+        if("success".equals(type)){
+            id.getChildGoals().stream().forEach(childGoalId -> {
+                childGoalId.setFinish(true);
+            });
+
+        }else{
+            List<String> childGoalIds= jsonObject.getJSONArray("childGoalIds").toList(String.class);
+
+            List<childGoals> childGoals = id.getChildGoals();
+            childGoals.stream().forEach(child -> {
+                if(childGoalIds.contains(child.get_id())){
+                    child.setFinish(true);
+                }else{
+                    child.setFinish(false);
+                }
+            });
+            id.setChildGoals(childGoals);
+        }
+        getObjectApiResponse(id);
+        return  ApiResponse.success();
+
+
     }
 
 }

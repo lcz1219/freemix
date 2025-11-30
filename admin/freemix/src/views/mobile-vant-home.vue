@@ -1,15 +1,9 @@
 <template>
-  <van-config-provider :theme="currentTheme" >
+  <van-config-provider :theme="currentTheme">
     <div class="app-container" :class="{ 'dark-mode': true }">
-      
+
       <!-- 顶部导航栏 (毛玻璃效果) -->
-      <van-nav-bar 
-        fixed 
-        placeholder 
-        class="glass-nav"
-        :border="false"
-        z-index="100"
-      >
+      <van-nav-bar fixed placeholder class="glass-nav" :border="false" z-index="100" :safe-area-inset-top="true">
         <template #left>
           <div class="nav-brand">FreeMix</div>
         </template>
@@ -39,20 +33,10 @@
               </div>
             </div>
             <div class="hero-actions">
-              <van-button 
-                class="action-btn primary" 
-                icon="plus" 
-                block 
-                @click="goToAddGoal"
-              >
+              <van-button class="action-btn primary" icon="plus" block @click="goToAddGoal">
                 新建目标
               </van-button>
-              <van-button 
-                class="action-btn secondary" 
-                icon="chart-trending-o" 
-                block 
-                @click="goToStatistics"
-              >
+              <van-button class="action-btn secondary" icon="chart-trending-o" block @click="goToStatistics">
                 数据统计
               </van-button>
             </div>
@@ -91,7 +75,8 @@
                 <span>进行中</span>
               </div>
               <div class="widget-num">{{ goalIngCount }}</div>
-              <van-progress :percentage="progressOngoing" :show-pivot="false" color="#4f8ef7" track-color="rgba(79,142,247,0.15)" stroke-width="4" />
+              <van-progress :percentage="progressOngoing" :show-pivot="false" color="#4f8ef7"
+                track-color="rgba(79,142,247,0.15)" stroke-width="4" />
             </div>
             <div class="stat-widget finished">
               <div class="widget-head">
@@ -99,7 +84,8 @@
                 <span>已完成</span>
               </div>
               <div class="widget-num">{{ goalFinishCount }}</div>
-              <van-progress :percentage="progressFinished" :show-pivot="false" color="#00c9a7" track-color="rgba(0,201,167,0.15)" stroke-width="4" />
+              <van-progress :percentage="progressFinished" :show-pivot="false" color="#00c9a7"
+                track-color="rgba(0,201,167,0.15)" stroke-width="4" />
             </div>
             <div class="stat-widget expired">
               <div class="widget-head">
@@ -107,7 +93,8 @@
                 <span>已过期</span>
               </div>
               <div class="widget-num">{{ goalExpireCount }}</div>
-              <van-progress :percentage="progressExpired" :show-pivot="false" color="#ff6b6b" track-color="rgba(255,107,107,0.15)" stroke-width="4" />
+              <van-progress :percentage="progressExpired" :show-pivot="false" color="#ff6b6b"
+                track-color="rgba(255,107,107,0.15)" stroke-width="4" />
             </div>
           </div>
         </section>
@@ -115,24 +102,16 @@
         <!-- 目标列表 -->
         <section class="goals-container">
           <van-pull-refresh v-model="isRefreshing" @refresh="refreshGoals">
-            <van-tabs 
-              v-model:active="activeTab" 
-              sticky 
-              offset-top="46"
-              background="transparent"
-              line-width="20px"
-              line-height="3px"
-              color="#00c9a7"
-              title-active-color="#00c9a7"
-              :title-inactive-color="isDark ? '#888' : '#666'"
-              class="custom-tabs"
-            >
+            <van-tabs v-model:active="activeTab" sticky offset-top="46" background="transparent" line-width="20px"
+              line-height="3px" color="#00c9a7" title-active-color="#00c9a7"
+              :title-inactive-color="isDark ? '#888' : '#666'" class="custom-tabs">
               <van-tab title="全部">
                 <div v-if="isLoading" class="skeleton-list">
                   <van-skeleton title avatar :row="2" class="custom-skeleton" v-for="i in 3" :key="i" />
                 </div>
                 <div v-else>
-                  <van-list v-model:loading="listLoading" :finished="listFinished" finished-text="没有更多了" @load="loadMore">
+                  <van-list v-model:loading="listLoading" :finished="listFinished" finished-text="没有更多了"
+                    @load="loadMore">
                     <div class="goal-list-wrap">
                       <van-swipe-cell v-for="goal in goals" :key="goal.id" class="goal-card-swipe">
                         <div class="goal-card" @click="showGoalDetail(goal)">
@@ -140,7 +119,8 @@
                           <div class="card-main">
                             <div class="card-header">
                               <h3 class="card-title">{{ goal.title }}</h3>
-                              <van-tag :type="getGoalStatusType(goal.status)" round class="status-pill">{{ getGoalStatusText(goal.status) }}</van-tag>
+                              <van-tag :type="getGoalStatusType(goal.status)" round class="status-pill">{{
+                                getGoalStatusText(goal.status) }}</van-tag>
                             </div>
                             <div class="card-meta">
                               <span class="meta-item"><van-icon name="clock-o" /> {{ goal.deadlineString }}</span>
@@ -151,7 +131,8 @@
                                 <span>进度</span>
                                 <span>{{ goalProgress(goal) }}%</span>
                               </div>
-                              <van-progress :percentage="goalProgress(goal)" :show-pivot="false" stroke-width="6" track-color="var(--bg-secondary)" />
+                              <van-progress :percentage="goalProgress(goal)" :show-pivot="false" stroke-width="6"
+                                track-color="var(--bg-secondary)" />
                             </div>
                           </div>
                           <van-icon name="arrow" class="card-arrow" />
@@ -166,30 +147,35 @@
                   </van-list>
                 </div>
               </van-tab>
-              
+
               <van-tab title="进行中">
                 <!-- 复用逻辑，仅过滤显示 -->
                 <div class="goal-list-wrap pt-2">
-                  <van-empty v-if="goals.filter(g => g.status === 'ongoing').length === 0" description="暂无进行中的目标" image="search" />
-                  <div v-else class="goal-card-simple" v-for="goal in goals.filter(g => g.status === 'ongoing')" :key="goal.id" @click="showGoalDetail(goal)">
-                     <div class="simple-info">
-                       <div class="title">{{ goal.title }}</div>
-                       <div class="date">{{ formatDate(goal.deadline) }} 截止</div>
-                     </div>
-                     <van-icon name="arrow" color="#ccc" />
+                  <van-empty v-if="goals.filter(g => g.status === 'ongoing').length === 0" description="暂无进行中的目标"
+                    image="search" />
+                  <div v-else class="goal-card-simple" v-for="goal in goals.filter(g => g.status === 'ongoing')"
+                    :key="goal.id" @click="showGoalDetail(goal)">
+                    <div class="simple-info">
+                      <div class="title">{{ goal.title }}</div>
+                      <div class="date">{{ formatDate(goal.deadline) }} 截止</div>
+                    </div>
+                    <van-icon name="arrow" color="#ccc" />
                   </div>
                 </div>
               </van-tab>
 
               <van-tab title="已完成">
-                 <div class="goal-list-wrap pt-2">
-                  <van-empty v-if="goals.filter(g => g.status === 'finished').length === 0" description="暂无已完成的目标" image="search" />
-                  <div v-else class="goal-card-simple finished" v-for="goal in goals.filter(g => g.status === 'finished')" :key="goal.id" @click="showGoalDetail(goal)">
-                     <div class="simple-info">
-                       <div class="title">{{ goal.title }}</div>
-                       <div class="date">任务已完成</div>
-                     </div>
-                     <van-icon name="checked" color="#00c9a7" />
+                <div class="goal-list-wrap pt-2">
+                  <van-empty v-if="goals.filter(g => g.status === 'finished').length === 0" description="暂无已完成的目标"
+                    image="search" />
+                  <div v-else class="goal-card-simple finished"
+                    v-for="goal in goals.filter(g => g.status === 'finished')" :key="goal.id"
+                    @click="showGoalDetail(goal)">
+                    <div class="simple-info">
+                      <div class="title">{{ goal.title }}</div>
+                      <div class="date">任务已完成</div>
+                    </div>
+                    <van-icon name="checked" color="#00c9a7" />
                   </div>
                 </div>
               </van-tab>
@@ -206,18 +192,13 @@
       </van-tabbar> -->
 
       <!-- 详情弹窗 (iOS Sheet 风格) -->
-      <van-popup 
-        v-model:show="showDetailModal" 
-        position="bottom" 
-        round 
-        closeable
-        class="detail-popup"
-        :style="{ height: '85%' }"
-      >
+      <van-popup v-model:show="showDetailModal" position="bottom" round closeable class="detail-popup"
+        :style="{ height: '85%' }">
         <div class="popup-wrapper">
           <div class="popup-header">
             <div class="popup-tag">
-              <van-tag :type="getGoalStatusType(selectedGoal?.status)" size="medium" round>{{ getGoalStatusText(selectedGoal?.status) }}</van-tag>
+              <van-tag :type="getGoalStatusType(selectedGoal?.status)" size="medium" round>{{
+                getGoalStatusText(selectedGoal?.status) }}</van-tag>
             </div>
             <h2 class="popup-title">{{ selectedGoal?.title }}</h2>
             <div class="popup-meta">
@@ -232,34 +213,30 @@
                 <div class="detail-content-box">
                   <div class="section-label">描述</div>
                   <div class="desc-text">{{ selectedGoal?.description || '暂无详细描述...' }}</div>
-                  
+
                   <div class="section-label mt-4">当前进度</div>
                   <div class="progress-circle-wrap">
-                    <van-circle 
-                      v-model:current-rate="constProgress" 
-                      :rate="goalProgress(selectedGoal)" 
-                      :color="isDark ? '#00c9a7' : '#00c9a7'"
-                      :layer-color="isDark ? '#333' : '#f2f3f5'"
-                      :text="goalProgress(selectedGoal) + '%'"
-                      size="120px"
-                    />
+                    <van-circle v-model:current-rate="constProgress" :rate="goalProgress(selectedGoal)"
+                      :color="isDark ? '#00c9a7' : '#00c9a7'" :layer-color="isDark ? '#333' : '#f2f3f5'"
+                      :text="goalProgress(selectedGoal) + '%'" size="120px" />
                   </div>
                 </div>
               </van-tab>
               <van-tab title="子目标清单">
                 <div class="subgoals-list">
-                  <van-empty v-if="!(selectedGoal?.subGoals && selectedGoal.subGoals.length > 0)" description="没有子任务" />
+                  <van-empty v-if="!(selectedGoal?.childGoals && selectedGoal.childGoals.length > 0)"
+                    description="没有子任务" />
                   <van-checkbox-group v-else v-model="checkedSubGoals">
-                    <div 
-                      v-for="subGoal in (selectedGoal?.subGoals || [])" 
-                      :key="subGoal.id" 
-                      class="subgoal-item"
-                      @click="toggleSubGoal(subGoal.id)"
-                    >
-                      <van-checkbox :name="subGoal.id" shape="round" checked-color="#00c9a7" @click.stop>
-                        <span :class="{ 'text-crossed': checkedSubGoals.includes(subGoal.id) }">{{ subGoal.title }}</span>
+                    <van-cell-group inset>
+                    <van-cell v-for="(subGoal, index) in (selectedGoal?.childGoals || [])" :key="subGoal._id"
+                      class="subgoal-item">
+                      <van-checkbox v-model="subGoal.finish" :name="subGoal._id" shape="round" checked-color="#00c9a7"
+                        @click="()=>handleSubGoalChange(subGoal, index)">
+                        <span :class="{ 'text-crossed': checkedSubGoals.includes(subGoal._id) }">{{ subGoal.message
+                          }}</span>
                       </van-checkbox>
-                    </div>
+                    </van-cell>
+                    </van-cell-group>
                   </van-checkbox-group>
                 </div>
               </van-tab>
@@ -267,15 +244,8 @@
           </div>
 
           <div class="popup-footer">
-            <van-button 
-              type="primary" 
-              block 
-              round 
-              color="linear-gradient(to right, #00c9a7, #00e0b0)" 
-              size="large" 
-              class="shadow-btn"
-              @click="markGoalFinished(selectedGoal)"
-            >
+            <van-button type="primary" block round color="linear-gradient(to right, #00c9a7, #00e0b0)" size="large"
+              class="shadow-btn" @click="markGoalFinished(selectedGoal)">
               标记为完成
             </van-button>
           </div>
@@ -290,7 +260,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
-import { postM, getMPaths } from '@/utils/request'
+import { postM, getMPaths, isSuccess } from '@/utils/request'
 import { useUser } from '@/hooks'
 
 const isDark = ref(false)
@@ -340,12 +310,12 @@ const fetchGoals = async () => {
     // 注意：这里保留了你原本的代码逻辑
     const response = await getMPaths("getGoals", userInfo.value.username, "正在获取目标数据...");
     goals.value = response.data.data || []
-    
+
     // 重新计算统计数据
     goalFinishCount.value = goals.value.filter(g => g.status === 'completed' || g.status === 'finished').length
     goalExpireCount.value = goals.value.filter(g => g.status === 'expired').length
     goalIngCount.value = goals.value.filter(g => g.status === 'in-progress' || g.status === 'ongoing').length
-    
+
     listFinished.value = true
   } catch (error) {
     console.error(error)
@@ -383,35 +353,87 @@ const goToGuide = () => router.push('/user-guide')
 const showGoalDetail = (goal: any) => {
   selectedGoal.value = goal
   const subs = goal?.childGoals || []
-  checkedSubGoals.value = subs.filter((sub: any) => sub.completed).map((sub: any) => sub.id)
+  checkedSubGoals.value = subs.filter((sub: any) => sub.finish).map((sub: any) => sub._id)
+  console.log("checkedSubGoals.value", checkedSubGoals.value)
   showDetailModal.value = true
 }
 
 const markGoalFinished = async (goal: any) => {
-  if(!goal) return
+  if (!goal) return
   try {
-    await getMPaths('api/goal/finish', goal.id)
-    await fetchGoals()
-    showToast({ type: 'success', message: '太棒了！目标达成' })
-    showDetailModal.value = false
+    let data = {
+      goalId: goal._id,
+      type: 'success'
+    }
+    const res = await postM('finishGoal', data)
+    if (isSuccess(res)) {
+      await fetchGoals()
+      showToast({ type: 'success', message: '太棒了！目标达成' })
+      showDetailModal.value = false
+    } else {
+      showToast('操作失败')
+    }
   } catch (error) {
     showToast('操作失败')
   }
 }
 
-const toggleSubGoal = async (id: any) => {
-  const index = checkedSubGoals.value.indexOf(id)
-  if (index !== -1) {
-    checkedSubGoals.value.splice(index, 1)
-  } else {
-    checkedSubGoals.value.push(id)
+const toggleSubGoal = async (sGoal: any,index: number) => {
+  console.log(11232323);
+
+  const subGoal = selectedGoal.value?.childGoals[index]
+  if (subGoal) {
+    subGoal.finish = !subGoal.finish
+    if (subGoal.finish) {
+      checkedSubGoals.value.push(subGoal._id)
+    } else {
+      const index = checkedSubGoals.value.indexOf(subGoal._id)
+      if (index !== -1) {
+        checkedSubGoals.value.splice(index, 1)
+      }
+    }
   }
-  await finishChildGoal(id)
+  await finishChildGoal(checkedSubGoals.value)
+}
+// 修改方法
+const handleSubGoalChange = async (subGoal, index) => {
+ 
+  
+  // 调用 API
+  try {
+    const data = {
+      goalId: selectedGoal.value._id,
+      childGoalIds: checkedSubGoals.value
+    }
+    const res = await postM('finishGoal', data)  // 注意接口名称
+    if (isSuccess(res)) {
+      await fetchGoals()
+      showToast('进度更新成功')
+    } else {
+      showToast('更新失败')
+    }
+  } catch (error) {
+    console.error('更新子目标失败:', error)
+    showToast('更新失败')
+  }
 }
 
-const finishChildGoal = async (childId: any) => {
+// 可以删除原来的 toggleSubGoal 方法
+
+const finishChildGoal = async (childIds: any[]) => {
   try {
-    await getMPaths('api/goal/finish', childId)
+    childIds = childIds.map(e => e._id)
+    let data = {
+      goalId: selectedGoal.value._id,
+      childGoalIds: childIds
+    }
+    const res = await postM('finishGoal', data)
+    if (isSuccess(res)) {
+      await fetchGoals()
+      showDetailModal.value = false
+    } else {
+      showToast('更新失败')
+    }
     // showToast('进度更新')
   } catch (error) {
     showToast('更新失败')
@@ -419,16 +441,16 @@ const finishChildGoal = async (childId: any) => {
 }
 
 const formatDate = (dateString: string) => {
-  if(!dateString) return ''
+  if (!dateString) return ''
   const date = new Date(dateString)
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
 const getGoalStatusType = (status: string) => {
   switch (status) {
-    case 'ongoing': 
+    case 'ongoing':
     case 'in-progress': return 'primary'
-    case 'finished': 
+    case 'finished':
     case 'completed': return 'success'
     case 'expired': return 'danger'
     default: return 'default'
@@ -437,33 +459,22 @@ const getGoalStatusType = (status: string) => {
 
 const getGoalStatusText = (status: string) => {
   switch (status) {
-    case 'ongoing': 
+    case 'ongoing':
     case 'in-progress': return '进行中'
-    case 'finished': 
+    case 'finished':
     case 'completed': return '已完成'
     case 'expired': return '已过期'
     default: return '未知状态'
   }
 }
-const constProgress=ref(0)
+const constProgress = ref(0)
 
 
 
 const goalProgress = (goal: any) => {
-  if(!goal) return 0
-  const subs = goal?.childGoals || []
-  if (!subs.length) {
-    return (goal.status === 'finished' || goal.status === 'completed') ? 100 : 0
-  }
-  const done = subs.filter((s: any) => s.completed).length
-  constProgress.value = Math.round((done / subs.length) * 100)
-  return Math.round((done / subs.length) * 100)
+  if (!goal) return 0
+  return goal.progress;
 }
-
-const total = computed(() => goals.value.length || 1)
-const progressFinished = computed(() => Math.round((goalFinishCount.value / total.value) * 100))
-const progressExpired = computed(() => Math.round((goalExpireCount.value / total.value) * 100))
-const progressOngoing = computed(() => Math.round((goalIngCount.value / total.value) * 100))
 </script>
 
 <style scoped lang="scss">
@@ -498,7 +509,8 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
 
 .content-wrapper {
   padding: 16px;
-  padding-bottom: 80px; /* 留出 TabBar 空间 */
+  padding-bottom: 80px;
+  /* 留出 TabBar 空间 */
 }
 
 /* --- 顶部导航 --- */
@@ -506,7 +518,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  
+
   ::v-deep(.van-nav-bar__content) {
     height: 50px;
   }
@@ -536,7 +548,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   background: rgba(125, 125, 125, 0.1);
   color: var(--text-primary);
   transition: transform 0.2s;
-  
+
   &:active {
     transform: scale(0.9);
   }
@@ -644,14 +656,31 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   justify-content: center;
   font-size: 22px;
   transition: transform 0.2s;
-  
-  &:active { transform: scale(0.92); }
+
+  &:active {
+    transform: scale(0.92);
+  }
 }
 
-.grid-icon-box.blue { background: rgba(79, 142, 247, 0.1); color: #4f8ef7; }
-.grid-icon-box.green { background: rgba(0, 201, 167, 0.1); color: #00c9a7; }
-.grid-icon-box.orange { background: rgba(255, 159, 67, 0.1); color: #ff9f43; }
-.grid-icon-box.purple { background: rgba(165, 94, 234, 0.1); color: #a55eea; }
+.grid-icon-box.blue {
+  background: rgba(79, 142, 247, 0.1);
+  color: #4f8ef7;
+}
+
+.grid-icon-box.green {
+  background: rgba(0, 201, 167, 0.1);
+  color: #00c9a7;
+}
+
+.grid-icon-box.orange {
+  background: rgba(255, 159, 67, 0.1);
+  color: #ff9f43;
+}
+
+.grid-icon-box.purple {
+  background: rgba(165, 94, 234, 0.1);
+  color: #a55eea;
+}
 
 /* --- 统计概览 --- */
 .stats-overview {
@@ -696,9 +725,17 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   margin: 8px 0;
 }
 
-.processing .widget-num { color: #4f8ef7; }
-.finished .widget-num { color: #00c9a7; }
-.expired .widget-num { color: #ff6b6b; }
+.processing .widget-num {
+  color: #4f8ef7;
+}
+
+.finished .widget-num {
+  color: #00c9a7;
+}
+
+.expired .widget-num {
+  color: #ff6b6b;
+}
 
 /* --- 目标列表 --- */
 .goals-container {
@@ -713,7 +750,9 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   gap: 12px;
 }
 
-.pt-2 { padding-top: 20px; }
+.pt-2 {
+  padding-top: 20px;
+}
 
 /* 卡片样式 */
 .goal-card-swipe {
@@ -736,10 +775,20 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   height: 40px;
   border-radius: 2px;
   background: #eee;
-  
-  &.ongoing, &.in-progress { background: #4f8ef7; }
-  &.finished, &.completed { background: #00c9a7; }
-  &.expired { background: #ff6b6b; }
+
+  &.ongoing,
+  &.in-progress {
+    background: #4f8ef7;
+  }
+
+  &.finished,
+  &.completed {
+    background: #00c9a7;
+  }
+
+  &.expired {
+    background: #ff6b6b;
+  }
 }
 
 .card-main {
@@ -814,16 +863,27 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   &.finished {
     opacity: 0.7;
-    .title { text-decoration: line-through; }
+
+    .title {
+      text-decoration: line-through;
+    }
   }
 }
 
 .simple-info {
-  .title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
-  .date { font-size: 12px; color: var(--text-secondary); }
+  .title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .date {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
 }
 
 /* --- 底部 Tabbar --- */
@@ -831,7 +891,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border-top: none;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
 }
 
 /* --- 详情弹窗 --- */
@@ -888,7 +948,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-primary);
-  background: rgba(125,125,125,0.05);
+  background: rgba(125, 125, 125, 0.05);
   padding: 16px;
   border-radius: 12px;
 }
@@ -905,7 +965,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
 
 .subgoal-item {
   padding: 16px;
-  background: rgba(125,125,125,0.03);
+  background: rgba(125, 125, 125, 0.03);
   margin-bottom: 10px;
   border-radius: 12px;
 }
@@ -916,9 +976,10 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
 }
 
 .popup-footer {
-  padding: 16px 24px 32px; /* iOS safe area */
+  padding: 16px 24px 32px;
+  /* iOS safe area */
   background: var(--bg-secondary);
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .shadow-btn {
@@ -929,6 +990,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
 .skeleton-list {
   padding: 20px 0;
 }
+
 .custom-skeleton {
   margin-bottom: 20px;
   background: var(--bg-secondary);
@@ -936,6 +998,7 @@ const progressOngoing = computed(() => Math.round((goalIngCount.value / total.va
   border-radius: 16px;
 }
 
-.mt-4 { margin-top: 16px; }
-
+.mt-4 {
+  margin-top: 16px;
+}
 </style>

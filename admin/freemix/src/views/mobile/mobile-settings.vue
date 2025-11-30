@@ -12,6 +12,7 @@
         class="glass-nav"
         :border="false"
         z-index="100"
+        :safe-area-inset-top="true"
       >
         <template #left>
           <div class="nav-back" @click="goBack">
@@ -37,7 +38,7 @@
               />
             </div>
             <div class="user-details">
-              <div class="username">{{ user?.username || '未登录用户' }}</div>
+              <div class="username">{{ user?.chinesename || '未登录用户' }}</div>
               <div class="user-email">{{ user?.email || 'user@example.com' }}</div>
             </div>
             <div class="user-arrow">
@@ -255,7 +256,7 @@ import {
 // 路由和状态管理
 const router = useRouter()
 const store = useStore()
-const { user } = useUser()
+const user = computed(() => JSON.parse(localStorage.getItem('user') || '{}'));
 
 // 主题配置
 const currentTheme = ref('dark')
@@ -288,7 +289,7 @@ const currentLanguage = computed(() => {
 })
 
 const userAvatar = computed(() => {
-  return store.state.user?.avatar || 'https://api.dicebear.com/7.x/miniavs/svg?seed=user'
+  return store.state.user?.avatarUrl || 'https://api.dicebear.com/7.x/miniavs/svg?seed=user'
 })
 
 // 方法

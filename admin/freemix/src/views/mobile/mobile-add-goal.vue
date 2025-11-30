@@ -13,6 +13,7 @@
         :border="false"
         class="custom-nav"
         z-index="100"
+        :safe-area-inset-top="true"
       >
         <template #left>
           <div class="nav-btn-text white" @click="router.back()">
