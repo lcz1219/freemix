@@ -60,6 +60,7 @@ public class CheckAspect extends BaseController  {
         log.info("用检测token，线上环境");
 
 
+
         // 检查是否为桌面端请求（通过X-Desktop-Token头）
         String desktopToken = request.getHeader("X-Desktop-Token");
         if (desktopToken != null && !desktopToken.isEmpty()) {
@@ -69,6 +70,11 @@ public class CheckAspect extends BaseController  {
 
         // 获取Token（支持多种方式）
         String token = getTokenFromRequest(request);
+        if(userAgent.contains("Mobile")&&token!=null){
+            log.info("Mobile交验");
+            return joinPoint.proceed();
+
+        }
         if(token == null || token.isEmpty()){
             log.info("token不能为空");
             return ApiResponse.failure("token不能为空");

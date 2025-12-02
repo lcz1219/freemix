@@ -1,0 +1,14 @@
+{
+  "assetPaths": [
+    {
+      "path": "src/assets/splash.png",
+      "type": "splash"
+    }
+  ],
+  "android": {
+    "splashBackgroundColor": "#ffffff"
+  },
+  "ios": {
+    "splashBackgroundColor": "#ffffff"
+  }
+}
