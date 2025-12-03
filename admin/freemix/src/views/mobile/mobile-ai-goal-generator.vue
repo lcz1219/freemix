@@ -39,36 +39,41 @@
 
     <!-- AI生成结果展示 -->
     <div v-if="generatedGoal" class="result-section">
-      <van-card title="AI生成的目标" class="result-card" :bordered="true">
-        <div class="goal-preview">
-          <h3 class="goal-title">{{ generatedGoal.title }}</h3>
-          <p class="goal-description">{{ generatedGoal.description }}</p>
+      <div class="result-card">
+        <div class="card-header">
+          <span class="card-title">AI生成的目标</span>
+        </div>
+        <div class="card-content">
+          <div class="goal-preview">
+            <h3 class="goal-title">{{ generatedGoal.title }}</h3>
+            <p class="goal-description">{{ generatedGoal.description }}</p>
 
-          <div class="sub-goals">
-            <h4 class="sub-goals-title">子目标：</h4>
-            <van-list :border="true" class="sub-goals-list">
-              <van-cell 
-                v-for="(subGoal, index) in generatedGoal.childGoals" 
-                :key="index"
-                :title="`步骤 ${index + 1}`"
-                :value="subGoal.message"
-                :bordered="true"
-                class="sub-goal-item"
-              >
-                <template #right-icon>
-                  <van-icon name="arrow-right" color="#ccc" />
-                </template>
-              </van-cell>
-            </van-list>
+            <div class="sub-goals">
+              <h4 class="sub-goals-title">子目标：</h4>
+              <van-list :border="true" class="sub-goals-list">
+                <van-cell 
+                  v-for="(subGoal, index) in generatedGoal.childGoals" 
+                  :key="index"
+                  :title="`步骤 ${index + 1}`"
+                  :value="subGoal.message"
+                  :bordered="true"
+                  class="sub-goal-item"
+                >
+                  <template #right-icon>
+                    <van-icon name="arrow-right" color="#ccc" />
+                  </template>
+                </van-cell>
+              </van-list>
+            </div>
+          </div>
+
+          <div class="confirmation-buttons">
+            <van-button @click="resetGeneration" plain size="small">重新生成</van-button>
+            <van-button @click="saveForLater" :loading="isSaving" size="small">稍后决定</van-button>
+            <van-button @click="confirmGoal" type="primary" size="small">确认创建</van-button>
           </div>
         </div>
-
-        <div class="confirmation-buttons">
-          <van-button @click="resetGeneration" plain size="small">重新生成</van-button>
-          <van-button @click="saveForLater" :loading="isSaving" size="small">稍后决定</van-button>
-          <van-button @click="confirmGoal" type="primary" size="small">确认创建</van-button>
-        </div>
-      </van-card>
+      </div>
     </div>
 
     <!-- 初始状态提示 -->
@@ -95,7 +100,7 @@
     </div>
 
     <!-- AI思考过程弹窗 -->
-    <van-popup v-model:show="showChatProcess" position="bottom" :style="{ height: '60%' }" round closeable>
+    <van-popup v-model:show="showChatProcess" position="bottom" :style="{ height: '60%', left: '50%', width: '50%' }" round closeable>
       <div class="chat-process-modal">
         <div class="modal-header">
           <h3>AI思考过程</h3>
@@ -115,7 +120,7 @@
     </van-popup>
 
     <!-- 目标确认模态框 -->
-    <van-popup v-model:show="showConfirmationModal" position="bottom" :style="{ height: '80%' }" round closeable>
+    <van-popup v-model:show="showConfirmationModal" position="bottom" :style="{ height: '80%',left: '50%', width: '50%' }" round closeable>
       <div class="confirmation-modal">
         <h3 class="modal-title">确认创建目标</h3>
         <div class="modal-content">
@@ -526,6 +531,7 @@ const generateGoal = async () => {
       description: userInput.value,
       childGoals: subGoals
     }
+   generatedGoal.value= JSON.parse(JSON.stringify(generatedGoal.value))
     
     showToast({ type: 'success', message: '目标生成成功' })
   } catch (error) {
@@ -801,6 +807,11 @@ const getStatusText = (status) => {
 .ai-goal-generator {
   padding: 16px;
   background-color: var(--bg-primary);
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 100px;
+  box-sizing: border-box;
   
   .input-section {
     background-color: var(--bg-secondary);
@@ -853,9 +864,22 @@ const getStatusText = (status) => {
       background-color: var(--bg-secondary);
       border-radius: 16px;
       box-shadow: var(--card-shadow);
+      overflow: hidden;
       
-      :deep(.van-card__header) {
+      .card-header {
+        padding: 12px 16px;
         border-bottom: 1px solid var(--border-line);
+        background-color: rgba(255, 255, 255, 0.02);
+        
+        .card-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+      }
+
+      .card-content {
+        padding: 16px;
       }
       
       .goal-preview {
