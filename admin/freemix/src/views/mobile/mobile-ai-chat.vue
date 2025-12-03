@@ -821,6 +821,7 @@ defineExpose({
     align-items: flex-end;
     gap: 12px;
     padding: 16px;
+    padding-bottom: calc(27px + env(safe-area-inset-bottom));
     background-color: var(--bg-primary);
     border-top: 1px solid var(--border-line);
     
