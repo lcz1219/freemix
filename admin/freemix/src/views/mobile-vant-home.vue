@@ -58,6 +58,10 @@
               <div class="grid-icon-box orange"><van-icon name="chat-o" /></div>
               <span>消息</span>
             </div>
+            <div class="grid-item" @click="goToAIAssistant">
+              <div class="grid-icon-box teal"><van-icon name="smile-o" /></div>
+              <span>AI助手</span>
+            </div>
             <div class="grid-item" @click="goToGuide">
               <div class="grid-icon-box purple"><van-icon name="bulb-o" /></div>
               <span>指南</span>
@@ -348,6 +352,7 @@ const goToAddGoal = () => router.push('/add-goal')
 const goToStatistics = () => router.push('/statistics')
 const goToMessageCenter = () => router.push('/messages')
 const goToGuide = () => router.push('/user-guide')
+const goToAIAssistant = () => router.push('/AIAssistantWindow')
 
 // Logic
 const showGoalDetail = (goal: any) => {
@@ -680,6 +685,11 @@ const goalProgress = (goal: any) => {
 .grid-icon-box.purple {
   background: rgba(165, 94, 234, 0.1);
   color: #a55eea;
+}
+
+.grid-icon-box.teal {
+  background: rgba(0, 201, 167, 0.1);
+  color: #00c9a7;
 }
 
 /* --- 统计概览 --- */

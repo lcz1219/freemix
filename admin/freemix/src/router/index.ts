@@ -23,6 +23,7 @@ import MobileAddGoal from '@/views/mobile/mobile-add-goal.vue'
 import MobileSettings from '@/views/mobile/mobile-settings.vue'
 import MobileMessageCenter from '@/views/mobile/mobile-MessageCenter.vue'
 import MobileUserGuide from '@/views/mobile/mobile-user-guide.vue'
+import MobileAIAssistant from '@/views/mobile/mobile-ai-assistant.vue'
 import { isDesktop } from '@/utils/device.js'
 // import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -54,7 +55,7 @@ const routes = [
   {
     path: '/AIAssistantWindow',
     name: 'AIAssistantWindow',
-    component: () => import('@/components/AIAssistantWindow.vue'),
+    component: getComponent(() => import('@/components/AIAssistantWindow.vue'), MobileAIAssistant),
   },
   {
     path: '/login',
