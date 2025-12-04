@@ -42,6 +42,11 @@
       <div class="result-card">
         <div class="card-header">
           <span class="card-title">AI生成的目标</span>
+           <div class="confirmation-buttons">
+            <van-button @click="resetGeneration" plain size="small">重新生成</van-button>
+            <van-button @click="saveForLater" :loading="isSaving" size="small">稍后决定</van-button>
+            <van-button @click="confirmGoal" type="primary" size="small">确认创建</van-button>
+          </div>
         </div>
         <div class="card-content">
           <div class="goal-preview">
@@ -67,11 +72,7 @@
             </div>
           </div>
 
-          <div class="confirmation-buttons">
-            <van-button @click="resetGeneration" plain size="small">重新生成</van-button>
-            <van-button @click="saveForLater" :loading="isSaving" size="small">稍后决定</van-button>
-            <van-button @click="confirmGoal" type="primary" size="small">确认创建</van-button>
-          </div>
+         
         </div>
       </div>
     </div>
@@ -108,11 +109,16 @@
         <div class="chat-messages">
            <div v-for="(msg, index) in chatMessages" :key="index" class="chat-message" :class="msg.type">
              <div class="message-content">
-               <div v-if="msg.thinkingContent" class="thinking-content">
-                 <div class="thinking-header">思考过程:</div>
-                 <div v-html="formatContent(msg.thinkingContent)"></div>
+               <div v-if="msg.isProcessing" class="ai-thinking-container">
+                 <van-loading size="24px" vertical color="#00c9a7">AI正在思考中...</van-loading>
                </div>
-               <div class="main-content" v-html="formatContent(msg.content)"></div>
+               <div v-else>
+                 <div v-if="msg.thinkingContent" class="thinking-content">
+                   <div class="thinking-header">思考过程:</div>
+                   <div v-html="formatContent(msg.thinkingContent)"></div>
+                 </div>
+                 <div class="main-content" v-html="formatContent(msg.content)"></div>
+               </div>
              </div>
            </div>
         </div>
@@ -201,7 +207,7 @@
     </van-popup>
 
     <!-- 历史记录弹窗 -->
-    <van-popup v-model:show="showHistoryModal" position="bottom" :style="{ height: '80%' }" round>
+    <van-popup v-model:show="showHistoryModal" position="bottom" :style="{ height: '80%', left: '50%', width: '50%' }" round>
       <div class="history-modal">
         <div class="history-modal-header">
           <h3>AI生成记录</h3>
@@ -810,7 +816,7 @@ const getStatusText = (status) => {
   height: 100vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 100px;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   
   .input-section {
@@ -875,6 +881,7 @@ const getStatusText = (status) => {
           font-size: 16px;
           font-weight: 600;
           color: var(--text-primary);
+          margin-bottom: 8px;
         }
       }
 
@@ -1049,6 +1056,13 @@ const getStatusText = (status) => {
         .main-content {
           white-space: pre-wrap;
           line-height: 1.5;
+        }
+        
+        .ai-thinking-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 20px 0;
         }
       }
     }

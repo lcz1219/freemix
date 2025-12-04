@@ -155,9 +155,9 @@
               <van-tab title="进行中">
                 <!-- 复用逻辑，仅过滤显示 -->
                 <div class="goal-list-wrap pt-2">
-                  <van-empty v-if="goals.filter(g => g.status === 'ongoing').length === 0" description="暂无进行中的目标"
+                  <van-empty v-if="goals.filter(g => g.status === 'in-progress').length === 0" description="暂无进行中的目标"
                     image="search" />
-                  <div v-else class="goal-card-simple" v-for="goal in goals.filter(g => g.status === 'ongoing')"
+                  <div v-else class="goal-card-simple" v-for="goal in goals.filter(g => g.status === 'in-progress')"
                     :key="goal.id" @click="showGoalDetail(goal)">
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
@@ -170,10 +170,10 @@
 
               <van-tab title="已完成">
                 <div class="goal-list-wrap pt-2">
-                  <van-empty v-if="goals.filter(g => g.status === 'finished').length === 0" description="暂无已完成的目标"
+                  <van-empty v-if="goals.filter(g => g.status === 'completed').length === 0" description="暂无已完成的目标"
                     image="search" />
                   <div v-else class="goal-card-simple finished"
-                    v-for="goal in goals.filter(g => g.status === 'finished')" :key="goal.id"
+                    v-for="goal in goals.filter(g => g.status === 'completed')" :key="goal.id"
                     @click="showGoalDetail(goal)">
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
@@ -318,7 +318,7 @@ const fetchGoals = async () => {
     // 重新计算统计数据
     goalFinishCount.value = goals.value.filter(g => g.status === 'completed' || g.status === 'finished').length
     goalExpireCount.value = goals.value.filter(g => g.status === 'expired').length
-    goalIngCount.value = goals.value.filter(g => g.status === 'in-progress' || g.status === 'ongoing').length
+    goalIngCount.value = goals.value.filter(g => g.status === 'in-progress' || g.status === 'in-progress').length
 
     listFinished.value = true
   } catch (error) {
@@ -453,7 +453,7 @@ const formatDate = (dateString: string) => {
 
 const getGoalStatusType = (status: string) => {
   switch (status) {
-    case 'ongoing':
+    case 'in-progress':
     case 'in-progress': return 'primary'
     case 'finished':
     case 'completed': return 'success'
@@ -464,7 +464,7 @@ const getGoalStatusType = (status: string) => {
 
 const getGoalStatusText = (status: string) => {
   switch (status) {
-    case 'ongoing':
+    case 'in-progress':
     case 'in-progress': return '进行中'
     case 'finished':
     case 'completed': return '已完成'
@@ -786,7 +786,7 @@ const goalProgress = (goal: any) => {
   border-radius: 2px;
   background: #eee;
 
-  &.ongoing,
+  &.in-progress,
   &.in-progress {
     background: #4f8ef7;
   }
