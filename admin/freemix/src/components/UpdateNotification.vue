@@ -68,7 +68,7 @@ const showUpdateNotification = (updateData) => {
       h(NAvatar, {
         size: 'small',
         round: true,
-        src: '../../public/icons/icon.png'
+        src: '/favicon.ico'
       }),
     
     // meta: formatDate(updateData.updateTime), // 可以在这里保留，也可以在 content 里自定义

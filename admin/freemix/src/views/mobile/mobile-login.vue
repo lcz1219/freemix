@@ -119,15 +119,23 @@
             </div>
             
             <div class="otp-container">
-               <!-- Vant 密码输入框组件，Mask设为false显示数字 -->
-              <van-password-input
-                :value="totpCodeStr"
-                :length="6"
-                :mask="false"
-                :focused="showKeyboard"
-                @focus="showKeyboard = true"
-                class="custom-otp"
-              />
+               <!-- 自定义独立验证码输入框 -->
+               <div class="otp-box-wrapper">
+                 <input
+                   v-for="(digit, index) in 6"
+                   :key="index"
+                   ref="otpInputs"
+                   v-model="otpDigits[index]"
+                   type="tel"
+                   inputmode="numeric"
+                   maxlength="1"
+                   class="otp-input"
+                   @input="onOtpInput(index, $event)"
+                   @keydown="onOtpKeydown(index, $event)"
+                   @paste="onOtpPaste"
+                   @focus="onOtpFocus"
+                 />
+               </div>
             </div>
             
             <div class="step-actions">
@@ -139,13 +147,7 @@
               </van-button>
             </div>
 
-            <!-- 数字键盘 -->
-            <van-number-keyboard
-              v-model="totpCodeStr"
-              :show="showKeyboard"
-              @blur="showKeyboard = false"
-              @input="onKeyboardInput"
-            />
+
           </div>
 
           <!-- 3. 双因素认证绑定 -->
@@ -225,33 +227,92 @@ const captchaExpression = ref('');
 const tempUserData = ref<any>(null);
 
 // 2FA 相关
-const totpCodeStr = ref(''); // 使用字符串方便 Vant PasswordInput
-const showKeyboard = ref(false); // 控制键盘显示
+const totpCodeStr = ref(''); 
+const otpDigits = ref(['', '', '', '', '', '']);
+const otpInputs = ref<HTMLInputElement[]>([]);
 
-// 监听 OTP 输入，当输入 6 位自动提交
-watch(totpCodeStr, (val) => {
-  if (val.length === 6 && loginStep.value === '2fa-verify') {
+// Sync otpDigits -> totpCodeStr
+watch(otpDigits, (newVal) => {
+  totpCodeStr.value = newVal.join('');
+}, { deep: true });
+
+// Sync totpCodeStr -> otpDigits
+watch(totpCodeStr, (newVal) => {
+  if (newVal === '') {
+     otpDigits.value = ['', '', '', '', '', ''];
+     return;
+  }
+  // Auto submit
+  if (newVal.length === 6 && loginStep.value === '2fa-verify') {
     verifyTwoFactorAuth();
   }
 });
-
-// 监听键盘输入 (用于 Vant Keyboard)
-const onKeyboardInput = (key: string) => {
-  // van-number-keyboard v-model 自动处理，这里可以留空做额外逻辑
-};
 
 // 监听步骤变化
 watch(loginStep, (newStep) => {
   if (newStep === '2fa-verify') {
     nextTick(() => {
       setTimeout(() => {
-        showKeyboard.value = true;
+        otpInputs.value[0]?.focus();
       }, 300);
     });
-  } else {
-    showKeyboard.value = false;
   }
 });
+
+const onOtpInput = (index: number, event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const val = input.value;
+  
+  if (val.length > 1) {
+    const chars = val.split('').slice(0, 6);
+    chars.forEach((char, i) => {
+      if (index + i < 6) {
+        otpDigits.value[index + i] = char;
+      }
+    });
+    const nextIndex = Math.min(index + chars.length, 5);
+    nextTick(() => otpInputs.value[nextIndex]?.focus());
+    return;
+  }
+
+  otpDigits.value[index] = val;
+  if (val && index < 5) {
+    nextTick(() => otpInputs.value[index + 1]?.focus());
+  }
+};
+
+const onOtpKeydown = (index: number, event: KeyboardEvent) => {
+  const key = event.key;
+  if (key === 'Backspace') {
+    if (!otpDigits.value[index] && index > 0) {
+      otpDigits.value[index - 1] = '';
+      nextTick(() => otpInputs.value[index - 1]?.focus());
+    }
+  } else if (key === 'ArrowLeft') {
+    if (index > 0) otpInputs.value[index - 1]?.focus();
+  } else if (key === 'ArrowRight') {
+    if (index < 5) otpInputs.value[index + 1]?.focus();
+  }
+};
+
+const onOtpPaste = (event: ClipboardEvent) => {
+  event.preventDefault();
+  const text = event.clipboardData?.getData('text');
+  if (text) {
+    const chars = text.replace(/\D/g, '').split('').slice(0, 6);
+    chars.forEach((char, i) => {
+      otpDigits.value[i] = char;
+    });
+    nextTick(() => {
+        const focusIndex = Math.min(chars.length, 5);
+        otpInputs.value[focusIndex]?.focus();
+    });
+  }
+};
+
+const onOtpFocus = (event: FocusEvent) => {
+  (event.target as HTMLInputElement).select();
+};
 
 // 加载验证码
 const loadCaptcha = async () => {
@@ -702,25 +763,57 @@ $text-sub: #b0bac9;
     p { margin: 0; color: $text-sub; font-size: 14px; }
   }
 
-  /* 自定义 Vant Password Input */
-  .custom-otp {
-    margin-bottom: 30px;
-    
-    :deep(.van-password-input__item) {
-      background: rgba(0, 0, 0, 0.3);
-      color: $primary-color;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      font-size: 24px;
-      
-      /* 去除左边框 */
-      &::after { display: none; }
-    }
-    :deep(.van-password-input__item--focus) {
-      border-color: $primary-color;
-      box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
-    }
-  }
+  /* 自定义独立 OTP 输入框 */
+   .otp-box-wrapper {
+     display: flex;
+     justify-content: space-between;
+     gap: 8px;
+     margin-bottom: 30px;
+     padding: 0; /* 移除内边距以获得更多空间 */
+     width: 100%;
+     
+     .otp-input {
+       flex: 1; /* 自适应宽度 */
+       max-width: 48px; /* 限制最大宽度 */
+       min-width: 0; /* 允许缩小 */
+       aspect-ratio: 6 / 7; /* 保持宽高比 48:56 */
+       height: auto; /* 高度随宽度自动调整 */
+       
+       background: rgba(0, 0, 0, 0.3);
+       color: $primary-color;
+       border: 1px solid rgba(255, 255, 255, 0.1);
+       border-radius: 12px;
+       font-size: 24px;
+       font-weight: bold;
+       text-align: center;
+       outline: none;
+       transition: all 0.3s ease;
+       
+       &:focus {
+         border-color: $primary-color;
+         box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+         background: rgba(0, 0, 0, 0.5);
+         transform: translateY(-2px);
+       }
+       
+       &::selection {
+         background: rgba(0, 242, 254, 0.3);
+         color: #fff;
+       }
+     }
+   }
+
+   /* 小屏设备适配 */
+   @media (max-width: 375px) {
+     .otp-box-wrapper {
+       gap: 4px;
+       
+       .otp-input {
+         font-size: 20px;
+         border-radius: 8px;
+       }
+     }
+   }
 }
 
 .mt-10 {
