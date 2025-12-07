@@ -39,6 +39,17 @@
             <LogoReddit />
           </n-icon>
         </n-button>
+        <n-button
+          class="menu-button"
+          circle
+          :title="'更新发布'"
+          size="large"
+          @click="openUpdateNotification"
+        >
+          <n-icon size="24" >
+            <!-- <LogoReddit /> -->
+          </n-icon>
+        </n-button>
         
         <!-- 反馈中心按钮 -->
         <n-button
@@ -141,6 +152,7 @@ import FeedbackCenter from '@/components/FeedbackCenter.vue';
 import { NFloatButton, NIcon, NButton, NModal, NCalendar, NInput } from 'naive-ui';
 import { CalendarSharp,LogoDiscord,LogoReddit } from '@vicons/ionicons5';
 import { createNewWindow, generateWindowId } from '@/utils/utilsWindowManager.js';
+import router from '@/router';
 
 // 定义属性
 const props = defineProps({
@@ -196,7 +208,9 @@ const props = defineProps({
 
 // 定义事件
 const emit = defineEmits(['dateSelected']);
-
+const openUpdateNotification = () => {
+  router.push('/admin/updates')
+};
 // 响应式数据
 const showMenu = ref(false);
 const showCalendar = ref(false);

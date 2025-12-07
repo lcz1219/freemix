@@ -132,6 +132,12 @@ const routes = [
     name: 'UserGuide',
     component: getComponent(() => import('@/views/user-guide.vue'), MobileUserGuide),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/admin/updates',
+    name: 'UpdateLogManager',
+    component: () => import('@/views/UpdateLogManager.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

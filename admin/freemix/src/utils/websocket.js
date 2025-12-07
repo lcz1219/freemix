@@ -116,6 +116,17 @@ export async function connect() {
             }
         });
         
+        // 订阅系统更新通知
+        stompClient.subscribe('/topic/updates', function (message) {
+            console.log('Received system update:', message.body);
+            try {
+                const updateLog = JSON.parse(message.body);
+                window.dispatchEvent(new CustomEvent('system-update', { detail: updateLog }));
+            } catch (e) {
+                console.error('Failed to parse system update message', e);
+            }
+        });
+        
         // 订阅用户状态更新主题
         stompClient.subscribe('/topic/user-status', function (message) {
             console.log('Received user status update: ' + message.body);

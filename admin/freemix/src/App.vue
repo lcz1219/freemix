@@ -13,9 +13,9 @@
       <n-global-style />
       <n-dialog-provider>
         <n-loading-bar-provider>
-
-          <!-- 消息提供器 -->
-          <n-message-provider>
+          <n-notification-provider>
+            <!-- 消息提供器 -->
+            <n-message-provider>
             <!-- 路由视图 - 应用主题类 -->
             <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
               <!-- 侧边栏导航 -->
@@ -58,6 +58,7 @@
             <!-- 全局浮动按钮组件 -->
             <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage&&!isMobileDevice" :goals="goals" :formatDate="formatDate" :checktype="checktype"
               @dateSelected="handleCalendarUpdate" />
+            <UpdateNotification ref="updateNotification" />
             <div style="display: flex;
               justify-content: flex-end;
               align-items: flex-end;
@@ -76,6 +77,7 @@
               </div>
             </div>
           </n-message-provider>
+          </n-notification-provider>
         </n-loading-bar-provider>
       </n-dialog-provider>
     </van-config-provider>
@@ -95,6 +97,7 @@ import {
   darkTheme,
   NSwitch,
   NMessageProvider,
+  NNotificationProvider,
   type GlobalThemeOverrides,
   NGlobalStyle,
   NDialogProvider,
@@ -116,6 +119,7 @@ import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
 import AppLoading from '@/components/AppLoading.vue';
+import UpdateNotification from '@/components/UpdateNotification.vue';
 import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue'; // 导入加载页面组件
 import request, { postM, isSuccess, getM,getMPaths } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
@@ -257,6 +261,7 @@ const handleIncomingMessage = (messageStr) => {
 }
 
 const store = useStore()
+const updateNotification = ref(null);
 
 // 初始化时读取保存的主题状态
 onMounted(async () => {
@@ -273,6 +278,8 @@ onMounted(async () => {
   
   // 获取目标数据
   await getGoals();
+  updateNotification.value.checkLatestUpdate()
+  
 });
 
 // 判断当前用户是否为开发者 (linchengzhong)

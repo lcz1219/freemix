@@ -130,7 +130,8 @@ const routeTitleMap: Record<string, string> = {
   'LoginLog': '登录日志',
   "Messages": "消息",
   "Profile": "个人信息",
-  "UserGuide": "使用指引"
+  "UserGuide": "使用指引",
+  "UpdateLogManager": "更新日志管理"
 }
 
 // 获取路由标题
