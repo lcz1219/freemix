@@ -48,11 +48,10 @@
         </div>
 
         <!-- 基本设置 -->
-        <div class="section-title">基本设置</div>
-        <div class="glass-group">
+        <!-- <div class="section-title">基本设置</div> -->
+        <!-- <div class="glass-group">
           <van-cell title="深色模式" center class="glass-cell">
             <template #right-icon>
-              <!-- 激活色改为白色，符合黑白极简风 -->
               <van-switch 
                 :model-value="isDark" 
                 @update:model-value="toggleTheme" 
@@ -77,10 +76,10 @@
             class="glass-cell"
             @click="goToNotificationSettings"
           />
-        </div>
+        </div> -->
 
         <!-- 数据管理 -->
-        <div class="section-title">数据管理</div>
+        <!-- <div class="section-title">数据管理</div>
         <div class="glass-group">
           <van-cell
             title="导入数据"
@@ -97,7 +96,7 @@
             class="glass-cell"
             @click="clearCache"
           />
-        </div>
+        </div> -->
 
         <!-- 隐私与安全 -->
         <div class="section-title">隐私安全</div>
@@ -116,12 +115,12 @@
             @click="goToLoginLog"
           />
 
-          <van-cell
+          <!-- <van-cell
             title="隐私设置"
             is-link
             class="glass-cell"
             @click="goToPrivacySettings"
-          />
+          /> -->
         </div>
 
         <!-- 关于 -->
@@ -147,12 +146,12 @@
             @click="showPrivacyPolicy"
           />
 
-          <van-cell
+          <!-- <van-cell
             title="意见反馈"
             is-link
             class="glass-cell"
             @click="goToFeedback"
-          />
+          /> -->
         </div>
 
         <!-- 退出登录 -->
