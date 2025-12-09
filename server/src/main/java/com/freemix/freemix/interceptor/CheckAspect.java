@@ -75,7 +75,7 @@ public class CheckAspect extends BaseController  {
                 "qqbrowser",        // QQ浏览器
                 "ali-app",          // 支付宝
                 "dingtalk",         // 钉钉
-                "app"          // 钉钉
+                "app/1"          // 钉钉
             };
             
             for (String keyword : mobileKeywords) {

@@ -151,6 +151,7 @@ public class GoalController extends BaseController {
         }
     }
 
+
     /**
      * 解析Excel文件中的目标数据
      *
@@ -185,8 +186,10 @@ public class GoalController extends BaseController {
             // 新增：获取最后一列的数据
             // 1. 首先获取最后一列的索引（从0开始）
             int lastCellIndex = row.getLastCellNum() - 1;
+            String cellValueAsString = getCellValueAsString(row.getCell(lastCellIndex));
+            boolean isChildGoal = true;
+           if(cellValueAsString==null || cellValueAsString.isEmpty()) isChildGoal = false;
 
-            boolean isChildGoal = lastCellIndex == 5;
             // 检查是否为子目标（第一列为空）
 
             String firstColumnValue = getCellValueAsString(row.getCell(0));

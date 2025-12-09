@@ -278,9 +278,15 @@ onMounted(async () => {
   
   // 获取目标数据
   await getGoals();
-  updateNotification.value.checkLatestUpdate()
+  isUpdateNotification()
   
 });
+const isUpdateNotification=async ()=>{
+ const res= await getToken()
+ if(res){
+  updateNotification.value.checkLatestUpdate()
+ }
+}
 
 // 判断当前用户是否为开发者 (linchengzhong)
 const isShowSidebar = computed(() => {
