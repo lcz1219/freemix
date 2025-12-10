@@ -148,9 +148,9 @@
               background="transparent"
               class="goal-search"
             />
-            <van-dropdown-menu :overlay="false" class="goal-filter">
+            <!-- <van-dropdown-menu :overlay="false" class="goal-filter">
               <van-dropdown-item v-model="currentFilter" :options="filterOptions" />
-            </van-dropdown-menu>
+            </van-dropdown-menu> -->
           </div>
 
           <!-- 目标列表 -->
