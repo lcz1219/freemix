@@ -1,5 +1,7 @@
 <template>
   <div class="mobile-profile">
+    <!-- <div class="profile-content" :style="{ visibility: (showQrScanPopup && isNative) ? 'hidden' : 'visible' }"> -->
+    <div class="profile-content" :style="{ visibility: (showQrScanPopup && isNative) ? 'hidden' : 'visible' }">
     <!-- 顶部导航栏 -->
     <van-nav-bar
       fixed
@@ -133,6 +135,21 @@
               <HotMap />
             </div>
           </div>
+
+          <!-- 安全与登录 -->
+          <div class="section-card">
+            <h3 class="card-title">安全与登录</h3>
+            <van-cell
+              title="扫码登录网页版"
+              label="使用本机扫码在网页/桌面端快速登录"
+              is-link
+              @click="openQrScanner"
+            >
+              <template #icon>
+                <van-icon name="scan" color="var(--primary-color)" />
+              </template>
+            </van-cell>
+          </div>
         </div>
       </van-tab>
 
@@ -217,17 +234,50 @@
     <div class="fab-btn" @click="createNewGoal">
       <van-icon name="plus" />
     </div>
+    </div>
+
+    <!-- 扫码弹窗 :style="{ height: '70vh', background: isNative ? 'transparent' : undefined }"  -->
+    <van-popup
+      v-model:show="showQrScanPopup"
+      position="bottom"
+      round
+      :style="{ height: '70vh' , background: isNative ? 'transparent' : undefined  }" 
+      @closed="stopQrScan"
+      :overlay-style="{ background: isNative ? 'transparent' : undefined }"
+    >
+      <div class="qr-scan-sheet" :style="{ background: isNative ? 'transparent' : 'var(--bg-primary)' }">
+        <div class="qr-scan-header" :style="{ color: isNative ? '#fff' : undefined }">
+          <span>扫码登录网页版</span>
+          <van-icon name="cross" @click="showQrScanPopup = false" />
+        </div>
+        <div class="qr-video-wrapper" :style="isNative ? { minHeight: '300px', background: 'transparent', overflow: 'visible' } : {}">
+          <video v-if="!isNative" ref="qrVideoRef" class="qr-video" autoplay playsinline></video>
+          <div class="qr-video-mask">
+            <div class="qr-frame" :style="isNative ? { boxShadow: '0 0 0 100vmax rgba(0, 0, 0, 0.8)' } : {}"></div>
+          </div>
+        </div>
+        <p class="qr-tip-text" :style="{ color: isNative ? 'rgba(255,255,255,0.7)' : undefined }">
+          <span v-if="qrLoading && !qrScanError">正在启动相机，请稍候...</span>
+          <span v-else>对准网页上的 FreeMix 登录二维码自动识别</span>
+        </p>
+        <p v-if="qrScanError" class="qr-error-text">{{ qrScanError }}</p>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue';
+import { ref, onMounted,onUnmounted,nextTick,computed, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { showToast, showDialog } from 'vant';
 import { useUser } from '@/hooks/useUser';
 import { useGoals } from '@/hooks/useGoals';
+import { postM, isSuccess } from '@/utils/request';
 import HotMap from '@/components/HotMap.vue';
+
+import { Capacitor } from '@capacitor/core';
+import { BarcodeScanner, BarcodeFormat, LensFacing } from '@capacitor-mlkit/barcode-scanning';
 
 const router = useRouter();
 const store = useStore();
@@ -240,6 +290,233 @@ const { userInfo: userProfile, avatarUrl, initUserData, uploadAvatar } = useUser
 
 // Tabs
 const activeTab = ref('overview');
+
+const showQrScanPopup = ref(false);
+const qrVideoRef = ref(null);
+const qrScanError = ref('');
+const qrLoading = ref(false);
+const isNative = ref(Capacitor.isNativePlatform());
+let qrMediaStream = null;
+let qrScanTimer = null;
+
+const playScanFeedback = () => {
+  try {
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
+    }
+  } catch (e) {}
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    osc.start();
+    setTimeout(() => {
+      osc.stop();
+      ctx.close();
+    }, 180);
+  } catch (e) {}
+};
+
+const stopQrScan = () => {
+  qrLoading.value = false;
+  if (Capacitor.isNativePlatform()) {
+      document.body.classList.remove('camera-active');
+      document.documentElement.classList.remove('camera-active');
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+      BarcodeScanner.removeAllListeners();
+      BarcodeScanner.stopScan();
+  }
+  if (qrScanTimer) {
+    clearInterval(qrScanTimer);
+    qrScanTimer = null;
+  }
+  if (qrMediaStream) {
+    qrMediaStream.getTracks().forEach(t => t.stop());
+    qrMediaStream = null;
+  }
+};
+
+const handleQrPayload = async (text) => {
+    try {
+      let data;
+      // 尝试直接解析JSON（兼容旧版）
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        // 尝试从URL中解析
+        if (text.includes('data=')) {
+          try {
+            const urlObj = new URL(text);
+            // 处理 hash 路由中的参数
+            const hashPart = urlObj.hash;
+            if (hashPart && hashPart.includes('?')) {
+               const searchParams = new URLSearchParams(hashPart.split('?')[1]);
+               const dataStr = searchParams.get('data');
+               if (dataStr) {
+                 data = JSON.parse(decodeURIComponent(dataStr));
+               }
+            } else {
+               // 处理 search 参数
+               const dataStr = urlObj.searchParams.get('data');
+               if (dataStr) {
+                 data = JSON.parse(decodeURIComponent(dataStr));
+               }
+            }
+          } catch (urlError) {
+             // 简单的字符串匹配兜底
+             const match = text.match(/data=([^&]+)/);
+             if (match) {
+               data = JSON.parse(decodeURIComponent(match[1]));
+             }
+          }
+        }
+      }
+
+      if (!data || data.type !== 'freemix-qr-login' || !data.sessionId || !data.sessionToken) {
+        showToast('二维码不是登录码');
+        return;
+      }
+    const res = await postM('qr-login/confirm', {
+      sessionId: data.sessionId,
+      sessionToken: data.sessionToken
+    });
+    if (!isSuccess(res)) {
+      showToast(res.data.msg || '确认登录失败');
+      return;
+    }
+    playScanFeedback();
+    showToast('已确认网页端登录');
+    showQrScanPopup.value = false;
+    stopQrScan();
+  } catch (e) {
+    console.error('处理二维码失败', e);
+    showToast('二维码内容无效'+e);
+  }
+};
+
+const startQrScanLoop = (video, detector) => {
+  if (qrScanTimer) {
+    clearInterval(qrScanTimer);
+  }
+  qrScanTimer = setInterval(async () => {
+    if (!video || video.readyState !== 4) return;
+    try {
+      const barcodes = await detector.detect(video);
+      if (barcodes && barcodes.length > 0) {
+        const value = barcodes[0].rawValue || barcodes[0].rawValue;
+        if (value) {
+          stopQrScan();
+          await handleQrPayload(value);
+        }
+      }
+    } catch (e) {
+      console.error('检测二维码失败', e);
+    }
+  }, 600);
+};
+
+const startQrScanner = async () => {
+  qrScanError.value = '';
+  
+  if (Capacitor.isNativePlatform()) {
+      qrLoading.value = true;
+      try {
+          const { camera } = await BarcodeScanner.requestPermissions();
+          if (camera !== 'granted' && camera !== 'limited') {
+              qrLoading.value = false;
+              qrScanError.value = '请授予相机权限以使用扫码功能';
+              return;
+            }
+
+            document.body.classList.add('camera-active');
+            document.documentElement.classList.add('camera-active');
+            document.body.style.backgroundColor = 'transparent';
+            document.documentElement.style.backgroundColor = 'transparent';
+            
+            await BarcodeScanner.addListener(
+            'barcodeScanned',
+            async result => {
+              if (result.barcode.rawValue) {
+                  await handleQrPayload(result.barcode.rawValue);
+              }
+            },
+          );
+
+          await BarcodeScanner.startScan({ 
+              formats: [BarcodeFormat.QrCode],
+              lensFacing: LensFacing.Back
+          });
+          
+          qrLoading.value = false;
+      } catch (e) {
+          console.error('Native scan error', e);
+          qrLoading.value = false;
+          qrScanError.value = '无法启动相机: ' + e.message;
+          document.body.classList.remove('camera-active');
+          document.documentElement.classList.remove('camera-active');
+          document.body.style.backgroundColor = '';
+          document.documentElement.style.backgroundColor = '';
+      }
+      return;
+  }
+
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      qrLoading.value = false;
+      qrScanError.value = '当前浏览器不支持相机扫码，请使用系统相机扫描网页二维码';
+      return;
+    }
+
+    const constraints = {
+      video: {
+        facingMode: 'environment'
+      },
+      audio: false
+    };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    qrMediaStream = stream;
+    await nextTick();
+    const video = qrVideoRef.value;
+    if (!video) {
+      qrLoading.value = false;
+      return;
+    }
+    video.srcObject = stream;
+    await video.play();
+    if (window.BarcodeDetector) {
+      const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+      startQrScanLoop(video, detector);
+    } else {
+      qrScanError.value = '当前环境不支持相机扫码，可使用系统相机扫描登录二维码';
+    }
+    qrLoading.value = false;
+  } catch (e) {
+    console.error('启动相机失败', e);
+    qrLoading.value = false;
+    qrScanError.value = '无法访问相机，请检查权限或网络环境';
+  }
+};
+
+const openQrScanner = () => {
+  qrScanError.value = '';
+  qrLoading.value = true;
+  showQrScanPopup.value = true;
+  nextTick(() => {
+    startQrScanner();
+  });
+};
+
+onUnmounted(() => {
+  stopQrScan();
+});
 
 // Stats Logic
 const stats = ref({
@@ -777,5 +1054,125 @@ onMounted(async () => {
       transform: scale(0.95);
     }
   }
+}
+
+.qr-scan-sheet {
+  padding: 16px 16px 24px;
+}
+
+.qr-scan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qr-video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: 12px auto 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+}
+
+.qr-video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.qr-video-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.qr-frame {
+  width: 220px;
+  height: 220px;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+.qr-tip-text {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.qr-error-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ff4d4f;
+  text-align: center;
+}
+</style>
+
+<style>
+/* Global styles for camera transparency */
+body.camera-active,
+body.camera-active html,
+body.camera-active #app {
+  background: transparent !important;
+}
+body.camera-active .mobile-profile {
+  background: transparent !important;
+}
+
+
+
+/* 2. 强制 Vant Popup 的所有层级透明 (关键) */
+body.camera-active .van-popup {
+  background: transparent !important; 
+  box-shadow: none !important;
+}
+
+/* 针对 HTML 元素也进行透明处理 (防止 iOS 默认白色背景) */
+html.camera-active {
+  background: transparent !important;
+}
+
+/* 3. 确保你的主容器也是透明的 */
+body.camera-active .mobile-profile {
+  background: transparent !important;
+}
+
+/* 4. 关键：隐藏 #app 内容，防止其背景色遮挡相机 */
+body.camera-active #app {
+  opacity: 0.5;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+/* 4. 扫码框的 wrapper 在 native 下必须透明 */
+body.camera-active .qr-video-wrapper {
+  background: transparent !important;
+}
+/* 新增：确保 APP 容器本身是透明的，但里面的页面要有背景色 */
+body.camera-active #app {
+  background: transparent !important;
+}
+
+/* 新增：给你的主页面强制加上背景色，为了遮挡住相机 */
+body.camera-active .mobile-profile {
+  background-color: var(--bg-primary) !important; /* 或者是 #fff / #000 */
+  /* 确保主页面不透明，这样除了弹窗区域外，用户看不到底下的相机 */
+}
+
+/* 强制扫码框所在的容器透明 (这就是那个"洞") */
+body.camera-active .qr-video-wrapper {
+  background: transparent !important;
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.6); /* 可选：用超大阴影模拟遮罩效果 */
 }
 </style>

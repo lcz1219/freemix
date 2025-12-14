@@ -50,5 +50,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>我们需要使用相机扫描二维码以登录网页版</string>
 </dict>
 </plist>

@@ -15,7 +15,12 @@
 
       <!-- 1. 初始登录表单 -->
       <div v-if="loginStep === 'login'" class="fade-in-up">
-        <n-tabs class="card-tabs" default-value="signin" size="large" animated pane-wrapper-style="margin: 0 -4px"
+        <n-tabs
+          class="card-tabs"
+          v-model:value="activeLoginTab"
+          size="large"
+          animated
+          pane-wrapper-style="margin: 0 -4px"
           pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;">
           <n-tab-pane name="signin" tab="登录">
             <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="prepareLogin">
@@ -60,6 +65,39 @@
               </template>
               <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
             </n-button>
+          </n-tab-pane>
+          <n-tab-pane name="qr-login" tab="扫码登录">
+            <div class="qr-login-container">
+              <div class="qr-login-left">
+                <div class="qr-image-wrapper">
+                  <img v-if="qrCodeDataUrl" :src="qrCodeDataUrl" alt="登录二维码" class="qr-image" />
+                  <div v-else class="qr-placeholder">
+                    <span>二维码生成中</span>
+                  </div>
+                  <div v-if="qrStatus === 'expired'" class="qr-overlay">
+                    <span>二维码已过期</span>
+                    <n-button size="small" type="primary" @click="refreshQrCode">刷新</n-button>
+                  </div>
+                </div>
+                <div class="qr-tips">
+                  <p>使用已登录的移动端 FreeMix 扫码确认登录</p>
+                  <p v-if="qrCountdown > 0">二维码将在 {{ qrCountdown }} 秒后失效</p>
+                </div>
+              </div>
+              <div class="qr-login-right">
+                <ol class="qr-steps">
+                  <li>打开移动端 FreeMix 应用</li>
+                  <li>登录后进入个人中心或设置页</li>
+                  <li>点击扫码登录，扫描左侧二维码</li>
+                  <li>在手机上确认本次登录</li>
+                </ol>
+                <div class="qr-status-text">
+                  <span v-if="qrStatus === 'pending'">等待手机确认登录...</span>
+                  <span v-else-if="qrStatus === 'approved'">已确认，正在登录...</span>
+                  <span v-else-if="qrStatus === 'error'">登录出错，请刷新二维码重试</span>
+                </div>
+              </div>
+            </div>
           </n-tab-pane>
         </n-tabs>
       </div>
@@ -183,11 +221,12 @@ import { onMounted, nextTick, ref, watch, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // @ts-ignore
 import { useStore } from 'vuex';
-import { postM, isSuccess } from '@/utils/request';
+import { postM, getM, isSuccess } from '@/utils/request';
 import { isDesktop } from '@/utils/device.js';
 import { generateDesktopToken, saveLocalStorageDesktopToken } from '@/utils/desktopToken.js';
 import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js';
 import TwoFactorAuth from '@/components/TwoFactorAuth.vue';
+import QRCode from 'qrcode';
 
 const store = useStore();
 const route = useRoute();
@@ -221,6 +260,7 @@ const cardStyle = computed(() => {
 
 // 登录步骤状态
 const loginStep = ref<'login' | 'human-verify' | '2fa-verify' | '2fa-bind'>('login');
+const activeLoginTab = ref<'signin' | 'qr-login'>('signin');
 
 // 表单验证规则
 const rules = ref({
@@ -247,6 +287,130 @@ const targetChars = ref<string[]>([]); // 需要点击的字
 const allChars = ref<{char: string, x: number, y: number}[]>([]); // 画布上所有的字坐标
 const clickStatus = ref<'pending' | 'verifying' | 'success'>('pending');
 const isShake = ref(false);
+
+const clearQrTimers = () => {
+  if (qrCountdownTimer !== null) {
+    window.clearInterval(qrCountdownTimer);
+    qrCountdownTimer = null;
+  }
+  if (qrStatusTimer !== null) {
+    window.clearInterval(qrStatusTimer);
+    qrStatusTimer = null;
+  }
+};
+
+const initQrLogin = async () => {
+  qrStatus.value = 'idle';
+  qrCodeDataUrl.value = '';
+  qrSessionId.value = '';
+  qrCountdown.value = 0;
+  clearQrTimers();
+  try {
+    const res = await postM('qr-login/create', {});
+    if (!isSuccess(res)) {
+      qrStatus.value = 'error';
+      message.error(res.data.msg || '二维码创建失败');
+      return;
+    }
+    const data = res.data.data;
+    qrSessionId.value = data.sessionId;
+    const sessionToken = data.sessionToken;
+    const expiresIn = data.expiresIn || 120;
+    qrCountdown.value = expiresIn;
+    const payload = {
+        type: 'freemix-qr-login',
+        sessionId: qrSessionId.value,
+        sessionToken: sessionToken,
+        ts: Date.now()
+      };
+      
+      const origin = window.location.origin;
+      const pathname = window.location.pathname;
+      // 构造完整URL，兼容hash路由
+      const confirmUrl = `${origin}${pathname}#/mobile/qr-confirm?data=${encodeURIComponent(JSON.stringify(payload))}`;
+      
+      qrCodeDataUrl.value = await QRCode.toDataURL(confirmUrl);
+      qrStatus.value = 'pending';
+    qrCountdownTimer = window.setInterval(() => {
+      if (qrCountdown.value > 0) {
+        qrCountdown.value -= 1;
+      } else {
+        qrStatus.value = 'expired';
+        clearQrTimers();
+      }
+    }, 1000);
+    qrStatusTimer = window.setInterval(async () => {
+      if (!qrSessionId.value || qrStatus.value !== 'pending') {
+        return;
+      }
+      try {
+        const statusRes = await getM('qr-login/status', { sessionId: qrSessionId.value });
+        if (!isSuccess(statusRes)) {
+          return;
+        }
+        const s = statusRes.data.data;
+        const status = s.status;
+        if (status === 'APPROVED') {
+          qrStatus.value = 'approved';
+          clearQrTimers();
+          await handleQrApprovedLogin(s);
+        } else if (status === 'EXPIRED') {
+          qrStatus.value = 'expired';
+          clearQrTimers();
+        }
+      } catch (e) {
+        console.error('轮询扫码登录状态失败', e);
+      }
+    }, 2000);
+  } catch (e) {
+    console.error('创建扫码登录会话失败', e);
+    qrStatus.value = 'error';
+    message.error('二维码创建失败');
+  }
+};
+
+const handleQrApprovedLogin = async (payload: any) => {
+  const userData = payload.user || {};
+  const token = payload.token;
+  if (userData && userData.username) {
+    store.commit('saveUser', userData);
+  }
+  if (token) {
+    if (isDesktopEnv) {
+      const desktopToken = generateDesktopToken();
+      saveTokenUtil(desktopToken);
+      saveLocalStorageDesktopToken(desktopToken);
+      try {
+        await postM('verify-desktop-token', { desktopToken, username: userData.username });
+      } catch (error) {
+        console.error('保存桌面端token失败:', error);
+      }
+    } else {
+      await saveTokenUtil(token);
+    }
+  }
+  message.success('扫码登录成功');
+  router.push('/home');
+};
+
+const refreshQrCode = () => {
+  initQrLogin();
+};
+
+watch(activeLoginTab, (val) => {
+  if (val === 'qr-login') {
+    initQrLogin();
+  } else {
+    clearQrTimers();
+  }
+});
+
+const qrCodeDataUrl = ref('');
+const qrSessionId = ref('');
+const qrCountdown = ref(0);
+const qrStatus = ref<'idle' | 'pending' | 'approved' | 'expired' | 'error'>('idle');
+let qrCountdownTimer: number | null = null;
+let qrStatusTimer: number | null = null;
 
 // 第一步：点击登录按钮，先验证表单
 const prepareLogin = async () => {
@@ -520,6 +684,10 @@ const backToLogin = () => {
   tempUserData.value = null;
 };
 
+onUnmounted(() => {
+  clearQrTimers();
+});
+
 // 跳转到注册页面
 const toRegister = () => {
   router.replace('/register');
@@ -699,6 +867,78 @@ watch(loginStep, (newStep) => {
   border-color: #1b1f23 !important;
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.qr-login-container {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.qr-login-left {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-image-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-image {
+  width: 180px;
+  height: 180px;
+}
+
+.qr-placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+.qr-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+}
+
+.qr-tips {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #b3b3b3;
+  text-align: center;
+}
+
+.qr-login-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.qr-steps {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: #b3b3b3;
+  font-size: 13px;
+}
+
+.qr-status-text {
+  font-size: 13px;
+  color: #999;
 }
 
 /* --- 2FA 区域 --- */

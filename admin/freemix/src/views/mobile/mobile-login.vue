@@ -313,6 +313,7 @@ const onOtpPaste = (event: ClipboardEvent) => {
 const onOtpFocus = (event: FocusEvent) => {
   (event.target as HTMLInputElement).select();
 };
+const route=useRoute();
 
 // 加载验证码
 const loadCaptcha = async () => {
@@ -346,7 +347,12 @@ const handleDevLogin = async (userData: any) => {
   }
   
   showToast({ type: 'success', message: '登录成功' });
-  router.push('/home');
+  const redirect = route.query.redirect as string;
+  if (redirect) {
+    router.replace(decodeURIComponent(redirect));
+  } else {
+    router.push('/home');
+  }
 };
 
 // 处理生产环境逻辑
@@ -433,13 +439,18 @@ const verifyTwoFactorAuth = async () => {
       }
 
       showToast({ type: 'success', message: '登录成功' });
-      router.push('/home');
+      const redirect = route.query.redirect as string;
+      if (redirect) {
+        router.replace(decodeURIComponent(redirect));
+      } else {
+        router.push('/home');
+      }
     } else {
       showToast({ type: 'fail', message: res.data.msg || '验证码错误' });
       totpCodeStr.value = ''; // 清空
     }
   } catch (error) {
-    showToast({ type: 'fail', message: '验证失败' });
+    showToast({ type: 'fail', message: '验证失败'+error });
     totpCodeStr.value = '';
   } finally {
     isLoading.value = false;
