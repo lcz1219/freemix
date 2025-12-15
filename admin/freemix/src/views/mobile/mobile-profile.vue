@@ -1150,9 +1150,10 @@ body.camera-active .mobile-profile {
 
 /* 4. 关键：隐藏 #app 内容，防止其背景色遮挡相机 */
 body.camera-active #app {
-  opacity: 0.5;
+
+  opacity: 0.2;
   transition: opacity 0.3s;
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 /* 4. 扫码框的 wrapper 在 native 下必须透明 */

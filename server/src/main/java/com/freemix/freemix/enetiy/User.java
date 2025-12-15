@@ -19,6 +19,7 @@ public class User {
     String saveAnThree;
     String token;
     String deskToken;
+    String mobileToken; // 移动端token
     String avatarUrl;
     String fashionTitle;
     String githubId;  // GitHub用户ID

@@ -40,6 +40,7 @@ public class UserContextUtil {
         String token = getTokenFromRequest(request);
         log.info("getCurrentUser=====>token:{}" + token);
         String userAgent = request.getHeader("User-Agent");
+        log.info("getCurrentUser=====>userAgent:{}" + userAgent);
         if (userAgent != null && userAgent.contains(AgentModel.Electron)) {
             if (token != null && !token.isEmpty()) {
                 // 根据deskToken查询用户信息（桌面端）
@@ -49,7 +50,18 @@ public class UserContextUtil {
             }
         } else {
             if (token != null && !token.isEmpty()) {
-                // 根据token查询用户信息（移动端）
+                // 检查是否为移动端UA
+                if (userAgent != null && (userAgent.contains("App/1") || userAgent.contains("android") || userAgent.contains("iphone"))) {
+                    // 移动端优先尝试查询 mobileToken
+                    Query mobileQuery = new Query();
+                    mobileQuery.addCriteria(Criteria.where("mobileToken").is(token));
+                    User mobileUser = mongoTemplate.findOne(mobileQuery, User.class);
+                    if (mobileUser != null) {
+                        return mobileUser;
+                    }
+                }
+                
+                // 默认查询通用 token（兼容旧逻辑）
                 Query query = new Query();
                 query.addCriteria(Criteria.where("token").is(token));
                 return mongoTemplate.findOne(query, User.class);

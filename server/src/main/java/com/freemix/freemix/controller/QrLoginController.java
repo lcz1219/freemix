@@ -107,11 +107,13 @@ public class QrLoginController {
         sanitizedUser.put("username", currentUser.getUsername());
         sanitizedUser.put("avatarUrl", currentUser.getAvatarUrl());
         sanitizedUser.put("email", currentUser.getEmail());
+        // 重要：这里要返回 deskToken，前端会用它
+        sanitizedUser.put("token", newToken); 
 
         session.put("status", "APPROVED");
         session.put("username", currentUser.getUsername());
         session.put("userId", currentUser.getId());
-        session.put("token", newToken);
+        session.put("token", newToken); // 这里的 token 字段实际上是 deskToken，前端需要适配
         session.put("user", sanitizedUser);
 
         redisTemplate.opsForValue().set(key, session.toJSONString(), 60, TimeUnit.SECONDS);

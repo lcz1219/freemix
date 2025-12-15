@@ -147,6 +147,18 @@ public class LoginController {
             // 使用用户名_token作为Redis key （）
             String tokenKey = userFromDB.getUsername() + "_token";
             redisTemplate.opsForValue().set(tokenKey, userFromDB.getToken(),60, TimeUnit.MINUTES);
+            // 检查是否为移动端
+            String Agent = request.getHeader("User-Agent");
+            if (Agent != null && (Agent.contains("App/1") || Agent.toLowerCase().contains("android") || Agent.toLowerCase().contains("iphone"))) {
+                userFromDB.setMobileToken(userFromDB.getToken());
+                // 更新移动端token
+                mongoTemplate.findAndModify(
+                        new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),
+                        new Update().set("mobileToken", userFromDB.getToken()),
+                        User.class
+                );
+            }
+            
             // 更新用户信息11112222
             mongoTemplate.findAndModify(
                 new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),
