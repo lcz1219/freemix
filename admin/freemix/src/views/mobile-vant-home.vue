@@ -12,6 +12,9 @@
             <!-- <div class="icon-btn" @click="toggleTheme">
               <van-icon :name="isDark ? 'sun-o' : 'moon-o'" size="20" />
             </div> -->
+            <div class="icon-btn" @click="openQrScanner">
+              <van-icon name="scan" size="20" />
+            </div>
             <div class="icon-btn" @click="goToSettings">
               <van-icon name="setting-o" size="20" />
             </div>
@@ -256,35 +259,30 @@
         </div>
       </van-popup>
 
+
     </div>
   </van-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { postM, getMPaths, isSuccess,baseURL } from '@/utils/request'
 import { useUser } from '@/hooks'
-
-const isDark = ref(false)
-const currentTheme = ref('dark')
-
-// 保持原有的 themeVars 逻辑，但颜色稍作调整以适应高级感
-// const themeVars = computed(() => ({
-//   primaryColor: '#00c9a7',
-//   backgroundColor: isDark.value ? '#121212' : '#f7f8fa', // 背景不再是纯黑/纯白
-//   textColor: isDark.value ? '#e2e2ea' : '#2c3e50',
-//   navBarTextColor: isDark.value ? '#e2e2ea' : '#2c3e50',
-//   navBarBackgroundColor: 'transparent', // 导航栏透明交由CSS控制
-//   tabbarActiveColor: '#00c9a7',
-//   tabbarInactiveColor: isDark.value ? '#666' : '#999',
-// }))
+import { Capacitor } from '@capacitor/core';
+import { BarcodeScanner, BarcodeFormat, LensFacing } from '@capacitor-mlkit/barcode-scanning';
 
 const router = useRouter()
 const { userInfo } = useUser();
 
 // State
+const isDark = ref(false)
+const currentTheme = ref('dark')
+const isRefreshing = ref(false)
+const isLoading = ref(true)
+const listLoading = ref(false)
+const listFinished = ref(true)
 const activeTab = ref(0)
 const activeTabbar = ref(0)
 const goals = ref<any[]>([])
@@ -296,26 +294,19 @@ const isExp = computed(() => selectedGoal?.value?.status === 'expired')
 const goalFinishCount = ref(0)
 const goalExpireCount = ref(0)
 const goalIngCount = ref(0)
-
-const isLoading = ref(true)
-const isRefreshing = ref(false)
-const listLoading = ref(false)
-const listFinished = ref(true)
-
-// Lifecycle
-onMounted(async () => {
-  await fetchGoals()
-})
+const constProgress = ref(0)
 
 // Methods
+const openQrScanner = () => {
+  router.push('/mobile/scan');
+};
+
 const fetchGoals = async () => {
   try {
     isLoading.value = true
-    // 注意：这里保留了你原本的代码逻辑
     const response = await getMPaths("getGoals", userInfo.value.username, "正在获取目标数据...");
     goals.value = response.data.data || []
 
-    // 重新计算统计数据
     goalFinishCount.value = goals.value.filter(g => g.status === 'completed' || g.status === 'finished').length
     goalExpireCount.value = goals.value.filter(g => g.status === 'expired').length
     goalIngCount.value = goals.value.filter(g => g.status === 'in-progress' || g.status === 'in-progress').length
@@ -383,34 +374,15 @@ const markGoalFinished = async (goal: any) => {
   }
 }
 
-const toggleSubGoal = async (sGoal: any,index: number) => {
-  console.log(11232323);
-
-  const subGoal = selectedGoal.value?.childGoals[index]
-  if (subGoal) {
-    subGoal.finish = !subGoal.finish
-    if (subGoal.finish) {
-      checkedSubGoals.value.push(subGoal._id)
-    } else {
-      const index = checkedSubGoals.value.indexOf(subGoal._id)
-      if (index !== -1) {
-        checkedSubGoals.value.splice(index, 1)
-      }
-    }
-  }
-  await finishChildGoal(checkedSubGoals.value)
-}
-// 修改方法
 const handleSubGoalChange = async (subGoal, index) => {
  if(isExp.value) return
   
-  // 调用 API
   try {
     const data = {
       goalId: selectedGoal.value._id,
       childGoalIds: checkedSubGoals.value
     }
-    const res = await postM('finishGoal', data)  // 注意接口名称
+    const res = await postM('finishGoal', data)
     if (isSuccess(res)) {
       await fetchGoals()
       showToast('进度更新成功')
@@ -423,28 +395,6 @@ const handleSubGoalChange = async (subGoal, index) => {
   }
 }
 
-// 可以删除原来的 toggleSubGoal 方法
-
-const finishChildGoal = async (childIds: any[]) => {
-  try {
-    childIds = childIds.map(e => e._id)
-    let data = {
-      goalId: selectedGoal.value._id,
-      childGoalIds: childIds
-    }
-    const res = await postM('finishGoal', data)
-    if (isSuccess(res)) {
-      await fetchGoals()
-      showDetailModal.value = false
-    } else {
-      showToast('更新失败')
-    }
-    // showToast('进度更新')
-  } catch (error) {
-    showToast('更新失败')
-  }
-}
-
 const formatDate = (dateString: string) => {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -453,7 +403,6 @@ const formatDate = (dateString: string) => {
 
 const getGoalStatusType = (status: string) => {
   switch (status) {
-    case 'in-progress':
     case 'in-progress': return 'primary'
     case 'finished':
     case 'completed': return 'success'
@@ -464,7 +413,6 @@ const getGoalStatusType = (status: string) => {
 
 const getGoalStatusText = (status: string) => {
   switch (status) {
-    case 'in-progress':
     case 'in-progress': return '进行中'
     case 'finished':
     case 'completed': return '已完成'
@@ -472,14 +420,16 @@ const getGoalStatusText = (status: string) => {
     default: return '未知状态'
   }
 }
-const constProgress = ref(0)
-
-
 
 const goalProgress = (goal: any) => {
   if (!goal) return 0
   return goal.progress;
 }
+
+// Lifecycle
+onMounted(async () => {
+  await fetchGoals()
+})
 </script>
 
 <style scoped lang="scss">
@@ -786,7 +736,6 @@ const goalProgress = (goal: any) => {
   border-radius: 2px;
   background: #eee;
 
-  &.in-progress,
   &.in-progress {
     background: #4f8ef7;
   }
@@ -1012,3 +961,5 @@ const goalProgress = (goal: any) => {
   margin-top: 16px;
 }
 </style>
+
+
