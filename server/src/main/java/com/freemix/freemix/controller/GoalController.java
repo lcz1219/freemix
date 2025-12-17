@@ -423,8 +423,20 @@ public class GoalController extends BaseController {
             }
             goal.setCollaborators(genCollaborator(goal.get_id()));
             sortChildGoals(goal);
+           switch (goal.getStatus()){
+               case "expired":
+                   goal.setStatuslevel(3);
+                   break;
+               case "completed":
+                   goal.setStatuslevel(2);
+                   break;
+               case "in-progress":
+                   goal.setStatuslevel(1);
+                   break;
+           }
 
         });
+        owner = owner.stream().sorted(Comparator.comparingInt(Goal::getStatuslevel)).collect(Collectors.toList());
         return ApiResponse.success(owner);
 
     }

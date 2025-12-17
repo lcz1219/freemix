@@ -24,9 +24,11 @@ public class Goal {
     int planTime;
     int progress;
     String status;
+    Integer statuslevel;
     Integer del;
     long deltime;
     List fileList;
+
     Boolean disRecover;
     boolean finish;
     List<JSONObject> collaborators;
