@@ -36,6 +36,7 @@ import {
 } from 'naive-ui';
 import AIAssistantMsg from '@/components/AIAssistantMsg.vue';
 import AIGoalGenerator from '@/components/AIGoalGenerator.vue';
+import AIAssistantIcon from '@/components/icons/AIAssistantIcon.vue';
 
 // 响应式数据
 const activeMenu = ref('ai-chat');
@@ -47,10 +48,7 @@ const menuOptions = [
     label: 'AI问答',
     key: 'ai-chat',
     icon: () => h(NIcon, null, {
-      default: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 24 24', width: '1em', height: '1em', fill: 'currentColor' }, [
-        h('path', { d: 'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z' }),
-        h('path', { d: 'M6 12h12v2H6zM6 9h12v2H6zM6 6h12v2H6z' })
-      ])
+      default: () => h(AIAssistantIcon)
     })
   },
   {

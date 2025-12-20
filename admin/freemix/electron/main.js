@@ -51,8 +51,8 @@ function createWindow() {
   
   // 默认窗口配置
   const defaultWindowConfig = {
-    width: 900,
-    height: 700,
+    width: 500,
+    height: 500,
     isMaximized: false
   };
   

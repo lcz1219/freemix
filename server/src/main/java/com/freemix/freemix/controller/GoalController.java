@@ -3,14 +3,12 @@ package com.freemix.freemix.controller;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
-import com.freemix.freemix.enetiy.Goal;
-import com.freemix.freemix.enetiy.Relation;
-import com.freemix.freemix.enetiy.User;
-import com.freemix.freemix.enetiy.childGoals;
+import com.freemix.freemix.enetiy.*;
 import com.freemix.freemix.util.ApiResponse;
 import io.netty.util.internal.StringUtil;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -33,6 +31,9 @@ public class GoalController extends BaseController {
     @CheckToken
     public ApiResponse editGoal(@RequestBody String body) {
         Goal goal = JSONObject.parseObject(body, Goal.class);
+        if(GoalStauts.expired.equals(goal.getStatus())){
+            return ApiResponse.failure("该目标已经过期，无法操作");
+        }
         ApiResponse<Object> res = getObjectApiResponse(goal);
         if (res != null) return res;
 

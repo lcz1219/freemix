@@ -938,7 +938,7 @@ const saveChildGoalFiles = () => {
       console.log("保存子目标文件:", currentChildGoalIndex.value,
         editForm.value.childGoals[currentChildGoalIndex.value].fileList);
       saveGoal('no')
-      message.success('子目标文件已保存');
+      // message.success('子目标文件已保存');
     } else {
       message.error('找不到对应的子目标');
     }
@@ -1123,6 +1123,9 @@ const saveGoal = async (val) => {
         closeModal()
       }
       emit('updateGoal');
+    }else{
+      message.error(res.data.msg)
+      initFormData()
     }
   }
 };
