@@ -5,326 +5,269 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>目标导入模板说明</title>
     <style>
+        /* 1. 基础重置与滚动条美化 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* 滚动条整体适配深色模式 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: #2d3748;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background-color: #101014; /* 深度暗色，比单纯黑更高级 */
+            color: rgba(255, 255, 255, 0.82);
+            padding: 0;
+            margin: 0;
         }
         
         .container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: rgb(12, 10, 10);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
         
+        /* 2. 头部：去掉蓝色渐变，改用纯粹的深色文字排版 */
         .header {
-            background: linear-gradient(120deg, #4f6bff 0%, #6b8cff 100%);
-            color: rgb(14, 11, 11);
-            padding: 30px 40px;
-            text-align: center;
+            text-align: left;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 24px;
         }
         
         h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
         }
         
         .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            font-weight: 400;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.45); /* 辅助文字调暗 */
         }
         
-        .content {
-            padding: 40px;
-        }
-        
+        /* 3. 内容区块 */
         h2 {
-            color: #2d3748;
-            font-size: 1.6rem;
-            margin: 30px 0 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #2d3748;
+            color: #63e2b7; /* 采用 NaiveUI 风格的翠绿 */
+            font-size: 20px;
+            margin: 40px 0 20px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
         }
         
-        h2:first-child {
-            margin-top: 0;
+        h2::before {
+            content: "";
+            width: 4px;
+            height: 18px;
+            background: #63e2b7;
+            margin-right: 12px;
+            border-radius: 2px;
         }
         
-        h3 {
-            color: #4a5568;
-            font-size: 1.3rem;
-            margin: 25px 0 15px;
-            font-weight: 600;
-        }
-        
-        ul, ol {
-            padding-left: 24px;
-            margin: 16px 0;
-        }
-        
-        li {
-            margin-bottom: 12px;
-            padding-left: 8px;
-        }
-        
-        ul li {
-            list-style-type: none;
-            position: relative;
-        }
-        
-        ul li:before {
-            content: "•";
-            color: #4f6bff;
-            font-size: 1.2rem;
-            position: absolute;
-            left: -20px;
-            top: -2px;
-        }
-        
-        ol li {
-            padding-left: 8px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-        }
-        
+        /* 4. 卡片布局：改用更细腻的深灰色 */
         .card {
-            background: #2d3748;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
-            border: 1px solid #2d3748;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+            background: #18181c; 
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        
+        .card:hover {
+            border-color: rgba(99, 226, 183, 0.3);
         }
         
         .card h3 {
-            margin-top: 0;
-            color: #4f6bff;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        
+        ul, ol {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        strong {
+            color: #63e2b7;
+            font-weight: 500;
+        }
+        
+        /* 5. 表格：还原图片中那种“极简”风格 */
+        .example-container {
+            margin: 24px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 25px 0;
-            background: rgb(9, 7, 7);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            font-size: 13px;
         }
         
         th {
-            background: linear-gradient(120deg, #4f6bff 0%, #6b8cff 100%);
-            color: rgb(10, 7, 7);
+            background-color: #26262a; /* 稍亮的表头 */
+            color: rgba(255, 255, 255, 0.6);
             text-align: left;
-            padding: 16px 20px;
-            font-weight: 600;
+            padding: 12px 16px;
+            font-weight: 500;
         }
         
         td {
-            padding: 14px 20px;
-            border-bottom: 1px solid #2d3748;
-        }
-        
-        tr:last-child td {
-            border-bottom: none;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.8);
         }
         
         tr:nth-child(even) {
-            background-color: #2d3748;
+            background-color: rgba(255, 255, 255, 0.02);
         }
         
-        /* tr:hover {
-            background-color: #2d3748;
-        } */
+        /* 6. 特殊标注样式 */
+        .highlight-text {
+            background: rgba(99, 226, 183, 0.15);
+            color: #63e2b7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            margin: 0 4px;
+        }
         
         .note {
-            background: linear-gradient(120deg, #2d3748 0%, #2d3748 100%);
-            border-left: 5px solid #ffc107;
-            padding: 20px;
-            border-radius: 0 10px 10px 0;
-            margin: 30px 0;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            background: rgba(242, 201, 125, 0.1); /* 琥珀色背景 */
+            border-left: 4px solid #f2c97d;
+            padding: 16px 20px;
+            border-radius: 4px;
+            margin: 32px 0;
+            color: #f2c97d;
+            font-size: 14px;
         }
         
         .note strong {
-            color: #856404;
-        }
-        
-        .example-container {
-            overflow-x: auto;
-            margin: 25px 0;
+            color: #f2c97d;
+            margin-right: 8px;
         }
         
         .footer {
             text-align: center;
-            padding: 25px;
-            color: #718096;
-            font-size: 0.9rem;
-            border-top: 1px solid #2d3748;
-            background: #2d3748;
-        }
-        
-        .highlight-text {
-            background: linear-gradient(120deg, #2d3748 0%, #2d3748 100%);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                margin: 20px auto;
-                border-radius: 12px;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .content {
-                padding: 25px;
-            }
-            
-            table {
-                font-size: 0.9rem;
-            }
-            
-            th, td {
-                padding: 12px 15px;
-            }
+            padding: 40px 0;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 60px;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 头部说明 -->
         <div class="header">
             <h1>目标导入模板说明</h1>
-            <div class="subtitle">按照以下格式准备您的Excel文件，确保数据准确导入</div>
+            <div class="subtitle">请遵循以下规范准备您的数据，以确保批量导入功能正常运行</div>
         </div>
         
         <div class="content">
             <div class="section">
-                <h2>模板格式</h2>
+                <h2>模板结构规范</h2>
                 
                 <div class="card">
-                    <h3>主目标行（第一层）</h3>
+                    <h3>主目标行（Parent Goal）</h3>
                     <ul>
-                        <li><strong>A列:</strong> 目标名称 <span class="highlight-text">*</span></li>
-                        <li><strong>B列:</strong> 目标描述</li>
-                        <li><strong>C列:</strong> 截止日期 (yyyy-MM-dd格式)</li>
-                        <li><strong>D列:</strong> 优先级 (高/中/低)</li>
-                        <li><strong>E列:</strong> 标签（多个标签用逗号分隔）</li>
+                        <li><strong>目标名称:</strong> 必填项，用于识别主目标。</li>
+                        <li><strong>截止日期:</strong> 格式必须为 <span class="highlight-text">yyyy-MM-dd</span>，如 2023-12-31。</li>
+                        <li><strong>优先级:</strong> 仅接受 <span class="highlight-text">高</span>、<span class="highlight-text">中</span>、<span class="highlight-text">低</span>。</li>
                     </ul>
                 </div>
                 
                 <div class="card">
-                    <h3>子目标行（第二层）</h3>
+                    <h3>子目标行（Sub-Goal）</h3>
                     <ul>
-                        <li><strong>A列:</strong> 留空（表示这是子目标）</li>
-                        <li><strong>B列:</strong> 子目标描述 <span class="highlight-text">*</span></li>
-                        <li><strong>C列:</strong> 截止日期 (yyyy-MM-dd格式)</li>
-                        <li><strong>D列:</strong> 优先级 (高/中/低)</li>
-                        <li><strong>E列:</strong> 标签（多个标签用逗号分隔）</li>
+                        <li><strong>识别规则:</strong> 目标名称列“留空”即被识别为下方归属于最近主目标的子目标。</li>
+                        <li><strong>子目标描述:</strong> 必填，用于描述具体拆解的任务。</li>
+                        <li><strong>关联逻辑:</strong> 导入程序会自动将子目标挂载到其上方距离最近的有效主目标下。</li>
                     </ul>
                 </div>
             </div>
             
             <div class="section">
-                <h2>使用说明</h2>
+                <h2>快速校对清单</h2>
                 <ol>
-                    <li>主目标必须填写目标名称</li>
-                    <li>子目标只需填写描述，且其上一行必须是主目标或同级子目标</li>
-                    <li>子目标会自动关联到其上方最近的一个主目标</li>
-                    <li>可以连续添加多个子目标</li>
-                    <li>日期格式必须为 yyyy-MM-dd，例如 <span class="highlight-text">2023-12-31</span></li>
-                    <li>优先级只能填写 <span class="highlight-text">高</span>、<span class="highlight-text">中</span>、<span class="highlight-text">低</span> 三个选项之一</li>
-                    <li>标签可以为空，多个标签用英文逗号分隔</li>
+                    <li>首行必须是标题行，数据从第二行开始录入。</li>
+                    <li>日期列请统一设置为“文本格式”或标准的日期格式，避免导入乱码。</li>
+                    <li>标签（Tags）支持多个，请使用<strong>英文逗号</strong>分隔，例如：<span class="highlight-text">健身,周计划,核心</span>。</li>
+                    <li>确保文件后缀为 <span class="highlight-text">.xlsx</span> 或 <span class="highlight-text">.xls</span>。</li>
                 </ol>
             </div>
             
             <div class="section">
-                <h2>示例</h2>
+                <h2>数据录入示例</h2>
                 <div class="example-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>目标名称</th>
-                                <th>目标描述</th>
-                                <th>截止日期</th>
-                                <th>优先级</th>
-                                <th>标签</th>
-                                <th>父节点目标</th>
+                                <th>目标名称 (A)</th>
+                                <th>描述/子目标描述 (B)</th>
+                                <th>截止日期 (C)</th>
+                                <th>优先级 (D)</th>
+                                <th>标签 (E)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>第一个父目标</td>
-                                <td>22323</td>
-                                <td>2025/9/30</td>
+                                <td>学习 Python 高级编程</td>
+                                <td>掌握装饰器与并发编程</td>
+                                <td>2025-10-20</td>
                                 <td>高</td>
-                                <td>标签</td>
+                                <td>学习,编程</td>
+                            </tr>
+                            <tr>
                                 <td></td>
+                                <td>完成装饰器章节练习</td>
+                                <td>2025-10-10</td>
+                                <td>中</td>
+                                <td>练习</td>
                             </tr>
                             <tr>
-                                <td>子目标3213131</td>
-                                <!-- <td></td> -->
-                                <td>子目标3213131</td>
-                                <td>2025/9/18</td>
-                                <td>高</td>
-                                <td>标签</td>
-                                <td>第一个父目标</td>
-                            </tr>
-                            <tr>
-                                <td>第二</td>
-                                <td>第二</td>
-                                <td>222</td>
-                                <td>高</td>
-                                <td>标签</td>
                                 <td></td>
+                                <td>实现一个多线程爬虫Demo</td>
+                                <td>2025-10-15</td>
+                                <td>高</td>
+                                <td>实战</td>
                             </tr>
                             <tr>
-                                <!-- <td></td> -->
-                                <td>6666</td>
-                                <td>6666</td>
-                                <td>2025/9/20</td>
-                                <td>高</td>
-                                <td>标签</td>
-                                <td>第二</td>
+                                <td>身体健康管理计划</td>
+                                <td>年度健身目标</td>
+                                <td>2025-12-31</td>
+                                <td>中</td>
+                                <td>生活,健康</td>
                             </tr>
-                           
                         </tbody>
                     </table>
                 </div>
             </div>
             
             <div class="note">
-                <strong>注意：</strong>请确保使用.xlsx格式的Excel文件，并严格按照上述格式填写数据。
+                <strong>温馨提示</strong> 建议先通过少量数据（1-2行）进行测试导入，确认格式无误后再进行大规模数据录入。
             </div>
         </div>
         
         <div class="footer">
-            如有疑问，请联系技术支持
+            &copy; 目标管理系统 · 技术支持与文档服务
         </div>
     </div>
 </body>
