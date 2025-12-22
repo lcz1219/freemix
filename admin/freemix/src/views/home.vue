@@ -947,17 +947,27 @@ const handleCalendarUpdate = (value) => {
   // 可以在这里添加处理日期选择的逻辑
   // 例如：显示该日期的目标或任务
 };
-
+ const mothList = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+  const mothListComp = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+  const mothListEve = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 const filterMoth = () => {
-  const mothList = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+ 
   goals.value.forEach(e => {
+    if (e.status === 'completed') {
+      mothListComp.value[new Date(e.deadline).getMonth()]++
+    }
     const date = new Date(e.deadline)
     date.getMonth()
-    mothList.value[date.getMonth()]++
+    mothListEve.value[date.getMonth()]++
 
   })
-  console.log("mothList", mothList.value);
+  console.log("mothListEve", mothListEve.value);
+  console.log("mothListComp", mothListComp.value);
 
+  mothList.value = mothListComp.value.map((e, index) => {
+
+    return e / mothListEve.value[index] * 100
+  })
   return mothList.value
 }
 
