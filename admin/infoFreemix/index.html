@@ -3,72 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeMix - 全栈目标管理系统</title>
-    <!-- 推荐使用的link标签 -->
-    <!-- <link rel="icon" href="../freemix/public/icons/icon.png" type="image/x-icon">
-    <link rel="shortcut icon" href="../freemix/public/icons/icon.png" type="image/x-icon"> -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <title>FreeMix - 全栈目标管理系统 | 下一代生产力工具</title>
+    
+    <!-- 字体与图标 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --primary: #00ff88;
-            --primary-dark: #00cc6d;
-            --secondary: #7857ff;
-            --dark: #121212;
-            --darker: #0a0a0a;
-            --light: #f8f9fa;
-            --gray: #1e1e1e;
-            --text: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            --radius: 12px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-color: #030712;
+            --surface-color: rgba(17, 24, 39, 0.7);
+            --surface-hover: rgba(31, 41, 55, 0.8);
+            --primary: #10b981;
+            --primary-glow: #34d399;
+            --secondary: #3b82f6;
+            --accent: #8b5cf6;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --blur: blur(20px);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--darker);
-            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             line-height: 1.6;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(120, 87, 255, 0.08) 0%, transparent 30%),
-                radial-gradient(circle at 85% 30%, rgba(0, 255, 136, 0.1) 0%, transparent 40%);
+            position: relative;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Header */
-        header {
+        /* 动态背景光斑 */
+        .background-glows {
             position: fixed;
             top: 0;
             left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .glow-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: floatBlob 20s infinite alternate;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 600px;
+            height: 600px;
+            background: var(--secondary);
+            bottom: -150px;
+            right: -100px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+            opacity: 0.2;
+        }
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+
+        /* 容器通用样式 */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 导航栏 */
+        header {
+            position: fixed;
+            top: 0;
             width: 100%;
             z-index: 1000;
-            padding: 20px 0;
-            transition: var(--transition);
-            backdrop-filter: blur(10px);
-            background: rgba(10, 10, 10, 0.8);
-            border-bottom: 1px solid var(--glass-border);
+            padding: 1.5rem 0;
+            transition: all 0.4s ease;
         }
 
         header.scrolled {
-            padding: 15px 0;
-            background: rgba(10, 10, 10, 0.95);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0;
+            background: rgba(3, 7, 18, 0.6);
+            backdrop-filter: blur(12px);
+            border-bottom: var(--glass-border);
         }
 
         .navbar {
@@ -78,248 +130,258 @@
         }
 
         .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
             display: flex;
             align-items: center;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--light);
-            text-decoration: none;
+            gap: 10px;
+            letter-spacing: -0.5px;
         }
 
-        .logo img {
-            width: 40px;
-            height: 40px;
-            margin-right: 10px;
-            transition: var(--transition);
-        }
-
-        .logo:hover img {
-            transform: rotate(15deg);
+        .logo span {
+            background: linear-gradient(135deg, var(--primary), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .nav-links {
             display: flex;
+            gap: 2.5rem;
             list-style: none;
         }
 
-        .nav-links li {
-            margin-left: 30px;
-        }
-
         .nav-links a {
-            color: var(--text);
+            color: var(--text-muted);
             text-decoration: none;
             font-weight: 500;
+            font-size: 0.95rem;
+            transition: 0.3s;
             position: relative;
-            padding: 8px 0;
-            transition: var(--transition);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #fff;
         }
 
         .nav-links a::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
+            bottom: -5px;
+            left: 0;
+            background: var(--primary);
+            transition: width 0.3s ease;
         }
 
         .nav-links a:hover::after {
             width: 100%;
         }
 
-        /* Hero Section */
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--primary-glow));
+            color: #000;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Hero 区域 */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 120px 0 80px;
+            padding-top: 80px;
             position: relative;
-            overflow: hidden;
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            max-width: 800px;
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
         }
 
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            line-height: 1.2;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
+        .hero-text h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+        }
+
+        .hero-text h1 .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            color: var(--text-secondary);
-            max-width: 600px;
+        .hero-text p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 500px;
         }
 
-        .cta-button {
-            display: inline-flex;
-            align-items: center;
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-            color: var(--darker);
-            padding: 16px 32px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: var(--transition);
-            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0, 255, 136, 0.4);
-        }
-
-        .cta-button i {
-            margin-left: 10px;
-            transition: var(--transition);
-        }
-
-        .cta-button:hover i {
-            transform: translateX(5px);
-        }
-
-        .hero-bg {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 50%;
-            height: 100%;
+        .hero-btns {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.8;
+            gap: 1.5rem;
         }
 
-        .floating-device {
+        /* 3D 视觉展示区 */
+        .hero-visual {
             position: relative;
-            width: 600px;
-            height: 400px;
-            animation: float 8s ease-in-out infinite;
+            height: 500px;
+            perspective: 1000px;
         }
 
-        .desktop-screen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 500px;
-            height: 300px;
-            border-radius: 10px;
-            background: linear-gradient(45deg, #2c3e50, #1a2a3a);
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .screen-content {
+        .app-window {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transform: rotateY(-10deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
+        }
+
+        .app-window:hover {
+            transform: rotateY(0deg) rotateX(0deg);
+        }
+
+        .window-header {
+            height: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
+            padding: 0 16px;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background: #ef4444; }
+        .dot.yellow { background: #eab308; }
+        .dot.green { background: #22c55e; }
+
+        .window-content {
+            flex: 1;
             padding: 20px;
-            text-align: center;
-        }
-
-        .screen-title {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            color: var(--primary);
-        }
-
-        .screen-subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-
-        .desktop-base {
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 550px;
-            height: 20px;
-            background: #333;
-            border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .desktop-stand {
-            position: absolute;
-            bottom: -45px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 15px;
-            background: #222;
-            border-radius: 3px;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 100px 0;
-            position: relative;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-
-        .section-title h2 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: var(--light);
-        }
-
-        .section-title p {
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-            font-size: 1.1rem;
-        }
-
-        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .sidebar-mock {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            height: 100%;
+        }
+
+        .main-mock {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .skeleton-block {
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+        }
+
+        .h-30 { height: 30%; }
+        .h-60 { height: 60%; }
+        .h-100 { height: 100%; }
+
+        /* 特性区域 */
+        .features {
+            padding: 8rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
         }
 
         .feature-card {
-            background: var(--gray);
-            border-radius: var(--radius);
-            padding: 30px;
-            transition: var(--transition);
+            background: var(--surface-color);
+            border: var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.4s ease;
             position: relative;
             overflow: hidden;
-            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
         }
 
+        /* 卡片光效 */
         .feature-card::before {
             content: '';
             position: absolute;
@@ -327,502 +389,481 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(120, 87, 255, 0.1));
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);
+            z-index: 1;
             opacity: 0;
-            transition: var(--transition);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow);
+            transition: opacity 0.5s;
         }
 
         .feature-card:hover::before {
             opacity: 1;
         }
 
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-            display: inline-block;
-            transition: var(--transition);
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
-        .feature-card:hover .feature-icon {
-            transform: scale(1.2);
+        .feature-card.wide {
+            grid-column: span 2;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .feature-card h3 {
             font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--light);
+            margin-bottom: 0.8rem;
+            color: #fff;
         }
 
         .feature-card p {
-            color: var(--text-secondary);
+            color: var(--text-muted);
+            font-size: 1rem;
         }
 
-        /* Downloads Section */
+        /* 下载区域 */
         .downloads {
-            padding: 100px 0;
-            background: var(--dark);
-            position: relative;
-            overflow: hidden;
+            padding: 6rem 0;
+            background: rgba(255,255,255,0.02);
+            border-top: var(--glass-border);
+            border-bottom: var(--glass-border);
         }
 
-        .downloads::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 70% 30%, rgba(120, 87, 255, 0.1) 0%, transparent 50%);
-        }
-
-        .platforms {
+        .platform-grid {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-top: 50px;
+            gap: 3rem;
             flex-wrap: wrap;
+            margin-top: 3rem;
         }
 
-        .platform-card {
-            background: var(--gray);
-            border-radius: var(--radius);
-            padding: 30px;
+        .platform-box {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            border: var(--glass-border);
+            padding: 3rem 4rem;
+            border-radius: 24px;
             text-align: center;
-            transition: var(--transition);
-            border: 1px solid var(--glass-border);
+            transition: 0.3s;
             position: relative;
-            overflow: hidden;
-            width: 280px;
         }
 
-        .platform-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), transparent);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .platform-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow);
-        }
-
-        .platform-card:hover::before {
-            opacity: 1;
+        .platform-box:hover {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
         }
 
         .platform-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: var(--primary);
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
         }
 
-        .platform-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--light);
-        }
-
-        .platform-card p {
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-        }
-
-        /* Screenshots Section */
+        /* 截图画廊 */
         .screenshots {
-            padding: 100px 0;
-            position: relative;
-        }
-
-        .screenshots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .screenshot-card {
-            border-radius: var(--radius);
+            padding: 8rem 0;
             overflow: hidden;
-            position: relative;
-            transition: var(--transition);
-            transform: perspective(1000px) rotateY(0);
+        }
+
+        .gallery-container {
+            display: flex;
+            gap: 2rem;
+            padding: 2rem 0;
+            perspective: 2000px;
+        }
+
+        .gallery-item {
+            flex: 0 0 400px;
+            height: 250px;
+            background: #1f2937;
+            border-radius: 12px;
+            overflow: hidden;
+            border: var(--glass-border);
             transform-style: preserve-3d;
-        }
-
-        .screenshot-card:hover {
-            transform: perspective(1000px) rotateY(5deg) translateY(-10px);
-            box-shadow: var(--shadow);
-        }
-
-        .screenshot-card img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: var(--transition);
-        }
-
-        .screenshot-card:hover img {
-            transform: scale(1.05);
-        }
-
-        /* Footer */
-        footer {
-            background: var(--darker);
-            padding: 80px 0 40px;
+            transition: 0.5s ease;
             position: relative;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: 0.5s;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05) translateZ(20px);
+            z-index: 10;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border-color: var(--primary);
+        }
+
+        .gallery-item:hover img {
+            opacity: 1;
+        }
+
+        /* 页脚 */
+        footer {
+            padding: 5rem 0 2rem;
+            border-top: var(--glass-border);
+            background: rgba(3, 7, 18, 0.8);
         }
 
         .footer-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 60px;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
         }
 
-        .footer-section h3 {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            color: var(--light);
-            position: relative;
-            padding-bottom: 10px;
+        .footer-brand h3 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 1rem;
         }
 
-        .footer-section h3::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 30px;
-            height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        .footer-brand p {
+            color: var(--text-muted);
+            max-width: 300px;
         }
 
-        .footer-links {
+        .footer-col h4 {
+            color: #fff;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-col ul {
             list-style: none;
         }
 
-        .footer-links li {
-            margin-bottom: 12px;
+        .footer-col ul li {
+            margin-bottom: 0.8rem;
         }
 
-        .footer-links a {
-            color: var(--text-secondary);
+        .footer-col ul a {
+            color: var(--text-muted);
             text-decoration: none;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
+            transition: 0.3s;
         }
 
-        .footer-links a:hover {
+        .footer-col ul a:hover {
             color: var(--primary);
-            transform: translateX(5px);
-        }
-
-        .footer-links a i {
-            margin-right: 10px;
-            font-size: 0.8rem;
+            padding-left: 5px;
         }
 
         .copyright {
             text-align: center;
-            padding-top: 40px;
-            border-top: 1px solid var(--glass-border);
-            color: var(--text-secondary);
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.9rem;
         }
 
-        /* Animations */
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
+        /* 响应式适配 */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 3rem;
             }
-            50% {
-                transform: translateY(-20px) rotate(5deg);
-            }
-        }
 
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .hero h1 {
-                font-size: 2.8rem;
+            .hero-text h1 { font-size: 3.5rem; }
+            .hero-text p { margin: 0 auto 2.5rem; }
+            .hero-btns { justify-content: center; }
+
+            .bento-grid {
+                grid-template-columns: 1fr;
             }
-            
-            .hero-bg {
-                width: 100%;
-                opacity: 0.4;
-                top: auto;
-                bottom: 0;
-            }
-            
-            .floating-device {
-                width: 500px;
-                height: 350px;
-            }
-            
-            .desktop-screen {
-                width: 400px;
-                height: 250px;
-            }
+            .feature-card.wide { grid-column: span 1; }
         }
 
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-            }
-            
-            .nav-links {
-                margin-top: 20px;
-            }
-            
-            .nav-links li {
-                margin: 0 15px;
-            }
-            
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-            
-            .hero p {
-                font-size: 1rem;
-            }
-            
-            .section-title h2 {
-                font-size: 2rem;
-            }
-            
-            .floating-device {
-                width: 400px;
-                height: 280px;
-            }
-            
-            .desktop-screen {
-                width: 320px;
-                height: 200px;
-            }
+            .navbar .nav-links { display: none; } /* 简化处理：移动端隐藏菜单 */
+            .hero-text h1 { font-size: 2.8rem; }
+            .platform-grid { gap: 1.5rem; }
+            .footer-content { grid-template-columns: 1fr; gap: 2rem; }
         }
 
-        @media (max-width: 576px) {
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .nav-links li {
-                margin: 10px;
-            }
-            
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            
-            .features-grid, .platforms, .screenshots-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .floating-device {
-                width: 300px;
-                height: 220px;
-            }
-            
-            .desktop-screen {
-                width: 250px;
-                height: 160px;
-            }
+        /* 动画类 */
+        .hidden-el {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .show-el {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
+
+    <!-- 动态背景 -->
+    <div class="background-glows">
+        <div class="glow-blob blob-1"></div>
+        <div class="glow-blob blob-2"></div>
+        <div class="glow-blob blob-3"></div>
+    </div>
+
+    <!-- 头部导航 -->
     <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="#" class="logo">
-                    <img src="/favicon.ico" alt="Logo" class="custom-logo" />
-                    FreeMix
-                </a>
-                <ul class="nav-links">
-                    <li><a href="#features">功能特性</a></li>
-                    <li><a href="#downloads">下载</a></li>
-                    <li><a href="#screenshots">截图</a></li>
-                    <li><a href="#support">支持</a></li>
-                </ul>
-            </nav>
+        <div class="container navbar">
+            <a href="#" class="logo">
+              <img src="../freemix/public/icons/icon.png" alt="Logo" style="width: 40px; height: 40px; margin-right: 10px;" />
+                <!-- <i class="fas fa-layer-group" style="color: var(--primary);"></i> -->
+                <span>FreeMix</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">功能特性</a></li>
+                <li><a href="#downloads">下载客户端</a></li>
+                <li><a href="#screenshots">界面预览</a></li>
+                <li><a href="#support">支持</a></li>
+            </ul>
+            <a href="https://github.com/lcz1219/freemix" target="_blank" class="btn btn-glass" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">
+                <i class="fab fa-github"></i> GitHub
+            </a>
         </div>
     </header>
 
+    <!-- Hero 区域 -->
     <section class="hero">
         <div class="container">
-            <div class="hero-content">
-                <h1>统一管理，掌控全局</h1>
-                <p>是一个功能强大、设计优雅的全栈目标管理系统（Goal Management System）。它采用跨平台架构，既提供现代化的 Web 应用，又通过 Electron 框架打包成原生桌面应用，让用户在任何环境下都能享受流畅的目标管理体验！</p>
-                <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="cta-button">
-                    立即下载 Mac 版 <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-        <div class="hero-bg">
-            <div class="floating-device">
-                <div class="desktop-screen">
-                    <div class="screen-content">
-                        <div class="screen-title">FreeMix 桌面控制中心</div>
-                        <div class="screen-subtitle">多设备统一管理平台</div>
-                        <div class="devices">
-                            <i class="fas fa-desktop"></i>
-                            <i class="fas fa-laptop"></i>
-                            <i class="fas fa-server"></i>
-                        </div>
+            <div class="hero-grid">
+                <div class="hero-text hidden-el">
+                    <span class="section-badge"><i class="fas fa-star"></i> V0.0.3 新版本发布</span>
+                    <h1>统一管理<br><span class="gradient-text">掌控全局未来</span></h1>
+                    <p>FreeMix 是一个设计优雅的全栈目标管理系统。结合现代化 Web 技术与原生桌面体验，让目标管理不再受限于平台。</p>
+                    <div class="hero-btns">
+                        <a href="#downloads" class="btn btn-primary">
+                            <i class="fab fa-apple"></i> Mac 版下载
+                        </a>
+                        <a href="https://github.com/lcz1219/freemix" class="btn btn-glass">
+                            <i class="fas fa-code"></i> 查看源码
+                        </a>
                     </div>
                 </div>
-                <div class="desktop-base"></div>
-                <div class="desktop-stand"></div>
+
+                <!-- CSS 绘制的 3D 界面模型 -->
+                <div class="hero-visual hidden-el" style="transition-delay: 0.2s;">
+                    <div class="app-window">
+                        <div class="window-header">
+                            <div class="dot red"></div>
+                            <div class="dot yellow"></div>
+                            <div class="dot green"></div>
+                        </div>
+                        <div class="window-content">
+                            <div class="sidebar-mock">
+                                <div style="padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+                                    <div class="skeleton-block" style="height: 30px; width: 80%;"></div>
+                                    <div class="skeleton-block" style="height: 20px; width: 100%; margin-top: 20px;"></div>
+                                    <div class="skeleton-block" style="height: 20px; width: 100%;"></div>
+                                    <div class="skeleton-block" style="height: 20px; width: 100%;"></div>
+                                </div>
+                            </div>
+                            <div class="main-mock">
+                                <div style="display: flex; gap: 15px; height: 120px;">
+                                    <div class="skeleton-block" style="flex: 1; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));"></div>
+                                    <div class="skeleton-block" style="flex: 1;"></div>
+                                    <div class="skeleton-block" style="flex: 1;"></div>
+                                </div>
+                                <div class="skeleton-block" style="flex: 1;"></div>
+                            </div>
+                        </div>
+                        <!-- 悬浮元素装饰 -->
+                        <div style="position: absolute; bottom: 20px; right: -20px; width: 150px; height: 80px; background: rgba(59, 130, 246, 0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; transform: translateZ(50px); box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- 功能特性 (Bento Grid) -->
     <section id="features" class="features">
         <div class="container">
-            <div class="section-title">
-                <h2>核心功能</h2>
-                <p>FreeMix提供了一系列强大的功能，帮助您更好地管理和控制设备</p>
+            <div class="section-header hidden-el">
+                <span class="section-badge">Features</span>
+                <h2>构建高效工作流</h2>
+                <p style="color: var(--text-muted);">不仅是管理工具，更是您的生产力中心</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card">
+            
+            <div class="bento-grid">
+                <div class="feature-card wide hidden-el">
                     <div class="feature-icon"><i class="fas fa-desktop"></i></div>
-                    <h3>多端统一管理</h3>
-                    <p>通过单一界面集中管理所有连接的设备，无论它们运行在哪个平台。</p>
+                    <h3>多端统一架构</h3>
+                    <p>采用跨平台架构设计，核心逻辑统一。无论是在 Web 浏览器中，还是在 macOS 原生应用中，都能获得一致且流畅的操作体验。</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card hidden-el" style="transition-delay: 0.1s;">
                     <div class="feature-icon"><i class="fas fa-bolt"></i></div>
                     <h3>实时监控</h3>
-                    <p>实时查看所有设备状态，快速响应异常情况和用户需求。</p>
+                    <p>毫秒级状态同步，即时查看所有设备运行状况，快速响应异常。</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-lock"></i></div>
-                    <h3>安全保障</h3>
-                    <p>端到端加密和多重身份验证，保护您的数据和隐私安全。</p>
+                <div class="feature-card hidden-el" style="transition-delay: 0.2s;">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>企业级安全</h3>
+                    <p>端到端加密传输，多重身份验证机制，守护您的核心数据。</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-paint-brush"></i></div>
-                    <h3>直观界面</h3>
-                    <p>简洁现代的用户界面设计，操作简单易上手。</p>
+                <div class="feature-card hidden-el" style="transition-delay: 0.3s;">
+                    <div class="feature-icon"><i class="fas fa-magic"></i></div>
+                    <h3>自动化任务</h3>
+                    <p>支持自定义脚本与批量操作，让繁琐的重复性工作自动化运行。</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
-                    <h3>批量操作</h3>
-                    <p>支持对多个设备进行批量操作，大幅提升管理效率。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-cog"></i></div>
-                    <h3>灵活配置</h3>
-                    <p>根据不同设备类型和用途进行灵活配置，满足多样化需求。</p>
+                <div class="feature-card hidden-el" style="transition-delay: 0.4s;">
+                    <div class="feature-icon"><i class="fas fa-moon"></i></div>
+                    <h3>深色模式</h3>
+                    <p>精心调教的暗色主题，保护视力，让夜间工作更加专注沉浸。</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 下载区域 -->
     <section id="downloads" class="downloads">
         <div class="container">
-            <div class="section-title">
-                <h2>立即下载</h2>
-                <p>选择适合您设备的版本</p>
+            <div class="section-header hidden-el">
+                <h2>立即开始使用</h2>
+                <p style="color: var(--text-muted);">选择您的平台，开启高效之旅</p>
             </div>
-            <div class="platforms">
-                <div class="platform-card">
-                    <div class="platform-icon"><i class="fab fa-apple"></i></div>
-                    <h3>Mac 版</h3>
-                    <p>适用于 macOS 10.14 及更高版本</p>
-                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="cta-button">下载</a>
+            
+            <div class="platform-grid">
+                <div class="platform-box hidden-el">
+                    <i class="fab fa-apple platform-icon"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">macOS</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Intel & Apple Silicon</p>
+                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
+                        下载 .dmg 文件
+                    </a>
                 </div>
-                <div class="platform-card">
-                    <div class="platform-icon"><i class="fab fa-windows"></i></div>
-                    <h3>Windows 版</h3>
-                    <p>适用于 Windows 10 及更高版本</p>
-                    <a href="#" class="cta-button">即将推出</a>
+                <div class="platform-box hidden-el" style="transition-delay: 0.1s; filter: grayscale(1); opacity: 0.6;">
+                    <i class="fab fa-windows platform-icon"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Windows</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">正在开发适配中</p>
+                    <button class="btn btn-glass" disabled style="cursor: not-allowed;">
+                        即将推出
+                    </button>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 截图区域 -->
     <section id="screenshots" class="screenshots">
         <div class="container">
-            <div class="section-title">
-                <h2>应用截图</h2>
-                <p>预览FreeMix在不同平台上的界面效果</p>
+            <div class="section-header hidden-el">
+                <h2>精美界面预览</h2>
             </div>
-            <div class="screenshots-grid">
-                <div class="screenshot-card">
-                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Mac界面">
+            <!-- 使用 CSS 制作的简单的水平滚动画廊效果 -->
+            <div class="gallery-container">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Dashboard">
+                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">控制面板</div>
                 </div>
-                <div class="screenshot-card">
-                    <img src="https://images.unsplash.com/photo-1547394765-185e1e68f34e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Windows界面">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Code">
+                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">脚本编辑</div>
                 </div>
-                <div class="screenshot-card">
-                    <img src="https://images.unsplash.com/photo-1587202372775-e229f1723e0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="控制面板">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Analytics">
+                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">数据分析</div>
                 </div>
-                <div class="screenshot-card">
-                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="多设备管理">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Settings">
+                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">系统设置</div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 页脚 -->
     <footer id="support">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <h3>FreeMix</h3>
-                    <p>创新的跨平台远程控制系统，让设备管理更简单。</p>
+                <div class="footer-brand">
+                    <div class="logo" style="margin-bottom: 1rem; font-size: 1.5rem;">
+                        <i class="fas fa-layer-group" style="color: var(--primary);"></i>
+                        <span>FreeMix</span>
+                    </div>
+                    <p>打造极致的跨平台目标管理体验。开源、安全、高效。</p>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <a href="#" style="color: #fff; font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: #fff; font-size: 1.2rem;"><i class="fab fa-github"></i></a>
+                        <a href="#" style="color: #fff; font-size: 1.2rem;"><i class="fab fa-discord"></i></a>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h3>快速链接</h3>
-                    <ul class="footer-links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> 首页</a></li>
-                        <li><a href="#features"><i class="fas fa-chevron-right"></i> 功能</a></li>
-                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> 下载</a></li>
+                <div class="footer-col">
+                    <h4>产品</h4>
+                    <ul>
+                        <li><a href="#features">功能特性</a></li>
+                        <li><a href="#downloads">下载客户端</a></li>
+                        <li><a href="#">更新日志</a></li>
+                        <li><a href="#">路线图</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h3>支持</h3>
-                    <ul class="footer-links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> 帮助中心</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> 社区论坛</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> 反馈建议</a></li>
+                <div class="footer-col">
+                    <h4>支持</h4>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">API 文档</a></li>
+                        <li><a href="#">联系我们</a></li>
+                        <li><a href="#">隐私协议</a></li>
                     </ul>
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2023 FreeMix. 保留所有权利。</p>
+                <p>&copy; 2023-2024 FreeMix Team. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    window.scrollTo({
-                        top: target.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
+        // 1. 滚动显现动画
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show-el');
+                    observer.unobserve(entry.target);
                 }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.hidden-el').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 2. 鼠标移动控制卡片光效 (Spotlight Effect)
+        document.addEventListener('mousemove', (e) => {
+            document.querySelectorAll('.feature-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
             });
         });
 
-        // Header scroll effect
-        window.addEventListener('scroll', function() {
+        // 3. 导航栏滚动效果
+        window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
             if (window.scrollY > 50) {
                 header.classList.add('scrolled');
@@ -831,186 +872,22 @@
             }
         });
 
-        // Parallax effect for hero section
-        document.addEventListener('mousemove', function(e) {
-            const heroBg = document.querySelector('.hero-bg');
-            const x = (window.innerWidth - e.pageX) / 100;
-            const y = (window.innerHeight - e.pageY) / 100;
-            heroBg.style.transform = `translate(${x}px, ${y}px)`;
-        });
-
-        // Animation on scroll
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
+        // 4. 平滑滚动锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerOffset = 80;
+                    const elementPosition = target.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth"
+                    });
                 }
             });
-        }, observerOptions);
-
-        document.querySelectorAll('.feature-card, .platform-card, .screenshot-card').forEach(card => {
-            observer.observe(card);
-        });
-
-        // Add CSS for animations
-        const style = document.createElement('style');
-        style.textContent = `
-            .feature-card, .platform-card, .screenshot-card {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-                transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                            transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-            
-            .feature-card.animated, .platform-card.animated, .screenshot-card.animated {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            
-            /* Staggered animations */
-            .feature-card:nth-child(1), .platform-card:nth-child(1), .screenshot-card:nth-child(1) {
-                transition-delay: 0.1s;
-            }
-            
-            .feature-card:nth-child(2), .platform-card:nth-child(2), .screenshot-card:nth-child(2) {
-                transition-delay: 0.2s;
-            }
-            
-            .feature-card:nth-child(3), .platform-card:nth-child(3), .screenshot-card:nth-child(3) {
-                transition-delay: 0.3s;
-            }
-            
-            .feature-card:nth-child(4), .platform-card:nth-child(4), .screenshot-card:nth-child(4) {
-                transition-delay: 0.4s;
-            }
-            
-            .feature-card:nth-child(5), .platform-card:nth-child(5), .screenshot-card:nth-child(5) {
-                transition-delay: 0.5s;
-            }
-            
-            .feature-card:nth-child(6), .platform-card:nth-child(6), .screenshot-card:nth-child(6) {
-                transition-delay: 0.6s;
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Enhanced CTA button ripple effect
-        document.querySelectorAll('.cta-button').forEach(button => {
-            button.addEventListener('click', function(e) {
-                // Remove any existing ripples
-                const existingRipples = this.querySelectorAll('.ripple');
-                existingRipples.forEach(ripple => ripple.remove());
-                
-                // Create ripple
-                const ripple = document.createElement('span');
-                ripple.classList.add('ripple');
-                this.appendChild(ripple);
-                
-                // Position ripple
-                const rect = this.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.width = ripple.style.height = size + 'px';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                
-                // Remove ripple after animation
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
-            });
-        });
-
-        // Add CSS for ripple effect
-        const rippleStyle = document.createElement('style');
-        rippleStyle.textContent = `
-            .cta-button {
-                position: relative;
-                overflow: hidden;
-                transform: translate3d(0, 0, 0);
-            }
-            
-            .ripple {
-                position: absolute;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.7);
-                transform: scale(0);
-                animation: ripple 0.6s linear;
-                pointer-events: none;
-            }
-            
-            @keyframes ripple {
-                to {
-                    transform: scale(2.5);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(rippleStyle);
-
-        // Background particle effect
-        document.addEventListener('DOMContentLoaded', function() {
-            const hero = document.querySelector('.hero');
-            const particlesContainer = document.createElement('div');
-            particlesContainer.classList.add('particles');
-            hero.appendChild(particlesContainer);
-            
-            // Create particles
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 5 + 's';
-                particle.style.width = Math.random() * 10 + 2 + 'px';
-                particle.style.height = particle.style.width;
-                particlesContainer.appendChild(particle);
-            }
-            
-            // Add CSS for particles
-            const particleStyle = document.createElement('style');
-            particleStyle.textContent = `
-                .particles {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    pointer-events: none;
-                    z-index: 1;
-                }
-                
-                .particle {
-                    position: absolute;
-                    background: rgba(255, 255, 255, 0.15);
-                    border-radius: 50%;
-                    animation: float 15s infinite ease-in-out;
-                }
-                
-                @keyframes float {
-                    0%, 100% {
-                        transform: translate(0, 0);
-                    }
-                    25% {
-                        transform: translate(20px, 20px);
-                    }
-                    50% {
-                        transform: translate(-20px, 20px);
-                    }
-                    75% {
-                        transform: translate(-20px, -20px);
-                    }
-                }
-            `;
-            document.head.appendChild(particleStyle);
         });
     </script>
 </body>
