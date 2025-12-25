@@ -229,7 +229,7 @@
 
         .hero-grid {
             display: grid;
-            grid-template-columns: 1fr ;
+            grid-template-columns: 1fr;
             gap: 4rem;
             align-items: center;
         }
@@ -268,258 +268,209 @@
         }
 
        /* --- 新增：高保真界面模拟样式 --- */
-.app-window {
-    width: 100%;
-    height: 600px; /* 增加高度以容纳更多内容 */
-    background: #09090b; /* 对应截图的深黑背景 */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    position: relative;
-    /* 保持原有的3D旋转效果 */
-    transform: rotateY(-10deg) rotateX(5deg);
-    transition: transform 0.5s ease;
-}
+        .app-window {
+            width: 100%;
+            height: 600px; /* 增加高度以容纳更多内容 */
+            background: #09090b; /* 对应截图的深黑背景 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: relative;
+            /* 保持原有的3D旋转效果 */
+            transform: rotateY(-10deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+        }
 
-.app-window:hover {
-    transform: rotateY(0deg) rotateX(0deg);
-}
+        .app-window:hover {
+            transform: rotateY(0deg) rotateX(0deg);
+        }
 
-/* 窗口顶部栏 */
-.window-header {
-    height: 40px;
-    background: #0c0c0e;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot.red { background: #ff5f57; }
-.dot.yellow { background: #febc2e; }
-.dot.green { background: #28c840; }
-
-/* 界面布局主体 */
-.app-body {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-/* 侧边栏 */
-.app-sidebar {
-    width: 200px;
-    background: #0c0c0e;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 20px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sidebar-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    color: #a1a1aa;
-    font-size: 0.9rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-.sidebar-item.active { 
-    background: rgba(16, 185, 129, 0.1); 
-    color: #10b981; 
-    border-left: 3px solid #10b981;
-}
-
-/* 右侧主内容区 */
-.app-main {
-    flex: 1;
-    padding: 30px;
-    background: #09090b;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    overflow-y: auto; /* 允许内容滚动 */
-}
-
-/* 标题区 */
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.dashboard-title h2 { font-size: 1.5rem; color: #fff; margin-bottom: 5px; }
-.dashboard-title p { color: #71717a; font-size: 0.9rem; }
-.header-actions { display: flex; gap: 10px; }
-.btn-sm { padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; }
-.btn-dark { background: #27272a; color: #fff; }
-.btn-accent { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-
-/* 统计卡片网格 */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-
-.stat-box {
-    background: #18181b;
-    border: 1px solid #27272a;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-}
-
-/* 卡片颜色变体 */
-.stat-box.gray .stat-icon { background: rgba(113, 113, 122, 0.2); color: #a1a1aa; }
-.stat-box.green .stat-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-.stat-box.yellow .stat-icon { background: rgba(234, 179, 8, 0.2); color: #eab308; }
-.stat-box.red .stat-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-.stat-info h4 { font-size: 1.5rem; color: #fff; line-height: 1; margin-bottom: 4px; }
-.stat-info span { font-size: 0.8rem; color: #71717a; }
-
-/* 底部两栏布局 */
-.bottom-section {
-    display: grid;
-    grid-template-columns: 1fr 1.8fr; /* 左侧趋势图窄一点，右侧表格宽一点 */
-    gap: 16px;
-    flex: 1;
-}
-
-.panel {
-    background: #18181b;
-    border: 1px solid #27272a;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    color: #e4e4e7;
-    font-weight: 600;
-}
-
-/* 模拟空状态图表 */
-.empty-chart {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #52525b;
-    font-size: 0.9rem;
-    border: 1px dashed #27272a;
-    border-radius: 8px;
-    min-height: 150px;
-}
-
-/* 模拟表格头 */
-.mock-table-header {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    background: #27272a;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-}
-.th { color: #a1a1aa; font-size: 0.8rem; font-weight: 500; }
-
-.empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #52525b;
-    gap: 10px;
-}
-.empty-state i { font-size: 2rem; opacity: 0.5; }
-
-/* 移动端适配 Hero Visual */
-@media (max-width: 768px) {
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .bottom-section { grid-template-columns: 1fr; }
-    .app-sidebar { display: none; } /* 移动端隐藏侧边栏以节省空间 */
-}
-
+        /* 窗口顶部栏 */
         .window-header {
             height: 40px;
+            background: #0c0c0e;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             padding: 0 16px;
             gap: 8px;
+            flex-shrink: 0;
         }
 
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.red { background: #ff5f57; }
+        .dot.yellow { background: #febc2e; }
+        .dot.green { background: #28c840; }
 
-        .dot.red { background: #ef4444; }
-        .dot.yellow { background: #eab308; }
-        .dot.green { background: #22c55e; }
-
-        .window-content {
+        /* 界面布局主体 */
+        .app-body {
+            display: flex;
             flex: 1;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 20px;
             overflow: hidden;
         }
 
-        .sidebar-mock {
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            height: 100%;
-        }
-
-        .main-mock {
+        /* 侧边栏 */
+        .app-sidebar {
+            width: 200px;
+            background: #0c0c0e;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px 10px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 8px;
         }
 
-        .skeleton-block {
-            background: rgba(255,255,255,0.05);
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            color: #a1a1aa;
+            font-size: 0.9rem;
             border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .h-30 { height: 30%; }
-        .h-60 { height: 60%; }
-        .h-100 { height: 100%; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .sidebar-item.active { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: #10b981; 
+            border-left: 3px solid #10b981;
+        }
+
+        /* 右侧主内容区 */
+        .app-main {
+            flex: 1;
+            padding: 30px;
+            background: #09090b;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto; /* 允许内容滚动 */
+        }
+
+        /* 标题区 */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .dashboard-title h2 { font-size: 1.5rem; color: #fff; margin-bottom: 5px; }
+        .dashboard-title p { color: #71717a; font-size: 0.9rem; }
+        .header-actions { display: flex; gap: 10px; }
+        .btn-sm { padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; }
+        .btn-dark { background: #27272a; color: #fff; }
+        .btn-accent { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+
+        /* 统计卡片网格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* 卡片颜色变体 */
+        .stat-box.gray .stat-icon { background: rgba(113, 113, 122, 0.2); color: #a1a1aa; }
+        .stat-box.green .stat-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .stat-box.yellow .stat-icon { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+        .stat-box.red .stat-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .stat-info h4 { font-size: 1.5rem; color: #fff; line-height: 1; margin-bottom: 4px; }
+        .stat-info span { font-size: 0.8rem; color: #71717a; }
+
+        /* 底部两栏布局 */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1.8fr; /* 左侧趋势图窄一点，右侧表格宽一点 */
+            gap: 16px;
+            flex: 1;
+        }
+
+        .panel {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #e4e4e7;
+            font-weight: 600;
+        }
+
+        /* 模拟空状态图表 */
+        .empty-chart {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #52525b;
+            font-size: 0.9rem;
+            border: 1px dashed #27272a;
+            border-radius: 8px;
+            min-height: 150px;
+        }
+
+        /* 模拟表格头 */
+        .mock-table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            background: #27272a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .th { color: #a1a1aa; font-size: 0.8rem; font-weight: 500; }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #52525b;
+            gap: 10px;
+        }
+        .empty-state i { font-size: 2rem; opacity: 0.5; }
+
+        /* 移动端适配 Hero Visual */
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .bottom-section { grid-template-columns: 1fr; }
+            .app-sidebar { display: none; } /* 移动端隐藏侧边栏以节省空间 */
+        }
 
         /* 特性区域 */
         .features {
@@ -656,48 +607,59 @@
             color: #fff;
         }
 
-        /* 截图画廊 */
-        .screenshots {
+        /* 使用指南 */
+        .guide {
             padding: 8rem 0;
-            overflow: hidden;
+            background: var(--bg-color);
         }
 
-        .gallery-container {
-            display: flex;
+        .guide-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
-            padding: 2rem 0;
-            perspective: 2000px;
+            margin-top: 3rem;
         }
 
-        .gallery-item {
-            flex: 0 0 400px;
-            height: 250px;
-            background: #1f2937;
-            border-radius: 12px;
-            overflow: hidden;
+        .step-card {
+            background: var(--surface-color);
             border: var(--glass-border);
-            transform-style: preserve-3d;
-            transition: 0.5s ease;
+            border-radius: 20px;
+            padding: 2.5rem;
             position: relative;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
         }
 
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.8;
-            transition: 0.5s;
-        }
-
-        .gallery-item:hover {
-            transform: scale(1.05) translateZ(20px);
-            z-index: 10;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .step-card:hover {
+            transform: translateY(-5px);
             border-color: var(--primary);
         }
 
-        .gallery-item:hover img {
-            opacity: 1;
+        .step-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.05);
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            line-height: 1;
+        }
+
+        .step-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .step-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .guide-steps {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* 页脚 */
@@ -810,13 +772,12 @@
         <div class="container navbar">
             <a href="#" class="logo">
               <img src="/favicon.ico" alt="Logo" style="width: 40px; height: 40px; margin-right: 10px;" />
-                <!-- <i class="fas fa-layer-group" style="color: var(--primary);"></i> -->
                 <span>FreeMix</span>
             </a>
             <ul class="nav-links">
                 <li><a href="#features">功能特性</a></li>
                 <li><a href="#downloads">下载客户端</a></li>
-                <li><a href="#screenshots">界面预览</a></li>
+                <li><a href="#guide">使用指南</a></li>
                 <li><a href="#support">支持</a></li>
             </ul>
             <a href="https://github.com/lcz1219/freemix" target="_blank" class="btn btn-glass" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">
@@ -834,8 +795,11 @@
                     <h1>统一管理<br><span class="gradient-text">掌控全局未来</span></h1>
                     <p>FreeMix 是一个设计优雅的全栈目标管理系统。结合现代化 Web 技术与原生桌面体验，让目标管理不再受限于平台。</p>
                     <div class="hero-btns">
-                        <a href="#downloads" class="btn btn-primary">
+                        <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
                             <i class="fab fa-apple"></i> Mac 版下载
+                        </a>
+                        <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-win.zip" class="btn btn-primary">
+                            <i class="fab fa-windows"></i> Win 版下载
                         </a>
                         <a href="https://github.com/lcz1219/freemix" class="btn btn-glass">
                             <i class="fas fa-code"></i> 查看源码
@@ -843,129 +807,117 @@
                     </div>
                 </div>
 
-                <!-- CSS 绘制的 3D 界面模型 -->
-                <!-- CSS 绘制的高保真界面模型 (仿图一) -->
-<div class="hero-visual hidden-el" style="transition-delay: 0.2s;">
-    <div class="app-window">
-        <!-- 窗口控制按钮 -->
-        <div class="window-header">
-            <div class="dot red"></div>
-            <div class="dot yellow"></div>
-            <div class="dot green"></div>
-            <div style="margin-left: 10px; font-size: 12px; color: #555;">FreeMix - Goal Tracker</div>
-        </div>
+                <!-- CSS 绘制的高保真界面模型 -->
+                <div class="hero-visual hidden-el" style="transition-delay: 0.2s;">
+                    <div class="app-window">
+                        <!-- 窗口控制按钮 -->
+                        <div class="window-header">
+                            <div class="dot red"></div>
+                            <div class="dot yellow"></div>
+                            <div class="dot green"></div>
+                            <div style="margin-left: 10px; font-size: 12px; color: #555;">FreeMix - Goal Tracker</div>
+                        </div>
 
-        <div class="app-body">
-            <!-- 侧边栏 -->
-            <div class="app-sidebar">
-                <div class="sidebar-item active">
-                    <i class="fas fa-chart-pie"></i> 仪表盘
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-clipboard-list"></i> 目标管理
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-chart-line"></i> 统计数据
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-sitemap"></i> 目标结构
-                </div>
-                <div style="flex: 1"></div> <!-- 占位符，把下面推到底部 -->
-                <div class="sidebar-item">
-                    <i class="fas fa-comment-dots"></i> 消息
-                </div>
-                <div class="sidebar-item">
-                    <i class="fas fa-user-circle"></i> 用户
-                </div>
-            </div>
+                        <div class="app-body">
+                            <!-- 侧边栏 -->
+                            <div class="app-sidebar">
+                                <div class="sidebar-item active">
+                                    <i class="fas fa-chart-pie"></i> 仪表盘
+                                </div>
+                                <div class="sidebar-item">
+                                    <i class="fas fa-clipboard-list"></i> 目标管理
+                                </div>
+                                <div class="sidebar-item">
+                                    <i class="fas fa-chart-line"></i> 统计数据
+                                </div>
+                                <div class="sidebar-item">
+                                    <i class="fas fa-sitemap"></i> 目标结构
+                                </div>
+                                <div style="flex: 1"></div>
+                                <div class="sidebar-item">
+                                    <i class="fas fa-comment-dots"></i> 消息
+                                </div>
+                                <div class="sidebar-item">
+                                    <i class="fas fa-user-circle"></i> 用户
+                                </div>
+                            </div>
 
-            <!-- 主内容区 -->
-            <div class="app-main">
-                <!-- 顶部欢迎语和按钮 -->
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #fff; margin-bottom: 8px;">掌控你的目标，衡量你的成功</h2>
-                    <p style="color: #71717a; font-size: 0.9rem; max-width: 600px; margin: 0 auto 20px;">
-                        目标追踪者是一款强大的目标管理系统，帮助您设定、跟踪并完成个人和职业目标。
-                    </p>
-                    <div style="display: flex; justify-content: center; gap: 10px;">
-                        <button class="btn-sm btn-dark"><i class="fas fa-plus"></i> 添加新目标</button>
-                        <button class="btn-sm btn-accent"><i class="fas fa-robot"></i> AI 助手</button>
-                    </div>
-                </div>
+                            <!-- 主内容区 -->
+                            <div class="app-main">
+                                <div style="text-align: center; margin-bottom: 20px;">
+                                    <h2 style="color: #fff; margin-bottom: 8px;">掌控你的目标，衡量你的成功</h2>
+                                    <p style="color: #71717a; font-size: 0.9rem; max-width: 600px; margin: 0 auto 20px;">
+                                        目标追踪者是一款强大的目标管理系统，帮助您设定、跟踪并完成个人和职业目标。
+                                    </p>
+                                    <div style="display: flex; justify-content: center; gap: 10px;">
+                                        <button class="btn-sm btn-dark"><i class="fas fa-plus"></i> 添加新目标</button>
+                                        <button class="btn-sm btn-accent"><i class="fas fa-robot"></i> AI 助手</button>
+                                    </div>
+                                </div>
 
-                <!-- 4个统计卡片 (对应图一中间部分) -->
-                <div class="stats-grid">
-                    <!-- 卡片 1: 总目标数 -->
-                    <div class="stat-box gray">
-                        <div class="stat-icon"><i class="far fa-clock"></i></div>
-                        <div class="stat-info">
-                            <h4>0</h4>
-                            <span>总目标数</span>
-                        </div>
-                    </div>
-                    <!-- 卡片 2: 已完成 -->
-                    <div class="stat-box green">
-                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                        <div class="stat-info">
-                            <h4>0</h4>
-                            <span>已完成</span>
-                        </div>
-                    </div>
-                    <!-- 卡片 3: 进行中 -->
-                    <div class="stat-box yellow">
-                        <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
-                        <div class="stat-info">
-                            <h4>0</h4>
-                            <span>进行中</span>
-                        </div>
-                    </div>
-                    <!-- 卡片 4: 已过期 -->
-                    <div class="stat-box red">
-                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
-                        <div class="stat-info">
-                            <h4>0</h4>
-                            <span>已过期</span>
-                        </div>
-                    </div>
-                </div>
+                                <div class="stats-grid">
+                                    <div class="stat-box gray">
+                                        <div class="stat-icon"><i class="far fa-clock"></i></div>
+                                        <div class="stat-info">
+                                            <h4>0</h4>
+                                            <span>总目标数</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-box green">
+                                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                                        <div class="stat-info">
+                                            <h4>0</h4>
+                                            <span>已完成</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-box yellow">
+                                        <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+                                        <div class="stat-info">
+                                            <h4>0</h4>
+                                            <span>进行中</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-box red">
+                                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                                        <div class="stat-info">
+                                            <h4>0</h4>
+                                            <span>已过期</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                <!-- 底部两块区域 (对应图一底部) -->
-                <div class="bottom-section">
-                    <!-- 左侧: 完成趋势 -->
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span>完成趋势</span>
-                        </div>
-                        <div class="empty-chart">
-                            暂无趋势数据
-                        </div>
-                    </div>
+                                <div class="bottom-section">
+                                    <div class="panel">
+                                        <div class="panel-header">
+                                            <span>完成趋势</span>
+                                        </div>
+                                        <div class="empty-chart">
+                                            暂无趋势数据
+                                        </div>
+                                    </div>
 
-                    <!-- 右侧: 详细统计数据 -->
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span><i class="fas fa-table" style="color: #ef4444; margin-right: 8px;"></i> 详细统计数据</span>
-                            <i class="fas fa-share" style="color: #71717a; cursor: pointer;"></i>
-                        </div>
-                        <!-- 表头模拟 -->
-                        <div class="mock-table-header">
-                            <div class="th">目标名称 <i class="fas fa-chevron-down" style="font-size: 10px;"></i></div>
-                            <div class="th">负责人</div>
-                            <div class="th">截止日期</div>
-                            <div class="th">进度</div>
-                            <div class="th">状态</div>
-                        </div>
-                        <!-- 空数据状态 -->
-                        <div class="empty-state">
-                            <i class="fas fa-file-excel"></i>
-                            <span>无数据</span>
+                                    <div class="panel">
+                                        <div class="panel-header">
+                                            <span><i class="fas fa-table" style="color: #ef4444; margin-right: 8px;"></i> 详细统计数据</span>
+                                            <i class="fas fa-share" style="color: #71717a; cursor: pointer;"></i>
+                                        </div>
+                                        <div class="mock-table-header">
+                                            <div class="th">目标名称 <i class="fas fa-chevron-down" style="font-size: 10px;"></i></div>
+                                            <div class="th">负责人</div>
+                                            <div class="th">截止日期</div>
+                                            <div class="th">进度</div>
+                                            <div class="th">状态</div>
+                                        </div>
+                                        <div class="empty-state">
+                                            <i class="fas fa-file-excel"></i>
+                                            <span>无数据</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
             </div>
         </div>
     </section>
@@ -1021,46 +973,46 @@
                 <div class="platform-box hidden-el">
                     <i class="fab fa-apple platform-icon"></i>
                     <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">macOS</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Intel & Apple Silicon</p>
-                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
-                        下载 .dmg 文件
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Apple Silicon (M1/M2/M3)</p>
+                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
+                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .dmg 文件
                     </a>
                 </div>
-                <div class="platform-box hidden-el" style="transition-delay: 0.1s; filter: grayscale(1); opacity: 0.6;">
+                <div class="platform-box hidden-el" style="transition-delay: 0.1s;">
                     <i class="fab fa-windows platform-icon"></i>
                     <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Windows</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">正在开发适配中</p>
-                    <button class="btn btn-glass" disabled style="cursor: not-allowed;">
-                        即将推出
-                    </button>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Windows 10/11 x64</p>
+                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-win.zip" class="btn btn-glass">
+                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .zip 文件
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 截图区域 -->
-    <section id="screenshots" class="screenshots">
+    <!-- 使用指南区域 (替换了原截图区域) -->
+    <section id="guide" class="guide">
         <div class="container">
             <div class="section-header hidden-el">
-                <h2>精美界面预览</h2>
+                <h2>快速上手指南</h2>
+                <p style="color: var(--text-muted);">简单三步，开启您的目标管理之旅</p>
             </div>
-            <!-- 使用 CSS 制作的简单的水平滚动画廊效果 -->
-            <div class="gallery-container">
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Dashboard">
-                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">控制面板</div>
+            
+            <div class="guide-steps">
+                <div class="step-card hidden-el">
+                    <div class="step-number">01</div>
+                    <h3>下载安装</h3>
+                    <p>根据您的操作系统下载对应的安装包，按照提示完成安装。FreeMix 支持 macOS 和 Windows 系统，安装过程简单快捷。</p>
                 </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Code">
-                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">脚本编辑</div>
+                <div class="step-card hidden-el" style="transition-delay: 0.1s;">
+                    <div class="step-number">02</div>
+                    <h3>创建目标</h3>
+                    <p>打开应用，点击"+"号创建您的第一个目标。您可以设置截止日期、优先级，并添加详细描述，让目标清晰可见。</p>
                 </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Analytics">
-                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">数据分析</div>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Settings">
-                    <div style="position: absolute; bottom: 10px; left: 15px; color: #fff; font-weight: 600;">系统设置</div>
+                <div class="step-card hidden-el" style="transition-delay: 0.2s;">
+                    <div class="step-number">03</div>
+                    <h3>多端同步</h3>
+                    <p>在任意设备上登录您的账户，您的数据将自动实时同步。无论在办公室还是在路上，随时随地掌控全局。</p>
                 </div>
             </div>
         </div>
@@ -1087,8 +1039,8 @@
                     <ul>
                         <li><a href="#features">功能特性</a></li>
                         <li><a href="#downloads">下载客户端</a></li>
+                        <li><a href="#guide">使用指南</a></li>
                         <li><a href="#">更新日志</a></li>
-                        <li><a href="#">路线图</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
