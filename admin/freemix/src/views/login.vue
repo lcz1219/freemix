@@ -237,7 +237,12 @@ const message = useMessage();
 // 检查是否为生产环境
 const isProduction = import.meta.env.PROD;
 const isDesktopEnv = isDesktop();
-
+const qrCodeDataUrl = ref('');
+const qrSessionId = ref('');
+const qrCountdown = ref(0);
+const qrStatus = ref<'idle' | 'pending' | 'approved' | 'expired' | 'error'>('idle');
+let qrCountdownTimer: number | null = null;
+let qrStatusTimer: number | null = null;
 // 计算卡片样式
 const cardStyle = computed(() => {
   if (isDesktopEnv) {
@@ -404,14 +409,9 @@ watch(activeLoginTab, (val) => {
   } else {
     clearQrTimers();
   }
-});
+}, { immediate: true });
 
-const qrCodeDataUrl = ref('');
-const qrSessionId = ref('');
-const qrCountdown = ref(0);
-const qrStatus = ref<'idle' | 'pending' | 'approved' | 'expired' | 'error'>('idle');
-let qrCountdownTimer: number | null = null;
-let qrStatusTimer: number | null = null;
+
 
 // 第一步：点击登录按钮，先验证表单
 const prepareLogin = async () => {
