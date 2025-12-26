@@ -64,6 +64,7 @@
               align-items: flex-end;
               position: fixed;
               bottom: 10px;
+              color: #2c2c2c;
               right: 10px;" v-if="!isDesktop()&&!isMobileDevice">
               <!-- 备案信息 -->
               <div class="">

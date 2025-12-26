@@ -838,7 +838,7 @@ const getGoals = async () => {
     goals.value?.forEach(goal => {
       goal.deadlineString = formatDate(goal.deadline);
     });
-    getGoalsMoth.value = filterMoth()
+    // getGoalsMoth.value = filterMoth()
 
 
     // 如果当前有选中的目标，更新选中的目标数据
@@ -953,12 +953,17 @@ const handleCalendarUpdate = (value) => {
 const filterMoth = () => {
  
   goals.value.forEach(e => {
+    // console.log("e.deadline", e.deadline);
+    
+    if(new Date(e.deadline).getFullYear() !== new Date().getFullYear()){
+      return
+    }
     if (e.status === 'completed') {
-      mothListComp.value[new Date(e.deadline).getMonth()]++
+      mothListComp.value[new Date(e.deadline).getMonth()-1]++
     }
     const date = new Date(e.deadline)
     date.getMonth()
-    mothListEve.value[date.getMonth()]++
+    mothListEve.value[date.getMonth()-1]++
 
   })
   console.log("mothListEve", mothListEve.value);

@@ -22,6 +22,39 @@
           animated
           pane-wrapper-style="margin: 0 -4px"
           pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;">
+           <n-tab-pane name="qr-login" tab="扫码登录">
+            <div class="qr-login-container">
+              <div class="qr-login-left">
+                <div class="qr-image-wrapper">
+                  <img v-if="qrCodeDataUrl" :src="qrCodeDataUrl" alt="登录二维码" class="qr-image" />
+                  <div v-else class="qr-placeholder">
+                    <span>二维码生成中</span>
+                  </div>
+                  <div v-if="qrStatus === 'expired'" class="qr-overlay">
+                    <span>二维码已过期</span>
+                    <n-button size="small" type="primary" @click="refreshQrCode">刷新</n-button>
+                  </div>
+                </div>
+                <div class="qr-tips">
+                  <p>使用已登录的移动端 FreeMix 扫码确认登录</p>
+                  <p v-if="qrCountdown > 0">二维码将在 {{ qrCountdown }} 秒后失效</p>
+                </div>
+              </div>
+              <div class="qr-login-right">
+                <ol class="qr-steps">
+                  <li>打开移动端 FreeMix 应用</li>
+                  <li>登录后进入个人中心或设置页</li>
+                  <li>点击扫码登录，扫描左侧二维码</li>
+                  <li>在手机上确认本次登录</li>
+                </ol>
+                <div class="qr-status-text">
+                  <span v-if="qrStatus === 'pending'">等待手机确认登录...</span>
+                  <span v-else-if="qrStatus === 'approved'">已确认，正在登录...</span>
+                  <span v-else-if="qrStatus === 'error'">登录出错，请刷新二维码重试</span>
+                </div>
+              </div>
+            </div>
+          </n-tab-pane>
           <n-tab-pane name="signin" tab="登录">
             <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="prepareLogin">
               <n-form-item-row label="用户名" path="username">
@@ -66,39 +99,7 @@
               <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
             </n-button>
           </n-tab-pane>
-          <n-tab-pane name="qr-login" tab="扫码登录">
-            <div class="qr-login-container">
-              <div class="qr-login-left">
-                <div class="qr-image-wrapper">
-                  <img v-if="qrCodeDataUrl" :src="qrCodeDataUrl" alt="登录二维码" class="qr-image" />
-                  <div v-else class="qr-placeholder">
-                    <span>二维码生成中</span>
-                  </div>
-                  <div v-if="qrStatus === 'expired'" class="qr-overlay">
-                    <span>二维码已过期</span>
-                    <n-button size="small" type="primary" @click="refreshQrCode">刷新</n-button>
-                  </div>
-                </div>
-                <div class="qr-tips">
-                  <p>使用已登录的移动端 FreeMix 扫码确认登录</p>
-                  <p v-if="qrCountdown > 0">二维码将在 {{ qrCountdown }} 秒后失效</p>
-                </div>
-              </div>
-              <div class="qr-login-right">
-                <ol class="qr-steps">
-                  <li>打开移动端 FreeMix 应用</li>
-                  <li>登录后进入个人中心或设置页</li>
-                  <li>点击扫码登录，扫描左侧二维码</li>
-                  <li>在手机上确认本次登录</li>
-                </ol>
-                <div class="qr-status-text">
-                  <span v-if="qrStatus === 'pending'">等待手机确认登录...</span>
-                  <span v-else-if="qrStatus === 'approved'">已确认，正在登录...</span>
-                  <span v-else-if="qrStatus === 'error'">登录出错，请刷新二维码重试</span>
-                </div>
-              </div>
-            </div>
-          </n-tab-pane>
+         
         </n-tabs>
       </div>
 
@@ -260,7 +261,7 @@ const cardStyle = computed(() => {
 
 // 登录步骤状态
 const loginStep = ref<'login' | 'human-verify' | '2fa-verify' | '2fa-bind'>('login');
-const activeLoginTab = ref<'signin' | 'qr-login'>('signin');
+const activeLoginTab = ref<'signin' | 'qr-login'>('qr-login');
 
 // 表单验证规则
 const rules = ref({
