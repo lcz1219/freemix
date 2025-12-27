@@ -5,6 +5,7 @@
     :height="'85vh'" 
     placement="right" 
     resizable
+    :on-after-leave="() => isEditing = false"
     @resize="handleDrawerResize">
     <n-drawer-content title="目标详情" closable >
       <template #header>
@@ -811,9 +812,7 @@ const editableSubGoalColumns = [
     key: 'actions',
     render: (row, index) => {
       // 如果是最后一行，不显示操作按钮
-      if (index === editForm.value.childGoals.length - 1) {
-        return null;
-      }
+      
 
       return h(NSpace, {}, [
         h(NButton, {
@@ -1012,20 +1011,54 @@ const handleCollaboratorsUpdated = (collaborators) => {
 // 复制目标
 const copyGoal = async () => {
   try {
+    // 构建协作人信息
+    let collaboratorsText = '无';
+    if (props.goal.collaborators && props.goal.collaborators.length > 0) {
+      collaboratorsText = props.goal.collaborators.map(c => {
+        const role = c.role === 'owner' ? '(创建者)' : '(协作者)';
+        const name = c.username || c.id || '未知用户';
+        return `${name} ${role}`;
+      }).join(', ');
+    }
+
+    // 构建文件信息
+    let filesText = '无';
+    if (props.goal.fileList && props.goal.fileList.length > 0) {
+      filesText = props.goal.fileList.map(f => {
+         return f.originalFilename || f.name || '未命名文件';
+      }).join(', ');
+    }
+
+    // 构建子目标信息
+    let subGoalsText = '无';
+    if (props.goal.childGoals && props.goal.childGoals.length > 0) {
+      subGoalsText = props.goal.childGoals.map((sub, index) => {
+        const status = sub.finish ? '[已完成]' : '[未完成]';
+        const filesCount = sub.fileList ? sub.fileList.length : (sub.files ? sub.files.length : 0);
+        const filesInfo = filesCount > 0 ? ` (包含 ${filesCount} 个文件)` : '';
+        return `  ${index + 1}. ${status} ${sub.message || '无内容'}${filesInfo}`;
+      }).join('\n');
+    }
+
     // 创建一个更友好的目标信息文本
     const goalInfo = `
-目标标题: ${props.goal.title}
+目标标题: ${props.goal.title || '无标题'}
 目标描述: ${props.goal.description || '无'}
-负责人: ${props.goal.owner}
+负责人: ${props.goal.owner || '未设置'}
+协作人: ${collaboratorsText}
 截止日期: ${props.goal.deadlineString || '未设置'}
 优先级: ${getPriorityText(props.goal.level)}
 状态: ${getStatusText(props.goal.status)}
-进度: ${props.goal.progress}%
+进度: ${props.goal.progress || 0}%
 标签: ${props.goal.tags && props.goal.tags.length > 0 ? props.goal.tags.join(', ') : '无'}
+附件文件: ${filesText}
+
+子目标列表:
+${subGoalsText}
     `.trim();
 
     await navigator.clipboard.writeText(goalInfo);
-    message.success('目标信息已复制到剪贴板');
+    message.success('完整目标信息已复制到剪贴板');
   } catch (error) {
     console.error('复制失败:', error);
     message.error('复制失败，请手动复制');

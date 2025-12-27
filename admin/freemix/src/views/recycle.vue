@@ -202,8 +202,18 @@ const columns = [
         title: '截止日期',
         key: 'deadlineString',
         defaultSortOrder: false,
+        // sorter: {
+        //     compare: (a, b) => new Date(a.deadline) - new Date(b.deadline),
+        //     multiple: 3
+        // },
+        width: 120
+    },
+    {
+        title: '删除时间',
+        key: 'delDate',
+        defaultSortOrder: 'ascend',
         sorter: {
-            compare: (a, b) => new Date(a.deadline) - new Date(b.deadline),
+            compare: (a, b) => new Date(b.delDate) - new Date(a.delDate),
             multiple: 3
         },
         width: 120
@@ -300,7 +310,7 @@ const pagination = reactive({
     font-size: 28px;
     font-weight: 600;
     margin: 0;
-    background: linear-gradient(to right, #81c683, #4b0082);
+    background: linear-gradient(to right, #81c683, #82c582);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

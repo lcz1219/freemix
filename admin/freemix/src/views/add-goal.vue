@@ -157,9 +157,10 @@ import {
   NAvatar,
   useMessage
 } from 'naive-ui';
-import { useRouter } from 'vue-router';
+import { useRouter,useRoute } from 'vue-router';
 import request, { postM, isSuccess, getM } from '@/utils/request'
 import NavBar from '@/components/NavBar.vue';
+import { useStore } from 'vuex';
 import type { FormRules, FormItemRule } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { Add } from '@vicons/ionicons5'
@@ -208,17 +209,18 @@ const darkMode = ref(true);
 const formRef = ref<FormInst | null>(null)
 const message = useMessage();
 const router = useRouter();
+const store = useStore();
 
 // 表单数据
 const goalForm = ref({
   title: '',
   description: '',
-  owner: '',
-  deadline: null,
-  level: null,
+  owner: store.state.user.username,
+  deadline: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  level: 'high',
   childGoals: [] as Array<{ message: string; finish: boolean; finishTime: string }>,
   tags: [] as string[],
-  estimatedHours: null,
+  estimatedHours: 720,
   fileList: [], // 存储上传的文件路径
 })
 

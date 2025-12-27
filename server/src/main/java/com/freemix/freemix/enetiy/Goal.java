@@ -27,6 +27,7 @@ public class Goal {
     Integer statuslevel;
     Integer del;
     long deltime;
+    String delDate;
     List fileList;
 
     Boolean disRecover;

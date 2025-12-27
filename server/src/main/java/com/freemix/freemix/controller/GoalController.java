@@ -31,7 +31,7 @@ public class GoalController extends BaseController {
     @CheckToken
     public ApiResponse editGoal(@RequestBody String body) {
         Goal goal = JSONObject.parseObject(body, Goal.class);
-        if(GoalStauts.expired.equals(goal.getStatus())){
+        if(GoalStauts.expired.equals(goal.getStatus())||System.currentTimeMillis()>goal.getDeadline().getTime()){
             return ApiResponse.failure("该目标已经过期，无法操作");
         }
         ApiResponse<Object> res = getObjectApiResponse(goal);
@@ -398,6 +398,9 @@ public class GoalController extends BaseController {
 
 //           editGoal(goal.toString());
             }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String format = sdf.format(goal.getDeltime());
+            goal.setDelDate(format);
             if (goal.getDeltime() != 0L && System.currentTimeMillis() - goal.getDeltime() > 30 * 24 * 60 * 60 * 1000L) {
                 goal.setDisRecover(true);
             }

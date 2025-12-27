@@ -368,7 +368,7 @@ const goTo = async (path) => {
 }
 
 .logo-text {
-  background: linear-gradient(to right, #81c683, #4b0082);
+  background: linear-gradient(to right, #81c683, #056154);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;

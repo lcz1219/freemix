@@ -2,137 +2,136 @@
   <n-layout :native-scrollbar="true" :class="isDark ? 'home-container' : 'home-container-light'">
     <common>
       <template #content>
- <!-- 主内容区域 -->
-    <n-layout-content class="main-content-wrapper">
-      <div class="main-content">
-        <!-- 页面标题 -->
-        <section class="page-header">
-          <h1 :class="isDark ? 'hero-title' : 'hero-title-light'">目标管理</h1>
-          <p :class="isDark ? 'hero-subtitle' : 'hero-subtitle-light'">
-            管理您的所有目标，查看进度并进行编辑
-          </p>
-        </section>
+        <!-- 主内容区域 -->
+        <n-layout-content class="main-content-wrapper">
+          <div class="main-content">
+            <!-- 页面标题 -->
+            <section class="page-header">
+              <h1 :class="isDark ? 'hero-title' : 'hero-title-light'">目标管理</h1>
+              <p :class="isDark ? 'hero-subtitle' : 'hero-subtitle-light'">
+                管理您的所有目标，查看进度并进行编辑
+              </p>
+            </section>
 
-        <!-- 控制面板 -->
-        <section class="control-section">
-          <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
-            <n-space justify="space-between" align="center">
-              <n-space>
-                <n-button type="primary" @click="addNewGoal">
-                  <template #icon>
-                    <n-icon>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                        fill="currentColor">
-                        <path d="M20,12H4v-1c0-0.6,0.4-1,1-1h14c0.6,0,1,0.4,1,1V12z"></path>
-                        <path d="M4,12h16v1c0,0.6-0.4,1-1,1H5c-0.6,0-1-0.4-1-1V12z"></path>
-                        <path
-                          d="M20,10H4c-0.6,0-1,0.4-1,1v2c0,0.6,0.4,1,1,1h16c0.6,0,1-0.4,1-1v-2C21,10.4,20.6,10,20,10z M20,12H4v-1h16V12z">
-                        </path>
-                      </svg>
-                    </n-icon>
-                  </template>
-                  添加新目标
-                </n-button>
+            <!-- 控制面板 -->
+            <section class="control-section">
+              <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
+                <n-space justify="space-between" align="center">
+                  <n-space>
+                    <n-button type="primary" @click="addNewGoal">
+                      <template #icon>
+                        <n-icon>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                            fill="currentColor">
+                            <path d="M20,12H4v-1c0-0.6,0.4-1,1-1h14c0.6,0,1,0.4,1,1V12z"></path>
+                            <path d="M4,12h16v1c0,0.6-0.4,1-1,1H5c-0.6,0-1-0.4-1-1V12z"></path>
+                            <path
+                              d="M20,10H4c-0.6,0-1,0.4-1,1v2c0,0.6,0.4,1,1,1h16c0.6,0,1-0.4,1-1v-2C21,10.4,20.6,10,20,10z M20,12H4v-1h16V12z">
+                            </path>
+                          </svg>
+                        </n-icon>
+                      </template>
+                      添加新目标
+                    </n-button>
 
-                <ExcelImport @import-success="refreshGoals" />
+                    <ExcelImport @import-success="refreshGoals" />
 
-                <n-button @click="refreshGoals">
-                  <template #icon>
-                    <n-icon>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                        fill="currentColor">
-                        <path
-                          d="M17.6,6.4C16.2,5,14.2,4.2,12,4.2c-2.2,0-4.2,0.8-5.6,2.2l1.4,1.4C8.9,6.8,10.4,6.2,12,6.2 c1.6,0,3.1,0.6,4.2,1.6c1.1,1.1,1.7,2.6,1.7,4.2c0,1.6-0.6,3.1-1.7,4.2c-1.1,1.1-2.6,1.7-4.2,1.7c-1.6,0-3.1-0.6-4.2-1.7 L6.4,17.6c1.4,1.4,3.4,2.2,5.6,2.2c2.2,0,4.2-0.8,5.6-2.2c1.4-1.4,2.2-3.4,2.2-5.6C19.8,9.8,19,7.8,17.6,6.4z">
-                        </path>
-                      </svg>
-                    </n-icon>
-                  </template>
-                  刷新
-                </n-button>
-              </n-space>
+                    <n-button @click="refreshGoals">
+                      <template #icon>
+                        <n-icon>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                            fill="currentColor">
+                            <path
+                              d="M17.6,6.4C16.2,5,14.2,4.2,12,4.2c-2.2,0-4.2,0.8-5.6,2.2l1.4,1.4C8.9,6.8,10.4,6.2,12,6.2 c1.6,0,3.1,0.6,4.2,1.6c1.1,1.1,1.7,2.6,1.7,4.2c0,1.6-0.6,3.1-1.7,4.2c-1.1,1.1-2.6,1.7-4.2,1.7c-1.6,0-3.1-0.6-4.2-1.7 L6.4,17.6c1.4,1.4,3.4,2.2,5.6,2.2c2.2,0,4.2-0.8,5.6-2.2c1.4-1.4,2.2-3.4,2.2-5.6C19.8,9.8,19,7.8,17.6,6.4z">
+                            </path>
+                          </svg>
+                        </n-icon>
+                      </template>
+                      刷新
+                    </n-button>
+                  </n-space>
 
-              <n-space>
-                <n-input v-model:value="searchQuery" placeholder="搜索目标..." clearable style="width: 200px;">
-                  <template #prefix>
-                    <n-icon>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                        fill="currentColor">
-                        <path
-                          d="M21.7,20.3L18,16.6c1.2-1.5,1.9-3.4,1.9-5.4c0-4.4-3.6-8-8-8s-8,3.6-8,8s3.6,8,8,8c2,0,3.9-0.7,5.4-1.9 l3.7,3.7c0.2,0.2,0.5,0.3,0.7,0.3s0.5-0.1,0.7-0.3C22.1,21.3,22.1,20.7,21.7,20.3z M11,17c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6 S14.3,17,11,17z">
-                        </path>
-                      </svg>
-                    </n-icon>
-                  </template>
-                </n-input>
+                  <n-space>
+                    <n-input v-model:value="searchQuery" placeholder="搜索目标..." clearable style="width: 200px;">
+                      <template #prefix>
+                        <n-icon>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                            fill="currentColor">
+                            <path
+                              d="M21.7,20.3L18,16.6c1.2-1.5,1.9-3.4,1.9-5.4c0-4.4-3.6-8-8-8s-8,3.6-8,8s3.6,8,8,8c2,0,3.9-0.7,5.4-1.9 l3.7,3.7c0.2,0.2,0.5,0.3,0.7,0.3s0.5-0.1,0.7-0.3C22.1,21.3,22.1,20.7,21.7,20.3z M11,17c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6 S14.3,17,11,17z">
+                            </path>
+                          </svg>
+                        </n-icon>
+                      </template>
+                    </n-input>
 
-                <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
-                  style="width: 120px;" />
-              </n-space>
-            </n-space>
-          </n-card>
-        </section>
+                    <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
+                      style="width: 120px;" />
+                  </n-space>
+                </n-space>
+              </n-card>
+            </section>
 
-        <!-- 目标列表 -->
-        <section class="goals-section">
-          <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
-            <div class="card-header">
-              <n-icon size="28" color="#81c683">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                  fill="currentColor">
-                  <path
-                    d="M21,11.5c0,1.7-1.3,3-3,3s-3-1.3-3-3c0-0.5,0.1-0.9,0.3-1.3l-2-1.2C13.1,10.4,13,10.7,13,11c0,1.7,1.3,3,3,3 s3-1.3,3-3c0-0.7-0.3-1.4-0.7-2H21V11.5z" />
-                  <path
-                    d="M9,14C7.3,14,6,15.3,6,17s1.3,3,3,3s3-1.3,3-3s-1.3-3-3-3z M9,18c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S9.6,18,9,18 z" />
-                  <path
-                    d="M6,7C4.3,7,3,8.3,3,10s1.3,3,3,3s3-1.3,3-3S7.7,7,6,7z M6,11c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S6.6,11,6,11z" />
-                  <path
-                    d="M18,4c-1.7,0-3,1.3-3,3s1.3,3,3,3s3-1.3,3-3S19.7,4,18,4z M18,8c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S18.6,8,18,8z" />
-                </svg>
-              </n-icon>
-              <h2 class="card-title">我的目标</h2>
-            </div>
+            <!-- 目标列表 -->
+            <section class="goals-section">
+              <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
+                <div class="card-header">
+                  <n-icon size="28" color="#81c683">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                      fill="currentColor">
+                      <path
+                        d="M21,11.5c0,1.7-1.3,3-3,3s-3-1.3-3-3c0-0.5,0.1-0.9,0.3-1.3l-2-1.2C13.1,10.4,13,10.7,13,11c0,1.7,1.3,3,3,3 s3-1.3,3-3c0-0.7-0.3-1.4-0.7-2H21V11.5z" />
+                      <path
+                        d="M9,14C7.3,14,6,15.3,6,17s1.3,3,3,3s3-1.3,3-3s-1.3-3-3-3z M9,18c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S9.6,18,9,18 z" />
+                      <path
+                        d="M6,7C4.3,7,3,8.3,3,10s1.3,3,3,3s3-1.3,3-3S7.7,7,6,7z M6,11c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S6.6,11,6,11z" />
+                      <path
+                        d="M18,4c-1.7,0-3,1.3-3,3s1.3,3,3,3s3-1.3,3-3S19.7,4,18,4z M18,8c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S18.6,8,18,8z" />
+                    </svg>
+                  </n-icon>
+                  <h2 class="card-title">我的目标</h2>
+                </div>
 
-            <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'" style="width: 100%">
-              <el-table-column type="expand">
-                <template #default="props">
-                  <div class="expanded-content-wrapper">
-                    <div v-for="(childGoal, index) in props.row.childGoals" :key="index" class="child-goal-item">
-                      <div class="child-goal-header">
-                        <div class="child-goal-title">
+                <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
+                  style="width: 100%">
+                  <el-table-column type="expand">
+                    <template #default="props">
+                      <div class="expanded-content-wrapper">
+                        <div v-for="(childGoal, index) in props.row.childGoals" :key="index" class="child-goal-item">
+                          <div class="child-goal-header">
+                            <div class="child-goal-title">
 
-                          <n-icon size="18" style="margin-right: 8px;" v-if="childGoal.finish">
-                            <CheckmarkCircle/>
-                          </n-icon>
-                          <n-icon size="18" style="margin-right: 8px;" v-else>
-                            <CheckmarkCircleOutline/>
-                          </n-icon>
-                          <n-ellipsis style="max-width: 300px">
-                            {{ childGoal.message }}
-                          </n-ellipsis>
-                        </div>
-                        <div class="child-goal-status">
-                          <n-tag :type="childGoal.finish ? 'success' : 'warning'" size="small">
-                            {{ childGoal.finish ? '已完成' : '进行中' }}
-                          </n-tag>
-                        </div>
-                        <div class="child-goal-actions-inline">
-                          <span class="finish-date" v-if="childGoal.finishDate">完成日期: {{ formatDate(childGoal.finishDate) }}</span>
-                          <n-dropdown
-                            trigger="click"
-                            :options="getDropdownOptions(childGoal, props.row, index)"
-                            @select="(key) => handleDropdownSelect(key, props.row, index, childGoal)"
-                          >
-                            <n-button type="info" secondary strong size="small">
-                              操作
-                              <n-icon>
-                                <ChevronDownOutline />
+                              <n-icon size="18" style="margin-right: 8px;" v-if="childGoal.finish">
+                                <CheckmarkCircle />
                               </n-icon>
-                            </n-button>
-                          </n-dropdown>
-                        </div>
-                      </div>
+                              <n-icon size="18" style="margin-right: 8px;" v-else>
+                                <CheckmarkCircleOutline />
+                              </n-icon>
+                              <n-ellipsis style="max-width: 300px">
+                                {{ childGoal.message }}
+                              </n-ellipsis>
+                            </div>
+                            <div class="child-goal-status">
+                              <n-tag :type="childGoal.finish ? 'success' : 'warning'" size="small">
+                                {{ childGoal.finish ? '已完成' : '进行中' }}
+                              </n-tag>
+                            </div>
+                            <div class="child-goal-actions-inline">
+                              <span class="finish-date" v-if="childGoal.finishDate">完成日期: {{
+                                formatDate(childGoal.finishDate) }}</span>
+                              <n-dropdown trigger="click" :options="getDropdownOptions(childGoal, props.row, index)"
+                                @select="(key) => handleDropdownSelect(key, props.row, index, childGoal)">
+                                <n-button type="info" secondary strong size="small">
+                                  操作
+                                  <n-icon>
+                                    <ChevronDownOutline />
+                                  </n-icon>
+                                </n-button>
+                              </n-dropdown>
+                            </div>
+                          </div>
 
-                      <!-- <div class="child-goal-details">
+                          <!-- <div class="child-goal-details">
                         <div class="child-goal-info-row">
                           <div class="info-item">
                             <n-icon size="16" class="info-icon">
@@ -145,105 +144,110 @@
                           </div>
                         </div>
                       </div> -->
-                    </div>
-
-                    <div class="summary-section">
-                      <div class="summary-header">
-                        <n-icon size="18">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                            fill="currentColor">
-                            <path
-                              d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z" />
-                            <path
-                              d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z" />
-                          </svg>
-                        </n-icon>
-                        <span class="summary-title">子目标汇总</span>
-                      </div>
-
-                      <div class="summary-content">
-                        <div class="summary-stats">
-                          <div class="stat-item">
-                            <div class="stat-value">{{ props.row.childGoals ? props.row.childGoals.length : 0 }}</div>
-                            <div class="stat-label">总计</div>
-                          </div>
-                          <div class="stat-item">
-                            <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
-                              props.row.childGoals.filter((c: any) => c.finish).length : 0}}</div>
-                            <div class="stat-label">已完成</div>
-                          </div>
-                          <div class="stat-item">
-                            <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
-                              props.row.childGoals.filter((c: any) => !c.finish).length : 0}}</div>
-                            <div class="stat-label">未完成</div>
-                          </div>
                         </div>
 
-                        <n-progress type="line" :percentage="props.row.childGoals && props.row.childGoals.length > 0
-                          ? Math.round(props.row.childGoals.filter((c: any) => c.finish).length / props.row.childGoals.length * 100)
-                          : 0" :indicator-placement="'inside'" :processing="true"
-                          :color="getProgressColor(props.row)" />
+                        <div class="summary-section">
+                          <div class="summary-header">
+                            <n-icon size="18">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                                fill="currentColor">
+                                <path
+                                  d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z" />
+                                <path
+                                  d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z" />
+                              </svg>
+                            </n-icon>
+                            <span class="summary-title">子目标汇总</span>
+                          </div>
+
+                          <div class="summary-content">
+                            <div class="summary-stats">
+                              <div class="stat-item">
+                                <div class="stat-value">{{ props.row.childGoals ? props.row.childGoals.length : 0 }}
+                                </div>
+                                <div class="stat-label">总计</div>
+                              </div>
+                              <div class="stat-item">
+                                <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
+                                  props.row.childGoals.filter((c: any) => c.finish).length : 0}}</div>
+                                <div class="stat-label">已完成</div>
+                              </div>
+                              <div class="stat-item">
+                                <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
+                                  props.row.childGoals.filter((c: any) => !c.finish).length : 0}}</div>
+                                <div class="stat-label">未完成</div>
+                              </div>
+                            </div>
+
+                            <n-progress type="line" :percentage="props.row.childGoals && props.row.childGoals.length > 0
+                              ? Math.round(props.row.childGoals.filter((c: any) => c.finish).length / props.row.childGoals.length * 100)
+                              : 0" :indicator-placement="'inside'" :processing="true"
+                              :color="getProgressColor(props.row)" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column label="目标名称" prop="title" />
-              <el-table-column label="负责人" prop="owner" />
-              <el-table-column label="截止日期" prop="deadlineString" />
-              <el-table-column label="进度">
-                <template #default="scope">
-                  <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress" :stroke-width="10"
-                    :color="getStatusColor(scope.row.status)"
-                    :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
-                </template>
-              </el-table-column>
-              <el-table-column label="状态">
-                <template #default="scope">
-                  <n-tag :type="getStatusTagType(scope.row.status)">
-                    {{ getStatusLabel(scope.row.status) }}
-                  </n-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" align="center">
-                <template #default="scope">
-                  <n-button type="warning" circle secondary strong @click="viewGoalDetail(scope.row)"
-                    style="margin-right: 10px;">
-                    <n-icon size="20">
-                      <EyeSharp />
-                    </n-icon>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="目标名称" prop="title" />
+                  <el-table-column label="负责人" prop="owner" />
+                  <el-table-column label="截止日期" prop="deadlineString" />
+                  <el-table-column label="进度">
+                    <template #default="scope">
+                      <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress"
+                        :stroke-width="10" :color="getStatusColor(scope.row.status)"
+                        :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="状态">
+                    <template #default="scope">
+                      <n-tag :type="getStatusTagType(scope.row.status)">
+                        {{ getStatusLabel(scope.row.status) }}
+                      </n-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作" align="center">
+                    <template #default="scope">
+                      <n-button type="warning" circle secondary strong @click="viewGoalDetail(scope.row)"
+                        style="margin-right: 10px;">
+                        <n-icon size="20">
+                          <EyeSharp />
+                        </n-icon>
 
-                  </n-button>
-                  <n-button type="primary" circle secondary strong @click="editGoal(scope.row)" style="margin-right: 10px;">
+                      </n-button>
+                      <n-button type="primary" circle secondary strong @click="editGoal(scope.row)"
+                        style="margin-right: 10px;">
 
-                    <n-icon size="20">
-                      <PencilOutline />
-                    </n-icon>
-                  </n-button>
-                  <n-button type="primary" circle secondary strong @click="deleteGoal(scope.row)" v-if="isGoalOwner(scope.row)">
+                        <n-icon size="20">
+                          <PencilOutline />
+                        </n-icon>
+                      </n-button>
+                      <n-button type="primary" circle secondary strong @click="deleteGoal(scope.row)"
+                        v-if="isGoalOwner(scope.row)">
 
-                    <n-icon size="20">
-                      <ArchiveOutline />
-                    </n-icon>
-                  </n-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </n-card>
-        </section>
-      </div>
-    </n-layout-content>
+                        <n-icon size="20">
+                          <ArchiveOutline />
+                        </n-icon>
+                      </n-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </n-card>
+            </section>
+          </div>
+        </n-layout-content>
       </template>
     </common>
 
-   
+
 
     <!-- 目标详情模态框 -->
     <GoalDetail v-model:show="showDetailModal" :goal="selectedGoal" @save="saveGoal" @updateGoal="refreshGoals" />
 
     <!-- 子目标文件上传模态框 -->
-    <n-modal v-model:show="showChildGoalUploadModal" preset="card" style="max-width: 600px" title="上传文件" :mask-closable="false">
-      <GeneralUpload ref="childGoalUploadRef" :file-list="currentChildGoalFiles" @uploadSuccess="handleChildGoalFileUploadSuccess" @fileRemove="handleChildGoalFileRemove" />
+    <n-modal v-model:show="showChildGoalUploadModal" preset="card" style="max-width: 600px" title="上传文件"
+      :mask-closable="false">
+      <GeneralUpload ref="childGoalUploadRef" :file-list="currentChildGoalFiles"
+        @uploadSuccess="handleChildGoalFileUploadSuccess" @fileRemove="handleChildGoalFileRemove" />
       <template #footer>
         <n-space justify="end">
           <n-button @click="closeChildGoalUploadModal">取消</n-button>
@@ -253,44 +257,45 @@
     </n-modal>
 
     <!-- 子目标文件查看模态框 -->
-    <n-modal v-model:show="showChildGoalFilesModal" preset="card" style="max-width: 600px" title="查看文件" :mask-closable="true">
+    <n-modal v-model:show="showChildGoalFilesModal" preset="card" style="max-width: 600px" title="查看文件"
+      :mask-closable="true">
       <div v-if="viewChildGoalFilesList.length > 0">
         <n-list>
           <n-list-item v-for="(file, index) in viewChildGoalFilesList" :key="index">
             <n-thing>
-              <template #description >
+              <template #description>
                 <div style="display: flex; justify-content: space-between;padding: 5px;">
                   <div>
-                <n-text>{{ file.originalFilename || file.name || '未命名文件' }}</n-text>
-                </div>
-                <div>
-                 <n-space>
-                  <n-button size="tiny" type="primary" @click="downloadFile(file)">
-                    <template #icon>
-                      <n-icon>
-                        <CloudDownloadOutline />
-                      </n-icon>
-                    </template>
-                    下载
-                  </n-button>
-                  <n-button size="tiny" type="info" @click="watchfile(file)">
-                    <template #icon>
-                      <n-icon>
-                        <EyeSharp />
-                      </n-icon>
-                    </template>
-                    查看
-                  </n-button>
-                  <n-button size="tiny" type="error" @click="removeChildGoalFile(file)">
-                    <template #icon>
-                      <n-icon>
-                        <TrashOutline />
-                      </n-icon>
-                    </template>
-                    删除
-                  </n-button>
-                </n-space>
-                </div>
+                    <n-text>{{ file.originalFilename || file.name || '未命名文件' }}</n-text>
+                  </div>
+                  <div>
+                    <n-space>
+                      <n-button size="tiny" type="primary" @click="downloadFile(file)">
+                        <template #icon>
+                          <n-icon>
+                            <CloudDownloadOutline />
+                          </n-icon>
+                        </template>
+                        下载
+                      </n-button>
+                      <n-button size="tiny" type="info" @click="watchfile(file)">
+                        <template #icon>
+                          <n-icon>
+                            <EyeSharp />
+                          </n-icon>
+                        </template>
+                        查看
+                      </n-button>
+                      <n-button size="tiny" type="error" @click="removeChildGoalFile(file)">
+                        <template #icon>
+                          <n-icon>
+                            <TrashOutline />
+                          </n-icon>
+                        </template>
+                        删除
+                      </n-button>
+                    </n-space>
+                  </div>
                 </div>
               </template>
               <!-- <template #description>
@@ -305,7 +310,7 @@
       </div>
     </n-modal>
 
-   
+
   </n-layout>
 </template>
 
@@ -346,7 +351,7 @@ import ExcelImport from '@/components/ExcelImport.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import { EyeSharp, PencilOutline, CheckmarkOutline, ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline, ChevronDownOutline } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
-import { AccessibilitySharp,CalendarSharp,CheckmarkCircle,CheckmarkCircleOutline, } from '@vicons/ionicons5';
+import { AccessibilitySharp, CalendarSharp, CheckmarkCircle, CheckmarkCircleOutline, } from '@vicons/ionicons5';
 import { useStore } from 'vuex';
 
 // 注入主题变量
@@ -371,11 +376,11 @@ const currentChildGoalIndex = ref(-1);
 const currentChildGoalFiles = ref<any[]>([]);
 const viewChildGoalFilesList = ref<any[]>([]);
 const childGoalUploadRef = ref<any>(null);
-const watchfile=(file:any)=>{
-  const a=document.createElement('a')
-   a.href = file.url || file.fileUrl || `${baseURL()}/file/${file.name}`;
-   a.target = '_blank';
-   a.click();
+const watchfile = (file: any) => {
+  const a = document.createElement('a')
+  a.href = file.url || file.fileUrl || `${baseURL()}/file/${file.name}`;
+  a.target = '_blank';
+  a.click();
 }
 
 // 下拉菜单相关状态
@@ -389,7 +394,7 @@ const getDropdownOptions = (childGoal, row, index) => {
       key: 'finish'
     }
   ];
-  
+
   // 只有未完成的子目标才显示上传文件选项
   if (!childGoal.finish) {
     options.push({
@@ -397,7 +402,7 @@ const getDropdownOptions = (childGoal, row, index) => {
       key: 'upload'
     });
   }
-  
+
   // 如果有文件则显示查看文件选项
   if (childGoal.fileList && childGoal.fileList.length > 0) {
     options.push({
@@ -405,7 +410,7 @@ const getDropdownOptions = (childGoal, row, index) => {
       key: 'view'
     });
   }
-  
+
   return options;
 };
 
@@ -423,7 +428,7 @@ const handleDropdownSelect = (key, row, index, childGoal) => {
       showChildGoalUpload(row, index);
       break;
     case 'view':
-      viewChildGoalFiles(childGoal);
+      viewChildGoalFiles(row, index);
       break;
   }
 };
@@ -431,15 +436,15 @@ const handleDropdownSelect = (key, row, index, childGoal) => {
 // 筛选和搜索
 const searchQuery = ref('');
 const statusFilter = ref<string | null>(null);
- const deleteGoal=(row)=>{
+const deleteGoal = (row) => {
 
-  postM('deleteGoal',{row}).then((res)=>{
-    if(isSuccess(res)){
+  postM('deleteGoal', { row }).then((res) => {
+    if (isSuccess(res)) {
       message.success('删除成功');
       refreshGoals();
     }
   })
- }
+}
 // 状态筛选选项
 const statusOptions = [
   { label: '进行中', value: 'in-progress' },
@@ -530,15 +535,23 @@ const finishChildGoal = async (goal: any, index: number) => {
       //   goals.value[goalIndex] = updatedGoal;
       // }
       getGoals()
-      
+
     } else {
-      message.error('更新失败');
+      expiredGoalToast(res);
     }
   } catch (error) {
     message.error('操作失败');
     console.error(error);
   }
 };
+const expiredGoalToast = (res) => {
+  if (res.data.msg) {
+    message.error(res.data.msg);
+  } else {
+    message.error('更新失败');
+  }
+  getGoals()
+}
 
 // 取消子目标完成状态
 const unfinishChildGoal = async (goal: any, index: number) => {
@@ -565,7 +578,7 @@ const unfinishChildGoal = async (goal: any, index: number) => {
       // }
       getGoals()
     } else {
-      message.error('更新失败');
+      expiredGoalToast(res);
     }
   } catch (error) {
     message.error('操作失败');
@@ -622,7 +635,7 @@ const getGoals = async () => {
       message.error('获取目标列表失败');
     }
   } catch (error) {
-    message.error('获取目标列表时发生错误',error);
+    message.error('获取目标列表时发生错误', error);
     console.error(error);
   } finally {
     loading.value = false;
@@ -679,14 +692,14 @@ const handleSorterChange = (sorter: any) => {
 const showChildGoalUpload = (goal: any, index: number): void => {
   currentChildGoal.value = goal;
   currentChildGoalIndex.value = index;
-  
+
   // 初始化文件列表
   if (goal.childGoals && goal.childGoals[index] && goal.childGoals[index].fileList) {
     currentChildGoalFiles.value = [...goal.childGoals[index].fileList];
   } else {
     currentChildGoalFiles.value = [];
   }
-  
+
   showChildGoalUploadModal.value = true;
 };
 
@@ -714,62 +727,68 @@ const saveChildGoalFiles = async (): Promise<void> => {
     message.error('保存失败，请重试');
     return;
   }
-  
+
   try {
     // 创建目标副本
     const updatedGoal = { ...JSON.parse(JSON.stringify(currentChildGoal.value)) };
-    
+
     // 确保子目标存在
     if (!updatedGoal.childGoals) {
       updatedGoal.childGoals = [];
     }
-    
+
     // 确保当前子目标存在
     if (!updatedGoal.childGoals[currentChildGoalIndex.value]) {
       updatedGoal.childGoals[currentChildGoalIndex.value] = {};
     }
-    
+
     // 更新子目标的文件列表
     updatedGoal.childGoals[currentChildGoalIndex.value].fileList = [...currentChildGoalFiles.value];
-    
+
     // 保存到服务器
     const res = await postM('editGoal', updatedGoal);
     if (isSuccess(res)) {
       message.success('文件保存成功');
-      
+
       // 更新本地数据
-     getGoals()
-      
+      getGoals()
+
       // 关闭模态框
-      closeChildGoalUploadModal();
     } else {
-      message.error('保存失败，请重试');
+     expiredGoalToast(res)
     }
+      closeChildGoalUploadModal();
+
   } catch (error) {
     message.error('保存失败，请重试');
+      closeChildGoalUploadModal();
+
     console.error(error);
   }
 };
 
 // 查看子目标文件
-const viewChildGoalFiles = (childGoal: any): void => {
+const viewChildGoalFiles = (row: any,index): void => {
+  currentChildGoal.value = row;
+  currentChildGoalIndex.value = index;
+  let childGoal = row.childGoals[index];
   // 获取子目标的文件列表
   if (childGoal.fileList && childGoal.fileList.length > 0) {
     viewChildGoalFilesList.value = [...childGoal.fileList];
   } else {
     viewChildGoalFilesList.value = [];
   }
-  
+
   showChildGoalFilesModal.value = true;
 };
 
 // 下载文件
 const downloadFile = (file: any): void => {
   if (!file) return;
-  
+
   const fileName = file.name || file.originalFilename;
   const url = file.url || file.fileUrl || `${baseURL()}/file/${fileName}`;
-  
+
   // 创建一个隐藏的a标签来下载文件
   const a = document.createElement('a');
   a.href = url;
@@ -781,48 +800,51 @@ const downloadFile = (file: any): void => {
 
 // 删除子目标文件
 const removeChildGoalFile = async (file: any): Promise<void> => {
-  if (!file || !currentChildGoal.value || currentChildGoalIndex.value === -1) return;
+  console.log("0o",currentChildGoal.value );
   
+  if (!file || !currentChildGoal.value || currentChildGoalIndex.value === -1) return;
+
   try {
     // 创建目标副本
     const updatedGoal = { ...currentChildGoal.value };
-    
+
     // 确保子目标存在
     if (!updatedGoal.childGoals) {
       updatedGoal.childGoals = [];
     }
-    
+
     // 确保当前子目标存在
     if (!updatedGoal.childGoals[currentChildGoalIndex.value]) {
       updatedGoal.childGoals[currentChildGoalIndex.value] = {};
     }
-    
+
     // 获取当前子目标的文件列表
     const fileList = updatedGoal.childGoals[currentChildGoalIndex.value].fileList || [];
-    
+
     // 从文件列表中删除指定文件
     const updatedFileList = fileList.filter((f: any) => {
       const fileId = f.id || f.name;
       const targetFileId = file.id || file.name;
       return fileId !== targetFileId;
     });
-    
+
     // 更新子目标的文件列表
     updatedGoal.childGoals[currentChildGoalIndex.value].fileList = updatedFileList;
-    
+
     // 保存到服务器
     const res = await postM('editGoal', updatedGoal);
     if (isSuccess(res)) {
       message.success('文件删除成功');
-      
+
       // 更新本地数据
       const goalIndex = goals.value.findIndex((g: any) => g.id === updatedGoal.id);
       if (goalIndex !== -1) {
         goals.value[goalIndex] = updatedGoal;
       }
-      
+
       // 更新查看文件列表
       viewChildGoalFilesList.value = updatedFileList;
+      closeChildGoalUploadModal();
     } else {
       message.error('删除失败，请重试');
     }
