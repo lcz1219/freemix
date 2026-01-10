@@ -72,166 +72,189 @@
               </n-card>
             </section>
 
-            <!-- 目标列表 -->
+            <!-- 目标列表与详情双栏布局 -->
             <section class="goals-section">
-              <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
-                <div class="card-header">
-                  <n-icon size="28" color="#81c683">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                      fill="currentColor">
-                      <path
-                        d="M21,11.5c0,1.7-1.3,3-3,3s-3-1.3-3-3c0-0.5,0.1-0.9,0.3-1.3l-2-1.2C13.1,10.4,13,10.7,13,11c0,1.7,1.3,3,3,3 s3-1.3,3-3c0-0.7-0.3-1.4-0.7-2H21V11.5z" />
-                      <path
-                        d="M9,14C7.3,14,6,15.3,6,17s1.3,3,3,3s3-1.3,3-3s-1.3-3-3-3z M9,18c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S9.6,18,9,18 z" />
-                      <path
-                        d="M6,7C4.3,7,3,8.3,3,10s1.3,3,3,3s3-1.3,3-3S7.7,7,6,7z M6,11c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S6.6,11,6,11z" />
-                      <path
-                        d="M18,4c-1.7,0-3,1.3-3,3s1.3,3,3,3s3-1.3,3-3S19.7,4,18,4z M18,8c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S18.6,8,18,8z" />
-                    </svg>
-                  </n-icon>
-                  <h2 class="card-title">我的目标</h2>
-                </div>
+              <n-grid x-gap="20" cols="24" item-responsive responsive="screen">
+                <!-- 左侧目标列表 -->
+                <n-grid-item span="24 m:10 l:9">
+                  <n-card :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']" content-style="padding: 10px;">
+                    <template #header>
+                      <div class="card-header-inner">
+                        <n-icon size="24" color="#81c683">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
+                            fill="currentColor">
+                            <path
+                              d="M21,11.5c0,1.7-1.3,3-3,3s-3-1.3-3-3c0-0.5,0.1-0.9,0.3-1.3l-2-1.2C13.1,10.4,13,10.7,13,11c0,1.7,1.3,3,3,3 s3-1.3,3-3c0-0.7-0.3-1.4-0.7-2H21V11.5z" />
+                            <path
+                              d="M9,14C7.3,14,6,15.3,6,17s1.3,3,3,3s3-1.3,3-3s-1.3-3-3-3z M9,18c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S9.6,18,9,18 z" />
+                            <path
+                              d="M6,7C4.3,7,3,8.3,3,10s1.3,3,3,3s3-1.3,3-3S7.7,7,6,7z M6,11c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S6.6,11,6,11z" />
+                            <path
+                              d="M18,4c-1.7,0-3,1.3-3,3s1.3,3,3,3s3-1.3,3-3S19.7,4,18,4z M18,8c-0.6,0-1-0.4-1-1s0.4-1,1-1s1,0.4,1,1S18.6,8,18,8z" />
+                          </svg>
+                        </n-icon>
+                        <h2 class="card-title">目标列表</h2>
+                      </div>
+                    </template>
 
-                <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
-                  style="width: 100%">
-                  <el-table-column type="expand">
-                    <template #default="props">
-                      <div class="expanded-content-wrapper">
-                        <div v-for="(childGoal, index) in props.row.childGoals" :key="index" class="child-goal-item">
-                          <div class="child-goal-header">
-                            <div class="child-goal-title">
+                    <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
+                      style="width: 100%; cursor: pointer;height: 100%;" @row-click="handleRowClick"
+                      :row-class-name="tableRowClassName" highlight-current-row>
+                      <el-table-column label="目标名称" prop="title" show-overflow-tooltip />
+                      <el-table-column label="进度" width="100">
+                        <template #default="scope">
+                          <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress"
+                            :stroke-width="6" :show-text="false" :color="getStatusColor(scope.row.status)"
+                            :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="状态" width="80">
+                        <template #default="scope">
+                          <n-tag :type="getStatusTagType(scope.row.status)" size="small">
+                            {{ getStatusLabel(scope.row.status) }}
+                          </n-tag>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="截止时间" width="120">
+                        <template #default="scope">
+                         {{ scope.row.deadlineString }}
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </n-card>
+                </n-grid-item>
 
-                              <n-icon size="18" style="margin-right: 8px;" v-if="childGoal.finish">
-                                <CheckmarkCircle />
-                              </n-icon>
-                              <n-icon size="18" style="margin-right: 8px;" v-else>
-                                <CheckmarkCircleOutline />
-                              </n-icon>
-                              <n-ellipsis style="max-width: 300px">
-                                {{ childGoal.message }}
-                              </n-ellipsis>
-                            </div>
-                            <div class="child-goal-status">
-                              <n-tag :type="childGoal.finish ? 'success' : 'warning'" size="small">
-                                {{ childGoal.finish ? '已完成' : '进行中' }}
-                              </n-tag>
-                            </div>
-                            <div class="child-goal-actions-inline">
-                              <span class="finish-date" v-if="childGoal.finishDate">完成日期: {{
-                                formatDate(childGoal.finishDate) }}</span>
-                              <n-dropdown trigger="click" :options="getDropdownOptions(childGoal, props.row, index)"
-                                @select="(key) => handleDropdownSelect(key, props.row, index, childGoal)">
-                                <n-button type="info" secondary strong size="small">
-                                  操作
-                                  <n-icon>
-                                    <ChevronDownOutline />
-                                  </n-icon>
-                                </n-button>
-                              </n-dropdown>
-                            </div>
-                          </div>
-
-                          <!-- <div class="child-goal-details">
-                        <div class="child-goal-info-row">
-                          <div class="info-item">
-                            <n-icon size="16" class="info-icon">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                              </svg>
-                            </n-icon>
-                            <span v-if="childGoal.description">{{ childGoal.description }}</span>
-                            <span v-else class="no-description">暂无描述</span>
-                          </div>
+                <!-- 右侧详情面板 -->
+                <n-grid-item span="24 m:14 l:15">
+                  <n-card :class="isDark ? 'feature-card' : 'feature-card-light'" v-if="currentSelectedGoal"
+                    class="detail-card" content-style="padding: 24px;">
+                    <template #header>
+                      <div class="detail-header-wrapper">
+                        <div class="detail-meta-top">
+                          <n-tag :type="getStatusTagType(currentSelectedGoal.status)" size="small" round :bordered="false">
+                            {{ getStatusLabel(currentSelectedGoal.status) }}
+                          </n-tag>
+                          <span class="goal-id-text" v-if="currentSelectedGoal._id">#{{ currentSelectedGoal._id.slice(-6).toUpperCase() }}</span>
                         </div>
-                      </div> -->
-                        </div>
-
-                        <div class="summary-section">
-                          <div class="summary-header">
-                            <n-icon size="18">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                                fill="currentColor">
-                                <path
-                                  d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M12,20c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8 S16.4,20,12,20z" />
-                                <path
-                                  d="M13,11.6V7c0-0.6-0.4-1-1-1s-1,0.4-1,1v5.6c-0.6,0.3-1,1-1,1.7c0,1.1,0.9,2,2,2s2-0.9,2-2C14,12.6,13.6,11.9,13,11.6z" />
-                              </svg>
-                            </n-icon>
-                            <span class="summary-title">子目标汇总</span>
-                          </div>
-
-                          <div class="summary-content">
-                            <div class="summary-stats">
-                              <div class="stat-item">
-                                <div class="stat-value">{{ props.row.childGoals ? props.row.childGoals.length : 0 }}
-                                </div>
-                                <div class="stat-label">总计</div>
-                              </div>
-                              <div class="stat-item">
-                                <div class="stat-value" style="color: #00c9a7;">{{props.row.childGoals ?
-                                  props.row.childGoals.filter((c: any) => c.finish).length : 0}}</div>
-                                <div class="stat-label">已完成</div>
-                              </div>
-                              <div class="stat-item">
-                                <div class="stat-value" style="color: #ff6b6b;">{{props.row.childGoals ?
-                                  props.row.childGoals.filter((c: any) => !c.finish).length : 0}}</div>
-                                <div class="stat-label">未完成</div>
-                              </div>
-                            </div>
-
-                            <n-progress type="line" :percentage="props.row.childGoals && props.row.childGoals.length > 0
-                              ? Math.round(props.row.childGoals.filter((c: any) => c.finish).length / props.row.childGoals.length * 100)
-                              : 0" :indicator-placement="'inside'" :processing="true"
-                              :color="getProgressColor(props.row)" />
+                        <div class="detail-main-row">
+                          <h2 class="detail-hero-title">{{ currentSelectedGoal.title }}</h2>
+                          <div class="detail-actions">
+                            <n-button type="primary" circle secondary strong @click="editGoal(currentSelectedGoal)" class="action-btn">
+                              <n-icon size="18">
+                                <PencilOutline />
+                              </n-icon>
+                            </n-button>
+                            <n-button type="error" circle secondary strong @click="deleteGoal(currentSelectedGoal)"
+                              v-if="isGoalOwner(currentSelectedGoal)" class="action-btn">
+                              <n-icon size="18">
+                                <ArchiveOutline />
+                              </n-icon>
+                            </n-button>
                           </div>
                         </div>
                       </div>
                     </template>
-                  </el-table-column>
-                  <el-table-column label="目标名称" prop="title" />
-                  <el-table-column label="负责人" prop="owner" />
-                  <el-table-column label="截止日期" prop="deadlineString" />
-                  <el-table-column label="进度">
-                    <template #default="scope">
-                      <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress"
-                        :stroke-width="10" :color="getStatusColor(scope.row.status)"
-                        :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="状态">
-                    <template #default="scope">
-                      <n-tag :type="getStatusTagType(scope.row.status)">
-                        {{ getStatusLabel(scope.row.status) }}
-                      </n-tag>
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="操作" align="center">
-                    <template #default="scope">
-                      <n-button type="warning" circle secondary strong @click="viewGoalDetail(scope.row)"
-                        style="margin-right: 10px;">
-                        <n-icon size="20">
-                          <EyeSharp />
-                        </n-icon>
 
-                      </n-button>
-                      <n-button type="primary" circle secondary strong @click="editGoal(scope.row)"
-                        style="margin-right: 10px;">
+                    <div class="detail-content">
+                      <!-- 基本信息 -->
+                      <div class="info-grid-modern">
+                        <div class="info-item-modern">
+                          <div class="info-label">负责人</div>
+                          <div class="info-value">{{ currentSelectedGoal.owner }}</div>
+                        </div>
+                        <div class="info-item-modern">
+                          <div class="info-label">截止日期</div>
+                          <div class="info-value">{{ currentSelectedGoal.deadlineString }}</div>
+                        </div>
+                        <div class="info-item-modern full-width">
+                          <div class="info-label">总体进度</div>
+                          <div class="progress-wrapper">
+                             <n-progress type="line"
+                            :percentage="currentSelectedGoal.status == 'expired' ? 100 : currentSelectedGoal.progress"
+                            :color="getStatusColor(currentSelectedGoal.status)"
+                            :processing="currentSelectedGoal.status === 'in-progress'" 
+                            :height="8"
+                            border-radius="4px"
+                            />
+                          </div>
+                        </div>
+                        <div class="info-item-modern full-width" v-if="currentSelectedGoal.description">
+                          <div class="info-label">描述</div>
+                          <div class="info-value description-text">{{ currentSelectedGoal.description }}</div>
+                        </div>
+                      </div>
 
-                        <n-icon size="20">
-                          <PencilOutline />
-                        </n-icon>
-                      </n-button>
-                      <n-button type="primary" circle secondary strong @click="deleteGoal(scope.row)"
-                        v-if="isGoalOwner(scope.row)">
+                      <div class="divider-line"></div>
 
-                        <n-icon size="20">
-                          <ArchiveOutline />
+                      <!-- 子目标列表 -->
+                      <div class="sub-goals-list">
+                        <div class="section-title-row">
+                           <h3>子目标</h3>
+                           <n-tag size="tiny" round type="primary">{{ currentSelectedGoal.childGoals ? currentSelectedGoal.childGoals.length : 0 }}</n-tag>
+                        </div>
+                        
+                        <div v-if="currentSelectedGoal.childGoals && currentSelectedGoal.childGoals.length > 0" class="sub-goals-container">
+                          <div v-for="(childGoal, index) in currentSelectedGoal.childGoals" :key="index"
+                            class="child-goal-capsule" :class="{ 'completed': childGoal.finish }">
+                            
+                            <div class="capsule-left">
+                              <div class="checkbox-circle" :class="{ 'checked': childGoal.finish }" 
+                                   @click="childGoal.finish ? unfinishChildGoal(currentSelectedGoal, index) : finishChildGoal(currentSelectedGoal, index)">
+                                <n-icon size="14" v-if="childGoal.finish"><CheckmarkSharp /></n-icon>
+                              </div>
+                              <div class="capsule-content">
+                                <span class="capsule-title" :class="{ 'strikethrough': childGoal.finish }">{{ childGoal.message }}</span>
+                                <span class="finish-time" v-if="childGoal.finishDate">完成于 {{ formatDate(childGoal.finishDate) }}</span>
+                              </div>
+                            </div>
+
+                            <div class="capsule-actions">
+                               <n-dropdown trigger="hover"
+                                  :options="getDropdownOptions(childGoal, currentSelectedGoal, index)"
+                                  @select="(key) => handleDropdownSelect(key, currentSelectedGoal, index, childGoal)">
+                                  <n-button text class="more-btn">
+                                    <n-icon size="20"><EllipsisHorizontal /></n-icon>
+                                  </n-button>
+                                </n-dropdown>
+                            </div>
+                          </div>
+                        </div>
+                        <n-empty v-else description="暂无子目标" class="empty-sub-goals" />
+                      </div>
+
+                      <!-- 汇总统计 -->
+                      <div class="summary-modern"
+                        v-if="currentSelectedGoal.childGoals && currentSelectedGoal.childGoals.length > 0">
+                        <div class="stat-block">
+                          <div class="stat-num">{{ currentSelectedGoal.childGoals.length }}</div>
+                          <div class="stat-desc">总计任务</div>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-block">
+                          <div class="stat-num success-text">{{ currentSelectedGoal.childGoals.filter((c: any) => c.finish).length }}</div>
+                          <div class="stat-desc">已完成</div>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-block">
+                          <div class="stat-num warning-text">{{ currentSelectedGoal.childGoals.filter((c: any) => !c.finish).length }}</div>
+                          <div class="stat-desc">待处理</div>
+                        </div>
+                      </div>
+                    </div>
+                  </n-card>
+
+                  <!-- 空状态 -->
+                  <n-card :class="isDark ? 'feature-card' : 'feature-card-light'" v-else class="empty-selection">
+                    <n-empty description="请点击左侧目标查看详情">
+                      <template #icon>
+                        <n-icon size="40">
+                          <DocumentTextOutline />
                         </n-icon>
-                      </n-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </n-card>
+                      </template>
+                    </n-empty>
+                  </n-card>
+                </n-grid-item>
+              </n-grid>
             </section>
           </div>
         </n-layout-content>
@@ -340,7 +363,10 @@ import {
   NThing,
   NText,
   NEmpty,
-  NDropdown
+  NDropdown,
+  NGrid,
+  NGridItem,
+  NDivider
 } from 'naive-ui';
 import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -349,9 +375,24 @@ import GoalDetail from '@/components/GoalDetail.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
-import { EyeSharp, PencilOutline, CheckmarkOutline, ArchiveOutline, CloudUploadOutline, DocumentTextOutline, CloudDownloadOutline, TrashOutline, ChevronDownOutline } from '@vicons/ionicons5';
+import { 
+  EyeSharp, 
+  PencilOutline, 
+  CheckmarkOutline, 
+  ArchiveOutline, 
+  CloudUploadOutline, 
+  DocumentTextOutline, 
+  CloudDownloadOutline, 
+  TrashOutline, 
+  ChevronDownOutline,
+  AccessibilitySharp, 
+  CalendarSharp, 
+  CheckmarkSharp,
+  EllipsisHorizontal,
+  CheckmarkCircle, 
+  CheckmarkCircleOutline 
+} from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
-import { AccessibilitySharp, CalendarSharp, CheckmarkCircle, CheckmarkCircleOutline, } from '@vicons/ionicons5';
 import { useStore } from 'vuex';
 
 // 注入主题变量
@@ -367,6 +408,20 @@ const goals = ref<any[]>([]);
 const loading = ref(false);
 const showDetailModal = ref(false);
 const selectedGoal = ref<any>({});
+const currentSelectedGoal = ref<any>(null);
+
+// 处理行点击
+const handleRowClick = (row: any) => {
+  currentSelectedGoal.value = row;
+};
+
+// 表格行样式
+const tableRowClassName = ({ row }: { row: any }) => {
+  if (currentSelectedGoal.value && row._id === currentSelectedGoal.value._id) {
+    return 'selected-row';
+  }
+  return '';
+};
 
 // 子目标文件上传相关状态
 const showChildGoalUploadModal = ref(false);
@@ -631,6 +686,14 @@ const getGoals = async () => {
       goals.value.forEach(goal => {
         goal.deadlineString = formatDate(goal.deadline);
       });
+      
+      // 同步当前选中的目标数据
+      if (currentSelectedGoal.value && currentSelectedGoal.value._id) {
+         const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
+         if (updatedCurrentGoal) {
+           currentSelectedGoal.value = { ...updatedCurrentGoal };
+         }
+      }
     } else {
       message.error('获取目标列表失败');
     }
@@ -656,6 +719,13 @@ const refreshGoals = () => {
       if (updatedGoal) {
         selectedGoal.value = { ...updatedGoal };
       }
+    }
+    // 同步更新右侧详情面板的数据
+    if (currentSelectedGoal.value && currentSelectedGoal.value._id) {
+       const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
+       if (updatedCurrentGoal) {
+         currentSelectedGoal.value = { ...updatedCurrentGoal };
+       }
     }
   });
   message.success('目标列表已刷新');
@@ -861,7 +931,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 继承主页样式 */
+/* ----------------------------------
+   1. 全局容器与背景 (Global Container)
+   ---------------------------------- */
 .home-container {
   background-color: #0f0f13;
   color: #ffffff;
@@ -871,51 +943,11 @@ onMounted(() => {
 }
 
 .home-container-light {
-  background-color: #dadae3;
-  color: #000000;
+  background-color: #f0f2f5;
+  color: #1f2937;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-}
-
-.background-elements {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
-
-.gradient-circle {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.3;
-}
-
-.gradient-circle.blue {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, #1e90ff, transparent 70%);
-  top: -300px;
-  right: -300px;
-}
-
-.gradient-circle.green {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, #00c9a7, transparent 70%);
-  bottom: -250px;
-  left: -250px;
-}
-
-.gradient-circle.purple {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, #81c683, transparent 70%);
-  top: 50%;
-  left: 30%;
 }
 
 .main-content-wrapper {
@@ -924,127 +956,34 @@ onMounted(() => {
 }
 
 .main-content {
-  padding: 20px 40px;
+  padding: 24px 40px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
-/* 子目标操作区域样式 */
-.child-goal-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  justify-content: flex-end;
-}
-
-/* 子目标详情区域样式 */
-.child-goal-details {
-  padding: 12px 0;
-}
-
-/* 子目标信息行样式 */
-.child-goal-info-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* 子目标头部样式 */
-.child-goal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-/* 子目标标题样式 */
-.child-goal-title {
-  flex: 1;
-}
-
-/* 子目标状态样式 */
-.child-goal-status {
-  margin-left: 12px;
-}
-
-/* 展开内容包装器样式 */
-.expanded-content-wrapper {
-  padding: 16px;
-  background-color: var(--n-color-modal);
-  border-radius: 8px;
-}
-
-/* 子目标折叠项样式 */
-.child-goal-collapse-item {
-  margin-bottom: 8px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-/* 汇总折叠项样式 */
-.summary-collapse-item {
-  margin-top: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-/* 汇总头部样式 */
-.summary-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 汇总标题样式 */
-.summary-title {
-  font-weight: 500;
-}
-
-/* 汇总内容样式 */
-.summary-content {
-  padding: 16px 0;
-}
-
-/* 汇总统计样式 */
-.summary-stats {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 16px;
-}
-
-/* 统计项样式 */
-.stat-item {
-  text-align: center;
-}
-
-/* 统计值样式 */
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-/* 统计标签样式 */
-.stat-label {
-  font-size: 14px;
-  color: var(--n-text-color-3);
-}
-
+/* ----------------------------------
+   2. 头部区域 (Page Header)
+   ---------------------------------- */
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .hero-title,
 .hero-title-light {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 10px;
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
 }
 
 .hero-title {
-  color: #ffffff;
+  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .hero-title-light {
-  color: #000000;
+  color: #111827;
 }
 
 .hero-subtitle,
@@ -1053,465 +992,415 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-.hero-subtitle {
-  color: #cccccc;
-}
-
-.hero-subtitle-light {
-  color: #333333;
-}
-
-.control-section {
-  margin-bottom: 20px;
-}
-
-.feature-card,
-.feature-card-light {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.feature-card {
-  background-color: rgba(30, 30, 40, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* ----------------------------------
+   3. 卡片通用样式 (Cards)
+   ---------------------------------- */
+.feature-card, 
+.detail-card,
+.list-card,
+.empty-selection {
+  background: rgba(30, 30, 35, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .feature-card-light {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
 }
 
-.card-header {
+/* 统一左右卡片高度 */
+.list-card,
+.detail-card,
+.empty-selection {
+  height: 100%;
+}
+
+.list-card :deep(.n-card__content),
+.detail-card :deep(.n-card__content),
+.empty-selection :deep(.n-card__content) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 防止内容溢出撑破圆角 */
+  padding: 0; /* 接管 padding */
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 1023px) {
+  .list-card,
+  .detail-card,
+  .empty-selection {
+    height: auto !important;
+    min-height: 400px;
+  }
+}
+
+/* 卡片 Header 微调 */
+.card-header-inner {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
 }
-
 .card-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   margin: 0;
 }
 
-.goals-section {
-  margin-bottom: 20px;
+/* ----------------------------------
+   4. 表格样式优化 (Element Table)
+   ---------------------------------- */
+:deep(.el-table) {
+  background-color: transparent !important;
+  --el-table-border-color: transparent;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.2);
+  --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.03);
 }
 
-.footer {
-  text-align: center;
-  padding: 20px;
-  font-size: 14px;
-  background-color: rgba(30, 30, 40, 0.6);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.home-container-light :deep(.el-table) {
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.03);
+  --el-table-row-hover-bg-color: rgba(0, 0, 0, 0.02);
+  color: #333;
 }
 
-.footer p {
+/* 去除所有边框和底部白线 */
+:deep(.el-table__inner-wrapper::before),
+:deep(.el-table__border-left-patch) {
+  display: none !important;
+}
+
+:deep(.el-table td.el-table__cell),
+:deep(.el-table th.el-table__cell) {
+  border-bottom: none !important;
+}
+
+/* 表头优化 */
+:deep(.el-table th.el-table__cell) {
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #6b7280; /* Muted text */
+  padding: 12px 0;
+}
+
+/* 单元格优化 */
+:deep(.el-table td.el-table__cell) {
+  padding: 16px 0;
+}
+
+/* 选中行样式 */
+:deep(.el-table .selected-row) {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.01) 100%) !important;
+}
+
+:deep(.el-table .selected-row td) {
+  border-left: 3px solid #10b981 !important;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.01) 100%) !important;
+}
+
+/* ----------------------------------
+   5. 详情页排版 (Detail Layout)
+   ---------------------------------- */
+.detail-header-wrapper {
+  margin-bottom: 24px;
+}
+
+.detail-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.goal-id-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+}
+.home-container-light .goal-id-text {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.detail-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.detail-hero-title {
+  font-size: 28px;
+  font-weight: 700;
   margin: 0;
-  color: #aaaaaa;
+  line-height: 1.2;
+  background: linear-gradient(120deg, #fff 0%, #e2e8f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.home-container-light .detail-hero-title {
+  background: linear-gradient(120deg, #111827 0%, #374151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* 滚动条样式 - Webkit内核浏览器 */
-.main-content-wrapper::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.detail-actions {
+  display: flex;
+  gap: 8px;
 }
 
-.main-content-wrapper::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+/* ----------------------------------
+   6. 信息网格 (Info Grid)
+   ---------------------------------- */
+.info-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
-.main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(129, 198, 131, 0.5);
-  border-radius: 4px;
+.info-item-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(129, 198, 131, 0.7);
+.info-item-modern.full-width {
+  grid-column: span 2;
 }
 
-/* 浅色模式滚动条 */
-.home-container-light .main-content-wrapper::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+.info-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+.home-container-light .info-label {
+  color: rgba(0, 0, 0, 0.5);
 }
 
-.home-container-light .main-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(129, 198, 131, 0.3);
+.info-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+.home-container-light .info-value {
+  color: #111827;
 }
 
-.home-container-light .main-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(129, 198, 131, 0.5);
+.description-text {
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 400;
+  opacity: 0.9;
 }
 
-/* Element UI 表格主题适配 */
-.el-table-dark {
-  --el-table-border-color: rgba(255, 255, 255, 0.05);
-  --el-table-bg-color: rgba(30, 30, 40, 0.6);
-  --el-table-tr-bg-color: rgba(30, 30, 40, 0.6);
-  --el-table-header-bg-color: rgba(40, 40, 50, 0.8);
-  --el-table-text-color: #ffffff;
-  --el-table-header-text-color: #ffffff;
-  --el-table-row-hover-bg-color: rgba(50, 50, 60, 0.8);
-  --el-table-current-row-bg-color: rgba(40, 40, 50, 0.8);
+.divider-line {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 0 32px 0;
+}
+.home-container-light .divider-line {
+  background: rgba(0, 0, 0, 0.06);
 }
 
-.el-table-dark.el-table {
-  background-color: rgba(30, 30, 40, 0.6);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  color: #ffffff;
+/* ----------------------------------
+   7. 子目标胶囊样式 (Capsule Sub-goals)
+   ---------------------------------- */
+.sub-goals-list {
+  margin-bottom: 32px;
 }
 
-.el-table-dark .el-table__header-wrapper {
-  background-color: rgba(40, 40, 50, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.section-title-row h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
 }
 
-.el-table-dark .el-table__body-wrapper {
-  background-color: rgba(30, 30, 40, 0.6);
+.sub-goals-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.el-table-dark .el-table__cell {
-  background-color: transparent;
-  color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.child-goal-capsule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.home-container-light .child-goal-capsule {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 0, 0, 0.05);
 }
 
-.el-table-dark .el-table__row.hover-row td {
-  background-color: rgba(50, 50, 60, 0.8);
-}
-
-.el-table-dark .el-table__row.current-row td {
-  background-color: rgba(40, 40, 50, 0.8);
-}
-
-.el-table-dark .el-table__inner-wrapper::before {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-:deep(.el-table-dark .el-table__expanded-cell) {
-  background-color: rgba(30, 30, 40, 0.6) !important;
-}
-
-.el-table-dark .el-table__inner-wrapper {
-  background-color: transparent;
-}
-
-.el-table-light {
-  --el-table-border-color: rgba(0, 0, 0, 0.1);
-  --el-table-bg-color: rgba(255, 255, 255, 0.8);
-  --el-table-tr-bg-color: rgba(255, 255, 255, 0.8);
-  --el-table-header-bg-color: rgba(245, 245, 245, 0.9);
-  --el-table-text-color: #000000;
-  --el-table-header-text-color: #000000;
-  --el-table-row-hover-bg-color: rgba(235, 235, 235, 0.9);
-  --el-table-current-row-bg-color: rgba(245, 245, 245, 0.9);
-}
-
-.el-table-light.el-table {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #000000;
-}
-
-.el-table-light .el-table__header-wrapper {
-  background-color: rgba(245, 245, 245, 0.9);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.el-table-light .el-table__body-wrapper {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.el-table-light .el-table__cell {
-  background-color: transparent;
-  color: #000000;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.el-table-light .el-table__row.hover-row td {
-  background-color: rgba(235, 235, 235, 0.9);
-}
-
-:deep(.el-table-light .el-table__expanded-cell) {
-  background-color: rgba(235, 235, 235, 0.9) !important;
-}
-
-.el-table-light .el-table__row.current-row td {
-  background-color: rgba(245, 245, 245, 0.9);
-}
-
-.el-table-light .el-table__inner-wrapper::before {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.el-table-light .el-table__inner-wrapper {
-  background-color: transparent;
-}
-
-.expanded-content {
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.home-container-light .expanded-content {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.expanded-content p {
-  margin: 5px 0;
-}
-
-/* .tag-dark {
-  color: white;
-}
-
-.tag-light {
-  color: black;
-} */
-
-/* 子目标展开区域样式 */
-.expanded-content-wrapper {
-  padding: 10px 30px;
-  background: rgb(30, 30, 40);
-  border-radius: 12px;
-  /* margin: 16px 0; */
-  backdrop-filter: blur(10px);
+.child-goal-capsule:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
-.home-container-light .expanded-content-wrapper {
-  background: linear-gradient(135deg, rgba(129, 198, 131, 0.05), rgba(129, 198, 131, 0.05));
-  background-color: rgba(255, 255, 255, 0.3);
+.home-container-light .child-goal-capsule:hover {
+  background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.child-goal-item {
-  margin-bottom: 16px;
-  border-radius: 12px;
-  overflow: hidden;
-  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); */
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.child-goal-capsule.completed {
+  opacity: 0.6;
+  background: transparent;
+  border-style: dashed;
+}
+.child-goal-capsule.completed:hover {
+  opacity: 0.8;
+  transform: none;
 }
 
-.child-goal-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.15), rgba(75, 0, 130, 0.15)); */
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.home-container-light .child-goal-item {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.home-container-light .child-goal-item:hover {
-  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-.child-goal-header {
+.capsule-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 20px 24px;
-  /* background: rgba(138, 43, 226, 0.15); */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.home-container-light .child-goal-header {
-  background: white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.child-goal-title {
-  font-weight: 600;
-  font-size: 17px;
+  gap: 12px;
   flex: 1;
-  min-width: 200px;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
 }
 
-.home-container-light .child-goal-title {
-  color: #333333;
-  text-shadow: none;
-}
-
-.child-goal-status {
-  flex-shrink: 0;
-}
-
-.child-goal-actions-inline {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.finish-date {
-  font-size: 13px;
-  opacity: 0.9;
-  white-space: nowrap;
-  color: #e0e0e0;
-  font-weight: 500;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.home-container-light .finish-date {
-  color: #666666;
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.child-goal-details {
-  padding: 24px;
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.home-container-light .child-goal-details {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.child-goal-info-row {
-  margin-bottom: 16px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: #e0e0e0;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.home-container-light .info-item {
-  color: #666666;
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.info-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: #81c683;
-  background: rgba(129, 198, 131, 0.2);
+.checkbox-circle {
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  padding: 6px;
-}
-
-.no-description {
-  color: #999;
-  font-style: italic;
-}
-
-.child-goal-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.summary-section {
-  margin-top: 24px;
-  border-radius: 12px;
-  overflow: hidden;
-  /* background: linear-gradient(145deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); */
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.home-container-light .summary-section {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.summary-header {
+  border: 2px solid rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.home-container-light .summary-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  color: #333333;
-  text-shadow: none;
-}
-
-.summary-title {
-  font-size: 17px;
-}
-
-.summary-content {
-  padding: 24px 0 16px 0;
-}
-
-.summary-stats {
-  display: flex;
-  gap: 32px;
-  margin-bottom: 24px;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.home-container-light .checkbox-circle {
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
-.stat-item {
+.checkbox-circle.checked {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+.checkbox-circle:hover:not(.checked) {
+  border-color: #10b981;
+}
+
+.capsule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.capsule-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.capsule-title.strikethrough {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.finish-time {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.more-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.child-goal-capsule:hover .more-btn {
+  opacity: 1;
+}
+
+/* ----------------------------------
+   8. 统计区域 (Summary)
+   ---------------------------------- */
+.summary-modern {
+  margin-top: auto;
+  padding: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: transparent; /* 透明背景 */
+}
+.home-container-light .summary-modern {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.stat-block {
   text-align: center;
-  min-width: 90px;
-  padding: 16px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
 }
 
-.home-container-light .stat-item {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.stat-value {
-  font-size: 26px;
+.stat-num {
+  font-size: 32px;
   font-weight: 700;
   line-height: 1;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  margin-bottom: 4px;
+  font-family: 'Inter', sans-serif;
 }
 
-.home-container-light .stat-value {
-  color: #333333;
-  text-shadow: none;
+.stat-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.home-container-light .stat-desc {
+  color: rgba(0, 0, 0, 0.4);
 }
 
-.stat-label {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-top: 8px;
-  color: #e0e0e0;
-  font-weight: 500;
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.home-container-light .stat-divider {
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.home-container-light .stat-label {
-  color: #666666;
+.success-text { color: #10b981; }
+.warning-text { color: #f59e0b; }
+
+/* 滚动条美化 */
+.detail-content {
+  padding: 24px;
+  overflow-y: auto;
+  height: 100%;
+}
+.detail-content::-webkit-scrollbar {
+  width: 4px;
+}
+.detail-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.detail-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 </style>
