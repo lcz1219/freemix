@@ -266,6 +266,9 @@
     <!-- 目标详情模态框 -->
     <GoalDetail v-model:show="showDetailModal" :goal="selectedGoal" @save="saveGoal" @updateGoal="refreshGoals" />
 
+    <!-- 庆祝动画全屏覆盖 -->
+    <CelebrationOverlay :show="showCelebration" :goal-title="celebrationGoalTitle" @close="showCelebration = false" />
+
     <!-- 子目标文件上传模态框 -->
     <n-modal v-model:show="showChildGoalUploadModal" preset="card" style="max-width: 600px" title="上传文件"
       :mask-closable="false">
@@ -374,6 +377,7 @@ import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
+import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import { 
   EyeSharp, 
@@ -409,6 +413,10 @@ const loading = ref(false);
 const showDetailModal = ref(false);
 const selectedGoal = ref<any>({});
 const currentSelectedGoal = ref<any>(null);
+
+// 庆祝动画状态
+const showCelebration = ref(false);
+const celebrationGoalTitle = ref('');
 
 // 处理行点击
 const handleRowClick = (row: any) => {
@@ -579,6 +587,9 @@ const finishChildGoal = async (goal: any, index: number) => {
     // 如果所有子目标都完成了，更新目标状态
     if (finishedCount === updatedGoal.childGoals.length) {
       updatedGoal.status = 'completed';
+      // 触发庆祝动画
+      celebrationGoalTitle.value = updatedGoal.title;
+      showCelebration.value = true;
     }
 
     const res = await postM('editGoal', updatedGoal);
