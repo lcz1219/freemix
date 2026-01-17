@@ -186,7 +186,7 @@
         <p>请完成双因素认证绑定以提升账户安全性：</p>
         <TwoFactorAuth :userId="tempUserData.id" parent="login" @update:router="updateTwoFactorAuth" />
         <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-          <n-button type="info" ghost @click="skipTwoFactorAuth">
+          <n-button type="success" ghost @click="skipTwoFactorAuth">
             暂不开启，直接登录
           </n-button>
           <n-button quaternary @click="backToLogin">
@@ -440,7 +440,7 @@ const initClickCaptcha = () => {
   const width = 320;
   const height = 160;
   
-  // 1. 绘制背景 (浅色带杂色)
+  // 1. 绘制背景
   ctx.fillStyle = '#f0f2f5';
   ctx.fillRect(0, 0, width, height);
   
@@ -460,27 +460,39 @@ const initClickCaptcha = () => {
     ctx.fill();
   }
 
+  // --- 修改开始：第4步 ---
+  
   // 4. 生成随机汉字
-  const chars = "山水火木土金日月星辰风雨雷电天地人一二三四五上下左右".split("");
+  const sourceStr = "山水火木土金日月星辰风雨雷电天地人一二三四五上下左右";
+  // 将字符串转为数组，创建一个“备选池”
+  let charPool = sourceStr.split(""); 
   
   allChars.value = [];
-  const charCount = 4; // 画布上总共生成4个字
-  const verifyCount = 3; // 要求用户点击3个
+  const charCount = 4; 
+  const verifyCount = 3; 
   
   ctx.font = 'bold 26px "Microsoft YaHei"';
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   
   for (let i = 0; i < charCount; i++) {
-    const char = chars[Math.floor(Math.random() * chars.length)];
-    // 分区布局防止重叠：将画布分为4块区域
+    // 核心修改逻辑：
+    // 1. 生成一个在当前 charPool 长度范围内的随机索引
+    const randomIndex = Math.floor(Math.random() * charPool.length);
+    
+    // 2. 取出该字符
+    const char = charPool[randomIndex];
+    
+    // 3. 从 charPool 中移除该字符，确保下一轮循环不会再次选中它
+    charPool.splice(randomIndex, 1);
+
+    // 下面是原有的绘制逻辑，保持不变
     const margin = 30;
     const sectionW = (width - margin * 2) / charCount;
     const x = margin + i * sectionW + Math.random() * (sectionW - 30) + 15;
     const y = margin + Math.random() * (height - margin * 2);
     
-    // 随机旋转
-    const angle = (Math.random() - 0.5) * 0.8; // -0.4 ~ 0.4 rad
+    const angle = (Math.random() - 0.5) * 0.8; 
     
     ctx.save();
     ctx.translate(x, y);
@@ -489,9 +501,9 @@ const initClickCaptcha = () => {
     ctx.fillText(char, 0, 0);
     ctx.restore();
     
-    // 保存真实坐标用于校验
     allChars.value.push({ char, x, y });
   }
+  // --- 修改结束 ---
 
   // 5. 随机选取其中的 3 个作为目标
   const shuffled = [...allChars.value].sort(() => 0.5 - Math.random());

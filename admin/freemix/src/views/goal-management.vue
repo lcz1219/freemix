@@ -77,7 +77,8 @@
               <n-grid x-gap="20" cols="24" item-responsive responsive="screen">
                 <!-- 左侧目标列表 -->
                 <n-grid-item span="24 m:10 l:9">
-                  <n-card :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']" content-style="padding: 10px;">
+                  <n-card  :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']"
+                    content-style="padding: 10px;">
                     <template #header>
                       <div class="card-header-inner">
                         <n-icon size="24" color="#81c683">
@@ -117,7 +118,7 @@
                       </el-table-column>
                       <el-table-column label="截止时间" width="120">
                         <template #default="scope">
-                         {{ scope.row.deadlineString }}
+                          {{ scope.row.deadlineString }}
                         </template>
                       </el-table-column>
                     </el-table>
@@ -131,15 +132,18 @@
                     <template #header>
                       <div class="detail-header-wrapper">
                         <div class="detail-meta-top">
-                          <n-tag :type="getStatusTagType(currentSelectedGoal.status)" size="small" round :bordered="false">
+                          <n-tag :type="getStatusTagType(currentSelectedGoal.status)" size="small" round
+                            :bordered="false">
                             {{ getStatusLabel(currentSelectedGoal.status) }}
                           </n-tag>
-                          <span class="goal-id-text" v-if="currentSelectedGoal._id">#{{ currentSelectedGoal._id.slice(-6).toUpperCase() }}</span>
+                          <span class="goal-id-text" v-if="currentSelectedGoal._id">#{{
+                            currentSelectedGoal._id.slice(-6).toUpperCase() }}</span>
                         </div>
                         <div class="detail-main-row">
                           <h2 class="detail-hero-title">{{ currentSelectedGoal.title }}</h2>
                           <div class="detail-actions">
-                            <n-button type="primary" circle secondary strong @click="editGoal(currentSelectedGoal)" class="action-btn">
+                            <n-button type="primary" circle secondary strong @click="editGoal(currentSelectedGoal)"
+                              class="action-btn">
                               <n-icon size="18">
                                 <PencilOutline />
                               </n-icon>
@@ -169,13 +173,11 @@
                         <div class="info-item-modern full-width">
                           <div class="info-label">总体进度</div>
                           <div class="progress-wrapper">
-                             <n-progress type="line"
-                            :percentage="currentSelectedGoal.status == 'expired' ? 100 : currentSelectedGoal.progress"
-                            :color="getStatusColor(currentSelectedGoal.status)"
-                            :processing="currentSelectedGoal.status === 'in-progress'" 
-                            :height="8"
-                            border-radius="4px"
-                            />
+                            <n-progress type="line"
+                              :percentage="currentSelectedGoal.status == 'expired' ? 100 : currentSelectedGoal.progress"
+                              :color="getStatusColor(currentSelectedGoal.status)"
+                              :processing="currentSelectedGoal.status === 'in-progress'" :height="8"
+                              border-radius="4px" />
                           </div>
                         </div>
                         <div class="info-item-modern full-width" v-if="currentSelectedGoal.description">
@@ -189,33 +191,43 @@
                       <!-- 子目标列表 -->
                       <div class="sub-goals-list">
                         <div class="section-title-row">
-                           <h3>子目标</h3>
-                           <n-tag size="tiny" round type="primary">{{ currentSelectedGoal.childGoals ? currentSelectedGoal.childGoals.length : 0 }}</n-tag>
+                          <h3>子目标</h3>
+                          <n-tag size="tiny" round type="primary">{{ currentSelectedGoal.childGoals ?
+                            currentSelectedGoal.childGoals.length : 0 }}</n-tag>
                         </div>
-                        
-                        <div v-if="currentSelectedGoal.childGoals && currentSelectedGoal.childGoals.length > 0" class="sub-goals-container">
+
+                        <div v-if="currentSelectedGoal.childGoals && currentSelectedGoal.childGoals.length > 0"
+                          class="sub-goals-container">
                           <div v-for="(childGoal, index) in currentSelectedGoal.childGoals" :key="index"
                             class="child-goal-capsule" :class="{ 'completed': childGoal.finish }">
-                            
+
                             <div class="capsule-left">
-                              <div class="checkbox-circle" :class="{ 'checked': childGoal.finish }" 
-                                   @click="childGoal.finish ? unfinishChildGoal(currentSelectedGoal, index) : finishChildGoal(currentSelectedGoal, index)">
-                                <n-icon size="14" v-if="childGoal.finish"><CheckmarkSharp /></n-icon>
+                              <div class="checkbox-circle" :class="{ 'checked': childGoal.finish }"
+                                @click="childGoal.finish ? unfinishChildGoal(currentSelectedGoal, index) : finishChildGoal(currentSelectedGoal, index)">
+                                <n-icon size="14" v-if="childGoal.finish">
+                                  <CheckmarkSharp />
+                                </n-icon>
                               </div>
                               <div class="capsule-content">
-                                <span class="capsule-title" :class="{ 'strikethrough': childGoal.finish }">{{ childGoal.message }}</span>
-                                <span class="finish-time" v-if="childGoal.finishDate">完成于 {{ formatDate(childGoal.finishDate) }}</span>
+                                <span class="capsule-title" :class="{ 'strikethrough': childGoal.finish }">{{
+                                  childGoal.message
+                                  }}</span>
+                                <span class="finish-time" v-if="childGoal.finishDate">完成于 {{
+                                  formatDate(childGoal.finishDate)
+                                  }}</span>
                               </div>
                             </div>
 
                             <div class="capsule-actions">
-                               <n-dropdown trigger="hover"
-                                  :options="getDropdownOptions(childGoal, currentSelectedGoal, index)"
-                                  @select="(key) => handleDropdownSelect(key, currentSelectedGoal, index, childGoal)">
-                                  <n-button text class="more-btn">
-                                    <n-icon size="20"><EllipsisHorizontal /></n-icon>
-                                  </n-button>
-                                </n-dropdown>
+                              <n-dropdown trigger="hover"
+                                :options="getDropdownOptions(childGoal, currentSelectedGoal, index)"
+                                @select="(key) => handleDropdownSelect(key, currentSelectedGoal, index, childGoal)">
+                                <n-button text class="more-btn">
+                                  <n-icon size="20">
+                                    <EllipsisHorizontal />
+                                  </n-icon>
+                                </n-button>
+                              </n-dropdown>
                             </div>
                           </div>
                         </div>
@@ -231,12 +243,16 @@
                         </div>
                         <div class="stat-divider"></div>
                         <div class="stat-block">
-                          <div class="stat-num success-text">{{ currentSelectedGoal.childGoals.filter((c: any) => c.finish).length }}</div>
+                          <div class="stat-num success-text">{{currentSelectedGoal.childGoals.filter((c: any) =>
+                            c.finish).length
+                            }}</div>
                           <div class="stat-desc">已完成</div>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="stat-block">
-                          <div class="stat-num warning-text">{{ currentSelectedGoal.childGoals.filter((c: any) => !c.finish).length }}</div>
+                          <div class="stat-num warning-text">{{currentSelectedGoal.childGoals.filter((c: any) =>
+                            !c.finish).length
+                            }}</div>
                           <div class="stat-desc">待处理</div>
                         </div>
                       </div>
@@ -379,22 +395,22 @@ import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
-import { 
-  EyeSharp, 
-  PencilOutline, 
-  CheckmarkOutline, 
-  ArchiveOutline, 
-  CloudUploadOutline, 
-  DocumentTextOutline, 
-  CloudDownloadOutline, 
-  TrashOutline, 
+import {
+  EyeSharp,
+  PencilOutline,
+  CheckmarkOutline,
+  ArchiveOutline,
+  CloudUploadOutline,
+  DocumentTextOutline,
+  CloudDownloadOutline,
+  TrashOutline,
   ChevronDownOutline,
-  AccessibilitySharp, 
-  CalendarSharp, 
+  AccessibilitySharp,
+  CalendarSharp,
   CheckmarkSharp,
   EllipsisHorizontal,
-  CheckmarkCircle, 
-  CheckmarkCircleOutline 
+  CheckmarkCircle,
+  CheckmarkCircleOutline
 } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
@@ -697,13 +713,13 @@ const getGoals = async () => {
       goals.value.forEach(goal => {
         goal.deadlineString = formatDate(goal.deadline);
       });
-      
+
       // 同步当前选中的目标数据
       if (currentSelectedGoal.value && currentSelectedGoal.value._id) {
-         const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
-         if (updatedCurrentGoal) {
-           currentSelectedGoal.value = { ...updatedCurrentGoal };
-         }
+        const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
+        if (updatedCurrentGoal) {
+          currentSelectedGoal.value = { ...updatedCurrentGoal };
+        }
       }
     } else {
       message.error('获取目标列表失败');
@@ -733,10 +749,10 @@ const refreshGoals = () => {
     }
     // 同步更新右侧详情面板的数据
     if (currentSelectedGoal.value && currentSelectedGoal.value._id) {
-       const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
-       if (updatedCurrentGoal) {
-         currentSelectedGoal.value = { ...updatedCurrentGoal };
-       }
+      const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
+      if (updatedCurrentGoal) {
+        currentSelectedGoal.value = { ...updatedCurrentGoal };
+      }
     }
   });
   message.success('目标列表已刷新');
@@ -836,20 +852,20 @@ const saveChildGoalFiles = async (): Promise<void> => {
 
       // 关闭模态框
     } else {
-     expiredGoalToast(res)
+      expiredGoalToast(res)
     }
-      closeChildGoalUploadModal();
+    closeChildGoalUploadModal();
 
   } catch (error) {
     message.error('保存失败，请重试');
-      closeChildGoalUploadModal();
+    closeChildGoalUploadModal();
 
     console.error(error);
   }
 };
 
 // 查看子目标文件
-const viewChildGoalFiles = (row: any,index): void => {
+const viewChildGoalFiles = (row: any, index): void => {
   currentChildGoal.value = row;
   currentChildGoalIndex.value = index;
   let childGoal = row.childGoals[index];
@@ -881,8 +897,8 @@ const downloadFile = (file: any): void => {
 
 // 删除子目标文件
 const removeChildGoalFile = async (file: any): Promise<void> => {
-  console.log("0o",currentChildGoal.value );
-  
+  console.log("0o", currentChildGoal.value);
+
   if (!file || !currentChildGoal.value || currentChildGoalIndex.value === -1) return;
 
   try {
@@ -962,7 +978,7 @@ onMounted(() => {
 }
 
 .main-content-wrapper {
-  height: 100%;
+  height: 60%;
   overflow-y: auto;
 }
 
@@ -1019,6 +1035,8 @@ onMounted(() => {
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  margin-bottom: 5px;
+  
 }
 
 .feature-card-light {
@@ -1028,6 +1046,7 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05);
   border-radius: 16px;
+  margin-bottom: 5px;
 }
 
 /* 统一左右卡片高度 */
@@ -1043,8 +1062,10 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 防止内容溢出撑破圆角 */
-  padding: 0; /* 接管 padding */
+  overflow: hidden;
+  /* 防止内容溢出撑破圆角 */
+  padding: 0;
+  /* 接管 padding */
 }
 
 /* 移动端适配 */
@@ -1104,7 +1125,8 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1px;
-  color: #6b7280; /* Muted text */
+  color: #6b7280;
+  /* Muted text */
   padding: 12px 0;
 }
 
@@ -1143,6 +1165,7 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.5px;
 }
+
 .home-container-light .goal-id-text {
   color: rgba(0, 0, 0, 0.4);
 }
@@ -1162,6 +1185,7 @@ onMounted(() => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 .home-container-light .detail-hero-title {
   background: linear-gradient(120deg, #111827 0%, #374151 100%);
   -webkit-background-clip: text;
@@ -1200,6 +1224,7 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
+
 .home-container-light .info-label {
   color: rgba(0, 0, 0, 0.5);
 }
@@ -1209,6 +1234,7 @@ onMounted(() => {
   font-weight: 600;
   color: #fff;
 }
+
 .home-container-light .info-value {
   color: #111827;
 }
@@ -1225,6 +1251,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.08);
   margin: 0 0 32px 0;
 }
+
 .home-container-light .divider-line {
   background: rgba(0, 0, 0, 0.06);
 }
@@ -1242,6 +1269,7 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 16px;
 }
+
 .section-title-row h3 {
   font-size: 16px;
   font-weight: 600;
@@ -1264,6 +1292,7 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .home-container-light .child-goal-capsule {
   background: rgba(255, 255, 255, 0.5);
   border-color: rgba(0, 0, 0, 0.05);
@@ -1274,6 +1303,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .home-container-light .child-goal-capsule:hover {
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -1284,6 +1314,7 @@ onMounted(() => {
   background: transparent;
   border-style: dashed;
 }
+
 .child-goal-capsule.completed:hover {
   opacity: 0.8;
   transform: none;
@@ -1307,6 +1338,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s;
 }
+
 .home-container-light .checkbox-circle {
   border-color: rgba(0, 0, 0, 0.2);
 }
@@ -1316,6 +1348,7 @@ onMounted(() => {
   border-color: #10b981;
   color: #fff;
 }
+
 .checkbox-circle:hover:not(.checked) {
   border-color: #10b981;
 }
@@ -1330,6 +1363,7 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 500;
 }
+
 .capsule-title.strikethrough {
   text-decoration: line-through;
   opacity: 0.7;
@@ -1344,6 +1378,7 @@ onMounted(() => {
   opacity: 0;
   transition: opacity 0.2s;
 }
+
 .child-goal-capsule:hover .more-btn {
   opacity: 1;
 }
@@ -1358,8 +1393,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: transparent; /* 透明背景 */
+  background: transparent;
+  /* 透明背景 */
 }
+
 .home-container-light .summary-modern {
   border-top-color: rgba(0, 0, 0, 0.06);
 }
@@ -1382,6 +1419,7 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
 .home-container-light .stat-desc {
   color: rgba(0, 0, 0, 0.4);
 }
@@ -1391,12 +1429,18 @@ onMounted(() => {
   height: 40px;
   background: rgba(255, 255, 255, 0.1);
 }
+
 .home-container-light .stat-divider {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.success-text { color: #10b981; }
-.warning-text { color: #f59e0b; }
+.success-text {
+  color: #10b981;
+}
+
+.warning-text {
+  color: #f59e0b;
+}
 
 /* 滚动条美化 */
 .detail-content {
@@ -1404,12 +1448,15 @@ onMounted(() => {
   overflow-y: auto;
   height: 100%;
 }
+
 .detail-content::-webkit-scrollbar {
   width: 4px;
 }
+
 .detail-content::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .detail-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
