@@ -185,9 +185,14 @@
         <h3>设置双因素认证</h3>
         <p>请完成双因素认证绑定以提升账户安全性：</p>
         <TwoFactorAuth :userId="tempUserData.id" parent="login" @update:router="updateTwoFactorAuth" />
-        <n-button quaternary @click="backToLogin">
-          返回登录
-        </n-button>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+          <n-button type="info" ghost @click="skipTwoFactorAuth">
+            暂不开启，直接登录
+          </n-button>
+          <n-button quaternary @click="backToLogin">
+            返回登录
+          </n-button>
+        </div>
       </div>
     </n-card>
   </div>
@@ -574,13 +579,13 @@ const executeRealLogin = async () => {
       tempUserData.value = userData; // 临时保存用户数据
 
       // 根据环境变量决定登录处理方式
-      if (!isProduction) {
-        // 开发环境
-        await handleDevLogin(userData);
-      } else {
+      // if (!isProduction) {
+      //   // 开发环境
+      //   await handleDevLogin(userData);
+      // } else {
         // 生产环境
         await handleProdLogin(userData);
-      }
+      // }
     } else {
       message.error(res.data.msg);
       await loadCaptcha(); // 刷新验证码
@@ -623,6 +628,29 @@ const handleProdLogin = async (userData) => {
     loginStep.value = '2fa-bind';
     message.info('请完成双因素认证绑定');
   }
+};
+
+// 跳过双因素认证绑定
+const skipTwoFactorAuth = async () => {
+  // 直接使用临时保存的用户数据登录
+  const userData = tempUserData.value;
+  store.commit('saveUser', userData);
+
+  if (isDesktopEnv) {
+    const desktopToken = generateDesktopToken();
+    saveTokenUtil(desktopToken);
+    saveLocalStorageDesktopToken(desktopToken);
+    try {
+      await postM('verify-desktop-token', { desktopToken, username: userData.username });
+    } catch (error) {
+      console.error('保存桌面端token失败:', error);
+    }
+  } else {
+    await saveTokenUtil(userData.token);
+  }
+
+  message.success('登录成功');
+  router.push('/home');
 };
 
 const updateTwoFactorAuth = async (val, secretKeyval) => {

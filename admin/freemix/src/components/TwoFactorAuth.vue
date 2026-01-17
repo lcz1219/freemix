@@ -28,7 +28,7 @@
           <!-- 直接使用原始的qrCodeUrl作为n-qr-code的value -->
           <!-- 移除图标以避免遮挡二维码内容，确保扫描正常 -->
           <span v-if="qrCodeUrl">
-            <n-qr-code :value="qrCodeUrl" alt="QR Code"  class="qr-code" />
+            <n-qr-code :padding="0" :value="qrCodeUrl" alt="QR Code"  class="qr-code" />
             <!-- <n-color-picker v-model:value="color"  /> -->
           </span>
 
@@ -92,7 +92,7 @@ const props = defineProps({
     default: ''
   }
 });
-
+const size = ref(100);
 // 响应式数据
 const twoFactorEnabled = ref(props.initialEnabled);
 const totpCode = ref('');
@@ -307,10 +307,25 @@ watch(() => props.initialEnabled, (newVal) => {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.qr-code-container {
+/* .qr-code-container {
   display: flex;
   justify-content: center;
   margin: 15px 0;
+} */
+
+.qr-code-wrapper {
+  background: white;
+  /* padding: 10px; */
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 100%;
+  /* overflow: hidden; */
+}
+
+.qr-code-img {
+  display: block;
+  width: 200px;
+  height: auto !important;
 }
 
 .qr-code {

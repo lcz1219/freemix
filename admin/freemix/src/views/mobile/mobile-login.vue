@@ -167,6 +167,9 @@
             </div>
             
             <div class="step-actions">
+              <van-button plain block type="primary" class="neon-btn mb-10" @click="skipTwoFactorAuth" style="margin-bottom: 12px;">
+                暂不开启，直接登录
+              </van-button>
               <van-button plain block type="default" class="glass-btn mt-10" @click="backToLogin">
                 返回登录
               </van-button>
@@ -404,6 +407,33 @@ const updateTwoFactorAuth = async (val: string, secretKeyval: string) => {
   tempUserData.value.secretKey = secretKeyval;
   totpCodeStr.value = val; // 将回调的验证码填入
   verifyTwoFactorAuth();
+};
+
+// 跳过 2FA 绑定
+const skipTwoFactorAuth = async () => {
+  const userData = tempUserData.value;
+  store.commit('saveUser', userData);
+
+  if (isDesktop()) {
+    const desktopToken = generateDesktopToken();
+    saveTokenUtil(desktopToken);
+    saveLocalStorageDesktopToken(desktopToken);
+    try {
+      await postM('verify-desktop-token', { desktopToken, username: userData.username });
+    } catch (error) {
+      console.error(error);
+    }
+  } else {
+    await saveTokenUtil(userData.token);
+  }
+
+  showToast({ type: 'success', message: '登录成功' });
+  const redirect = route.query.redirect as string;
+  if (redirect) {
+    router.replace(decodeURIComponent(redirect));
+  } else {
+    router.push('/home');
+  }
 };
 
 // 验证 2FA
