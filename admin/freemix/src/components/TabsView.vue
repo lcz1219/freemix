@@ -55,11 +55,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { NTabs, NTab, NDropdown, NSwitch, NTooltip, NIcon } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5'
+import { useStore } from 'vuex'
 
 // 获取路由和路由器实例
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
+const store = useStore()
 
 // 主题相关
 const isDark = inject('isDark', ref(false))
@@ -111,7 +113,10 @@ const dropdownOptions = ref([
 // 从 sessionStorage 恢复标签页数据
 const savedTabs = sessionStorage.getItem('tabsView')
 if (savedTabs) {
-  tabs.value = JSON.parse(savedTabs)
+  let data = JSON.parse(savedTabs)
+  if(data.username === store.state.user.username){
+    tabs.value = JSON.parse(data.tabs)
+  }
 }
 
 const activeTab = ref('')
@@ -138,10 +143,13 @@ const routeTitleMap: Record<string, string> = {
 const getRouteTitle = (routeName: string) => {
   return routeTitleMap[routeName] || routeName
 }
-
+let data={
+  "username":store.state.user.username,
+  "tabs": JSON.stringify(tabs.value)
+}
 // 保存标签页数据到 sessionStorage
 const saveTabsToStorage = () => {
-  sessionStorage.setItem('tabsView', JSON.stringify(tabs.value))
+  sessionStorage.setItem('tabsView', JSON.stringify(data))
 }
 
 // 添加标签页

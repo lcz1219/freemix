@@ -13,9 +13,9 @@
               <li class="nav-item" :class="{ active: activeSection === 'security' }">
                 <a href="#" @click.prevent="setActiveSection('security')">安全设置</a>
               </li>
-              <li class="nav-item" :class="{ active: activeSection === 'token' }">
+              <!-- <li class="nav-item" :class="{ active: activeSection === 'token' }">
                 <a href="#" @click.prevent="setActiveSection('token')">Token信息</a>
-              </li>
+              </li> -->
             </ul>
           </nav>
         </div>
@@ -101,7 +101,7 @@
           </div>
 
           <!-- Token信息 -->
-          <div v-show="activeSection === 'token'" class="settings-section">
+          <div v-show="false" class="settings-section">
             <div class="settings-card token-info-card">
               <h2>Token信息</h2>
               <div class="token-item">
