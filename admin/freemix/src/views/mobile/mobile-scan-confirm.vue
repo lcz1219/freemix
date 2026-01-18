@@ -10,7 +10,7 @@
       
       <div class="actions">
         <van-button type="primary" block round @click="confirmLogin" :loading="loading">确认登录</van-button>
-        <van-button type="error" plain block round @click="cancelLogin" style="margin-top: 12px">取消</van-button>
+        <van-button block round @click="cancelLogin" style="margin-top: 12px; background-color: white; color: black; border: none;">取消</van-button>
       </div>
     </div>
   </div>
