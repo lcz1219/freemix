@@ -3,7 +3,7 @@
     <van-nav-bar title="扫码登录确认" />
     <div class="content">
       <div class="icon-wrapper">
-         <van-icon name="desktop-o" size="80" color="#1989fa"/>
+         <img src="/icons/icon.png" class="confirm-logo" />
       </div>
       <h2 class="title">确认登录网页版 FreeMix</h2>
       <p class="sub-title">请确认是否本人操作</p>
@@ -94,6 +94,12 @@ const cancelLogin = () => {
 }
 .icon-wrapper {
   margin-bottom: 24px;
+}
+.confirm-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 16px;
 }
 .title {
   font-size: 20px;
