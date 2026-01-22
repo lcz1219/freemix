@@ -116,7 +116,7 @@
             </div>
 
             <!-- Main Content -->
-            <HotMap></HotMap>
+            <HotMap :goals="goalsStore.goals.value"></HotMap>
           </div>
         </div>
 
@@ -161,7 +161,7 @@
                 </div>
                 <div class="goal-actions">
                   <n-button size="small" @click="editGoal(goal)">编辑</n-button>
-                  <n-button size="small" v-if="goal.status === 'active'" @click="completeGoal(goal)">
+                  <n-button size="small" v-if="goal.status === 'in-progress'" @click="completeGoal(goal)">
                     标记完成
                   </n-button>
                 </div>
@@ -173,16 +173,16 @@
                 <div class="progress-bar">
                   <div 
                     class="progress-fill" 
-                    :style="{ width: `${goal.progress}%` }"
+                    :style="{ width: `${goal.progress || 0}%` }"
                   ></div>
                 </div>
-                <span class="progress-text">{{ goal.progress }}% 完成</span>
+                <span class="progress-text">{{ goal.progress || 0 }}% 完成</span>
               </div>
               
               <div class="goal-footer">
                 <div class="goal-categories">
                   <span 
-                    v-for="category in goal.categories" 
+                    v-for="category in (goal.tags || [])" 
                     :key="category"
                     class="category-tag"
                     :style="{ backgroundColor: getCategoryColor(category) }"
@@ -193,11 +193,11 @@
                 <div class="goal-stats">
                   <span class="stat">
                     <n-icon><CalendarOutline /></n-icon>
-                    {{ formatRelativeTime(goal.createdAt) }}
+                    {{ formatRelativeTime(new Date(goal.createdAt)) }}
                   </span>
-                  <span class="stat" v-if="goal.milestones">
+                  <span class="stat" v-if="goal.childGoals?.length">
                     <n-icon><FlagOutline /></n-icon>
-                    {{ goal.milestones }} 个里程碑
+                    {{ goal.childGoals.length }} 个子目标
                   </span>
                 </div>
               </div>
@@ -312,11 +312,11 @@ const goToSettings = (section = 'profile') => {
 
 // 标签页控制
 const activeTab = ref('overview');
-const tabs = ref([
+const tabs = computed(() => [
   { name: 'overview', label: '概览', count: null },
-  { name: 'goals', label: '目标', count: 12 },
+  { name: 'goals', label: '目标', count: goalsStore.goals.value.length },
   { name: 'analytics', label: '分析', count: null },
-  { name: 'achievements', label: '成就', count: 5 }
+  { name: 'achievements', label: '成就', count: 5 } // 暂时保留成就的mock count
 ]);
 
 // 搜索和筛选
@@ -324,16 +324,24 @@ const searchQuery = ref('');
 const currentFilter = ref('all');
 const goalFilters = ref([
   { value: 'all', label: '全部' },
-  { value: 'active', label: '进行中' },
+  { value: 'in-progress', label: '进行中' }, // 改为后端状态
   { value: 'completed', label: '已完成' },
-  { value: 'overdue', label: '已过期' }
+  { value: 'expired', label: '已过期' } // 改为后端状态
 ]);
 
 // 统计数据
-const stats = ref({
-  activeGoals: 8,
-  completedGoals: 24,
-  successRate: 75
+const stats = computed(() => {
+  const allGoals = goalsStore.goals.value || [];
+  const activeGoals = allGoals.filter(g => g.status === 'in-progress').length;
+  const completedGoals = allGoals.filter(g => g.status === 'completed').length;
+  const total = activeGoals + completedGoals;
+  const successRate = total > 0 ? Math.round((completedGoals / total) * 100) : 0;
+  
+  return {
+    activeGoals,
+    completedGoals,
+    successRate
+  };
 });
 
 // const dailyStats = ref({
@@ -422,11 +430,37 @@ const recentStats = ref({
   recentCompleted: 12
 });
 
-const analytics = ref({
-  totalGoals: 32,
-  avgCompletionTime: 14,
-  successRate: 75,
-  activeStreak: 28
+const analytics = computed(() => {
+  const allGoals = goalsStore.goals.value || [];
+  const completedGoals = allGoals.filter(g => g.status === 'completed');
+  const totalGoals = allGoals.length;
+  
+  // 计算平均完成时间 (仅针对已完成目标)
+  // 假设 goals 有 createdAt 和 updatedAt
+  let avgCompletionTime = 0;
+  if (completedGoals.length > 0) {
+    const totalDays = completedGoals.reduce((sum, g) => {
+      const start = new Date(g.createdAt || new Date()); // 如果没有createdAt，暂用当前时间避免错误
+      const end = new Date(g.updatedAt || new Date());
+      const diff = Math.max(0, end.getTime() - start.getTime());
+      return sum + diff / (1000 * 60 * 60 * 24);
+    }, 0);
+    avgCompletionTime = Math.round(totalDays / completedGoals.length);
+  }
+
+  // 成功率
+  const successRate = totalGoals > 0 ? Math.round((completedGoals.length / totalGoals) * 100) : 0;
+
+  // 连续活跃天数 (简化计算：最近连续有多少天有完成子目标)
+  // 这里暂时给个mock值或者基于HotMap数据计算
+  const activeStreak = 0; // 需要更复杂的逻辑，先置0或保留mock
+
+  return {
+    totalGoals,
+    avgCompletionTime,
+    successRate,
+    activeStreak
+  };
 });
 
 // 目标分类
@@ -437,100 +471,81 @@ const analytics = ref({
 //   { id: 4, name: '财务理财', color: '#cf222e', count: 4 },
 //   { id: 5, name: '人际关系', color: '#bf8700', count: 3 }
 // ]);
-const goalCategories=computed(() => {
-  const colors=['#1a7f37','#0969da','#8250df','#cf222e','#bf8700']
-  let tabsa=ref([])
-   goalsStore.goals.value.forEach(goal => {
-    tabsa.value.push(...goal.tags)
-   });
-   let setTab=new Set()
-   tabsa.value.forEach(tag => {
-    if(!setTab.has(tag)){
-
-      setTab.add({name:tag,label:tag,count:1,color:colors[setTab.size%colors.length]})
-    }else{
-      setTab.forEach(item => {
-        if(item.name === tag){
-          item.count++
+const goalCategories = computed(() => {
+  const colors = ['#1a7f37', '#0969da', '#8250df', '#cf222e', '#bf8700'];
+  // 使用 Map 而不是 Set，因为 Set 的项是唯一的对象引用，不适合这里的计数逻辑
+  // 或者直接用对象作为 map
+  const categoriesMap = new Map();
+  
+  const allGoals = goalsStore.goals.value || [];
+  
+  allGoals.forEach(goal => {
+    if (goal.tags && Array.isArray(goal.tags)) {
+      goal.tags.forEach(tag => {
+        if (!categoriesMap.has(tag)) {
+          categoriesMap.set(tag, {
+            id: tag,
+            name: tag,
+            count: 1,
+            color: colors[categoriesMap.size % colors.length]
+          });
+        } else {
+          const item = categoriesMap.get(tag);
+          item.count++;
         }
-      })
+      });
     }
-   });
-   return setTab
+  });
+  
+  // 转换为数组返回
+  return Array.from(categoriesMap.values());
 });
 
 
 // 月份标签
 const progressMonths = ref(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
 
-// 目标数据
-const goals = ref([
-  {
-    id: 1,
-    title: '完成Vue3项目开发',
-    description: '完成个人目标管理系统的Vue3版本开发与部署',
-    status: 'active',
-    progress: 75,
-    categories: ['工作职业', '学习成长'],
-    deadline: '2025-12-31',
-    createdAt: new Date('2025-10-01'),
-    milestones: 4
-  },
-  {
-    id: 2,
-    title: '每周健身3次',
-    description: '坚持每周至少3次健身锻炼，提升身体素质',
-    status: 'active',
-    progress: 90,
-    categories: ['健康生活'],
-    deadline: '2025-12-31',
-    createdAt: new Date('2025-09-15'),
-    milestones: 12
-  },
-  {
-    id: 3,
-    title: '阅读12本书',
-    description: '年度阅读计划，涵盖技术、文学、心理学等领域',
-    status: 'completed',
-    progress: 100,
-    categories: ['学习成长'],
-    deadline: '2025-12-31',
-    createdAt: new Date('2025-01-01'),
-    milestones: 12
-  }
-]);
+// 目标数据 (不再使用mock goals)
+// const goals = ref([...]); 
 
-// 目标动态
-const goalActivities = ref([
-  { 
-    id: 1, 
-    icon: CheckmarkCircleOutline, 
-    description: '完成了目标 "学习Vue3高级特性"', 
-    time: new Date('2025-11-01'),
-    goal: '学习Vue3高级特性',
-    category: '学习成长'
-  },
-  { 
-    id: 2, 
-    icon: BookOutline, 
-    description: '创建了新目标 "完成项目部署"', 
-    time: new Date('2025-10-28'),
-    goal: '完成项目部署',
-    category: '工作职业'
-  },
-  { 
-    id: 3, 
-    // icon: TargetOutline, 
-    description: '开始了目标 "每周健身计划"', 
-    time: new Date('2025-10-15'),
-    goal: '每周健身计划',
-    category: '健康生活'
-  }
-]);
+// 目标动态 (基于真实数据生成)
+const goalActivities = computed(() => {
+  const activities = [];
+  const allGoals = goalsStore.goals.value || [];
+  
+  allGoals.forEach(goal => {
+    // 1. 创建动态
+    if (goal.createdAt) {
+      activities.push({
+        id: `create-${goal._id}`,
+        icon: BookOutline,
+        description: `创建了新目标 "${goal.title}"`,
+        time: new Date(goal.createdAt),
+        goal: goal.title,
+        category: goal.tags?.[0] || '未分类'
+      });
+    }
+    
+    // 2. 完成动态
+    if (goal.status === 'completed' && goal.updatedAt) {
+      activities.push({
+        id: `complete-${goal._id}`,
+        icon: CheckmarkCircleOutline,
+        description: `完成了目标 "${goal.title}"`,
+        time: new Date(goal.updatedAt),
+        goal: goal.title,
+        category: goal.tags?.[0] || '未分类'
+      });
+    }
+  });
+  
+  // 按时间倒序排序并取前10条
+  return activities.sort((a, b) => b.time - a.time).slice(0, 10);
+});
 
 // 计算属性：筛选目标
 const filteredGoals = computed(() => {
-  let filtered = goals.value;
+  let filtered = goalsStore.goals.value || [];
   
   // 根据状态筛选
   if (currentFilter.value !== 'all') {
@@ -542,7 +557,7 @@ const filteredGoals = computed(() => {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(goal => 
       goal.title.toLowerCase().includes(query) ||
-      goal.description.toLowerCase().includes(query)
+      (goal.description && goal.description.toLowerCase().includes(query))
     );
   }
   
@@ -569,6 +584,10 @@ const viewProgressReport = () => {
 };
 
 const editGoal = (goal) => {
+  // 检查 goal 是否为有效的对象
+  if (!goal) return;
+  // 这里可以跳转到编辑页面，或者在模态框中编辑
+  // router.push({ path: '/edit-goal', query: { id: goal._id } });
   message.info(`编辑目标: ${goal.title}`);
 };
 
@@ -581,18 +600,18 @@ const completeGoal = (goal) => {
 // 工具函数
 const getGoalTagType = (status) => {
   const types = {
-    active: 'info',
+    'in-progress': 'info',
     completed: 'success',
-    overdue: 'error'
+    expired: 'error'
   };
   return types[status] || 'default';
 };
 
 const getGoalStatusText = (status) => {
   const texts = {
-    active: '进行中',
+    'in-progress': '进行中',
     completed: '已完成',
-    overdue: '已过期'
+    expired: '已过期'
   };
   return texts[status] || '未知';
 };

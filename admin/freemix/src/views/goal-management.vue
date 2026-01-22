@@ -605,11 +605,12 @@ const finishChildGoal = async (goal: any, index: number) => {
       updatedGoal.status = 'completed';
       // 触发庆祝动画
       celebrationGoalTitle.value = updatedGoal.title;
-      showCelebration.value = true;
     }
 
     const res = await postM('editGoal', updatedGoal);
     if (isSuccess(res)) {
+      showCelebration.value = true;
+
       message.success('子目标已完成');
       // 更新本地数据
       // const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
