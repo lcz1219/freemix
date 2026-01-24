@@ -136,10 +136,7 @@
                 {{ filter.label }}
               </button>
             </div>
-            <n-button class="new-goal-btn" @click="createNewGoal">
-              <n-icon><AddOutline /></n-icon>
-              新建目标
-            </n-button>
+           
           </div>
 
           <div class="goals-list">
@@ -251,6 +248,28 @@
             </div>
           </div>
         </div>
+
+        <!-- Achievements Tab -->
+        <div v-if="activeTab === 'achievements'" class="achievements-tab">
+          <div class="achievements-header">
+            <h2 class="section-title">我的成就</h2>
+            <div class="achievement-stats">
+              <span class="stat-item">已解锁: {{ achievements.filter(a => a.unlocked).length }} / {{ achievements.length }}</span>
+            </div>
+          </div>
+          
+          <div v-if="achievementsLoading" class="loading-state">
+            <n-spin size="large" />
+          </div>
+          
+          <div v-else class="achievements-grid">
+            <AchievementCard 
+              v-for="achievement in achievements" 
+              :key="achievement.id"
+              v-bind="achievement"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -260,7 +279,7 @@
 import { ref, inject, onMounted, h, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { useDialog, useMessage } from 'naive-ui';
+import { useDialog, useMessage, NSpin } from 'naive-ui';
 import {
   CameraOutline,
   PersonOutline,
@@ -281,6 +300,8 @@ import { baseURL } from '@/utils/request.js';
 import { useUser } from '@/hooks/useUser';
 import { useDevice } from '@/hooks/useDevice';
 import { useNavigation } from '@/hooks/useNavigation';
+import { useAchievements } from '@/hooks/useAchievements';
+import AchievementCard from '@/components/AchievementCard.vue';
 import { useGoals } from '@/hooks/useGoals';
 import { useSettings } from '@/hooks/useSettings';
 import HotMap from '@/components/HotMap.vue';
@@ -288,6 +309,8 @@ import HotMap from '@/components/HotMap.vue';
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
 const goalsStore = useGoals();
+const { achievements, loading: achievementsLoading, getMyAchievements } = useAchievements();
+
 let {getGoals} = goalsStore;
 // 路由和状态管理
 const router = useRouter();
@@ -316,8 +339,16 @@ const tabs = computed(() => [
   { name: 'overview', label: '概览', count: null },
   { name: 'goals', label: '目标', count: goalsStore.goals.value.length },
   { name: 'analytics', label: '分析', count: null },
-  { name: 'achievements', label: '成就', count: 5 } // 暂时保留成就的mock count
+  { name: 'achievements', label: '成就', count: achievements.value.filter(a => a.unlocked).length }
 ]);
+
+// 监听 tab 切换，加载成就数据
+import { watch } from 'vue';
+watch(activeTab, (newVal) => {
+  if (newVal === 'achievements') {
+    getMyAchievements();
+  }
+});
 
 // 搜索和筛选
 const searchQuery = ref('');
@@ -1672,5 +1703,29 @@ onMounted(async () => {
   .goal-filters {
     flex-wrap: wrap;
   }
+}
+
+/* Achievements Tab */
+.achievements-tab {
+  padding: 16px 0;
+}
+
+.achievements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
 }
 </style>

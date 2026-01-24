@@ -35,6 +35,8 @@ public class LoginController {
     LoginLogService loginLogService;
     @Autowired
     HttpServletRequest request;
+    @Autowired
+    com.freemix.freemix.service.AchievementService achievementService;
     
     @PostMapping("/register")
     public ApiResponse register(@RequestBody  String body){
@@ -169,6 +171,16 @@ public class LoginController {
             // 登录成功，更新日志状态
             loginLog.setLoginSuccess(true);
             loginLogService.saveLoginLog(loginLog);
+            
+            // 触发登录成就检查
+            try {
+                java.util.List<com.freemix.freemix.enetiy.Achievement> unlocked = achievementService.checkAndUnlock(userFromDB.getUsername(), "LOGIN", null);
+                ApiResponse response = ApiResponse.success(userFromDB);
+                response.setAchievements(unlocked);
+                return response;
+            } catch (Exception e) {
+                log.error("触发成就检查失败", e);
+            }
             
             return ApiResponse.success(userFromDB);
         } catch (Exception e) {

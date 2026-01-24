@@ -5,6 +5,7 @@ public class ApiResponse<T> {
     private String msg; // 消息
     private T data;
     private int code;// 数据
+    private java.util.List<com.freemix.freemix.enetiy.Achievement> achievements; // 新解锁的成就
 
     // 无参构造方法
     public ApiResponse() {
@@ -25,6 +26,14 @@ public class ApiResponse<T> {
     }
 
     // Getter 和 Setter 方法
+    public java.util.List<com.freemix.freemix.enetiy.Achievement> getAchievements() {
+        return achievements;
+    }
+
+    public void setAchievements(java.util.List<com.freemix.freemix.enetiy.Achievement> achievements) {
+        this.achievements = achievements;
+    }
+
     public boolean isOperSucc() {
         return operSucc;
     }

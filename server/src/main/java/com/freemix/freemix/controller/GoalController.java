@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.*;
+import com.freemix.freemix.service.AchievementService;
 import com.freemix.freemix.util.ApiResponse;
 import io.netty.util.internal.StringUtil;
 import io.swagger.annotations.Api;
@@ -13,6 +14,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.bson.json.JsonObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -34,13 +36,18 @@ public class GoalController extends BaseController {
         if(GoalStauts.expired.equals(goal.getStatus())||System.currentTimeMillis()>goal.getDeadline().getTime()){
             return ApiResponse.failure("该目标已经过期，无法操作");
         }
-        ApiResponse<Object> res = getObjectApiResponse(goal);
+        List<Achievement> unlockedAchievements = new ArrayList<>();
+        ApiResponse<Object> res = getObjectApiResponse(goal, unlockedAchievements);
         if (res != null) return res;
 
-        return ApiResponse.success(body);
+        ApiResponse response = ApiResponse.success(body,"修改成功");
+        if (!unlockedAchievements.isEmpty()) {
+            response.setAchievements(unlockedAchievements);
+        }
+        return response;
     }
 
-    private ApiResponse<Object> getObjectApiResponse(Goal goal) {
+    private ApiResponse<Object> getObjectApiResponse(Goal goal, List<Achievement> unlockedAchievements) {
         Goal one = mongoTemplate.findOne(new Query(Criteria.where("title").is(goal.getTitle())
                 .and("description").is(goal.getDescription()).and("ower").is(goal.getOwner())), Goal.class);
         if (one != null) {
@@ -60,6 +67,17 @@ public class GoalController extends BaseController {
             goal.setProgress(0);
             goal.setStatus("in-progress");
 
+            
+            // 触发创建目标成就
+            try {
+                if (unlockedAchievements != null) {
+                    unlockedAchievements.addAll(achievementService.checkAndUnlock(goal.getOwner(), "GOAL_CREATE", goal));
+                } else {
+                    achievementService.checkAndUnlock(goal.getOwner(), "GOAL_CREATE", goal);
+                }
+            } catch (Exception e) {
+                log.error("触发创建目标成就失败", e);
+            }
 
             mongoTemplate.insert(goal);
         } else {
@@ -75,6 +93,19 @@ public class GoalController extends BaseController {
             Integer newProgress = computedProgress(goal);
             goal.setProgress(newProgress);
 
+            
+            // 触发完成目标成就 (如果是更新导致完成)
+            if ("completed".equals(goal.getStatus())) {
+                try {
+                    if (unlockedAchievements != null) {
+                        unlockedAchievements.addAll(achievementService.checkAndUnlock(goal.getOwner(), "GOAL_FINISH", goal));
+                    } else {
+                        achievementService.checkAndUnlock(goal.getOwner(), "GOAL_FINISH", goal);
+                    }
+                } catch (Exception e) {
+                    log.error("触发完成目标成就失败", e);
+                }
+            }
 
             mongoTemplate.save(goal);
         }
@@ -445,7 +476,8 @@ public class GoalController extends BaseController {
 
     }
 
-
+@Autowired
+AchievementService achievementService;
 
     @PostMapping("/addCollaborator")
     @CheckToken
@@ -456,8 +488,22 @@ public class GoalController extends BaseController {
         editCollaborator(goalId, Arrays.asList(username), "collaborator");
         User username1 = mongoTemplate.findOne(new Query(Criteria.where("username").is(username)), User.class);
 
+        // 触发社交成就
+        List<Achievement> unlockedAchievements = new ArrayList<>();
+        try {
+            Goal goal = mongoTemplate.findOne(new Query(Criteria.where("_id").is(goalId)), Goal.class);
+            if (goal != null) {
+                unlockedAchievements.addAll(achievementService.checkAndUnlock(goal.getOwner(), "ADD_COLLABORATOR", null));
+            }
+        } catch (Exception e) {
+            log.error("触发社交成就失败", e);
+        }
 
-        return ApiResponse.success(username1);
+        ApiResponse response = ApiResponse.success(username1);
+        if (!unlockedAchievements.isEmpty()) {
+            response.setAchievements(unlockedAchievements);
+        }
+        return response;
 
     }
 
@@ -733,8 +779,13 @@ public class GoalController extends BaseController {
             });
             id.setChildGoals(childGoals);
         }
-        getObjectApiResponse(id);
-        return  ApiResponse.success();
+        List<Achievement> unlockedAchievements = new ArrayList<>();
+        getObjectApiResponse(id, unlockedAchievements);
+        ApiResponse response = ApiResponse.success();
+        if (!unlockedAchievements.isEmpty()) {
+            response.setAchievements(unlockedAchievements);
+        }
+        return response;
 
 
     }

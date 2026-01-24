@@ -21,12 +21,12 @@
         </div>
 
         <div class="text-content">
-          <h2 class="celebration-title">TARGET SMASHED!</h2>
-          <p class="celebration-subtitle">恭喜！你已达成里程碑</p>
+          <h2 class="celebration-title">{{ heading }}</h2>
+          <p class="celebration-subtitle">{{ subHeading }}</p>
           
-          <div class="goal-container">
+          <div class="goal-container" v-if="title">
             <div class="goal-glow"></div>
-            <div class="goal-title">{{ goalTitle }}</div>
+            <div class="goal-title">{{ title }}</div>
           </div>
         </div>
 
@@ -44,7 +44,9 @@ import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const props = defineProps({
   show: { type: Boolean, default: false },
-  goalTitle: { type: String, default: '未命名目标' }
+  title: { type: String, default: '' },
+  heading: { type: String, default: 'TARGET SMASHED!' },
+  subHeading: { type: String, default: '恭喜！你已达成里程碑' }
 });
 
 const emit = defineEmits(['close']);

@@ -64,6 +64,24 @@ request.interceptors.request.use(
     return Promise.reject(error);
   }
 );  
+
+// 添加响应拦截器，检查成就解锁
+request.interceptors.response.use(
+  response => {
+    // 检查是否有新解锁的成就
+    if (response.data && response.data.achievements && Array.isArray(response.data.achievements) && response.data.achievements.length > 0) {
+      console.log('Achievements unlocked:', response.data.achievements);
+      // 触发全局事件
+      const event = new CustomEvent('achievement-unlocked', { detail: response.data.achievements });
+      window.dispatchEvent(event);
+    }
+    return response;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+
 const baseURL =()=> {
   let url = '';
   url= import.meta.env.PROD ? 'https://freemix.bond/freemix' : 'http://localhost:5173/freemix'

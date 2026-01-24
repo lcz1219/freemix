@@ -283,7 +283,7 @@
     <GoalDetail v-model:show="showDetailModal" :goal="selectedGoal" @save="saveGoal" @updateGoal="refreshGoals" />
 
     <!-- 庆祝动画全屏覆盖 -->
-    <CelebrationOverlay :show="showCelebration" :goal-title="celebrationGoalTitle" @close="showCelebration = false" />
+    <CelebrationOverlay :show="showCelebration" :title="celebrationGoalTitle" @close="showCelebration = false" />
 
     <!-- 子目标文件上传模态框 -->
     <n-modal v-model:show="showChildGoalUploadModal" preset="card" style="max-width: 600px" title="上传文件"

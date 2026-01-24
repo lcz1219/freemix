@@ -58,7 +58,7 @@
             <!-- 全局浮动按钮组件 -->
             <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage&&!isMobileDevice" :goals="goals" :formatDate="formatDate" :checktype="checktype"
               @dateSelected="handleCalendarUpdate" />
-            <UpdateNotification ref="updateNotification" />
+            <UpdateNotification ref="updateNotification" v-show="showUpdateNotification" />
             <div style="display: flex;
               justify-content: flex-end;
               align-items: flex-end;
@@ -81,13 +81,22 @@
           </n-notification-provider>
         </n-loading-bar-provider>
       </n-dialog-provider>
+      <!-- 全局成就庆祝动画 -->
+      <CelebrationOverlay 
+        :show="showCelebration" 
+        :title="celebrationData.title" 
+        :heading="celebrationData.heading"
+        :sub-heading="celebrationData.subHeading"
+        @close="showCelebration = false" 
+      />
     </van-config-provider>
   </n-config-provider>
 </template>
 
 <script setup lang="ts">
+import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
 import { isMobile } from '@/utils/device.js'
-import { ref, computed, onMounted, watch, type CSSProperties, provide } from 'vue';
+import { ref, computed, onMounted, watch, type CSSProperties, provide, onUnmounted } from 'vue';
 import { useStore } from 'vuex'
 import TabsView from '@/components/TabsView.vue';
 import { saveToken, getToken } from '@/utils/tokenUtils.js';
@@ -282,10 +291,14 @@ onMounted(async () => {
   isUpdateNotification()
   
 });
+const showUpdateNotification = ref(false);
 const isUpdateNotification=async ()=>{
  const res= await getToken()
  if(res&&router.currentRoute.value.path!=='/login'){
   updateNotification.value.checkLatestUpdate()
+  showUpdateNotification.value=true
+ }else{
+  showUpdateNotification.value=false
  }
 }
 
@@ -441,6 +454,35 @@ provide('railStyle', railStyle);
 // 图标组件
 const SunIcon = SunnyOutline;
 const MoonIcon = MoonOutline;
+
+// 庆祝动画状态
+const showCelebration = ref(false);
+const celebrationData = ref({
+  title: '',
+  heading: 'ACHIEVEMENT UNLOCKED!',
+  subHeading: '恭喜！你已解锁成就'
+});
+
+const handleAchievementUnlocked = (event: CustomEvent) => {
+  const achievements = event.detail;
+  if (achievements && achievements.length > 0) {
+    const first = achievements[0];
+    celebrationData.value = {
+      title: first.title || first.name || '未命名成就',
+      heading: 'ACHIEVEMENT UNLOCKED!',
+      subHeading: first.description || '恭喜！你已解锁成就'
+    };
+    showCelebration.value = true;
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('achievement-unlocked', handleAchievementUnlocked as EventListener);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('achievement-unlocked', handleAchievementUnlocked as EventListener);
+});
 </script>
 
 <style>
