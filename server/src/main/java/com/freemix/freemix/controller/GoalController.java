@@ -402,6 +402,7 @@ public class GoalController extends BaseController {
 
     @PostMapping("/deleteGoal")
     @CheckToken
+//
     public ApiResponse deleteGoal(@RequestBody String body) {
         JSONObject bodyJson = JSONObject.parseObject(body);
         Goal goal = JSONObject.parseObject(bodyJson.getString("row"), Goal.class);
