@@ -248,28 +248,7 @@
             </div>
           </div>
         </div>
-
-        <!-- Achievements Tab -->
-        <div v-if="activeTab === 'achievements'" class="achievements-tab">
-          <div class="achievements-header">
-            <h2 class="section-title">我的成就</h2>
-            <div class="achievement-stats">
-              <span class="stat-item">已解锁: {{ achievements.filter(a => a.unlocked).length }} / {{ achievements.length }}</span>
-            </div>
-          </div>
-          
-          <div v-if="achievementsLoading" class="loading-state">
-            <n-spin size="large" />
-          </div>
-          
-          <div v-else class="achievements-grid">
-            <AchievementCard 
-              v-for="achievement in achievements" 
-              :key="achievement.id"
-              v-bind="achievement"
-            />
-          </div>
-        </div>
+        <Achievements />
       </div>
     </div>
   </div>
@@ -299,9 +278,8 @@ import upload from '@/components/upload.vue';
 import { baseURL } from '@/utils/request.js';
 import { useUser } from '@/hooks/useUser';
 import { useDevice } from '@/hooks/useDevice';
+import Achievements from '@/views/Achievements.vue'
 import { useNavigation } from '@/hooks/useNavigation';
-import { useAchievements } from '@/hooks/useAchievements';
-import AchievementCard from '@/components/AchievementCard.vue';
 import { useGoals } from '@/hooks/useGoals';
 import { useSettings } from '@/hooks/useSettings';
 import HotMap from '@/components/HotMap.vue';
@@ -309,7 +287,6 @@ import HotMap from '@/components/HotMap.vue';
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
 const goalsStore = useGoals();
-const { achievements, loading: achievementsLoading, getMyAchievements } = useAchievements();
 
 let {getGoals} = goalsStore;
 // 路由和状态管理
@@ -339,16 +316,8 @@ const tabs = computed(() => [
   { name: 'overview', label: '概览', count: null },
   { name: 'goals', label: '目标', count: goalsStore.goals.value.length },
   { name: 'analytics', label: '分析', count: null },
-  { name: 'achievements', label: '成就', count: achievements.value.filter(a => a.unlocked).length }
+  { name: 'achievements', label: '成就', count: null}
 ]);
-
-// 监听 tab 切换，加载成就数据
-import { watch } from 'vue';
-watch(activeTab, (newVal) => {
-  if (newVal === 'achievements') {
-    getMyAchievements();
-  }
-});
 
 // 搜索和筛选
 const searchQuery = ref('');

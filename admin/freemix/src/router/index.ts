@@ -148,6 +148,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/achievements',
+    name: 'Achievements',
+    component: () => import('@/views/Achievements.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/admin/updates',
     name: 'UpdateLogManager',
     component: () => import('@/views/UpdateLogManager.vue'),

@@ -49,6 +49,13 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">目标结构</span>
       </n-button>
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'achievements' }" :title="isCollapsedTitle('成就系统')"
+        @click="goTo('/achievements')">
+        <NIcon class="icon">
+          <TrophyOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">成就系统</span>
+      </n-button>
     </nav>
 
     <div class="sidebar-footer">
@@ -100,7 +107,8 @@ import {
   ChatboxEllipses,
   ChevronBack,
   ChevronForward,
-  HelpCircleOutline
+  HelpCircleOutline,
+  TrophyOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
