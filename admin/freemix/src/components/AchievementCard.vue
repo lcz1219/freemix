@@ -1,7 +1,8 @@
 <template>
   <div class="achievement-card" :class="{ 'unlocked': unlocked, 'dark': isDark }">
     <div class="achievement-icon">
-      <span>{{ icon }}</span>
+      <n-icon :size="32" :component="flatIcon" v-if="flatIcon" />
+      <span v-else>{{ icon }}</span>
     </div>
     <div class="achievement-info">
       <div class="achievement-header">
@@ -28,11 +29,26 @@
 <script setup>
 import { computed, inject, ref } from 'vue';
 import { NIcon } from 'naive-ui';
-import { CheckmarkCircle, LockClosed } from '@vicons/ionicons5';
+import { 
+  CheckmarkCircle, 
+  LockClosed,
+  LeafOutline,
+  TrophyOutline,
+  LogoInstagram,
+  MedalOutline,
+  PeopleOutline,
+  MoonOutline,
+  SunnyOutline,
+  FlameOutline,
+  SparklesOutline,
+  RibbonOutline,
+  FootstepsOutline
+} from '@vicons/ionicons5';
 
 const isDark = inject('isDark', ref(false));
 
 const props = defineProps({
+  id: String,
   title: String,
   description: String,
   icon: String,
@@ -41,6 +57,22 @@ const props = defineProps({
   currentProgress: Number,
   conditionValue: Number,
   type: String
+});
+
+const iconMapping = {
+  'first_step': FootstepsOutline,
+  'first_win': TrophyOutline,
+  'goal_hunter': LogoInstagram,
+  'goal_master': MedalOutline,
+  'social_butterfly': PeopleOutline,
+  'night_owl': MoonOutline,
+  'weekend_warrior': SunnyOutline,
+  'consistency': FlameOutline,
+  'perfectionist': SparklesOutline
+};
+
+const flatIcon = computed(() => {
+  return iconMapping[props.id] || null;
 });
 
 const progressPercent = computed(() => {
@@ -85,11 +117,13 @@ const formatDate = (dateString) => {
   background: #ffffff;
   border-radius: 50%;
   border: 1px solid #d0d7de;
+  color: #656d76;
 }
 
 .unlocked .achievement-icon {
   border-color: #1a7f37;
   background: #dafbe1;
+  color: #1a7f37;
 }
 
 .achievement-info {
@@ -165,7 +199,7 @@ const formatDate = (dateString) => {
 }
 
 .achievement-card.dark.unlocked .achievement-icon {
-  background: #238636;
+  background: #050905;
   border-color: #3fb950;
 }
 

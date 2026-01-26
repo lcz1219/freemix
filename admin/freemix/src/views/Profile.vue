@@ -248,7 +248,7 @@
             </div>
           </div>
         </div>
-        <Achievements />
+        <Achievements v-if="activeTab === 'achievements'" />
       </div>
     </div>
   </div>

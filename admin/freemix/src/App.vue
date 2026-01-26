@@ -294,7 +294,7 @@ onMounted(async () => {
 const showUpdateNotification = ref(false);
 const isUpdateNotification=async ()=>{
  const res= await getToken()
- if(res&&router.currentRoute.value.path!=='/login'){
+ if(res&&router.path!=='/login'){
   updateNotification.value.checkLatestUpdate()
   showUpdateNotification.value=true
  }else{
