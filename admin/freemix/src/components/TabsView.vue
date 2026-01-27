@@ -136,7 +136,8 @@ const routeTitleMap: Record<string, string> = {
   "Messages": "消息",
   "Profile": "个人信息",
   "UserGuide": "使用指引",
-  "UpdateLogManager": "更新日志管理"
+  "UpdateLogManager": "更新日志管理",
+  "Achievements":"成就系统"
 }
 
 // 获取路由标题
