@@ -68,6 +68,8 @@ public class GoalController extends BaseController {
             goal.setStatus("in-progress");
 
             
+            mongoTemplate.insert(goal);
+
             // 触发创建目标成就
             try {
                 if (unlockedAchievements != null) {
@@ -78,8 +80,6 @@ public class GoalController extends BaseController {
             } catch (Exception e) {
                 log.error("触发创建目标成就失败", e);
             }
-
-            mongoTemplate.insert(goal);
         } else {
             if (System.currentTimeMillis() > goal.getDeadline().getTime()) {
                 goal.setStatus("expired");

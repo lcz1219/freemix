@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 // 安全地暴露API给渲染进程
-contextBridge.exposeInMainWorld('api', {
+contextBridge.exposeInMainWorld('electronAPI', {
   // 窗口控制API
   minimizeWindow: () => ipcRenderer.send('window-control', 'minimize'),
   maximizeWindow: () => ipcRenderer.send('window-control', 'maximize'),
