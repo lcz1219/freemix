@@ -112,9 +112,20 @@ public class LoginController {
             User user = new User();
             user.setUsername(username);
             user.setPassword(password);
-            
-            User userFromDB = mongoTemplate.findOne(new Query().addCriteria(Criteria.where("username").is(user.getUsername())
-                    .and("password").is(user.getPassword()).and("del").ne(1)), User.class);
+
+            User userFromDB = mongoTemplate.findOne(
+                    new Query().addCriteria(
+                            Criteria.where("del").ne(1)  // 排除逻辑删除的记录
+                                    .andOperator(
+                                            Criteria.where("password").is(user.getPassword()),  // 密码必须匹配
+                                            new Criteria().orOperator(  // 用户名或邮箱匹配
+                                                    Criteria.where("username").is(user.getUsername()),
+                                                    Criteria.where("email").is(user.getUsername())
+                                            )
+                                    )
+                    ),
+                    User.class
+            );
             if(userFromDB == null){
                 loginLog.setLoginSuccess(false);
                 loginLog.setErrorMessage("用户名或密码错误");

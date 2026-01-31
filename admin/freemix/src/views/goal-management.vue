@@ -65,8 +65,25 @@
                       </template>
                     </n-input>
 
+                    <n-date-picker v-model:value="dateFilter" type="daterange" clearable placeholder="选择日期范围"
+                      style="width: 240px;" />
+
+                    <n-select v-model:value="ownershipFilter" :options="ownershipOptions" clearable placeholder="我的/协作"
+                      style="width: 120px;" />
+
                     <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
                       style="width: 120px;" />
+                      
+                    <n-dropdown trigger="click" :options="exportOptions" @select="handleExport">
+                      <n-button>
+                        <template #icon>
+                          <n-icon>
+                            <CloudDownloadOutline />
+                          </n-icon>
+                        </template>
+                        导出
+                      </n-button>
+                    </n-dropdown>
                   </n-space>
                 </n-space>
               </n-card>
@@ -101,7 +118,21 @@
                     <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
                       style="width: 100%; cursor: pointer;height: 100%;" @row-click="handleRowClick"
                       :row-class-name="tableRowClassName" highlight-current-row>
-                      <el-table-column label="目标名称" prop="title" show-overflow-tooltip />
+                      <el-table-column label="目标名称" prop="title" show-overflow-tooltip min-width="180">
+                        <template #default="scope">
+                          <div style="display: flex; align-items: center; gap: 6px;">
+                            <n-tag v-if="isOwner(scope.row)" size="small" type="primary" :bordered="false" round
+                              style="font-size: 10px; height: 20px; padding: 0 6px;">
+                              我的
+                            </n-tag>
+                            <n-tag v-else size="small" type="warning" :bordered="false" round
+                              style="font-size: 10px; height: 20px; padding: 0 6px;">
+                              协作
+                            </n-tag>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ scope.row.title }}</span>
+                          </div>
+                        </template>
+                      </el-table-column>
                       <el-table-column label="进度" width="100">
                         <template #default="scope">
                           <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress"
@@ -132,6 +163,10 @@
                     <template #header>
                       <div class="detail-header-wrapper">
                         <div class="detail-meta-top">
+                          <n-tag :type="isOwner(currentSelectedGoal) ? 'primary' : 'warning'" size="small" round
+                            :bordered="false" style="margin-right: 8px;">
+                            {{ isOwner(currentSelectedGoal) ? '我主导的' : '我协作的' }}
+                          </n-tag>
                           <n-tag :type="getStatusTagType(currentSelectedGoal.status)" size="small" round
                             :bordered="false">
                             {{ getStatusLabel(currentSelectedGoal.status) }}
@@ -385,7 +420,8 @@ import {
   NDropdown,
   NGrid,
   NGridItem,
-  NDivider
+  NDivider,
+  NDatePicker
 } from 'naive-ui';
 import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -395,6 +431,9 @@ import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
 import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
   EyeSharp,
   PencilOutline,
@@ -422,6 +461,14 @@ const isDark = inject('isDark', ref(false));
 const router = useRouter();
 const store = useStore();
 const message = useMessage();
+
+// 用户信息
+const currentUser = computed(() => store.state.user?.username || '');
+
+// 判断是否为目标所有者
+const isOwner = (goal: any) => {
+  return goal && goal.owner === currentUser.value;
+};
 
 // 数据状态
 const goals = ref<any[]>([]);
@@ -515,6 +562,9 @@ const handleDropdownSelect = (key, row, index, childGoal) => {
 // 筛选和搜索
 const searchQuery = ref('');
 const statusFilter = ref<string | null>(null);
+const dateFilter = ref<[number, number] | null>(null);
+const ownershipFilter = ref<string | null>(null);
+
 const deleteGoal = (row) => {
 
   postM('deleteGoal', { row }).then((res) => {
@@ -530,6 +580,134 @@ const statusOptions = [
   { label: '已完成', value: 'completed' },
   { label: '已过期', value: 'expired' }
 ];
+
+// 导出选项
+const exportOptions = [
+  { label: '导出 Excel', key: 'excel' },
+  { label: '导出 PDF', key: 'pdf' }
+];
+
+// 所有权筛选选项
+const ownershipOptions = [
+  { label: '我的目标', value: 'mine' },
+  { label: '协作目标', value: 'collab' }
+];
+
+// 导出处理
+const handleExport = (key: string) => {
+  if (key === 'excel') {
+    exportToExcel();
+  } else if (key === 'pdf') {
+    exportToPDF();
+  }
+};
+
+// 导出 Excel
+const exportToExcel = () => {
+  try {
+    const dataToExport = filteredGoals.value.map(goal => ({
+      '目标名称': goal.title,
+      '描述': goal.description || '',
+      '状态': getStatusLabel(goal.status),
+      '进度': goal.progress + '%',
+      '负责人': goal.owner,
+      '截止日期': goal.deadlineString,
+      '所有权': isOwner(goal) ? '我的目标' : '协作目标'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, '目标列表');
+    
+    // 设置列宽
+    const wscols = [
+      { wch: 20 }, // 目标名称
+      { wch: 30 }, // 描述
+      { wch: 10 }, // 状态
+      { wch: 10 }, // 进度
+      { wch: 15 }, // 负责人
+      { wch: 15 }, // 截止日期
+      { wch: 10 }  // 所有权
+    ];
+    worksheet['!cols'] = wscols;
+
+    XLSX.writeFile(workbook, `目标列表_${new Date().toISOString().split('T')[0]}.xlsx`);
+    message.success('Excel 导出成功');
+  } catch (error) {
+    console.error('导出 Excel 失败:', error);
+    message.error('导出 Excel 失败');
+  }
+};
+
+// 导出 PDF
+const exportToPDF = async () => {
+  try {
+    message.loading('正在生成 PDF...');
+    
+    // 创建一个临时的 DOM 元素用于渲染表格
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    tempDiv.style.width = '800px';
+    tempDiv.style.padding = '20px';
+    tempDiv.style.backgroundColor = '#ffffff';
+    tempDiv.style.color = '#000000';
+    
+    let tableHtml = `
+      <h2 style="text-align: center; margin-bottom: 20px;">目标列表</h2>
+      <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 8px;">目标名称</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">状态</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">进度</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">负责人</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">截止日期</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    filteredGoals.value.forEach(goal => {
+      tableHtml += `
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">${goal.title}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${getStatusLabel(goal.status)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${goal.progress}%</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${goal.owner}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${goal.deadlineString}</td>
+        </tr>
+      `;
+    });
+    
+    tableHtml += `
+        </tbody>
+      </table>
+      <div style="margin-top: 10px; text-align: right; font-size: 12px;">导出日期: ${new Date().toLocaleDateString()}</div>
+    `;
+    
+    tempDiv.innerHTML = tableHtml;
+    document.body.appendChild(tempDiv);
+    
+    const canvas = await html2canvas(tempDiv);
+    const imgData = canvas.toDataURL('image/png');
+    
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`目标列表_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    document.body.removeChild(tempDiv);
+    message.success('PDF 导出成功');
+  } catch (error) {
+    console.error('导出 PDF 失败:', error);
+    message.error('导出 PDF 失败');
+  }
+};
+
 
 // 分页配置
 const pagination = {
@@ -686,6 +864,31 @@ const filteredGoals = computed(() => {
   // 状态过滤
   if (statusFilter.value) {
     result = result.filter(goal => goal.status === statusFilter.value);
+  }
+
+  // 所有权过滤
+  if (ownershipFilter.value) {
+    if (ownershipFilter.value === 'mine') {
+      result = result.filter(goal => isOwner(goal));
+    } else if (ownershipFilter.value === 'collab') {
+      result = result.filter(goal => !isOwner(goal));
+    }
+  }
+
+  // 时间过滤
+  if (dateFilter.value && dateFilter.value.length === 2) {
+    const [startTs, endTs] = dateFilter.value;
+    const startDate = new Date(startTs);
+    const endDate = new Date(endTs);
+    
+    // 调整结束时间到当天的 23:59:59
+    endDate.setHours(23, 59, 59, 999);
+
+    result = result.filter(goal => {
+      if (!goal.deadline) return false;
+      const deadline = new Date(goal.deadline);
+      return deadline >= startDate && deadline <= endDate;
+    });
   }
 
   return result;

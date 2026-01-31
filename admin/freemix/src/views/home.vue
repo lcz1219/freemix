@@ -951,27 +951,34 @@ const handleCalendarUpdate = (value) => {
   const mothListComp = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
   const mothListEve = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 const filterMoth = () => {
- 
+  // 重置统计数据
+  mothListComp.value = new Array(12).fill(0)
+  mothListEve.value = new Array(12).fill(0)
+
   goals.value.forEach(e => {
     // console.log("e.deadline", e.deadline);
+    if (!e.deadline) return
     
-    if(new Date(e.deadline).getFullYear() !== new Date().getFullYear()){
+    const date = new Date(e.deadline)
+    if(date.getFullYear() !== new Date().getFullYear()){
       return
     }
-    if (e.status === 'completed') {
-      mothListComp.value[new Date(e.deadline).getMonth()-1]++
+    
+    const monthIndex = date.getMonth() // 0-11
+    if (monthIndex >= 0 && monthIndex < 12) {
+      if (e.status === 'completed') {
+        mothListComp.value[monthIndex]++
+      }
+      mothListEve.value[monthIndex]++
     }
-    const date = new Date(e.deadline)
-    date.getMonth()
-    mothListEve.value[date.getMonth()-1]++
-
   })
-  console.log("mothListEve", mothListEve.value);
-  console.log("mothListComp", mothListComp.value);
+  // console.log("mothListEve", mothListEve.value);
+  // console.log("mothListComp", mothListComp.value);
 
   mothList.value = mothListComp.value.map((e, index) => {
-
-    return e / mothListEve.value[index] * 100
+    const total = mothListEve.value[index]
+    if (total === 0) return null // 无数据时返回 null，配合 spanGaps: true 连接断点
+    return e / total * 100
   })
   return mothList.value
 }
@@ -1076,7 +1083,8 @@ onMounted(async () => {
         borderColor: '#00c9a7',
         backgroundColor: 'rgba(0, 201, 167, 0.1)',
         tension: 0.4,
-        fill: true
+        fill: true,
+        spanGaps: true // 连接断点
       }]
     },
     options: {

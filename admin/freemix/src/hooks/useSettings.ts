@@ -135,11 +135,15 @@ export function useSettings() {
   // 初始化用户数据
   const initUserData = () => {
     const user = store.state.user;
+    console.log("initUserData",user);
     if (user) {
-      profileForm.value.name = user.name || '';
-      profileForm.value.email = user.email || '';
-      profileForm.value.position = user.position || '';
-      profileForm.value.bio = user.bio || '';
+      // profileForm.value.name = user.chinesename || '';
+      // profileForm.value.username = user.username || '';
+      // profileForm.value.email = user.email || '';
+      // profileForm.value.position = user.position || '';
+      // profileForm.value.bio = user.fashionTitle || '';
+      // profileForm.value.bio = user.fashionTitle || '';
+      profileForm.value = user;
       
       securitySettings.value.twoFactorEnabled = user.twoFactorEnabled || false;
     }

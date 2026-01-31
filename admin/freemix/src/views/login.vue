@@ -58,7 +58,7 @@
           <n-tab-pane name="signin" tab="登录">
             <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="prepareLogin">
               <n-form-item-row label="用户名" path="username">
-                <n-input placeholder="请输入用户名" v-model:value="user.username" @blur="loadCaptcha">
+                <n-input placeholder="请输入用户名/邮箱" v-model:value="user.username" @blur="loadCaptcha">
                   <template #prefix><n-icon :component="PersonOutline" /></template>
                 </n-input>
               </n-form-item-row>
@@ -815,6 +815,16 @@ watch(loginStep, (newStep) => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+}
+
+/* 限制内容宽度，确保在桌面端全屏模式下内容居中且不拉伸 */
+.logo-container,
+.fade-in-up,
+.verify-section,
+.two-factor-auth-section {
+  width: 100%;
+  max-width: 480px;
 }
 
 /* Logo 区域 */

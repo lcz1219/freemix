@@ -93,7 +93,7 @@ public class GoalController extends BaseController {
             Integer newProgress = computedProgress(goal);
             goal.setProgress(newProgress);
 
-            
+            mongoTemplate.save(goal);
             // 触发完成目标成就 (如果是更新导致完成)
             if ("completed".equals(goal.getStatus())) {
                 try {
@@ -107,7 +107,7 @@ public class GoalController extends BaseController {
                 }
             }
 
-            mongoTemplate.save(goal);
+
         }
         //插入创建者到关系表里面
         editCollaborator(goal.get_id(), Arrays.asList(goal.getOwner()), "owner");

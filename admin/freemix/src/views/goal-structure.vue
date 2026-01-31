@@ -534,7 +534,7 @@ const saveNode = () => {
 
 
   showEditModal.value = false;
-  message.success('保存成功');
+  // message.success('保存成功');
 };
 
 // 删除节点
@@ -560,6 +560,14 @@ const clearAll = () => {
 
 // 保存结构
 const saveStructure = async () => {
+  if(!nodes.value||nodes.value.length==0){
+    message.warning('请添加目标');
+    return;
+  }
+  if(!connections.value||connections.value.length==0){
+    message.warning('请添加目标之间的关系');
+    return;
+  }
   const structure = {
     nodes: nodes.value,
     connections: connections.value

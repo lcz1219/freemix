@@ -57,7 +57,7 @@
               <div class="form-group">
                 <label>姓名</label>
                 <input 
-                  v-model="profileForm.name" 
+                  v-model="profileForm.chinesename" 
                   type="text" 
                   class="form-input"
                 />
@@ -75,7 +75,7 @@
               <div class="form-group">
                 <label>个人简介</label>
                 <textarea 
-                  v-model="profileForm.bio" 
+                  v-model="profileForm.fashionTitle" 
                   rows="3" 
                   class="form-input"
                 ></textarea>
