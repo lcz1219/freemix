@@ -109,6 +109,7 @@ public class QrLoginController {
         sanitizedUser.put("email", currentUser.getEmail());
         // 重要：这里要返回 deskToken，前端会用它
         sanitizedUser.put("token", newToken); 
+        sanitizedUser.put("fashionTitle", currentUser.getFashionTitle());
 
         session.put("status", "APPROVED");
         session.put("username", currentUser.getUsername());
