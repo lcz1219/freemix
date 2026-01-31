@@ -1124,8 +1124,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             // 优先尝试生产环境API，如果失败且在本地，可以回退（这里简化直接请求生产环境）
             // 注意：需要后端开启 CORS 支持
-            // const API_URL = 'https://freemix.bond/api/config/downloads';
-            const API_URL = 'http://localhost:5173/freemix/api/config/downloads';
+            const API_URL = 'https://freemix.bond/freemix/api/config/downloads';
+            // const API_URL = 'http://localhost:5173/freemix/api/config/downloads';
             
             fetch(API_URL)
                 .then(response => response.json())
