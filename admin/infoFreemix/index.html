@@ -795,10 +795,10 @@
                     <h1>统一管理<br><span class="gradient-text">掌控全局未来</span></h1>
                     <p>FreeMix 是一个设计优雅的全栈目标管理系统。结合现代化 Web 技术与原生桌面体验，让目标管理不再受限于平台。</p>
                     <div class="hero-btns">
-                        <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
+                        <a id="download-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
                             <i class="fab fa-apple"></i> Mac 版下载
                         </a>
-                        <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-win.zip" class="btn btn-primary">
+                        <a id="download-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-primary">
                             <i class="fab fa-windows"></i> Win 版下载
                         </a>
                         <a href="https://github.com/lcz1219/freemix" class="btn btn-glass">
@@ -974,7 +974,7 @@
                     <i class="fab fa-apple platform-icon"></i>
                     <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">macOS</h3>
                     <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Apple Silicon (M1/M2/M3)</p>
-                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
+                    <a id="download-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
                         <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .dmg 文件
                     </a>
                 </div>
@@ -982,7 +982,7 @@
                     <i class="fab fa-windows platform-icon"></i>
                     <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Windows</h3>
                     <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Windows 10/11 x64</p>
-                    <a href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.1/FreeMix-0.0.0-win.zip" class="btn btn-glass">
+                    <a id="download-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-glass">
                         <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .zip 文件
                     </a>
                 </div>
@@ -1118,6 +1118,39 @@
                     });
                 }
             });
+        });
+
+        // 5. 动态获取下载链接
+        document.addEventListener('DOMContentLoaded', () => {
+            // 优先尝试生产环境API，如果失败且在本地，可以回退（这里简化直接请求生产环境）
+            // 注意：需要后端开启 CORS 支持
+            // const API_URL = 'https://freemix.bond/api/config/downloads';
+            const API_URL = 'http://localhost:5173/freemix/api/config/downloads';
+            
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200 && res.data) {
+                        const { macDownloadUrl, winDownloadUrl } = res.data;
+                        
+                        // 更新 Mac 链接
+                        if (macDownloadUrl) {
+                            const heroMac = document.getElementById('hero-btn-mac');
+                            const dlMac = document.getElementById('download-btn-mac');
+                            if (heroMac) heroMac.href = macDownloadUrl;
+                            if (dlMac) dlMac.href = macDownloadUrl;
+                        }
+
+                        // 更新 Windows 链接
+                        if (winDownloadUrl) {
+                            const heroWin = document.getElementById('hero-btn-win');
+                            const dlWin = document.getElementById('download-btn-win');
+                            if (heroWin) heroWin.href = winDownloadUrl;
+                            if (dlWin) dlWin.href = winDownloadUrl;
+                        }
+                    }
+                })
+                .catch(err => console.error('获取下载配置失败:', err));
         });
     </script>
 </body>

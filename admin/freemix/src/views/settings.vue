@@ -13,6 +13,9 @@
               <li class="nav-item" :class="{ active: activeSection === 'security' }">
                 <a href="#" @click.prevent="setActiveSection('security')">安全设置</a>
               </li>
+              <li class="nav-item" :class="{ active: activeSection === 'system' }">
+                <a href="#" @click.prevent="setActiveSection('system')">下载设置</a>
+              </li>
               <!-- <li class="nav-item" :class="{ active: activeSection === 'token' }">
                 <a href="#" @click.prevent="setActiveSection('token')">Token信息</a>
               </li> -->
@@ -96,6 +99,35 @@
               
               <div class="form-actions">
                 <button @click="saveSecuritySettings" class="btn primary">保存安全设置</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 系统设置 (管理员) -->
+          <div v-show="activeSection === 'system'" class="settings-section">
+            <div class="settings-card">
+              <h2>系统设置</h2>
+              <div class="form-group">
+                <label>Mac 下载链接</label>
+                <input 
+                  v-model="downloadConfig.macDownloadUrl" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="https://..."
+                />
+              </div>
+              <div class="form-group">
+                <label>Windows 下载链接</label>
+                <input 
+                  v-model="downloadConfig.winDownloadUrl" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="https://..."
+                />
+              </div>
+              
+              <div class="form-actions">
+                <button @click="saveDownloadConfig" class="btn primary">保存系统设置</button>
               </div>
             </div>
           </div>
@@ -240,7 +272,7 @@ import { useStore } from 'vuex';
 // @ts-ignore - 忽略qrcode声明文件错误
 import QRCode from 'qrcode'
 import { useMessage,NQrCode } from 'naive-ui';
-import { postM, isSuccess } from '@/utils/request.js';
+import { postM, isSuccess, getM } from '@/utils/request.js';
 import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { useSettings } from '@/hooks/useSettings';
@@ -278,11 +310,43 @@ const {
   initUserData
 } = useSettings();
 
+const downloadConfig = ref({
+  macDownloadUrl: '',
+  winDownloadUrl: ''
+});
+
+const fetchDownloadConfig = async () => {
+  try {
+    const res = await getM('/api/config/downloads');
+    if (isSuccess(res)) {
+      downloadConfig.value = res.data.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch download config:', error);
+  }
+};
+
+const saveDownloadConfig = async () => {
+  try {
+    const res = await postM('/api/config/downloadsp', downloadConfig.value);
+    if (isSuccess(res)) {
+      message.success('系统设置已保存');
+    } else {
+      message.error(res.data.msg || '保存失败');
+    }
+  } catch (error) {
+    message.error('保存失败');
+  }
+};
+
 // 侧边栏导航控制
 const activeSection = ref('profile');
 
 const setActiveSection = (section) => {
   activeSection.value = section;
+  if (section === 'system') {
+    fetchDownloadConfig();
+  }
 };
 
 const reminderTimeString = computed({
