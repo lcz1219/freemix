@@ -82,7 +82,8 @@ const getrecentGoals=async ()=>{
     res.data.data.forEach(goal => {
       goal.deadlineString = props.formatDate(goal.deadline);
     });
-    recentGoals.value = res.data.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5);
+    let nocompletedGoals=res.data.data.filter(goal=>goal.status=="in-progress")
+    recentGoals.value = nocompletedGoals.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5);
   }
 }
 
@@ -176,7 +177,6 @@ onMounted(() => {
 }
 
 .timeline-container {
-  max-height: 300px;
   overflow-y: auto;
   padding-right: 10px;
 }

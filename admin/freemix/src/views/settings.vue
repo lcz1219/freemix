@@ -114,7 +114,7 @@
                   type="text" 
                   class="form-input"
                   placeholder="https://..."
-                  :disabled="isAdmin"
+                  :disabled="isnAdmin"
                 />
               </div>
               <div class="form-group">
@@ -124,7 +124,7 @@
                   type="text" 
                   class="form-input"
                   placeholder="https://..."
-                  :disabled="isAdmin"
+                  :disabled="isnAdmin"
                 />
               </div>
               
@@ -280,7 +280,7 @@ import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { useSettings } from '@/hooks/useSettings';
 
 const desktopToken = computed(() => localStorage.getItem('deskop_token'));
-const user = computed(() => localStorage.getItem('user'));
+const user = computed(() => JSON.parse(localStorage.getItem('user') || '{}'));
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
 const toggleTheme = inject('toggleTheme', () => {});
@@ -289,7 +289,11 @@ const toggleTheme = inject('toggleTheme', () => {});
 const router = useRouter();
 const store = useStore();
 const message = useMessage();
-const isAdmin = computed(() => user.value !== 'lcz');
+const isnAdmin = computed(() => {
+ 
+
+  return user.value.username != "lcz"
+});
 // 使用useSettings hook
 const {
   profileForm,
