@@ -30,7 +30,7 @@
         <!-- AI助手按钮 -->
         <n-button class="menu-button"
           circle 
-              @click="showGuide">
+              @click="openAIAssistant">
               <template #icon>
                 <!-- <img :src="aiAssistantIcon" style="width: 24px; height: 24px;" /> -->
                 <svg width="100%" height="100%" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -166,9 +166,9 @@
         </div>
       </template>
       
-      <div class="goals-content">
+      <!-- <div class="goals-content"> -->
         <RecentGoals v-if="showGoals" :goals="goals" :formatDate="formatDate" :checktype="checktype" />
-      </div>
+      <!-- </div> -->
     </n-modal>
   </div>
 </template>

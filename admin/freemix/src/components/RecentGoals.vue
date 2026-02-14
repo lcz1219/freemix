@@ -24,12 +24,15 @@ import { ref, onMounted,computed } from 'vue';
 import { NTimeline, NTimelineItem, NCard } from 'naive-ui';
 import * as echarts from 'echarts/core';
 import { BarChart } from 'echarts/charts';
+import { getMPaths, isSuccess } from '@/utils/request'
+
 import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
   GraphicComponent
 } from 'echarts/components';
+import { useStore } from 'vuex'
 import { CanvasRenderer } from 'echarts/renderers';
 
 // 注册 ECharts 组件
@@ -57,21 +60,37 @@ const props = defineProps({
     required: true
   }
 });
-
+const store = useStore()
 // 图表引用
 const timelineChart = ref(null);
 // 计算最近的5个目标
-const recentGoals = computed(() => {
-  const res=props.goals.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5)
-  console.log("res",res);
+// const recentGoals = computed(() => {
+//   const res=props.goals.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5)
+//   console.log("res",res);
   
-  return res;
-});
+//   return res;
+// });
+const recentGoals=ref([])
+
+const getrecentGoals=async ()=>{
+  console.log("store.state.user ",store.state.user.username);
+  
+  if (!store.state.user || !store.state.user.username) return;
+  
+  const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
+  if (isSuccess(res)) {
+    res.data.data.forEach(goal => {
+      goal.deadlineString = props.formatDate(goal.deadline);
+    });
+    recentGoals.value = res.data.data.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5);
+  }
+}
 
 
 
 // 初始化图表
 onMounted(() => {
+  getrecentGoals()
   // 时间线图表图标 (ECharts)
   const timelineChartInstance = echarts.init(timelineChart.value);
   timelineChartInstance.setOption({

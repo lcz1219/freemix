@@ -114,6 +114,7 @@
                   type="text" 
                   class="form-input"
                   placeholder="https://..."
+                  :disabled="isAdmin"
                 />
               </div>
               <div class="form-group">
@@ -123,6 +124,7 @@
                   type="text" 
                   class="form-input"
                   placeholder="https://..."
+                  :disabled="isAdmin"
                 />
               </div>
               
@@ -287,7 +289,7 @@ const toggleTheme = inject('toggleTheme', () => {});
 const router = useRouter();
 const store = useStore();
 const message = useMessage();
-
+const isAdmin = computed(() => user.value !== 'lcz');
 // 使用useSettings hook
 const {
   profileForm,
