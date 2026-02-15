@@ -10,5 +10,9 @@ export function isTablet() {
 }
 
 export function isDesktop() {
+  // 优先检查 window.electronAPI (项目自定义的preload注入)
+  if (typeof window !== 'undefined' && window.electronAPI) {
+    return true;
+  }
   return isElectron();
 }

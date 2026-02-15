@@ -90,31 +90,32 @@ public class QrLoginController {
             return ApiResponse.failure("用户未登录");
         }
 
-        String newToken = UUID.randomUUID().toString();
-        currentUser.setToken(newToken);
+        // 生成一个临时的web token，用于握手，这个token有效期60分钟
+        String tempWebToken = UUID.randomUUID().toString();
+        currentUser.setToken(tempWebToken);
 
         mongoTemplate.findAndModify(
                 new Query().addCriteria(Criteria.where("id").is(currentUser.getId())),
-                new Update().set("token", newToken),
+                new Update().set("token", tempWebToken),
                 User.class
         );
 
         String tokenKey = currentUser.getUsername() + "_token";
-        redisTemplate.opsForValue().set(tokenKey, newToken, 60, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(tokenKey, tempWebToken, 60, TimeUnit.MINUTES);
 
         JSONObject sanitizedUser = new JSONObject();
         sanitizedUser.put("id", currentUser.getId());
         sanitizedUser.put("username", currentUser.getUsername());
         sanitizedUser.put("avatarUrl", currentUser.getAvatarUrl());
         sanitizedUser.put("email", currentUser.getEmail());
-        // 重要：这里要返回 deskToken，前端会用它
-        sanitizedUser.put("token", newToken); 
+        // 返回给前端的token，前端如果是桌面端会拿这个去换取长期的deskToken
+        sanitizedUser.put("token", tempWebToken); 
         sanitizedUser.put("fashionTitle", currentUser.getFashionTitle());
 
         session.put("status", "APPROVED");
         session.put("username", currentUser.getUsername());
         session.put("userId", currentUser.getId());
-        session.put("token", newToken); // 这里的 token 字段实际上是 deskToken，前端需要适配
+        session.put("token", tempWebToken);
         session.put("user", sanitizedUser);
 
         redisTemplate.opsForValue().set(key, session.toJSONString(), 60, TimeUnit.SECONDS);

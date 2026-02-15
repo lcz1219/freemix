@@ -103,7 +103,7 @@ const checkLatestUpdate = async () => {
     if (isSuccess(res)) {
       const latest = res.data.data;
       
-      if (!latest.readUsers.includes(store.state.user.username)) {
+      if ((!latest.readUsers.includes(store.state.user.username))&&store.state.user.username) {
         lasteUpdteLog.value = latest;
         showUpdateNotification(latest);
       }
