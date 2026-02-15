@@ -11,11 +11,11 @@
 export async function createNewWindow(winId, options = {}, pageUrl = '/AIAssistantWindow') {
   try {
     // 检查是否在Electron环境中
-    // console.log('window',window);
-    // console.log('pageUrl',pageUrl);
+    console.log('window',window);
+    console.log('pageUrl',pageUrl);
     // 桌面端才调用 Electron API
-    if (window.api) {
-      const result = await window.api.createNewWindow(winId, options, pageUrl);
+    if (window.electronAPI) {
+      const result = await window.electronAPI.createNewWindow(winId, options, pageUrl);
       return result;
     } else {
       // 非桌面端，直接返回null
@@ -39,8 +39,8 @@ export async function createNewWindow(winId, options = {}, pageUrl = '/AIAssista
  */
 export function closeWindow(winId) {
   try {
-    if (window.api && window.api.closeWindow) {
-      window.api.closeWindow(winId);
+    if (window.electronAPI && window.electronAPI.closeWindow) {
+      window.electronAPI.closeWindow(winId);
     } else {
       console.warn('Electron API 不可用，可能不在Electron环境中');
       // 在浏览器环境中无操作
@@ -56,8 +56,8 @@ export function closeWindow(winId) {
  */
 export function focusWindow(winId) {
   try {
-    if (window.api && window.api.focusWindow) {
-      window.api.focusWindow(winId);
+    if (window.electronAPI && window.electronAPI.focusWindow) {
+      window.electronAPI.focusWindow(winId);
     } else {
       console.warn('Electron API 不可用，可能不在Electron环境中');
     }

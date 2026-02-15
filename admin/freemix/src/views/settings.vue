@@ -278,6 +278,7 @@ import { postM, isSuccess, getM } from '@/utils/request.js';
 import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { useSettings } from '@/hooks/useSettings';
+import adminJson from '@/views/json/adminJson.json';
 
 const desktopToken = computed(() => localStorage.getItem('deskop_token'));
 const user = computed(() => JSON.parse(localStorage.getItem('user') || '{}'));
@@ -292,7 +293,7 @@ const message = useMessage();
 const isnAdmin = computed(() => {
  
 
-  return user.value.username != "lcz"
+  return !adminJson.admin.includes(user.value.username) 
 });
 // 使用useSettings hook
 const {

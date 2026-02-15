@@ -109,6 +109,8 @@ function createWindow() {
   } else {
     // 生产环境：加载打包后的静态文件
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    // 强制开启开发者工具（调试用）
+    // mainWindow.webContents.openDevTools();
   }
 
   return mainWindow;

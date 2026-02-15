@@ -41,7 +41,7 @@ public class FeedBackController extends BaseController {
     }
 
     @GetMapping("findFeedBack")
-    @CheckToken
+    // @CheckToken
     public ApiResponse findFeedBack() {
         List<FeedBack> feedBacks = mongoTemplate.find(new Query(), FeedBack.class);
         return ApiResponse.success(feedBacks);

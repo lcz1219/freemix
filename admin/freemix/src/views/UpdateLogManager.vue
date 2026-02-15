@@ -2,13 +2,14 @@
   <div class="update-log-manager">
     <n-card title="系统更新管理" class="manager-card">
       <template #header-extra>
-        <n-button type="primary" @click="showCreateModal = true">
+        <n-button type="primary" @click="showCreateModal = true" :disabled="isnAdmin">
           <template #icon><n-icon><AddOutline /></n-icon></template>
           发布新版本
         </n-button>
       </template>
 
       <n-data-table
+        v-show="!isnAdmin"
         :columns="columns"
         :data="updateLogs"
         :loading="loading"
@@ -48,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, h } from 'vue';
+import { ref, onMounted, h,computed } from 'vue';
 import { 
   NButton, NTag, useMessage, NSpace, NCard, NDataTable, 
   NModal, NForm, NFormItem, NInput, NSelect, NIcon 
@@ -56,6 +57,7 @@ import {
 import { AddOutline } from '@vicons/ionicons5';
 import { postM, getM,isSuccess } from '@/utils/request';
 import { useStore } from 'vuex';
+import adminJson from '@/views/json/adminJson.json';
 
 const message = useMessage();
 const store = useStore();
@@ -69,6 +71,13 @@ const formModel = ref({
   importance: 'medium',
   scope: '',
   content: ''
+});
+const user = computed(() => JSON.parse(localStorage.getItem('user') || '{}'));
+
+const isnAdmin = computed(() => {
+ 
+
+  return !adminJson.admin.includes(user.value.username) 
 });
 
 const rules = {
