@@ -278,8 +278,8 @@ const openAIAssistant = async () => {
   const windowId = generateWindowId();
   try {
     await createNewWindow(windowId, {
-      width: 500,
-      height: 700,
+      width: 1100,
+      height: 600,
       minWidth: 400,
       minHeight: 500
     }, '/AIAssistantWindow');

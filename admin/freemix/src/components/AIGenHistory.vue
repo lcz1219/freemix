@@ -454,7 +454,8 @@ onMounted(() => {
 }
 
 .record-item {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-color);
   border-radius: 8px;
   padding: 16px;
   transition: all 0.3s ease;
@@ -462,11 +463,12 @@ onMounted(() => {
 
 .record-item:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--n-color-hover, #81c6831f);
 }
 
 .record-item.expired {
   opacity: 0.6;
-  background-color: #f5f5f5;
+  background-color: var(--n-color-modal, #f5f5f5);
 }
 
 .record-header {
@@ -480,7 +482,7 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #f7f0f0;
+  color: var(--text-color-primary);
 }
 
 .record-actions {
@@ -490,7 +492,7 @@ onMounted(() => {
 }
 
 .record-description {
-  color: #e6e0e0;
+  color: var(--text-color-secondary);
   margin: 8px 0;
   line-height: 1.5;
 }
