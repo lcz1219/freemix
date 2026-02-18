@@ -143,10 +143,26 @@
     >
       <n-calendar
         v-model:value="calendarValue"
-        :is-date-disabled="isDateDisabled"
+        #="{ year, month, date }"
         @update:value="handleCalendarUpdate"
-      />
+      >
+        <div class="calendar-cell-content">
+          <div v-for="goal in getGoalsForDate(year, month, date)" :key="goal.id" class="goal-item" @click.stop="handleGoalClick(goal)">
+            <n-tag :type="getGoalStatusType(goal.status)" size="small" round :bordered="false" class="goal-tag">
+              {{ goal.title }}
+            </n-tag>
+          </div>
+        </div>
+      </n-calendar>
     </n-modal>
+
+    <!-- 目标详情弹窗 (复用 GoalDetail 组件) -->
+    <GoalDetail
+      v-if="selectedGoal"
+      v-model:show="showDetailModal"
+      :goal="selectedGoal"
+      @update="handleGoalUpdate"
+    />
 
     <!-- 反馈中心抽屉 -->
     <FeedbackCenter v-model:show="showFeedback" />
@@ -177,10 +193,14 @@
 import { ref, inject, nextTick } from 'vue';
 import RecentGoals from '@/components/RecentGoals.vue';
 import FeedbackCenter from '@/components/FeedbackCenter.vue';
-import { NFloatButton, NIcon, NButton, NModal, NCalendar, NInput } from 'naive-ui';
+import GoalDetail from '@/components/GoalDetail.vue';
+import { NFloatButton, NIcon, NButton, NModal, NCalendar, NInput, NTag } from 'naive-ui';
 import { CalendarSharp,LogoDiscord,LogoReddit,LogoMicrosoft } from '@vicons/ionicons5';
 import { createNewWindow, generateWindowId } from '@/utils/utilsWindowManager.js';
 import router from '@/router';
+import { useStore } from 'vuex';
+
+const store = useStore();
 
 // 定义属性
 const props = defineProps({
@@ -245,11 +265,45 @@ const showCalendar = ref(false);
 const showGoals = ref(false);
 const showFeedback = ref(false);
 const showAIAssistant = ref(false);
-const calendarValue = ref(null);
+const calendarValue = ref(Date.now());
 const isDark = inject('isDark', ref(true));
 const userInput = ref('');
 const isSending = ref(false);
 const chatMessages = ref([]);
+const showDetailModal = ref(false);
+const selectedGoal = ref(null);
+
+// 根据日期获取目标
+const getGoalsForDate = (year, month, date) => {
+  const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+  return props.goals.filter(goal => {
+    if (!goal.deadline) return false;
+    const goalDate = new Date(goal.deadline);
+    const goalDateStr = `${goalDate.getFullYear()}-${String(goalDate.getMonth() + 1).padStart(2, '0')}-${String(goalDate.getDate()).padStart(2, '0')}`;
+    return goalDateStr === dateStr;
+  });
+};
+
+// 获取目标状态对应的 Tag 类型
+const getGoalStatusType = (status) => {
+  switch (status) {
+    case 'completed': return 'success';
+    case 'in_progress': return 'info';
+    case 'pending': return 'warning';
+    case 'expired': return 'error';
+    default: return 'default';
+  }
+};
+
+const handleGoalClick = (goal) => {
+  selectedGoal.value = goal;
+  showDetailModal.value = true;
+};
+
+const handleGoalUpdate = (updatedGoal) => {
+  store.commit('updateGoal', updatedGoal);
+  showDetailModal.value = false;
+};
 
 // 方法
 const toggleMenu = () => {
@@ -1051,6 +1105,45 @@ const callCustomAIAPI = async (question, onUpdate) => {
 
 .modal-dark .chat-container::before {
   background: linear-gradient(90deg, transparent, #81c683, transparent);
+}
+
+.calendar-cell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  overflow-y: auto;
+  max-height: 80px;
+}
+
+.goal-item {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.goal-item:hover {
+  transform: scale(1.02);
+}
+
+.goal-tag {
+  width: 100%;
+  justify-content: flex-start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  padding: 0 8px;
+  height: 24px;
+}
+
+/* 隐藏滚动条但保留功能 */
+.calendar-cell-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.calendar-cell-content::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 2px;
 }
 </style>
 <!-- </content> -->

@@ -28,7 +28,9 @@ public class Goal {
     Integer del;
     long deltime;
     String delDate;
+    String richText;
     List fileList;
+
 
     Boolean disRecover;
     boolean finish;

@@ -219,6 +219,23 @@
                           <div class="info-label">描述</div>
                           <div class="info-value description-text">{{ currentSelectedGoal.description }}</div>
                         </div>
+
+                        <!-- 目标笔记区域 -->
+                        <div class="info-item-modern full-width rich-text-section">
+                           <div class="info-label" style="display: flex; align-items: center; justify-content: space-between;">
+                              <span>
+                                <n-icon :component="DocumentTextOutline" style="margin-right: 4px; vertical-align: text-bottom;" />
+                                目标笔记
+                              </span>
+                           </div>
+                           <div class="rich-text-wrapper" style="margin-top: 8px;">
+                              <RichTextEditor 
+                                :model-value="richTextContent" 
+                                :status="richTextStatus"
+                                @update:model-value="handleRichTextChange" 
+                              />
+                           </div>
+                        </div>
                       </div>
 
                       <div class="divider-line"></div>
@@ -393,7 +410,7 @@
 
 <script setup lang="ts">
 import common from '@/views/common.vue';
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, onMounted, inject, watch } from 'vue';
 import {
   NLayout,
   NLayoutHeader,
@@ -427,6 +444,7 @@ import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plu
 import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import GoalDetail from '@/components/GoalDetail.vue';
+import RichTextEditor from '@/components/RichTextEditor.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
@@ -599,6 +617,65 @@ const handleExport = (key: string) => {
     exportToExcel();
   } else if (key === 'pdf') {
     exportToPDF();
+  }
+};
+
+// 富文本笔记相关
+const richTextContent = ref('');
+const richTextStatus = ref('saved');
+let saveTimeout: any = null;
+
+// 监听选中的目标变化，更新笔记内容
+watch(() => currentSelectedGoal.value, (newVal) => {
+  if (newVal) {
+    richTextContent.value = newVal.richText || '';
+    richTextStatus.value = 'saved';
+  } else {
+    richTextContent.value = '';
+    richTextStatus.value = 'saved';
+  }
+}, { immediate: true });
+
+const handleRichTextChange = (val: string) => {
+  richTextContent.value = val;
+  richTextStatus.value = 'unsaved';
+  
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveRichText, 2000);
+};
+
+const saveRichText = async () => {
+  if (!currentSelectedGoal.value || (!currentSelectedGoal.value.id && !currentSelectedGoal.value._id)) return;
+  
+  richTextStatus.value = 'saving';
+  try {
+    // 构造更新数据
+    const data = JSON.parse(JSON.stringify(currentSelectedGoal.value));
+    data.richText = richTextContent.value;
+    
+    // 确保必要字段存在
+    if (!data.fileList) data.fileList = [];
+    if (!data.childGoals) data.childGoals = [];
+    if (!data.collaborators) data.collaborators = [];
+    
+    const res = await postM('editGoal', data);
+    if (isSuccess(res)) {
+      richTextStatus.value = 'saved';
+      // 更新本地数据，避免切换回来时内容丢失
+      currentSelectedGoal.value.richText = richTextContent.value;
+      
+      // 同时更新列表中的数据
+      const index = goals.value.findIndex(g => g._id === currentSelectedGoal.value._id || g.id === currentSelectedGoal.value.id);
+      if (index !== -1) {
+        goals.value[index].richText = richTextContent.value;
+      }
+    } else {
+      richTextStatus.value = 'unsaved';
+      message.error('保存笔记失败');
+    }
+  } catch (e) {
+    console.error('保存笔记出错:', e);
+    richTextStatus.value = 'unsaved';
   }
 };
 
@@ -959,7 +1036,7 @@ const refreshGoals = () => {
       }
     }
   });
-  message.success('目标列表已刷新');
+  // message.success('目标列表已刷新');
 };
 
 // 查看目标详情

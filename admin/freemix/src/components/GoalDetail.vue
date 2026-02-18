@@ -365,7 +365,8 @@ import GeneralUpload from '@/components/GeneralUpload.vue';
 import CollaboratorManager from '@/components/CollaboratorManager.vue';
 
 import { ref, computed, watch, h, onMounted } from 'vue';
-import { Pencil, Copy, Eye, CloudDownloadSharp, CalendarOutline, AlertCircleOutline, CheckmarkCircleOutline, BarChartOutline, TimeOutline, FlagOutline, CheckboxOutline, TrendingUpOutline, Close, People } from '@vicons/ionicons5';
+import RichTextEditor from './RichTextEditor.vue';
+import { Pencil, Copy, Eye, CloudDownloadSharp, CalendarOutline, AlertCircleOutline, CheckmarkCircleOutline, BarChartOutline, TimeOutline, FlagOutline, CheckboxOutline, TrendingUpOutline, Close, People, DocumentTextOutline } from '@vicons/ionicons5';
 import { postM, isSuccess, baseURL } from '@/utils/request'
 import {
   NModal,
@@ -523,10 +524,58 @@ const fileChange = (file) => {
 // 编辑表单数据
 const editForm = ref({});
 
+// 富文本笔记相关
+const richTextContent = ref('');
+const richTextStatus = ref('saved');
+let saveTimeout = null;
+
+const handleRichTextChange = (val) => {
+  richTextContent.value = val;
+  richTextStatus.value = 'unsaved';
+  
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveRichText, 2000);
+};
+
+const saveRichText = async () => {
+  if (!props.goal || (!props.goal.id && !props.goal._id)) return;
+  
+  richTextStatus.value = 'saving';
+  try {
+    // 构造更新数据，保持其他字段不变
+    // 注意：这里使用 props.goal 作为基础，但实际开发中可能需要考虑并发修改的问题
+    // 如果后端支持 PATCH 更新单个字段最好，否则只能发送完整对象
+    const data = JSON.parse(JSON.stringify(props.goal));
+    data.richText = richTextContent.value;
+    
+    // 确保必要字段存在
+    if (!data.fileList) data.fileList = [];
+    if (!data.childGoals) data.childGoals = [];
+    if (!data.collaborators) data.collaborators = [];
+    
+    const res = await postM('editGoal', data);
+    if (isSuccess(res)) {
+      richTextStatus.value = 'saved';
+      // 通知父组件更新，但不要重置 richTextContent 以免光标跳动或内容丢失
+      emit('updateGoal'); 
+    } else {
+      richTextStatus.value = 'unsaved';
+      message.error('保存笔记失败');
+    }
+  } catch (e) {
+    console.error('保存笔记出错:', e);
+    richTextStatus.value = 'unsaved';
+  }
+};
+
 // 初始化表单数据
 const initFormData = () => {
   // 深拷贝目标数据
   let goalData = JSON.parse(JSON.stringify(props.goal));
+
+  // 初始化富文本笔记
+  richTextContent.value = goalData.richText || '';
+  richTextStatus.value = 'saved';
 
   // 处理日期数据，确保日期格式正确
   if (props.goal.deadline) {
@@ -1165,6 +1214,13 @@ const saveGoal = async (val) => {
 
 // 关闭模态框
 const closeModal = () => {
+  // 如果有未保存的笔记，尝试保存
+  if (richTextStatus.value === 'unsaved' || richTextStatus.value === 'saving') {
+    // 清除定时器并立即保存
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveRichText();
+  }
+
   // 重置表单数据
   isEditing.value = false;
   initFormData();

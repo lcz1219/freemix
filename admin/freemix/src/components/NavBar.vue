@@ -56,6 +56,20 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">成就系统</span>
       </n-button>
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'calendar' }" :title="isCollapsedTitle('日历视图')"
+        @click="goTo('/calendar')">
+        <NIcon class="icon">
+          <CalendarOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">日历视图</span>
+      </n-button>
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recycle' }" :title="isCollapsedTitle('回收站')"
+        @click="goTo('/recycle')">
+        <NIcon class="icon">
+          <GitCompareOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">回收站</span>
+      </n-button>
     </nav>
 
     <div class="sidebar-footer">
@@ -108,7 +122,8 @@ import {
   ChevronBack,
   ChevronForward,
   HelpCircleOutline,
-  TrophyOutline
+  TrophyOutline,
+  CalendarOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
@@ -241,14 +256,14 @@ const options = [
     key: 'setting',
     render: IconSetting
   },
-  {
-    type: 'render',
-    key: 'recycle',
-    props: {
-      type: 'error'
-    },
-    render: IconRecycle
-  },
+  // {
+  //   type: 'render',
+  //   key: 'recycle',
+  //   props: {
+  //     type: 'error'
+  //   },
+  //   render: IconRecycle
+  // },
   {
     type: 'render',
     key: 'recycle',

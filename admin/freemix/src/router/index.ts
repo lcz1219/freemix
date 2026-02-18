@@ -96,6 +96,11 @@ const routes = [
     name: 'Statistics', 
     component: getComponent(Statistics, MobileStatistics) 
   },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import('@/views/calendar.vue')
+  },
   { 
     path: '/settings', 
     name: 'Settings', 
