@@ -65,6 +65,7 @@ import { AppsSharp } from '@vicons/ionicons5';
 import QRCode from 'qrcode';
 import { useMessage, NButton, NIcon, NQrCode,NColorPicker } from 'naive-ui';
 import { postM, isSuccess } from '@/utils/request.js';
+import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { useRouter } from 'vue-router';
 const router = useRouter();
 const store = useStore();
@@ -145,6 +146,7 @@ const enableTwoFactorAuth = async () => {
       hasTwoFactorEnabled.value = true;
       generateQRCode();
       emit('update:enabled', true);
+      emit('update:secretKey', secretKey.value);
     } else {
       message.error(res.data.msg);
       twoFactorEnabled.value = false;
@@ -213,7 +215,13 @@ const verifyTwoFactorAuth = async (): Promise<void> => {
     });
 
     if (isSuccess(res)) {
-
+     setTimeout(() => {
+      // 清除token并跳转登录页
+      removeToken();
+      localStorage.removeItem('user');
+      store.commit('clearUser');
+      router.push('/login');
+    }, 1500);
       isTwoFactorVerified.value = true;
       message.success('双因素认证已启用');
     } else {

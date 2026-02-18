@@ -95,6 +95,7 @@
                 :parent="'settings'"
                 :initial-enabled="securitySettings.twoFactorEnabled"
                 @update:enabled="onTwoFactorUpdate"
+                @update:secretKey="onTwoFactorUpdateSecretKey"
               />
               
               <div class="form-actions">
@@ -129,7 +130,7 @@
               </div>
               
               <div class="form-actions">
-                <button @click="saveDownloadConfig" class="btn primary">保存系统设置</button>
+                <button @click="handleSaveDownloadConfig" class="btn primary">保存系统设置</button>
               </div>
             </div>
           </div>
@@ -262,6 +263,42 @@
        
       </div>
     </div>
+    
+    <!-- 2FA验证弹窗 -->
+    <n-modal v-model:show="show2FAModal">
+      <n-card
+        style="width: 400px"
+        title="双因素认证验证"
+        :bordered="false"
+        size="huge"
+        role="dialog"
+        aria-modal="true"
+      >
+        <template #header-extra>
+          <n-button text @click="show2FAModal = false">
+            ×
+          </n-button>
+        </template>
+        <div class="auth-modal-content">
+          <p style="margin-bottom: 15px;">为了确认您的身份，请输入6位验证码：</p>
+          <n-input
+            v-model:value="twoFactorCode"
+            type="text"
+            placeholder="请输入6位验证码"
+            maxlength="6"
+            @keydown.enter="verifyAndSaveConfig"
+          />
+        </div>
+        <template #footer>
+          <n-space justify="end">
+            <n-button @click="show2FAModal = false">取消</n-button>
+            <n-button type="primary" @click="verifyAndSaveConfig" :loading="verifying">
+              确认
+            </n-button>
+          </n-space>
+        </template>
+      </n-card>
+    </n-modal>
 </template>
 
 <script setup lang="ts">
@@ -273,7 +310,7 @@ import TwoFactorAuth from '@/components/TwoFactorAuth.vue';
 import { useStore } from 'vuex';
 // @ts-ignore - 忽略qrcode声明文件错误
 import QRCode from 'qrcode'
-import { useMessage,NQrCode } from 'naive-ui';
+import { useMessage,NQrCode, NModal, NCard, NInput, NButton, NSpace } from 'naive-ui';
 import { postM, isSuccess, getM } from '@/utils/request.js';
 import { removeToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -285,14 +322,17 @@ const user = computed(() => JSON.parse(localStorage.getItem('user') || '{}'));
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
 const toggleTheme = inject('toggleTheme', () => {});
-
+const isProduction = import.meta.env.PROD;
 // 路由和状态管理
 const router = useRouter();
 const store = useStore();
 const message = useMessage();
 const isnAdmin = computed(() => {
  
-
+    if (!isProduction) {
+      
+      return false;
+    }
   return !adminJson.admin.includes(user.value.username) 
 });
 // 使用useSettings hook
@@ -330,6 +370,60 @@ const fetchDownloadConfig = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch download config:', error);
+  }
+};
+
+const show2FAModal = ref(false);
+const twoFactorCode = ref('');
+const verifying = ref(false);
+
+const handleSaveDownloadConfig = () => {
+  // 1. 检查是否为管理员
+  // const isAdmin = adminJson.admin.includes(user.value.username);
+  if (isnAdmin) {
+    message.error('您不是当前系统管理员，无法修改下载设置');
+    return;
+  }
+  
+  // 2. 显示2FA验证弹窗
+  twoFactorCode.value = '';
+  show2FAModal.value = true;
+};
+const secretKey = ref('');
+const onTwoFactorUpdateSecretKey = (newSecretKey) => {
+  secretKey.value = newSecretKey;
+};
+const verifyAndSaveConfig = async () => {
+  if (!twoFactorCode.value || twoFactorCode.value.length !== 6) {
+    message.error('请输入完整的6位验证码');
+    return;
+  }
+
+  verifying.value = true;
+  try {
+    // 调用 verify2fa 接口
+    // 注意：如果是登录用户验证，通常不需要 secretKey，或者后端需要从数据库获取
+    // 这里假设后端支持仅传 userId 和 totpCode
+    const res = await postM('verify2fa', {
+      userId: user.value.id || store.state.user.id,
+      totpCode: twoFactorCode.value,
+      secretKey: secretKey.value,
+      // 如果必须 secretKey，且本地没有存储，这里可能会失败，需根据实际情况调整
+    });
+
+    if (isSuccess(res)) {
+      message.success('验证通过');
+      show2FAModal.value = false;
+      // 执行真正的保存逻辑
+      await saveDownloadConfig();
+    } else {
+      message.error(res.data.msg || '验证失败');
+    }
+  } catch (error) {
+    console.error('2FA verification failed:', error);
+    message.error('验证过程出错');
+  } finally {
+    verifying.value = false;
   }
 };
 
