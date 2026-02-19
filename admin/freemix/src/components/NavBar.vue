@@ -35,12 +35,12 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">{{ '目标管理' }}</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goallibrary' }" :title="isCollapsedTitle('目标库')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goallibrary' }" :title="isCollapsedTitle('星际航道')"
         @click="goTo('/goal-library')">
         <NIcon class="icon">
           <PlanetOutline />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">目标库</span>
+        <span class="nav-text" v-if="!isCollapsed">星际航道</span>
       </n-button>
       <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'statistics' }" :title="isCollapsedTitle('统计数据')"
         @click="goTo('/statistics')">

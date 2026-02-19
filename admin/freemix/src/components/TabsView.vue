@@ -139,6 +139,7 @@ const routeTitleMap: Record<string, string> = {
   "UpdateLogManager": "更新日志管理",
   "Achievements":"成就系统",
   "Calendar":"时间规划",
+  "GoalLibrary":"星际航道",
 }
 
 // 获取路由标题

@@ -380,7 +380,7 @@ const verifying = ref(false);
 const handleSaveDownloadConfig = () => {
   // 1. 检查是否为管理员
   // const isAdmin = adminJson.admin.includes(user.value.username);
-  if (isnAdmin) {
+  if (isnAdmin.value) {
     message.error('您不是当前系统管理员，无法修改下载设置');
     return;
   }

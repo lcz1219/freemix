@@ -17,7 +17,7 @@ const request = axios.create({
 });
 
 // 添加请求拦截器，动态设置token
-const NO_AUTH_PATHS = ['/login', '/register', '/captcha','/enable2fa', '/file/upload','/verify2fa','/githubIdFindUser','/qr-login/create','/qr-login/status', '/verify-desktop-token'];
+const NO_AUTH_PATHS = ['/login', '/register', '/captcha','/enable2fa', '/file/upload','/verify2fa','/githubIdFindUser','/qr-login/create','/qr-login/status', '/verify-desktop-token','/share/view/'];
 
 request.interceptors.request.use(
  async config => {
@@ -28,7 +28,7 @@ request.interceptors.request.use(
     const urlPath = config.url ? config.url.split('?')[0] : '';
     
     const needsAuth = !NO_AUTH_PATHS.some(path => 
-      urlPath.endsWith(path) // 精确匹配路径结尾
+      urlPath.endsWith(path) || (path.endsWith('/') && urlPath.includes(path))
     );
     
     if (needsAuth) {
