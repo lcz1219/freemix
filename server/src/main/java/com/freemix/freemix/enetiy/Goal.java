@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.beans.Transient;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class Goal {
     String description;
     String owner;
     Date deadline;
+    Date createTime;
     String level;
     List<String> tags;
     List<childGoals> childGoals;
@@ -30,12 +32,21 @@ public class Goal {
     String delDate;
     String richText;
     List fileList;
+    Boolean isPublic;
 
 
     Boolean disRecover;
     boolean finish;
     List<JSONObject> collaborators;
 
-
-
+    // Social features
+    List<String> likedBy = new ArrayList<>();
+    List<String> favoritedBy = new ArrayList<>();
+    List<String> sharedBy = new ArrayList<>();
+    
+    // Share feature
+    String shareToken;
+    long sharedAt;
+    
+    // Comments will be stored in a separate collection, but we might want a count here or fetch them separately
 }

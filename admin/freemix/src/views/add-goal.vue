@@ -101,6 +101,14 @@
                       </n-input-number>
                     </n-form-item>
                   </n-gi>
+                  <n-gi :span="12">
+                    <n-form-item label="可见性" path="visibility">
+                      <n-radio-group v-model:value="goalForm.isPublic" name="visibility">
+                        <n-radio-button :value="false" label="私密" />
+                        <n-radio-button :value="true" label="公开" />
+                      </n-radio-group>
+                    </n-form-item>
+                  </n-gi>
                   <n-gi :span="24">
                     <n-row :gutter="[0, 24]">
                       <n-col :span="24">
@@ -155,7 +163,9 @@ import {
   NRow,
   NCol,
   NAvatar,
-  useMessage
+  useMessage,
+  NRadioGroup,
+  NRadioButton
 } from 'naive-ui';
 import { useRouter,useRoute } from 'vue-router';
 import request, { postM, isSuccess, getM } from '@/utils/request'
@@ -222,6 +232,7 @@ const goalForm = ref({
   tags: [] as string[],
   estimatedHours: 720,
   fileList: [], // 存储上传的文件路径
+  isPublic: false
 })
 
 // 优先级选项

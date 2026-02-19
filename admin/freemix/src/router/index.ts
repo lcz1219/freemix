@@ -87,6 +87,11 @@ const routes = [
     component: getComponent(GoalManagement, MobileGoalManagement) 
   },
   { 
+    path: '/goal-library', 
+    name: 'GoalLibrary', 
+    component: getComponent(() => import('@/views/GoalLibrary.vue'), () => import('@/views/GoalLibrary.vue')) 
+  },
+  { 
     path: '/messages', 
     name: 'Messages', 
     component: getComponent(() => import('@/views/MessageCenter.vue'), MobileMessageCenter)
@@ -115,6 +120,13 @@ const routes = [
     path: '/oauth/callback',
     name: 'GitHubOAuthCallback',
     component: GitHubOAuthCallback
+  },
+  {
+    path: '/share/goal/:token',
+    name: 'ShareGoalView',
+    component: () => import('@/views/ShareGoalView.vue'),
+    props: true,
+    meta: { requiresAuth: false }
   },
   {
     path: '/share/:token',

@@ -33,7 +33,7 @@ public class GoalController extends BaseController {
     @CheckToken
     public ApiResponse editGoal(@RequestBody String body) {
         Goal goal = JSONObject.parseObject(body, Goal.class);
-        if(GoalStauts.expired.equals(goal.getStatus())||System.currentTimeMillis()>goal.getDeadline().getTime()){
+        if(GoalStauts.expired.equals(goal.getStatus())||System.currentTimeMillis()>goal.getDeadline().getTime()) {
             return ApiResponse.failure("该目标已经过期，无法操作");
         }
         List<Achievement> unlockedAchievements = new ArrayList<>();
@@ -64,6 +64,7 @@ public class GoalController extends BaseController {
         goal.setChildGoals(childGoals);
         if (StringUtil.isNullOrEmpty(goal.get_id())) {
             goal.set_id(UUID.randomUUID().toString());
+            goal.setCreateTime(new Date());
             goal.setProgress(0);
             goal.setStatus("in-progress");
 
@@ -789,6 +790,172 @@ AchievementService achievementService;
         return response;
 
 
+    }
+
+    @GetMapping("/getPublicGoals")
+    @CheckToken
+    public ApiResponse getPublicGoals() {
+        Query query = new Query(Criteria.where("isPublic").is(true).and("del").ne(1));
+        List<Goal> publicGoals = mongoTemplate.find(query, Goal.class);
+        
+        publicGoals.sort((g1, g2) -> {
+            if (g1.getCreateTime() == null && g2.getCreateTime() == null) return 0;
+            if (g1.getCreateTime() == null) return 1;
+            if (g2.getCreateTime() == null) return -1;
+            return g2.getCreateTime().compareTo(g1.getCreateTime());
+        });
+        
+        publicGoals.forEach(goal -> {
+            goal.setCollaborators(genCollaborator(goal.get_id()));
+        });
+        return ApiResponse.success(publicGoals);
+    }
+
+    @PostMapping("/likeGoal")
+    @CheckToken
+    public ApiResponse likeGoal(@RequestBody String body) {
+        JSONObject json = JSONObject.parseObject(body);
+        String goalId = json.getString("goalId");
+        String userId = json.getString("userId");
+
+        Goal goal = mongoTemplate.findById(goalId, Goal.class);
+        if (goal == null) return ApiResponse.failure("Goal not found");
+
+        if (goal.getLikedBy() == null) goal.setLikedBy(new ArrayList<>());
+
+        if (goal.getLikedBy().contains(userId)) {
+            goal.getLikedBy().remove(userId);
+        } else {
+            goal.getLikedBy().add(userId);
+        }
+        mongoTemplate.save(goal);
+        return ApiResponse.success(goal);
+    }
+
+    @PostMapping("/favoriteGoal")
+    @CheckToken
+    public ApiResponse favoriteGoal(@RequestBody String body) {
+        JSONObject json = JSONObject.parseObject(body);
+        String goalId = json.getString("goalId");
+        String userId = json.getString("userId");
+
+        Goal goal = mongoTemplate.findById(goalId, Goal.class);
+        if (goal == null) return ApiResponse.failure("Goal not found");
+
+        if (goal.getFavoritedBy() == null) goal.setFavoritedBy(new ArrayList<>());
+
+        if (goal.getFavoritedBy().contains(userId)) {
+            goal.getFavoritedBy().remove(userId);
+        } else {
+            goal.getFavoritedBy().add(userId);
+        }
+        mongoTemplate.save(goal);
+        return ApiResponse.success(goal);
+    }
+
+    @PostMapping("/shareGoal")
+    @CheckToken
+    public ApiResponse shareGoal(@RequestBody String body) {
+        JSONObject json = JSONObject.parseObject(body);
+        String goalId = json.getString("goalId");
+        String userId = json.getString("userId");
+
+        Goal goal = mongoTemplate.findById(goalId, Goal.class);
+        if (goal == null) return ApiResponse.failure("Goal not found");
+
+        if (goal.getSharedBy() == null) goal.setSharedBy(new ArrayList<>());
+
+        if (!goal.getSharedBy().contains(userId)) {
+            goal.getSharedBy().add(userId);
+        }
+        mongoTemplate.save(goal);
+        return ApiResponse.success(goal);
+    }
+
+    @PostMapping("/referenceGoal")
+    @CheckToken
+    public ApiResponse referenceGoal(@RequestBody String body) {
+        JSONObject json = JSONObject.parseObject(body);
+        String goalId = json.getString("goalId");
+        String userId = json.getString("userId");
+
+        Goal original = mongoTemplate.findById(goalId, Goal.class);
+        if (original == null) return ApiResponse.failure("Goal not found");
+
+        Goal copy = new Goal();
+        copy.set_id(UUID.randomUUID().toString());
+        copy.setTitle(original.getTitle());
+        copy.setDescription(original.getDescription());
+        copy.setOwner(getCurrentUser().getUsername());
+        copy.setCreateTime(new Date());
+        copy.setIsPublic(false);
+        copy.setDeadline(original.getDeadline());
+        copy.setLevel(original.getLevel());
+        copy.setTags(original.getTags());
+        copy.setPlanTime(original.getPlanTime());
+        copy.setProgress(0);
+        copy.setStatus("in-progress");
+        copy.setDel(0);
+        copy.setFinish(false);
+        
+        if (original.getChildGoals() != null) {
+            List<childGoals> newChildren = new ArrayList<>();
+            for (childGoals child : original.getChildGoals()) {
+                childGoals newChild = new childGoals();
+                newChild.set_id(UUID.randomUUID().toString());
+                newChild.setMessage(child.getMessage());
+                newChild.setFinish(false);
+                newChild.setFileList(new ArrayList<>());
+                newChild.setChildGoals(new ArrayList<>());
+                newChildren.add(newChild);
+            }
+            copy.setChildGoals(newChildren);
+        } else {
+            copy.setChildGoals(new ArrayList<>());
+        }
+        
+        copy.setFileList(new ArrayList<>());
+        copy.setCollaborators(new ArrayList<>());
+        
+        editCollaborator(copy.get_id(), Arrays.asList(userId), "owner");
+        
+        mongoTemplate.insert(copy);
+        return ApiResponse.success(copy);
+    }
+
+    @GetMapping("/share/generate/{id}")
+    @CheckToken
+    public ApiResponse generateShareLink(@PathVariable String id) {
+        Goal goal = mongoTemplate.findById(id, Goal.class);
+        if (goal == null) {
+            return ApiResponse.failure("Goal not found");
+        }
+
+        if (goal.getShareToken() != null && !goal.getShareToken().isEmpty()) {
+            return ApiResponse.success(goal);
+        }
+
+        String token = UUID.randomUUID().toString().replace("-", "");
+        goal.setShareToken(token);
+        goal.setSharedAt(System.currentTimeMillis());
+        mongoTemplate.save(goal);
+
+        return ApiResponse.success(goal);
+    }
+
+    @GetMapping("/share/view/{token}")
+    public ApiResponse getSharedGoal(@PathVariable String token) {
+        Query query = new Query(Criteria.where("shareToken").is(token));
+        Goal goal = mongoTemplate.findOne(query, Goal.class);
+        
+        if (goal == null) {
+            return ApiResponse.failure("Shared goal not found or link expired");
+        }
+        
+        // Ensure collaborators are populated for display
+        goal.setCollaborators(genCollaborator(goal.get_id()));
+        
+        return ApiResponse.success(goal);
     }
 
 }

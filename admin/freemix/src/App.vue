@@ -183,6 +183,7 @@ const activeTab = computed(() => {
   if (path.includes('/goal-management')) return 'goalmanagement';
   if (path.includes('/statistics')) return 'statistics';
   if (path.includes('/goal-structure')) return 'goalstructure';
+  if (path.includes('/goal-library')) return 'goallibrary';
   if (path.includes('/messages')) return 'messages';
   return 'dashboard';
 });

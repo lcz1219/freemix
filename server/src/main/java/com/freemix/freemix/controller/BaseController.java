@@ -137,7 +137,10 @@ public class BaseController {
                 throw new RuntimeException(e);
             }
             JSONObject jsonObject = JSONObject.parseObject(jsonString);
-            jsonObject.put("role", relation.getRole());
+            if (jsonObject!=null) {
+                jsonObject.put("role", relation.getRole());
+
+            }
 
             if(username1 != null) {
                 users.add(jsonObject);

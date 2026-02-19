@@ -202,6 +202,14 @@
             </n-form-item>
           </n-gi>
           <n-gi :span="12">
+            <n-form-item label="可见性" path="visibility">
+              <n-radio-group v-model:value="editForm.isPublic" name="visibility">
+                <n-radio-button :value="false" label="私密" />
+                <n-radio-button :value="true" label="公开" />
+              </n-radio-group>
+            </n-form-item>
+          </n-gi>
+          <n-gi :span="12">
             <n-form-item label="状态" path="status">
               <n-select v-model:value="editForm.status" :options="statusOptions" />
             </n-form-item>
@@ -402,7 +410,9 @@ import {
   useMessage,
   NAlert,
   NTabs,
-  NTabPane
+  NTabPane,
+  NRadioGroup,
+  NRadioButton
 } from 'naive-ui';
 import { useStore } from 'vuex';
 import { color } from 'echarts';
@@ -612,6 +622,9 @@ const initFormData = () => {
       child.fileList = [];
     }
     // 确保finish字段存在
+  if (typeof goalData.isPublic === 'undefined') {
+    goalData.isPublic = false;
+  }
     if (typeof child.finish === 'undefined') {
       child.finish = false;
     }
