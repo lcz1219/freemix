@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collector;
@@ -956,6 +957,51 @@ AchievementService achievementService;
         goal.setCollaborators(genCollaborator(goal.get_id()));
         
         return ApiResponse.success(goal);
+    }
+
+    @GetMapping("/getTags")
+    public ApiResponse getTags() {
+        try {
+            List<Tag> tags = mongoTemplate.findAll(Tag.class);
+            List<String> tagNames = tags.stream().map(Tag::getName).collect(Collectors.toList());
+            tagNames.addAll(Arrays.asList("工作", "学习", "生活", "健康", "娱乐", "运动", "阅读", "旅行"));
+//            if (tagNames.isEmpty()) {
+//                return ApiResponse.success(Arrays.asList("工作", "学习", "生活", "健康", "娱乐", "运动", "阅读", "旅行"));
+//            }
+            return ApiResponse.success(tagNames);
+        } catch (Exception e) {
+            log.error("Error fetching tags from MongoDB", e);
+            return ApiResponse.failure("Failed to fetch tags");
+        }
+    }
+
+    @PostMapping("/addTag")
+    public ApiResponse addTag(@RequestBody String body) {
+        JSONObject json = JSONObject.parseObject(body);
+        List<String> newTag = json.getList("tag",String.class);
+        if (newTag == null || newTag.size() == 0) {
+            return ApiResponse.failure("Tag cannot be empty");
+        }
+        
+        try {
+
+            
+            // Return updated list
+            List<Tag> tags = mongoTemplate.findAll(Tag.class);
+            List<String> collect = tags.stream().map(Tag::getName).collect(Collectors.toList());
+            newTag.forEach(e->{
+              if  (!  collect.contains(e)){
+                  Tag tag = new Tag();
+                  tag.setName(e);
+                  mongoTemplate.save(tag);
+              }
+            });
+
+            return ApiResponse.success(newTag);
+        } catch (Exception e) {
+            log.error("Error saving tag to MongoDB", e);
+            return ApiResponse.failure("Failed to save tag");
+        }
     }
 
 }

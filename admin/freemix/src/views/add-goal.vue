@@ -19,11 +19,37 @@
             <p :class="isDark ? 'hero-subtitle' : 'hero-subtitle-light'">设定一个新目标，开始您的成功之旅</p>
           </section>
 
+          <!-- 智能粘贴模态框 -->
+          <n-modal v-model:show="showSmartPasteModal" preset="card" title="智能粘贴目标信息" style="width: 600px">
+            <n-form-item label="粘贴文本内容">
+              <n-input v-model:value="pasteContent" type="textarea" placeholder="请粘贴目标信息，例如：
+目标标题: ...
+目标描述: ...
+..." :autosize="{ minRows: 10, maxRows: 20 }" />
+            </n-form-item>
+            <template #footer>
+              <div style="display: flex; justify-content: flex-end">
+                <n-button @click="showSmartPasteModal = false" style="margin-right: 12px">取消</n-button>
+                <n-button type="primary" @click="handleSmartPaste">解析并填充</n-button>
+              </div>
+            </template>
+          </n-modal>
+
           <!-- 添加目标表单 -->
           <section class="form-section">
             <n-card class="form-card">
               <n-form ref="formRef" :model="goalForm" :rules="formRules" label-placement="left" label-width="120"
                 require-mark-placement="right-hanging">
+                  <div style="margin: 5%;">
+              <n-button type="primary" ghost @click="showSmartPasteModal = true">
+                <template #icon>
+                  <n-icon>
+                    <ClipboardOutline />
+                  </n-icon>
+                </template>
+                智能粘贴
+              </n-button>
+            </div>
                 <n-grid :gutter="24">
                   <n-gi :span="12">
                     <n-form-item label="目标标题" path="title">
@@ -41,7 +67,12 @@
                   <n-gi :span="24">
                     <n-form-item label="子目标" path="description">
                       <n-dynamic-input v-model:value="goalForm.childGoals" placeholder="每一步小目标都是成功的开始🏅" :min="3"
-                        :max="6" show-sort-button>
+                        :max="6" show-sort-button @create="onCreateChildGoal">
+                        <template #default="{ value, index }">
+                          <div style="display: flex; align-items: center; width: 100%">
+                            <n-input v-model:value="value.message" placeholder="每一步小目标都是成功的开始🏅" />
+                          </div>
+                        </template>
                         <template #create-button-default>
                           添加子目标开启成功的步伐
                         </template>
@@ -88,7 +119,8 @@
                   </n-gi>
                   <n-gi :span="12">
                     <n-form-item label="分类标签" path="tags">
-                      <n-dynamic-tags v-model:value="goalForm.tags" />
+                      <n-select v-model:value="goalForm.tags" multiple filterable tag placeholder="请选择或输入分类标签"
+                        :options="tagOptions" @blur="handleCreateTag(goalForm.tags)" />
                     </n-form-item>
                   </n-gi>
                   <n-gi :span="12">
@@ -132,14 +164,14 @@
     </n-layout-content>
 
     <!-- 页脚 -->
-    <n-layout-footer class="footer" bordered>
+    <!-- <n-layout-footer class="footer" bordered>
       <p>© 2025 目标追踪者 - 您的目标完成度系统 | 让每一份努力都能被量化</p>
-    </n-layout-footer>
+    </n-layout-footer> -->
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted, watch } from 'vue';
+import { ref, inject, onMounted, watch, computed } from 'vue';
 import {
   NLayout,
   NLayoutHeader,
@@ -173,12 +205,95 @@ import NavBar from '@/components/NavBar.vue';
 import { useStore } from 'vuex';
 import type { FormRules, FormItemRule } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
-import { Add } from '@vicons/ionicons5'
+import { Add, ClipboardOutline } from '@vicons/ionicons5'
 // @ts-ignore
 import GeneralUpload from '@/components/GeneralUpload.vue';
 
 const owerOptions = ref([]);
 const fileupload = ref(false);
+const showSmartPasteModal = ref(false);
+const pasteContent = ref('');
+
+const handleSmartPaste = () => {
+  if (!pasteContent.value) {
+    message.warning('请先粘贴内容');
+    return;
+  }
+
+  const text = pasteContent.value;
+  const lines = text.split('\n');
+  
+  // 重置部分表单数据
+  // goalForm.value.childGoals = [];
+  
+  let currentSection = '';
+  const childGoals: Array<{ message: string; finish: boolean; finishTime: string }> = [];
+  
+  lines.forEach((line: string) => {
+    line = line.trim();
+    if (!line) return;
+    
+    // 解析基本字段
+    if (line.startsWith('目标标题:')) {
+      goalForm.value.title = line.replace('目标标题:', '').trim();
+    } else if (line.startsWith('目标描述:')) {
+      goalForm.value.description = line.replace('目标描述:', '').trim();
+    } else if (line.startsWith('负责人:')) {
+      const owner = line.replace('负责人:', '').trim();
+      if (owner) goalForm.value.owner = owner;
+    } else if (line.startsWith('截止日期:')) {
+      const dateStr = line.replace('截止日期:', '').trim();
+      if (dateStr && !isNaN(Date.parse(dateStr))) {
+        goalForm.value.deadline = dateStr;
+      }
+    } else if (line.startsWith('优先级:')) {
+      const levelMap: Record<string, string> = { '低': 'low', '中': 'medium', '高': 'high', '紧急': 'urgent' };
+      const levelText = line.replace('优先级:', '').trim();
+      goalForm.value.level = levelMap[levelText] || 'medium';
+    } else if (line.startsWith('标签:')) {
+      const tagsText = line.replace('标签:', '').trim();
+      if (tagsText) {
+        const tags = tagsText.split(/[,，]/).map((t: string) => t.trim()).filter((t: string) => t);
+        goalForm.value.tags = tags;
+        // 确保标签在选项中
+        // tags.forEach((tag: string) => {
+        //   if (!tagOptions.value.find((o: any) => o.value === tag)) {
+        //     handleCreateTag(tag);
+        //   }
+        // });
+      }
+    } else if (line.startsWith('子目标列表:')) {
+      currentSection = 'childGoals';
+    } else if (currentSection === 'childGoals') {
+      // 解析子目标行: 1. [未完成] 1. 444
+      const match = line.match(/^\d+\.\s*\[.*?\]\s*(.*)/);
+      if (match) {
+        childGoals.push({
+          message: match[1],
+          finish: false,
+          finishTime: ''
+        });
+      } else {
+        const simpleMatch = line.match(/^\d+\.\s*(.*)/);
+        if (simpleMatch && !line.includes('[')) {
+          childGoals.push({
+            message: simpleMatch[1],
+            finish: false,
+            finishTime: ''
+          });
+        }
+      }
+    }
+  });
+  
+  if (childGoals.length > 0) {
+    goalForm.value.childGoals = childGoals;
+  }
+  
+  message.success('解析完成，已自动填充表单');
+  showSmartPasteModal.value = false;
+};
+
 const getOwerList = async () => {
   const res = await getM('getOwerList');
   if (isSuccess(res)) {
@@ -228,7 +343,7 @@ const goalForm = ref({
   owner: store.state.user.username,
   deadline: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   level: 'high',
-  childGoals: [] as Array<{ message: string; finish: boolean; finishTime: string }>,
+  childGoals: [] as Array<{ message: string; finish: boolean; finishTime: string; }>,
   tags: [] as string[],
   estimatedHours: 720,
   fileList: [], // 存储上传的文件路径
@@ -242,6 +357,34 @@ const levelOptions = [
   { label: '高', value: 'high' },
   { label: '紧急', value: 'urgent' }
 ];
+const tagOptions = ref([]);
+
+const getTags = async () => {
+  const res = await getM('getTags');
+  if (isSuccess(res)) {
+    tagOptions.value = res.data.data.map((tag: any) => ({ label: tag, value: tag }));
+  }
+}
+
+const handleCreateTag = async (label) => {
+  // 检查是否已存在
+  if (tagOptions.value.some((option: any) => option.value === label)) {
+    return { label, value: label };
+  }
+  
+  const newOption = { label, value: label };
+  tagOptions.value.push(newOption);
+  await postM('addTag', { tag: label });
+  return newOption;
+}
+
+const onCreateChildGoal = (index: number) => {
+  return {
+    message: `${index + 1}. `,
+    finish: false,
+    finishTime: '',
+  }
+}
 
 // 表单规则
 const formRules: FormRules = {
@@ -290,7 +433,7 @@ const handleSubmit = (e: Event) => {
       const childGoalEndList = [];
       goalForm.value.childGoals.forEach((childGoal) => {
         const data = {};
-        data.message = childGoal
+        data.message = childGoal.message;
         data.finish = false;
         data.finishTime = '';
         childGoalEndList.push(data);
@@ -359,7 +502,8 @@ const goToHome = () => {
 // 初始化
 onMounted(() => {
   darkMode.value = isDark.value;
-  getOwerList()
+  getOwerList();
+  getTags();
 });
 
 // 监听主题变化

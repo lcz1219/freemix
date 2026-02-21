@@ -794,7 +794,7 @@ const editableSubGoalColumns = [
           onKeyup: (e) => {
             if (e.key === 'Enter') {
               editForm.value.childGoals.push({
-                message: '',
+                message: `${editForm.value.childGoals.length + 1}. `,
                 finish: false,
                 fileList: []
               });
@@ -825,7 +825,7 @@ const editableSubGoalColumns = [
           onClick: () => {
 
             editForm.value.childGoals.push({
-              message: '',
+              message: `${editForm.value.childGoals.length + 1}. `,
               finish: false,
               fileList: []
             });
