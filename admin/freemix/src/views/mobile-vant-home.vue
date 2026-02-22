@@ -108,6 +108,7 @@
 
         <!-- 目标列表 -->
         <section class="goals-container">
+          <van-search v-model="searchQuery" placeholder="搜索目标..." shape="round" background="transparent" />
           <van-pull-refresh v-model="isRefreshing" @refresh="refreshGoals">
             <van-tabs v-model:active="activeTab" sticky offset-top="46" background="transparent" line-width="20px"
               line-height="3px" color="#00c9a7" title-active-color="#00c9a7"
@@ -120,7 +121,7 @@
                   <van-list v-model:loading="listLoading" :finished="listFinished" finished-text="没有更多了"
                     @load="loadMore">
                     <div class="goal-list-wrap">
-                      <van-swipe-cell v-for="goal in goals" :key="goal.id" class="goal-card-swipe">
+                      <van-swipe-cell v-for="goal in searchFilteredGoals" :key="goal.id" class="goal-card-swipe">
                         <div class="goal-card" @click="showGoalDetail(goal)">
                           <div class="card-status-line" :class="goal.status"></div>
                           <div class="card-main">
@@ -132,6 +133,10 @@
                             <div class="card-meta">
                               <span class="meta-item"><van-icon name="clock-o" /> {{ goal.deadlineString }}</span>
                               <span class="meta-item"><van-icon name="manager-o" /> {{ goal.owner }}</span>
+                            </div>
+                            <!-- 标签展示 -->
+                            <div class="card-tags" v-if="goal.tags && goal.tags.length">
+                              <van-tag v-for="tag in goal.tags" :key="tag" plain type="primary" size="mini" class="mr-1">{{ tag }}</van-tag>
                             </div>
                             <div class="card-progress">
                               <div class="progress-info">
@@ -145,7 +150,10 @@
                           <van-icon name="arrow" class="card-arrow" />
                         </div>
                         <template #right>
-                          <div class="swipe-action-btn" @click="markGoalFinished(goal)">
+                          <div class="swipe-action-btn edit" @click="openEditGoal(goal)">
+                            <van-icon name="edit" size="20" />
+                          </div>
+                          <div class="swipe-action-btn success" @click="markGoalFinished(goal)">
                             <van-icon name="success" size="20" />
                           </div>
                         </template>
@@ -158,13 +166,16 @@
               <van-tab title="进行中">
                 <!-- 复用逻辑，仅过滤显示 -->
                 <div class="goal-list-wrap pt-2">
-                  <van-empty v-if="goals.filter(g => g.status === 'in-progress').length === 0" description="暂无进行中的目标"
+                  <van-empty v-if="searchFilteredGoals.filter(g => g.status === 'in-progress').length === 0" description="暂无进行中的目标"
                     image="search" />
-                  <div v-else class="goal-card-simple" v-for="goal in goals.filter(g => g.status === 'in-progress')"
+                  <div v-else class="goal-card-simple" v-for="goal in searchFilteredGoals.filter(g => g.status === 'in-progress')"
                     :key="goal.id" @click="showGoalDetail(goal)">
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
                       <div class="date">{{ formatDate(goal.deadline) }} 截止</div>
+                      <div class="tags" v-if="goal.tags && goal.tags.length">
+                        <van-tag v-for="tag in goal.tags" :key="tag" plain type="primary" size="mini" class="mr-1">{{ tag }}</van-tag>
+                      </div>
                     </div>
                     <van-icon name="arrow" color="#ccc" />
                   </div>
@@ -173,16 +184,32 @@
 
               <van-tab title="已完成">
                 <div class="goal-list-wrap pt-2">
-                  <van-empty v-if="goals.filter(g => g.status === 'completed').length === 0" description="暂无已完成的目标"
+                  <van-empty v-if="searchFilteredGoals.filter(g => g.status === 'completed' || g.status === 'finished').length === 0" description="暂无已完成的目标"
                     image="search" />
                   <div v-else class="goal-card-simple finished"
-                    v-for="goal in goals.filter(g => g.status === 'completed')" :key="goal.id"
+                    v-for="goal in searchFilteredGoals.filter(g => g.status === 'completed' || g.status === 'finished')" :key="goal.id"
                     @click="showGoalDetail(goal)">
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
                       <div class="date">任务已完成</div>
                     </div>
                     <van-icon name="checked" color="#00c9a7" />
+                  </div>
+                </div>
+              </van-tab>
+
+              <van-tab title="已过期">
+                <div class="goal-list-wrap pt-2">
+                  <van-empty v-if="searchFilteredGoals.filter(g => g.status === 'expired').length === 0" description="暂无已过期的目标"
+                    image="search" />
+                  <div v-else class="goal-card-simple expired"
+                    v-for="goal in searchFilteredGoals.filter(g => g.status === 'expired')" :key="goal.id"
+                    @click="showGoalDetail(goal)">
+                    <div class="simple-info">
+                      <div class="title">{{ goal.title }}</div>
+                      <div class="date">{{ formatDate(goal.deadline) }} 截止</div>
+                    </div>
+                    <van-icon name="warning-o" color="#ff6b6b" />
                   </div>
                 </div>
               </van-tab>
@@ -251,6 +278,12 @@
           </div>
 
           <div class="popup-footer">
+             <!-- 编辑按钮 -->
+              <van-button type="primary" block round color="linear-gradient(to right, #00c9a7, #00e0b0)" size="large"
+              class="shadow-btn" @click="openEditGoal(selectedGoal)">
+                编辑
+              </van-button>
+              <div style="height: 10px;"></div>
             <van-button type="primary" block round color="linear-gradient(to right, #00c9a7, #00e0b0)" size="large"
               class="shadow-btn" @click="markGoalFinished(selectedGoal)" :disabled="isExp">
               标记为完成
@@ -267,8 +300,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast } from 'vant'
-import { postM, getMPaths, isSuccess,baseURL } from '@/utils/request'
+import { showToast, showLoadingToast } from 'vant'
+import { postM, getMPaths, isSuccess, baseURL } from '@/utils/request'
 import { useUser } from '@/hooks'
 import { Capacitor } from '@capacitor/core';
 import { BarcodeScanner, BarcodeFormat, LensFacing } from '@capacitor-mlkit/barcode-scanning';
@@ -295,6 +328,16 @@ const goalFinishCount = ref(0)
 const goalExpireCount = ref(0)
 const goalIngCount = ref(0)
 const constProgress = ref(0)
+const searchQuery = ref('')
+
+const searchFilteredGoals = computed(() => {
+  if (!searchQuery.value) return goals.value
+  const query = searchQuery.value.toLowerCase()
+  return goals.value.filter(g => 
+    (g.title && g.title.toLowerCase().includes(query)) || 
+    (g.description && g.description.toLowerCase().includes(query))
+  )
+})
 
 // Methods
 const openQrScanner = () => {
@@ -306,6 +349,11 @@ const fetchGoals = async () => {
     isLoading.value = true
     const response = await getMPaths("getGoals", userInfo.value.username, "正在获取目标数据...");
     goals.value = response.data.data || []
+    
+    // Format dates
+    goals.value.forEach(g => {
+      g.deadlineString = formatDate(g.deadline)
+    })
 
     goalFinishCount.value = goals.value.filter(g => g.status === 'completed' || g.status === 'finished').length
     goalExpireCount.value = goals.value.filter(g => g.status === 'expired').length
@@ -337,9 +385,24 @@ const toggleTheme = () => {
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
 }
 
+// Edit/Add Logic
+const goToAddGoal = () => {
+  router.push('/add-goal')
+}
+
+const openEditGoal = (goal: any) => {
+  showDetailModal.value = false
+  // 传递 goalData 到 state 中，避免 URL 参数过长
+  router.push({
+    path: '/add-goal',
+    query: { id: goal._id || goal.id },
+    state: { goalData: JSON.stringify(goal) }
+  })
+}
+
 // Navigation
 const goToSettings = () => router.push('/settings')
-const goToAddGoal = () => router.push('/add-goal')
+// const goToAddGoal = () => router.push('/add-goal') // Replaced above
 const goToStatistics = () => router.push('/statistics')
 const goToMessageCenter = () => router.push('/messages')
 const goToGuide = () => router.push('/user-guide')
@@ -598,8 +661,74 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   font-size: 12px;
+}
+
+/* 编辑弹窗样式 */
+.edit-popup {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-line);
+}
+
+.popup-title {
+  font-size: 18px;
+  font-weight: 600;
   color: var(--text-primary);
-  font-weight: 500;
+}
+
+.close-icon {
+  font-size: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.popup-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.custom-slider-button {
+  width: 36px;
+  color: #fff;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+  background-color: #1989fa;
+  border-radius: 100px;
+}
+
+.tags-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-tag {
+  margin-right: 4px;
+}
+
+.add-tag-wrapper {
+  flex-grow: 1;
+  min-width: 100px;
+}
+
+.tag-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
 }
 
 .grid-icon-box {
@@ -803,14 +932,32 @@ onMounted(async () => {
   font-size: 16px;
 }
 
+.card-tags {
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mr-1 {
+  margin-right: 4px;
+}
+
 .swipe-action-btn {
   height: 100%;
   width: 60px;
-  background: #00c9a7;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+}
+
+.swipe-action-btn.success {
+  background: #00c9a7;
+}
+
+.swipe-action-btn.edit {
+  background: #1989fa;
 }
 
 /* 简易卡片样式 */
@@ -842,6 +989,15 @@ onMounted(async () => {
   .date {
     font-size: 12px;
     color: var(--text-secondary);
+  }
+}
+
+.goal-card-simple.expired {
+  opacity: 0.8;
+  border: 1px solid #ff6b6b;
+  
+  .title {
+    color: #ff6b6b;
   }
 }
 
@@ -935,6 +1091,7 @@ onMounted(async () => {
 }
 
 .popup-footer {
+display: flex;
   padding: 16px 24px 32px;
   /* iOS safe area */
   background: var(--bg-secondary);

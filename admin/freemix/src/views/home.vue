@@ -13,7 +13,8 @@
           <div class="hero-actions">
             <n-button
           class="menu-button"
-          circle
+          secondary
+          round strong
           size="large"
           :title="'近期目标'"
           @click="toggleGoals"
@@ -26,6 +27,7 @@
               <path d="M14,8h-4C9.4,8,9,7.6,9,7s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,8,14,8z" />
             </svg>
           </n-icon>
+          近期目标
         </n-button>
             <n-button secondary type="primary" size="large" round strong @click="addGoal">
               <template #icon>
@@ -714,6 +716,8 @@ const columns = [
   }
 ];
 const showGoals = ref(false);
+const goalsModalWidth = ref('50%');
+const goalsModalHeight = ref('70vh');
 const toggleGoals = () => {
   showGoals.value = !showGoals.value;
 };
@@ -1703,13 +1707,56 @@ onMounted(async () => {
 }
 
 .modal-dark {
-  background-color: rgba(30, 30, 42, 0.95);
+  background: linear-gradient(135deg, #1a1a1a, #121212);
   color: #ffffff;
+  border: 1px solid rgba(129, 198, 131, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .modal-light {
-  background-color: rgba(245, 245, 247, 0.95);
-  color: #000000;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #333333;
+  border: 1px solid rgba(129, 198, 131, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(129, 198, 131, 0.3);
+  background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  background: linear-gradient(90deg, #81c683, #4CAF50);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* 透明模态框样式 */
+:deep(.n-modal) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+:deep(.n-modal-content) {
+  background-color: transparent !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.n-modal-body) {
+  background-color: transparent !important;
+  padding: 20px;
 }
 
 /* 响应式设计 */

@@ -73,7 +73,7 @@
 
                     <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
                       style="width: 120px;" />
-                      
+
                     <n-dropdown trigger="click" :options="exportOptions" @select="handleExport">
                       <n-button>
                         <template #icon>
@@ -94,7 +94,7 @@
               <n-grid x-gap="20" cols="24" item-responsive responsive="screen">
                 <!-- 左侧目标列表 -->
                 <n-grid-item span="24 m:10 l:9">
-                  <n-card  :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']"
+                  <n-card :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']"
                     content-style="padding: 10px;">
                     <template #header>
                       <div class="card-header-inner">
@@ -129,7 +129,8 @@
                               style="font-size: 10px; height: 20px; padding: 0 6px;">
                               协作
                             </n-tag>
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ scope.row.title }}</span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{
+                              scope.row.title }}</span>
                           </div>
                         </template>
                       </el-table-column>
@@ -220,22 +221,7 @@
                           <div class="info-value description-text">{{ currentSelectedGoal.description }}</div>
                         </div>
 
-                        <!-- 目标笔记区域 -->
-                        <div class="info-item-modern full-width rich-text-section">
-                           <div class="info-label" style="display: flex; align-items: center; justify-content: space-between;">
-                              <span>
-                                <n-icon :component="DocumentTextOutline" style="margin-right: 4px; vertical-align: text-bottom;" />
-                                目标笔记
-                              </span>
-                           </div>
-                           <div class="rich-text-wrapper" style="margin-top: 8px;">
-                              <RichTextEditor 
-                                :model-value="richTextContent" 
-                                :status="richTextStatus"
-                                @update:model-value="handleRichTextChange" 
-                              />
-                           </div>
-                        </div>
+
                       </div>
 
                       <div class="divider-line"></div>
@@ -263,10 +249,10 @@
                               <div class="capsule-content">
                                 <span class="capsule-title" :class="{ 'strikethrough': childGoal.finish }">{{
                                   childGoal.message
-                                  }}</span>
+                                }}</span>
                                 <span class="finish-time" v-if="childGoal.finishDate">完成于 {{
                                   formatDate(childGoal.finishDate)
-                                  }}</span>
+                                }}</span>
                               </div>
                             </div>
 
@@ -285,7 +271,22 @@
                         </div>
                         <n-empty v-else description="暂无子目标" class="empty-sub-goals" />
                       </div>
+                      <!-- 目标笔记区域 -->
 
+                      <div class="info-item-modern full-width rich-text-section">
+                        <div class="info-label"
+                          style="display: flex; align-items: center; justify-content: space-between;">
+                          <span>
+                            <n-icon :component="DocumentTextOutline"
+                              style="margin-right: 4px; vertical-align: text-bottom;" />
+                            目标笔记
+                          </span>
+                        </div>
+                        <div class="rich-text-wrapper" style="margin-top: 8px;">
+                          <RichTextEditor :model-value="richTextContent" :status="richTextStatus"
+                            @update:model-value="handleRichTextChange" />
+                        </div>
+                      </div>
                       <!-- 汇总统计 -->
                       <div class="summary-modern"
                         v-if="currentSelectedGoal.childGoals && currentSelectedGoal.childGoals.length > 0">
@@ -297,14 +298,14 @@
                         <div class="stat-block">
                           <div class="stat-num success-text">{{currentSelectedGoal.childGoals.filter((c: any) =>
                             c.finish).length
-                            }}</div>
+                          }}</div>
                           <div class="stat-desc">已完成</div>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="stat-block">
                           <div class="stat-num warning-text">{{currentSelectedGoal.childGoals.filter((c: any) =>
                             !c.finish).length
-                            }}</div>
+                          }}</div>
                           <div class="stat-desc">待处理</div>
                         </div>
                       </div>
@@ -639,31 +640,31 @@ watch(() => currentSelectedGoal.value, (newVal) => {
 const handleRichTextChange = (val: string) => {
   richTextContent.value = val;
   richTextStatus.value = 'unsaved';
-  
+
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(saveRichText, 2000);
 };
 
 const saveRichText = async () => {
   if (!currentSelectedGoal.value || (!currentSelectedGoal.value.id && !currentSelectedGoal.value._id)) return;
-  
+
   richTextStatus.value = 'saving';
   try {
     // 构造更新数据
     const data = JSON.parse(JSON.stringify(currentSelectedGoal.value));
     data.richText = richTextContent.value;
-    
+
     // 确保必要字段存在
     if (!data.fileList) data.fileList = [];
     if (!data.childGoals) data.childGoals = [];
     if (!data.collaborators) data.collaborators = [];
-    
+
     const res = await postM('editGoal', data);
     if (isSuccess(res)) {
       richTextStatus.value = 'saved';
       // 更新本地数据，避免切换回来时内容丢失
       currentSelectedGoal.value.richText = richTextContent.value;
-      
+
       // 同时更新列表中的数据
       const index = goals.value.findIndex(g => g._id === currentSelectedGoal.value._id || g.id === currentSelectedGoal.value.id);
       if (index !== -1) {
@@ -695,7 +696,7 @@ const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, '目标列表');
-    
+
     // 设置列宽
     const wscols = [
       { wch: 20 }, // 目标名称
@@ -720,7 +721,7 @@ const exportToExcel = () => {
 const exportToPDF = async () => {
   try {
     message.loading('正在生成 PDF...');
-    
+
     // 创建一个临时的 DOM 元素用于渲染表格
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
@@ -730,7 +731,7 @@ const exportToPDF = async () => {
     tempDiv.style.padding = '20px';
     tempDiv.style.backgroundColor = '#ffffff';
     tempDiv.style.color = '#000000';
-    
+
     let tableHtml = `
       <h2 style="text-align: center; margin-bottom: 20px;">目标列表</h2>
       <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
@@ -745,7 +746,7 @@ const exportToPDF = async () => {
         </thead>
         <tbody>
     `;
-    
+
     filteredGoals.value.forEach(goal => {
       tableHtml += `
         <tr>
@@ -757,26 +758,26 @@ const exportToPDF = async () => {
         </tr>
       `;
     });
-    
+
     tableHtml += `
         </tbody>
       </table>
       <div style="margin-top: 10px; text-align: right; font-size: 12px;">导出日期: ${new Date().toLocaleDateString()}</div>
     `;
-    
+
     tempDiv.innerHTML = tableHtml;
     document.body.appendChild(tempDiv);
-    
+
     const canvas = await html2canvas(tempDiv);
     const imgData = canvas.toDataURL('image/png');
-    
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    
+
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     pdf.save(`目标列表_${new Date().toISOString().split('T')[0]}.pdf`);
-    
+
     document.body.removeChild(tempDiv);
     message.success('PDF 导出成功');
   } catch (error) {
@@ -957,7 +958,7 @@ const filteredGoals = computed(() => {
     const [startTs, endTs] = dateFilter.value;
     const startDate = new Date(startTs);
     const endDate = new Date(endTs);
-    
+
     // 调整结束时间到当天的 23:59:59
     endDate.setHours(23, 59, 59, 999);
 
@@ -1303,7 +1304,7 @@ onMounted(() => {
 /* ----------------------------------
    3. 卡片通用样式 (Cards)
    ---------------------------------- */
-.feature-card, 
+.feature-card,
 .detail-card,
 .list-card,
 .empty-selection {
@@ -1317,7 +1318,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   margin-bottom: 5px;
-  
+
 }
 
 .feature-card-light {
@@ -1351,6 +1352,7 @@ onMounted(() => {
 
 /* 移动端适配 */
 @media screen and (max-width: 1023px) {
+
   .list-card,
   .detail-card,
   .empty-selection {
@@ -1365,6 +1367,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
 }
+
 .card-title {
   font-size: 18px;
   font-weight: 600;

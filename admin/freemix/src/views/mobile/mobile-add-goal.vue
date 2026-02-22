@@ -21,7 +21,7 @@
           </div>
         </template>
         <template #title>
-          <span class="nav-title white">新建目标</span>
+          <span class="nav-title white">{{ pageTitle }}</span>
         </template>
         <template #right>
           <van-loading v-if="saving" type="spinner" size="20" color="#fff" />
@@ -246,7 +246,7 @@
         </div>
         <div class="action-btn primary" @click="saveGoal">
           <van-loading v-if="saving" type="spinner" size="20" color="#fff" />
-          <span v-else>立即创建目标</span>
+          <span v-else>{{ pageFooterButton }}</span>
         </div>
       </div>
 
@@ -287,7 +287,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import { useUser } from '@/hooks/useUser'
 import { showToast, showLoadingToast, closeToast, showSuccessToast, showDialog } from 'vant'
@@ -298,6 +298,7 @@ import MobileUpload from '@/components/MobileUpload.vue'
 
 // 路由和状态
 const router = useRouter()
+const route = useRoute()
 const store = useStore()
 const { user } = useUser()
 
@@ -317,6 +318,7 @@ const owerOptions = ref<Array<{ text: string; value: string }>>([])
 
 // 数据模型
 const goal = reactive({
+  _id: '', // Add ID field
   title: '',
   description: '',
   deadline: null as number | null,
@@ -328,6 +330,10 @@ const goal = reactive({
   fileList: [] as any[],
   notes: ''
 })
+
+const isEditing = computed(() => !!goal._id)
+const pageTitle = computed(() => isEditing.value ? '编辑目标' : '新建目标')
+const pageFooterButton = computed(() => isEditing.value ? '立刻保存目标' : '立刻创建目标')
 
 // 常量定义
 const levelOptions = [
@@ -461,7 +467,7 @@ const saveGoal = async () => {
     const res = await postM('editGoal', payload)
     
     if (isSuccess(res)) {
-      showSuccessToast('目标已创建')
+      showSuccessToast(isEditing.value ? '目标已更新' : '目标已创建')
       setTimeout(() => router.back(), 1000)
     } else {
       showToast(res.msg || '保存失败')
@@ -513,9 +519,43 @@ const initDate = () => {
 onMounted(() => {
   initDate()
   getOwerList()
-  if (store.state.user?.username) {
-    goal.owner = store.state.user.username
+  
+  // 检查是否为编辑模式
+  const queryId = route.query.id as string
+  if (queryId) {
+    // 尝试从 history state 获取数据
+    if (history.state.goalData) {
+      try {
+        const goalData = JSON.parse(history.state.goalData)
+        Object.assign(goal, goalData)
+        // 确保 deadline 是时间戳
+        if (typeof goal.deadline === 'string') {
+          goal.deadline = new Date(goal.deadline).getTime()
+        }
+        // 初始化日期选择器显示
+        if (goal.deadline) {
+          const d = new Date(goal.deadline)
+          selectedDate.value = [
+            String(d.getFullYear()),
+            String(d.getMonth() + 1).padStart(2, '0'),
+            String(d.getDate()).padStart(2, '0')
+          ]
+        }
+      } catch (e) {
+        console.error('解析目标数据失败', e)
+      }
+    } else {
+      // 如果没有 state 数据，这里应该调用 API 获取详情
+      // 目前暂不支持，可以添加TODO或尝试从列表获取
+      showToast('无法获取目标详情')
+    }
+  } else {
+    // 新建模式初始化
+    if (store.state.user?.username) {
+      goal.owner = store.state.user.username
+    }
   }
+
   // 设置文档根节点主题为 dark
   document.documentElement.setAttribute('data-theme', 'dark')
 })
