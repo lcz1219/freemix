@@ -63,6 +63,7 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: config.width,
     height: config.height,
+    icon: path.join(__dirname, process.platform === 'win32' ? 'icon.ico' : 'icon.png'), // 设置应用图标
     titleBarStyle: 'hiddenInset', // macOS: 隐藏标题栏但保留窗口控制按钮
     frame: process.platform === 'darwin' ? false : true, // macOS: 无边框，其他平台保留边框
     title: '', // 清空窗口标题
@@ -140,7 +141,7 @@ function createTrayIcon() {
     // 尝试从文件创建图标
     let icon;
     try {
-      const iconPath = path.join(__dirname, 'icon.png');
+      const iconPath = path.join(__dirname, process.platform === 'win32' ? 'icon.ico' : 'icon.png');
       icon = nativeImage.createFromPath(iconPath);
       
       // 检查图标是否有效

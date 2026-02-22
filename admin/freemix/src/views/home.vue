@@ -11,6 +11,22 @@
             目标追踪者是一款强大的目标管理系统，帮助您设定、跟踪并完成个人和职业目标。可视化您的进度，庆祝每一个里程碑。</p>
 
           <div class="hero-actions">
+            <n-button
+          class="menu-button"
+          circle
+          size="large"
+          :title="'近期目标'"
+          @click="toggleGoals"
+        >
+          <n-icon size="24">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+              <path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M19,19H5V5h14V19z" />
+              <path d="M14,12h-4c-0.6,0-1-0.4-1-1s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,12,14,12z" />
+              <path d="M14,16h-4c-0.6,0-1-0.4-1-1s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,16,14,16z" />
+              <path d="M14,8h-4C9.4,8,9,7.6,9,7s0.4-1,1-1h4c0.6,0,1,0.4,1,1S14.6,8,14,8z" />
+            </svg>
+          </n-icon>
+        </n-button>
             <n-button secondary type="primary" size="large" round strong @click="addGoal">
               <template #icon>
                 <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
@@ -534,11 +550,30 @@
 
     <!-- 主内容区域 -->
 
+  <n-modal
+      v-model:show="showGoals"
+      :mask-closable="true"
+      draggable
+      :closable="false"
+      :style="{ width: goalsModalWidth, height: goalsModalHeight, overflowY: 'auto'}"
+      :class="isDark ? 'modal-dark' : 'modal-light'"
+    >
+      <template #header>
+        <div class="modal-header">
+          <h2>近期目标</h2>
+        </div>
+      </template>
+      
+      <!-- <div class="goals-content"> -->
+        <RecentGoals v-if="showGoals" :goals="goals" :formatDate="formatDate" :checktype="checktype" />
+      <!-- </div> -->
+    </n-modal>
 
   </n-layout>
 </template>
 
 <script setup>
+
 import { ref, onMounted, inject, computed, watch, h } from 'vue';
 import common from '@/views/common.vue';
 import {
@@ -678,6 +713,10 @@ const columns = [
     }
   }
 ];
+const showGoals = ref(false);
+const toggleGoals = () => {
+  showGoals.value = !showGoals.value;
+};
 const totalGoals = computed(() => goals.value.length);
 const completedGoals = computed(() => goals.value.filter(g => g.status === 'completed').length);
 const inProgressGoals = computed(() => goals.value.filter(g => g.status === 'in-progress').length);

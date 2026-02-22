@@ -27,7 +27,7 @@
       "nsis",
       "zip"
     ],
-    "icon": "build/icons/icon.png",
+    "icon": "build/icons/icon.ico",
     "signAndEditExecutable": false
   },
   "linux": {

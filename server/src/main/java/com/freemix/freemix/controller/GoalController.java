@@ -453,6 +453,9 @@ public class GoalController extends BaseController {
                 Criteria.where("owner").is(ower).and("del").ne(1),
                 Criteria.where("_id").in(collect).and("del").ne(1)
         )), Goal.class);
+        owner = owner.stream()
+                .sorted(Comparator.comparing(Goal::getDeadline))
+                .collect(Collectors.toList());
         owner.stream().forEach(goal -> {
             if (goal.getProgress() == 100) {
                 goal.setFinish(true);
