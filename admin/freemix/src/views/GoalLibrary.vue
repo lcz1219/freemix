@@ -237,8 +237,7 @@
               <div class="score-label">相似度</div>
             </div>
             
-            <div class="analysis-text">
-              <p style="white-space: pre-wrap;">{{ matchResult }}</p>
+            <div class="analysis-text" v-html="renderMarkdown(matchResult)">
             </div>
           </div>
         </div>
@@ -540,6 +539,11 @@ const handleDropdownSelect = (key, goal) => {
   if (key === 'match') {
     handleMatch(goal);
   }
+};
+
+import { marked } from 'marked';
+const renderMarkdown = (text) => {
+  return marked(text);
 };
 
 const handleMatch = async (goal) => {

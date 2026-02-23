@@ -4,7 +4,11 @@
 set -e
 
 echo "🚀 [1/5] 开始构建前端 Web 资源..."
-npm run build
+if [ -z "$SKIP_BUILD" ]; then
+  npm run build
+else
+  echo "Skipping npm run build (SKIP_BUILD is set)..."
+fi
 
 echo "🔄 [2/5] 同步 Capacitor 配置和资源..."
 npx cap sync

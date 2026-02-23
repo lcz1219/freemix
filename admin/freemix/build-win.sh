@@ -1,7 +1,14 @@
 #!/bin/bash
+set -e
 
 # Windows Electron Application Build Script
 echo "Building Windows Electron Application..."
+
+# Clean previous build artifacts
+if [ -d "dist-electron/win" ]; then
+    echo "Cleaning previous Windows build artifacts..."
+    rm -rf dist-electron/win
+fi
 
 # Set environment variables for faster downloads
 export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
@@ -9,8 +16,12 @@ export ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-b
 export ELECTRON_DOWNLOAD_MIRROR=https://npmmirror.com/mirrors/electron/
 
 # Build the application
-echo "Running build process..."
-npm run build
+if [ -z "$SKIP_BUILD" ]; then
+  echo "Running build process..."
+  npm run build
+else
+  echo "Skipping build process (SKIP_BUILD is set)..."
+fi
 
 # Build Windows application with mirrors and without signing
 echo "Building Windows application with mirror sources (no code signing)..."

@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 窗口大小设置API
   setWindowSize: (options) => ipcRenderer.send('set-window-size', options),
   getWindowSize: () => ipcRenderer.invoke('get-window-size'),
+  genMsg: (msg) => ipcRenderer.send('gen-msg', msg),
   
   // 新窗口API
   createNewWindow: (winId, options, pageUrl) => ipcRenderer.invoke('create-new-window', { winId, options, pageUrl }),
@@ -20,9 +21,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 窗口管理API
   closeWindowById: (winId) => ipcRenderer.send('close-window', winId),
   focusWindowById: (winId) => ipcRenderer.send('focus-window', winId),
-  
   // Token管理API
   saveToken: (tokenData) => ipcRenderer.send('save-token', tokenData),
   getToken: () => ipcRenderer.invoke('get-token'),
-  removeToken: () => ipcRenderer.send('remove-token')
+  removeToken: () => ipcRenderer.send('remove-token'),
+  
+  // 监听窗口拖动开始事件
+  onWindowDragStart: (callback) => ipcRenderer.on('window-drag-start', callback),
+  
+  // 移除窗口拖动开始事件监听
+  removeWindowDragStartListener: (callback) => ipcRenderer.removeListener('window-drag-start', callback)
 });
