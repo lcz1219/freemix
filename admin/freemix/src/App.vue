@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
 import { isMobile } from '@/utils/device.js'
-import { ref, computed, onMounted, watch, type CSSProperties, provide, onUnmounted } from 'vue';
+import { ref, computed, onMounted, watch, type CSSProperties, provide, onUnmounted, nextTick } from 'vue';
 import { useStore } from 'vuex'
 import TabsView from '@/components/TabsView.vue';
 import { saveToken, getToken } from '@/utils/tokenUtils.js';
@@ -241,30 +241,45 @@ const handleIncomingMessage = (messageStr) => {
       if (isDesktop()) {
         genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
       } else {
-        // 根据当前主题设置通知样式
-        const isDarkTheme = isDark.value;
-        const notificationStyle = isDarkTheme ? {
-          background: '#1e1e1e',
-          border: '1px solid #333333',
-          color: '#e0e0e0'
-        } : {
-          background: '#ffffff',
-          border: '1px solid #e0e0e0',
-          color: '#333333'
-        };
+        // 检查是否已经显示过该消息
+        // const lastMessage = sessionStorage.getItem('last_message_id');
+        // console.log("lastMessage",lastMessage);
+        // console.log("message",message);
+        
+        // if (lastMessage !== message.id) {
+          // sessionStorage.setItem('last_message_id', message.id);
+          
+          // 根据当前主题设置通知样式
+          const isDarkTheme = isDark.value;
+          const notificationStyle = isDarkTheme ? {
+            background: '#1e1e1e',
+            border: '1px solid #333333',
+            color: '#e0e0e0'
+          } : {
+            background: '#ffffff',
+            border: '1px solid #e0e0e0',
+            color: '#333333'
+          };
 
-        ElNotification({
-          title: message.fromUserChinesename || message.fromUser,
-          message: h('i', {
-            style: `color: ${isDarkTheme ? '#81c683' : '#81c683'}; font-style: normal; font-weight: 500;`
-          }, message.content),
-          dangerouslyUseHTMLString: true,
-          duration: 4500,
-          customClass: isDarkTheme ? 'websocket-notification-dark' : 'websocket-notification',
-          style: notificationStyle
-        });
+          ElNotification({
+            title: message.fromUserChinesename || message.fromUser,
+            message: h('i', {
+              style: `color: ${isDarkTheme ? '#81c683' : '#81c683'}; font-style: normal; font-weight: 500;`
+            }, message.content),
+            dangerouslyUseHTMLString: true,
+            duration: 4500,
+            customClass: isDarkTheme ? 'websocket-notification-dark' : 'websocket-notification',
+            style: notificationStyle
+          });
+        // }
       }
-
+        // 显示消息到消息中心
+        console.log('messageCenter.value', messageCenter.value);
+        
+        // 触发全局事件通知其他组件（如MessageCenter视图）刷新消息
+        window.dispatchEvent(new CustomEvent('reload-messages'));
+        
+       
     }
   } catch (error) {
     console.error('解析WebSocket消息失败:', error);

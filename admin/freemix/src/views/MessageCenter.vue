@@ -181,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
 import { useMessage } from 'naive-ui'
 import NavBar from '@/components/NavBar.vue';
@@ -423,7 +423,7 @@ const fetchMessages = async () => {
       const userMessages = [...sentMessages, ...receivedMessages].filter(
         (msg: Message) => 
           (msg.fromUser === currentUser.value.username && msg.toUser === selectedUser.value?.username) ||
-          (msg.fromUser === selectedUser.value?.username && msg.toUser === currentUser.value.username)
+          (msg.fromUser === selectedUser.value?.username && msg.toUser === currentUser.value.username) 
       )
       
       // 按时间排序
@@ -652,6 +652,23 @@ const isUserOnline = (username: string) => {
 
 let statusInterval: number | null = null
 
+// 监听WebSocket用户状态更新事件
+const handleUserStatusUpdate = (event) => {
+  const onlineUsers = event.detail;
+  // 更新用户状态
+  allUsers.value.forEach(user => {
+    userStatus.value[user.username] = onlineUsers.includes(user.username);
+  });
+};
+
+// 监听重新加载消息事件
+const handleReloadMessages = () => {
+  if (selectedUser.value) {
+    fetchMessages();
+  }
+  fetchUnreadCount();
+};
+
 // 初始化
 onMounted(async () => {
   try {
@@ -662,16 +679,8 @@ onMounted(async () => {
     // 每5秒获取一次用户在线状态
     statusInterval = window.setInterval(fetchUserStatus, 5000)
     
-    // 监听WebSocket用户状态更新事件
-      const handleUserStatusUpdate = (event) => {
-        const onlineUsers = event.detail;
-        // 更新用户状态
-        allUsers.value.forEach(user => {
-          userStatus.value[user.username] = onlineUsers.includes(user.username);
-        });
-      };
-    
     window.addEventListener('userStatusUpdate', handleUserStatusUpdate);
+    window.addEventListener('reload-messages', handleReloadMessages);
     
     if (!usersLoaded) {
       message.warning('用户列表加载失败，正在使用模拟数据')
@@ -690,16 +699,21 @@ onMounted(async () => {
 })
 
 // 组件卸载时清理定时器
-// onUnmounted(() => {
-//   if (statusInterval) {
-//     clearInterval(statusInterval)
-//   }
-// })
+onUnmounted(() => {
+  if (statusInterval) {
+    clearInterval(statusInterval)
+  }
+  window.removeEventListener('reload-messages', handleReloadMessages);
+})
 
 // 监听消息变化，自动滚动到底部
 // watch(messages, () => {
 //   scrollToBottom()
 // })
+
+defineExpose({
+  fetchMessages
+});
 </script>
 
 <style scoped>
