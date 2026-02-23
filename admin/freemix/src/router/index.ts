@@ -153,6 +153,11 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/change-password',
+    name: 'ChangePassword',
+    component: () => import('@/views/mobile/mobile-change-password.vue')
+  },
+  {
     path: '/mobile/qr-confirm',
     name: 'MobileScanConfirm',
     component: MobileScanConfirm,

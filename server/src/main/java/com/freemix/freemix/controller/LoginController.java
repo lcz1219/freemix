@@ -373,4 +373,39 @@ public class LoginController {
         return ApiResponse.success(user);
     }
 
+    /**
+     * 修改密码
+     */
+    @PostMapping("/updatePassword")
+    @CheckToken
+    public ApiResponse updatePassword(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String oldPassword = jsonObject.getString("oldPassword");
+        String newPassword = jsonObject.getString("newPassword");
+        
+        if (StringUtils.isEmpty(newPassword)) {
+            return ApiResponse.failure("新密码不能为空");
+        }
+        
+        User currentUser = userContextUtil.getCurrentUser();
+        if (currentUser == null) {
+            return ApiResponse.failure("用户未登录");
+        }
+        
+        // 获取最新的用户信息
+        User user = mongoTemplate.findById(currentUser.getId(), User.class);
+        if (user == null) {
+            return ApiResponse.failure("用户不存在");
+        }
+        
+        // 验证旧密码
+        if (!user.getPassword().equals(oldPassword)) {
+            return ApiResponse.failure("旧密码错误");
+        }
+        
+        user.setPassword(newPassword);
+        mongoTemplate.save(user);
+        
+        return ApiResponse.success(null, "密码修改成功");
+    }
 }

@@ -98,6 +98,9 @@
                 @update:secretKey="onTwoFactorUpdateSecretKey"
               />
               
+              <div style="margin: 20px 0; border-top: 1px solid var(--border-color);"></div>
+              <ChangePassword />
+              
               <div class="form-actions">
                 <button @click="saveSecuritySettings" class="btn primary">保存安全设置</button>
               </div>
@@ -306,6 +309,7 @@ import { ref, inject, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import TwoFactorAuth from '@/components/TwoFactorAuth.vue';
+import ChangePassword from '@/components/ChangePassword.vue';
 // @ts-ignore - 忽略vuex声明文件错误
 import { useStore } from 'vuex';
 // @ts-ignore - 忽略qrcode声明文件错误
