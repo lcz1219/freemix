@@ -54,7 +54,7 @@
 
             <!-- 移动端浮动导航组件 -->
             <MobileFloatingNav v-if="false" />
-            
+            <MessageCenter ref="mcter" v-show="false"/>
             <!-- 全局浮动按钮组件 -->
             <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage&&!isMobileDevice" :goals="goals" :formatDate="formatDate" :checktype="checktype"
               @dateSelected="handleCalendarUpdate" />
@@ -128,6 +128,7 @@ import upload from '@/components/upload.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
+import MessageCenter from './views/MessageCenter.vue';
 import AppLoading from '@/components/AppLoading.vue';
 import UpdateNotification from '@/components/UpdateNotification.vue';
 import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue'; // 导入加载页面组件
@@ -175,7 +176,7 @@ const isMobileDevice = isMobile(); // 调用函数获取是否为移动端
 
 // 侧边栏折叠状态
 const isSidebarCollapsed = ref(false);
-
+const mcter=ref(null)
 // 计算当前激活的标签
 const activeTab = computed(() => {
   const path = route.path;
@@ -274,8 +275,10 @@ const handleIncomingMessage = (messageStr) => {
         // }
       }
         // 显示消息到消息中心
-        console.log('messageCenter.value', messageCenter.value);
-        
+        // console.log('messageCenter.value', messageCenter.value);
+        nextTick(()=>{
+          mcter.value.fetchMessages()
+        })
         // 触发全局事件通知其他组件（如MessageCenter视图）刷新消息
         window.dispatchEvent(new CustomEvent('reload-messages'));
         
