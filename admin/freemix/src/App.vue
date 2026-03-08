@@ -243,12 +243,12 @@ const handleIncomingMessage = (messageStr) => {
         genMsg(`${message.fromUserChinesename || message.fromUser}: ${message.content}`);
       } else {
         // 检查是否已经显示过该消息
-        // const lastMessage = sessionStorage.getItem('last_message_id');
+        const lastcreatedAt = sessionStorage.getItem('last_message_createdAt');
         // console.log("lastMessage",lastMessage);
         // console.log("message",message);
         
-        // if (lastMessage !== message.id) {
-          // sessionStorage.setItem('last_message_id', message.id);
+        if (lastcreatedAt !== message.createdAt||!lastcreatedAt) {
+          sessionStorage.setItem('last_message_createdAt', message.createdAt);
           
           // 根据当前主题设置通知样式
           const isDarkTheme = isDark.value;
@@ -272,13 +272,14 @@ const handleIncomingMessage = (messageStr) => {
             customClass: isDarkTheme ? 'websocket-notification-dark' : 'websocket-notification',
             style: notificationStyle
           });
-        // }
+        }
       }
         // 显示消息到消息中心
         // console.log('messageCenter.value', messageCenter.value);
-        nextTick(()=>{
-          mcter.value.fetchMessages()
-        })
+        // nextTick(async ()=>{
+        //  await mcter.value.fetchMessages()
+        //   mcter.value.scrollToBottom()
+        // })
         // 触发全局事件通知其他组件（如MessageCenter视图）刷新消息
         window.dispatchEvent(new CustomEvent('reload-messages'));
         

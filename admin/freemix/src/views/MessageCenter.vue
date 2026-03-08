@@ -180,6 +180,11 @@
   </n-layout>
 </template>
 
+<script lang="ts">
+// 全局状态：用于在组件重建时保持滚动位置状态
+let globalScrollPosition = 9999999;
+</script>
+
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
@@ -602,15 +607,40 @@ const handleSendMessage = (e: KeyboardEvent) => {
 
 // 滚动到底部
 const messageContainer = ref()
-const bottomscroll = ref(9999999)
 const scrollToBottom = () => {
   nextTick(() => {
-    if (messageContainer.value) {
-      // 每次滚动增加一个偏移量，避免滚动到相同位置
-      bottomscroll.value=bottomscroll.value+1
-      console.log("bottomscroll.value:",bottomscroll.value);
-    messageContainer.value.scrollTo({ top: bottomscroll.value, behavior: 'smooth' })
+    const container = messageContainer.value
+    
+    // 如果容器不存在（可能正在渲染），延迟重试
+    if (!container) {
+      // console.warn("messageContainer is null, retrying scroll in 100ms...");
+      setTimeout(scrollToBottom, 300);
+      return;
     }
+
+    // 获取原生 DOM 元素
+    const el = container.$el || container
+    
+    // 使用 setTimeout 确保 DOM 完全渲染
+    setTimeout(() => {
+      // 如果高度为 0，尝试延迟重试
+      if (el.scrollHeight === 0) {
+        // console.warn("scrollHeight is 0, retrying scroll...");
+        setTimeout(() => {
+          globalScrollPosition += 100;
+          el.scrollTop = globalScrollPosition;
+        }, 300);
+        return;
+      }
+
+      // 增加偏移量，确保数值变化
+      globalScrollPosition += 100
+      // console.log("scrollToBottom target:", globalScrollPosition, "scrollHeight:", el.scrollHeight)
+      
+      // 直接设置 scrollTop 属性
+      el.scrollTop = globalScrollPosition
+      container.scrollTo({ top: globalScrollPosition, behavior: 'smooth' })
+    }, 100)
   })
 }
 
@@ -662,9 +692,10 @@ const handleUserStatusUpdate = (event) => {
 };
 
 // 监听重新加载消息事件
-const handleReloadMessages = () => {
+const handleReloadMessages = async () => {
   if (selectedUser.value) {
-    fetchMessages();
+    await fetchMessages();
+    scrollToBottom();
   }
   fetchUnreadCount();
 };
@@ -682,9 +713,9 @@ onMounted(async () => {
     window.addEventListener('userStatusUpdate', handleUserStatusUpdate);
     window.addEventListener('reload-messages', handleReloadMessages);
     
-    if (!usersLoaded) {
-      message.warning('用户列表加载失败，正在使用模拟数据')
-    }
+    // if (!usersLoaded) {
+    //   message.warning('用户列表加载失败，正在使用模拟数据')
+    // }
     
     console.log('初始化完成，未读消息数量:', unreadCount)
     
@@ -712,7 +743,8 @@ onUnmounted(() => {
 // })
 
 defineExpose({
-  fetchMessages
+  fetchMessages,
+  scrollToBottom
 });
 </script>
 
