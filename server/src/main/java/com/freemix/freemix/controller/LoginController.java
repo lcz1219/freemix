@@ -3,6 +3,7 @@ package com.freemix.freemix.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.LoginLog;
+import com.freemix.freemix.enetiy.Message;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.service.LoginLogService;
 import com.freemix.freemix.util.*;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -18,9 +20,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -348,21 +348,80 @@ public class LoginController {
     
     @GetMapping("/getOwerList")
     @CheckToken
-    public ApiResponse getOwerList(){
-        List<User> users = mongoTemplate.find(new Query().addCriteria(Criteria.where("del").ne(1)), User.class);
-        Set<JSONObject> collect = users.stream().map(e -> {
+    public ApiResponse getOwerList(@RequestParam(required = false) String currentUsername){
+        // 如果前端没传参数，尝试从 Token 获取当前用户
+        if (StringUtils.isEmpty(currentUsername)) {
+            User currentUser = userContextUtil.getCurrentUser();
+            if (currentUser != null) {
+                currentUsername = currentUser.getUsername();
+            }
+        }
 
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("value", e.getUsername());
-            jsonObject.put("text", e.getUsername());
-            jsonObject.put("avatarUrl", e.getAvatarUrl());
-            return jsonObject;
-        }).collect(Collectors.toSet());
-        collect=collect.stream().filter(e->e.getString("value")!=null).collect(
-                Collectors.toSet()
+        // 1. 获取所有消息，按创建时间倒序排列（最近的在前）
+        List<Message> messages = mongoTemplate.find(
+            new Query().with(Sort.by(Sort.Direction.DESC, "createdAt")),
+            Message.class
         );
 
-        return ApiResponse.success(collect);
+        // 2. 提取最近联系人（有序去重）
+        List<String> recentContacts = new ArrayList<>();
+        if (StringUtils.isNotEmpty(currentUsername)) {
+            for (Message msg : messages) {
+                String contact = null;
+                if (currentUsername.equals(msg.getFromUser())) {
+                    contact = msg.getToUser();
+                } else if (currentUsername.equals(msg.getToUser())) {
+                    contact = msg.getFromUser();
+                }
+                
+                if (contact != null && !recentContacts.contains(contact)) {
+                    recentContacts.add(contact);
+                }
+            }
+        }
+
+        // 3. 获取所有用户
+        List<User> users = mongoTemplate.find(new Query().addCriteria(Criteria.where("del").ne(1)), User.class);
+        
+        // 4. 构建有序结果集
+        // 使用 LinkedHashSet 保持插入顺序
+        Set<JSONObject> result = new LinkedHashSet<>();
+        
+        // 4.1 先添加最近联系人
+        for (String contactName : recentContacts) {
+            users.stream()
+                .filter(u -> u.getUsername().equals(contactName))
+                .findFirst()
+                .ifPresent(u -> {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("value", u.getUsername());
+                    jsonObject.put("text", u.getUsername());
+                    jsonObject.put("avatarUrl", u.getAvatarUrl());
+                    jsonObject.put("chinesename", u.getChinesename()); // 补充中文名
+                    result.add(jsonObject);
+                });
+        }
+
+        // 4.2 再添加剩余用户
+        for (User u : users) {
+            // 检查是否已存在（避免重复添加）
+            boolean exists = result.stream().anyMatch(j -> u.getUsername().equals(j.getString("value")));
+            if (!exists) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("value", u.getUsername());
+                jsonObject.put("text", u.getUsername());
+                jsonObject.put("avatarUrl", u.getAvatarUrl());
+                jsonObject.put("chinesename", u.getChinesename());
+                result.add(jsonObject);
+            }
+        }
+
+        // 过滤掉 value 为空的异常数据
+        Set<JSONObject> finalResult = result.stream()
+                .filter(e -> e.getString("value") != null)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        return ApiResponse.success(finalResult);
     }
     @PostMapping("/edituserinfo")
     @CheckToken

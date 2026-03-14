@@ -7,10 +7,18 @@ import { getLocalStorageDesktopToken } from './desktopToken.js';
 import { getToken } from './tokenUtils.js';
 
 let stompClient = null;
+let isConnecting = false;
 let retryCount = 0;
 const MAX_RETRIES = 5;
 
 export async function connect() {
+    // 如果已经连接或正在连接，则不再重复连接
+    if ((stompClient && stompClient.connected) || isConnecting) {
+        console.log('WebSocket already connected or connecting, skipping...');
+        return;
+    }
+
+    isConnecting = true;
     // 动态构建WebSocket连接URL，确保协议与当前页面一致
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
     const host = import.meta.env.PROD ? 'freemix.bond' : 'localhost:5173';
@@ -46,6 +54,7 @@ export async function connect() {
     // 连接时不需要传递headers，因为认证信息已经在URL中了
     stompClient.connect({}, function (frame) {
         console.log('Connected to server: ' + frame);
+        isConnecting = false;
         retryCount = 0; // 重置重试计数
         
         // // 显示连接成功的提示（仅在生产环境）
@@ -81,40 +90,33 @@ export async function connect() {
         // 从store中获取当前用户名
         const user = store.state.user;
         console.log('Current user object from store:', user);
-        const username = user?.username || 'unknown';
+        let username = user?.username || 'unknown';
         console.log('Current username for subscription:', username);
         
         if (username === 'unknown') {
-            console.warn('User not logged in, skipping subscription');
-            return;
+            console.warn('User not logged in, skipping subscription. Will retry in 2 seconds...');
+            // 延迟重试订阅
+            setTimeout(() => {
+                const retryUser = store.state.user;
+                const retryName = retryUser?.username || 'unknown';
+                if (retryName !== 'unknown') {
+                    username = retryName;
+                    const retryPath = `/user/${username}/queue/private`;
+                    console.log('Retrying subscription to path:', retryPath);
+                    subscribeToPrivateMessage(stompClient, retryPath);
+                } else {
+                    console.error('User still not logged in after retry, subscription failed.');
+                }
+            }, 2000);
+            
+            // 继续订阅系统广播，不阻断
+        } else {
+             const subscriptionPath = `/user/${username}/queue/private`;
+             console.log('Subscribing to path:', subscriptionPath);
+             subscribeToPrivateMessage(stompClient, subscriptionPath);
         }
         
-        // 订阅服务器广播消息的主题
-        // 使用动态用户目的地订阅，确保与后端配置匹配
-        const subscriptionPath = `/user/${username}/queue/private`;
-        console.log('Subscribing to path:', subscriptionPath);
-        
-        stompClient.subscribe(subscriptionPath, function (message) {
-            // 当收到消息时，调用回调函数，例如更新页面数据
-            console.log('Received from server: ' + message.body);
-            console.log('Full message object:', message);
-            
-            // 检查window.handleWebSocketMessage是否存在
-            if (window.handleWebSocketMessage) {
-                window.handleWebSocketMessage(message.body);
-            } else {
-                // 如果window.handleWebSocketMessage不存在，等待一段时间后重试
-                console.warn('window.handleWebSocketMessage is not defined, retrying in 1 second...');
-                setTimeout(() => {
-                    if (window.handleWebSocketMessage) {
-                        console.log('Calling window.handleWebSocketMessage (retry)');
-                        window.handleWebSocketMessage(message.body);
-                    } else {
-                        console.error('window.handleWebSocketMessage is still not defined after retry!');
-                    }
-                }, 1000);
-            }
-        });
+        // 订阅系统更新通知
         
         // 订阅系统更新通知
         stompClient.subscribe('/topic/updates', function (message) {
@@ -140,7 +142,8 @@ export async function connect() {
         
         console.log('Successfully subscribed to private messages');
     }, function(error) {
-        // console.error('WebSocket connection error:', error);
+        console.error('WebSocket connection error:', error);
+        isConnecting = false;
         //
         // // 显示连接失败的提示（仅在生产环境）
         // if (import.meta.env.PROD) {
@@ -232,6 +235,39 @@ export function sendMessageWeb(message) {
 
 export function disconnect() {
     if (stompClient) {
-        stompClient.disconnect();
+        stompClient.disconnect(() => {
+            console.log('WebSocket disconnected');
+            stompClient = null;
+            isConnecting = false;
+        });
     }
+}
+
+// 辅助函数：订阅私人消息
+function subscribeToPrivateMessage(client, path) {
+    if (!client || !client.connected) {
+        console.error('WebSocket client not connected, cannot subscribe.');
+        return;
+    }
+    
+    client.subscribe(path, function (message) {
+        // 当收到消息时，调用回调函数，例如更新页面数据
+        console.log('Received from server: ' + message.body);
+        
+        // 检查window.handleWebSocketMessage是否存在
+        if (window.handleWebSocketMessage) {
+            window.handleWebSocketMessage(message.body);
+        } else {
+            // 如果window.handleWebSocketMessage不存在，等待一段时间后重试
+            console.warn('window.handleWebSocketMessage is not defined, retrying in 1 second...');
+            setTimeout(() => {
+                if (window.handleWebSocketMessage) {
+                    console.log('Calling window.handleWebSocketMessage (retry)');
+                    window.handleWebSocketMessage(message.body);
+                } else {
+                    console.error('window.handleWebSocketMessage is still not defined after retry!');
+                }
+            }, 1000);
+        }
+    });
 }

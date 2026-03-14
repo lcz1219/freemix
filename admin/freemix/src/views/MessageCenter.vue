@@ -529,10 +529,11 @@ const sendMessage = async () => {
       messages.value.push(res.data.data)
       newMessage.value = ''
       scrollToBottom()
-      message.success('消息发送成功')
+      // message.success('消息发送成功')
       
       // 立即刷新消息列表，确保显示最新消息
       await fetchMessages()
+      fetchAllUsers()
     } else {
       message.error(res.data.msg || '消息发送失败')
     }
