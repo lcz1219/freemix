@@ -218,7 +218,7 @@
     <!-- Match Result Modal -->
     <n-modal v-model:show="showMatchModal">
       <n-card
-        style="width: 600px; max-width: 90%; background: #1a1a1a; border: 1px solid #333;"
+        style="width: 600px; max-width: 90%; background: var(--card-bg); border: 1px solid var(--border-color);"
         :title="`与 ${matchTargetUser} 的默契度匹配`"
         :bordered="false"
         size="huge"
@@ -293,7 +293,7 @@ import { callCozeAPI } from '@/utils/aiService.js';
 const store = useStore();
 const message = useMessage();
 const dialog = useDialog();
-const isDark = inject('isDark', ref(true)); // Keeping for compatibility, but UI is now dark-themed by default
+const isDark = inject('isDark', ref(true)); 
 const loading = ref(false);
 const goals = ref([]);
 const searchQuery = ref('');
@@ -632,8 +632,8 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  background-color: #050505;
-  color: #e0e0e0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .main-layout {
@@ -679,7 +679,7 @@ onMounted(() => {
   background: #0c3725;
   top: -100px;
   left: -100px;
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 .shape-2 {
@@ -688,7 +688,7 @@ onMounted(() => {
   background: #183812;
   bottom: -50px;
   right: -50px;
-  opacity: 0.15;
+  opacity: 0.08;
   animation-delay: -5s;
 }
 
@@ -698,7 +698,7 @@ onMounted(() => {
   background: #41b883;
   top: 40%;
   left: 30%;
-  opacity: 0.1;
+  opacity: 0.05;
   animation-duration: 30s;
 }
 
@@ -709,7 +709,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-  opacity: 0.4;
+  opacity: 0.2;
   z-index: 0;
 }
 
@@ -735,7 +735,7 @@ onMounted(() => {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #fff 30%, #41b883 100%);
+  background: linear-gradient(135deg, var(--text-color) 30%, #41b883 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -1px;
@@ -743,7 +743,8 @@ onMounted(() => {
 
 .hero-subtitle {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-color);
+  opacity: 0.6;
   font-weight: 300;
   letter-spacing: 1px;
 }
@@ -769,27 +770,26 @@ onMounted(() => {
 }
 
 :deep(.search-input) {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
   transition: all 0.3s;
 }
 
 :deep(.search-input .n-input__input-el) {
-  color: #fff !important;
+  color: var(--text-color) !important;
 }
 
 :deep(.search-input:hover), :deep(.search-input:focus-within) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
   border-color: #00dc82 !important;
   box-shadow: 0 0 15px rgba(0, 220, 130, 0.2);
 }
 
 .filter-tabs {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--card-bg);
   border-radius: 30px;
   padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .filter-tab {
@@ -797,7 +797,8 @@ onMounted(() => {
   border-radius: 24px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-color);
+  opacity: 0.6;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -806,7 +807,8 @@ onMounted(() => {
 
 .filter-tab.active {
   background: #00dc82;
-  color: #000;
+  color: #fff;
+  opacity: 1;
   box-shadow: 0 4px 12px rgba(0, 220, 130, 0.3);
 }
 
@@ -834,7 +836,7 @@ onMounted(() => {
 .progress-track {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -855,10 +857,10 @@ onMounted(() => {
 /* Glass Card */
 .glass-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 24px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -870,9 +872,8 @@ onMounted(() => {
 
 .glass-card:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.05);
   border-color: rgba(65, 184, 131, 0.3);
-  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1);
 }
 
 .card-glow {
@@ -905,7 +906,7 @@ onMounted(() => {
 }
 
 .user-avatar {
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--border-color);
 }
 
 .user-meta {
@@ -915,22 +916,24 @@ onMounted(() => {
 
 .username {
   font-weight: 600;
-  color: #fff;
+  color: var(--text-color);
   font-size: 15px;
 }
 
 .timestamp {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-color);
+  opacity: 0.4;
 }
 
 .more-btn {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-color);
+  opacity: 0.5;
 }
 
 .more-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--hover-color);
+  opacity: 1;
 }
 
 /* Card Body */
@@ -942,14 +945,15 @@ onMounted(() => {
 .goal-title {
   font-size: 18px;
   font-weight: 700;
-  color: #f0f0f0;
+  color: var(--text-color);
   margin-bottom: 10px;
   line-height: 1.4;
 }
 
 .goal-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-color);
+  opacity: 0.7;
   line-height: 1.6;
   margin-bottom: 16px;
   display: -webkit-box;
@@ -960,10 +964,10 @@ onMounted(() => {
 
 /* Milestones */
 .milestones-container {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--hover-color);
   border-radius: 12px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
 }
 
 .milestone-item {
@@ -977,7 +981,7 @@ onMounted(() => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -992,7 +996,8 @@ onMounted(() => {
 
 .milestone-text {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-color);
+  opacity: 0.8;
   flex: 1;
   white-space: nowrap;
   overflow: hidden;

@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import { NInput, NText, NTag } from 'naive-ui';
 
 const props = defineProps({
@@ -40,6 +40,8 @@ const props = defineProps({
     default: 'saved' // 'saved', 'saving', 'unsaved'
   }
 });
+
+const isDark = inject('isDark', ref(true));
 
 const emit = defineEmits(['update:modelValue', 'change']);
 
@@ -79,21 +81,21 @@ const handleInput = (val) => {
 
 <style scoped>
 .plain-text-editor {
-  border: 1px solid #e0e0e63b;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   display: flex;
   flex-direction: column;
-  background: #252525; /* 浅灰色背景，与白色卡片区分 */
+  background: var(--hover-color);
 }
 
 .toolbar {
-  padding: 4px 8px; /* 减小内边距 */
-  border-bottom: 1px solid #e0e0e63b;
-  background: #252525; /* 浅灰色背景，与白色卡片区分 */
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--hover-color);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  height: 28px; /* 固定高度 */
+  height: 28px;
 }
 
 .editor-main {
