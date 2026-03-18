@@ -195,6 +195,7 @@ const activeTab = computed(() => {
   if (path.includes('/goal-structure')) return 'goalstructure';
   if (path.includes('/goal-library')) return 'goallibrary';
   if (path.includes('/messages')) return 'messages';
+  if (path.includes('/recurring-goals')) return 'recurring-goals';
   return 'dashboard';
 });
 

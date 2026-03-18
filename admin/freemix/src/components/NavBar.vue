@@ -70,6 +70,13 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">日历视图</span>
       </n-button>
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recurring-goals' }" :title="isCollapsedTitle('定时目标')"
+        @click="goTo('/recurring-goals')">
+        <NIcon class="icon">
+          <RepeatOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">定时目标</span>
+      </n-button>
       <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recycle' }" :title="isCollapsedTitle('回收站')"
         @click="goTo('/recycle')">
         <NIcon class="icon">
@@ -131,7 +138,8 @@ import {
   HelpCircleOutline,
   TrophyOutline,
   CalendarOutline,
-  PlanetOutline
+  PlanetOutline,
+  RepeatOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';

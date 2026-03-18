@@ -107,6 +107,11 @@ const routes = [
     component: () => import('@/views/calendar.vue')
   },
   { 
+    path: '/recurring-goals', 
+    name: 'RecurringGoals', 
+    component: () => import('@/views/RecurringGoals.vue') 
+  },
+  { 
     path: '/settings', 
     name: 'Settings', 
     component: getComponent(Settings, MobileSettings) 
