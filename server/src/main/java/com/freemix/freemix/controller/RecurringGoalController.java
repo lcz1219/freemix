@@ -142,7 +142,7 @@ public class RecurringGoalController extends BaseController {
             return ApiResponse.failure("解析失败: " + e.getMessage());
         }
     }
-///
+////
     private Date calculateInitialExecutionTime(RecurringGoal rule) {
         String type = rule.getRecurrenceType();
         
