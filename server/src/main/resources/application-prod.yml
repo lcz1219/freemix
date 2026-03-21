@@ -35,5 +35,19 @@ spring:
             token-uri: https://github.com/login/oauth/access_token
             user-info-uri: https://api.github.com/user
             user-name-attribute: login
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: ${MAIL_USERNAME:3687649273@qq.com}
+    password: ${MAIL_PASSWORD:qevablklknpbdada}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
 server:
   port: 8888

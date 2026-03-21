@@ -55,6 +55,82 @@
               </div>
             </div>
           </n-tab-pane>
+           <n-tab-pane name="mail-login" tab="邮箱登录">
+            <div class="mail-login-container fade-in-up">
+              <n-form :rules="mailRules" ref="mailFormRef" :model="mailUser" @keydown.enter="prepareMailLogin">
+                
+                <!-- 邮箱输入框 -->
+                <n-form-item-row label="邮箱地址" path="email">
+                  <n-input 
+                    placeholder="请输入注册邮箱" 
+                    v-model:value="mailUser.email"
+                  >
+                    <template #prefix>
+                      <n-icon><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5l-8-5V6l8 5l8-5v2z"/></svg></n-icon>
+                    </template>
+                  </n-input>
+                </n-form-item-row>
+
+                <!-- 验证码输入框 + 获取验证码按钮 -->
+                <n-form-item-row label="邮箱验证码" path="code">
+                  <div class="mail-code-container">
+                    <n-input 
+                      placeholder="请输入6位验证码" 
+                      v-model:value="mailUser.code" 
+                      maxlength="6" 
+                      style="flex: 1;"
+                    >
+                      <template #prefix>
+                        <n-icon :component="KeyOutline" />
+                      </template>
+                    </n-input>
+                    
+                    <n-button 
+                      class="send-code-btn"
+                      type="primary" 
+                      ghost 
+                      :disabled="isCodeSending || countdown > 0"
+                      @click="sendMailCode"
+                    >
+                      {{ countdown > 0 ? `${countdown}s 后重发` : (isCodeSending ? '发送中...' : '获取验证码') }}
+                    </n-button>
+                  </div>
+                </n-form-item-row>
+              </n-form>
+
+              <!-- 注册与登录按钮 -->
+              <div class="mail-action-group">
+                <n-button quaternary type="primary" style="margin: 10px 0;" @click="toRegister()">
+                  去注册
+                </n-button>
+                <n-button 
+                  type="primary" 
+                  block 
+                  secondary 
+                  strong 
+                  @click="prepareMailLogin" 
+                  class="login-btn-gradient"
+                >
+                  验证并登录
+                </n-button>
+              </div>
+
+              <!-- 第三方登录（可选保留） -->
+              <n-divider dashed style="margin: 20px 0;">或</n-divider>
+              <n-button block @click="handleGitHubLogin" class="github-login-btn"
+                style="display: flex; align-items: center; justify-content: center;">
+                <template #icon>
+                  <n-icon>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                      <path fill="currentColor"
+                        d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                    </svg>
+                  </n-icon>
+                </template>
+                <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
+              </n-button>
+            </div>
+          </n-tab-pane>
           <n-tab-pane name="signin" tab="登录">
             <n-form :rules="rules" ref="formRef" :model="user" @keydown.enter="prepareLogin">
               <n-form-item-row label="用户名" path="username">
@@ -271,7 +347,7 @@ const cardStyle = computed(() => {
 
 // 登录步骤状态
 const loginStep = ref<'login' | 'human-verify' | '2fa-verify' | '2fa-bind'>('login');
-const activeLoginTab = ref<'signin' | 'qr-login'>('qr-login');
+const activeLoginTab = ref<'signin' | 'qr-login'|'mail-login'>('qr-login');
 
 // 表单验证规则
 const rules = ref({
@@ -771,9 +847,171 @@ watch(loginStep, (newStep) => {
     });
   }
 });
+// --- 邮箱登录相关状态 ---
+const mailFormRef = ref<FormInst | null>(null);
+const mailUser = ref({
+  email: '',
+  code: ''
+});
+
+const isCodeSending = ref(false);
+const countdown = ref(0);
+let countdownTimer: number | null = null;
+
+// 邮箱表单验证规则
+const mailRules = ref({
+  email: [
+    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'input'] }
+  ],
+  code: [
+    { required: true, message: '请输入邮箱验证码', trigger: 'blur' },
+    { len: 6, message: '验证码为6位数字', trigger: 'blur' }
+  ]
+});
+
+// 发送邮箱验证码逻辑
+const sendMailCode = async () => {
+  // 先单独校验邮箱字段
+  try {
+    await mailFormRef.value?.validate(
+      (errors) => {},
+      (rule) => rule?.key === 'email'
+    );
+  } catch (e) {
+    // 邮箱格式不正确，提前返回（Naive UI 会自动显示错误提示）
+    if (!mailUser.value.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailUser.value.email)) {
+      message.warning('请先输入正确的邮箱地址');
+      return;
+    }
+  }
+
+  isCodeSending.value = true;
+  try {
+    // TODO: 替换为你的真实获取验证码 API
+    const res = await postM('sendEmailCode', { email: mailUser.value.email });
+
+
+    
+    // 模拟API请求延迟
+    // await new Promise(resolve => setTimeout(resolve, 1000)); 
+    
+    message.success('验证码已发送至您的邮箱，请查收');
+    startCountdown();
+  } catch (error) {
+    console.error('发送验证码失败:', error);
+    message.error('发送失败，请稍后重试');
+  } finally {
+    isCodeSending.value = false;
+  }
+};
+
+// 倒计时逻辑
+const startCountdown = () => {
+  countdown.value = 60;
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = window.setInterval(() => {
+    if (countdown.value > 0) {
+      countdown.value--;
+    } else {
+      clearInterval(countdownTimer!);
+      countdownTimer = null;
+    }
+  }, 1000);
+};
+
+// 准备邮箱登录 (点击登录按钮)
+const prepareMailLogin = async () => {
+  const valid = await mailFormRef.value?.validate();
+  if (valid) {
+    // TODO: 如果邮箱登录也需要点选验证，解开下面的注释
+    // loginStep.value = 'human-verify';
+    // nextTick(initClickCaptcha);
+    
+    // 否则直接执行登录逻辑
+    executeMailLogin();
+  }
+};
+
+// 执行真实的邮箱登录请求
+const executeMailLogin = async () => {
+  const loginData = {
+    email: mailUser.value.email,
+    code: mailUser.value.code
+  };
+
+  try {
+    // TODO: 替换为你的真实邮箱登录 API
+    const res = await postM('emailLogin', loginData);
+    if (isSuccess(res)) {
+      let user = res.data.data
+      store.commit('saveUser', user);
+
+      if (isDesktopEnv) {
+        const desktopToken = generateDesktopToken();
+        saveTokenUtil(desktopToken);
+        saveLocalStorageDesktopToken(desktopToken);
+        // try {
+        //   await postM('verify-desktop-token', { desktopToken, username: user.username });
+        // } catch (error) {
+        //   console.error('保存桌面端token失败:', error);
+        // }
+      } else {
+        await saveTokenUtil(user.token);
+      }
+
+      message.success('登录成功');
+      router.push('/home');
+    }
+    
+    // message.success('邮箱登录成功 (模拟)');
+    // 测试代码：跳转或状态切换
+  } catch (error) {
+    console.error('邮箱登录失败:', error);
+    message.error('验证码错误或已过期');
+  }
+};
+
+// 组件卸载时清除倒计时
+onUnmounted(() => {
+  clearQrTimers();
+  if (countdownTimer) clearInterval(countdownTimer);
+});
 </script>
 
 <style scoped>
+/* --- 邮箱登录区域样式 --- */
+.mail-login-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mail-code-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.send-code-btn {
+  min-width: 110px;
+  height: 34px; /* 与 input 高度对齐 */
+  transition: all 0.3s ease;
+}
+
+/* 禁用状态下的按钮样式调优（暗黑模式下更柔和） */
+.send-code-btn.n-button--disabled {
+  opacity: 0.6;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.mail-action-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
 /* 增加氛围光效 */
 .ambient-light {
   position: absolute;

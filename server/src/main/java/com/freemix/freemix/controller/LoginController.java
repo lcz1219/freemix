@@ -37,6 +37,102 @@ public class LoginController {
     HttpServletRequest request;
     @Autowired
     com.freemix.freemix.service.AchievementService achievementService;
+    @Autowired
+    com.freemix.freemix.service.MailService mailService;
+
+    @PostMapping("/sendEmailCode")
+    public ApiResponse sendEmailCode(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String email = jsonObject.getString("email");
+        if (StringUtils.isEmpty(email)) {
+            return ApiResponse.failure("邮箱不能为空");
+        }
+
+        // 生成 6 位随机验证码
+        String code = String.format("%06d", new Random().nextInt(1000000));
+        String redisKey = "email_code_" + email;
+
+        // 存入 Redis，5 分钟有效
+        redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
+
+        // 发送邮件
+        boolean sent = mailService.sendVerificationCode(email, code);
+        if (sent) {
+            return ApiResponse.success(null, "验证码已发送至您的邮箱");
+        } else {
+            return ApiResponse.failure("邮件发送失败，请稍后重试");
+        }
+    }
+
+    @PostMapping("/emailLogin")
+    public ApiResponse emailLogin(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String email = jsonObject.getString("email");
+        String code = jsonObject.getString("code");
+
+        if (StringUtils.isEmpty(email) || StringUtils.isEmpty(code)) {
+            return ApiResponse.failure("邮箱和验证码不能为空");
+        }
+
+        // 验证验证码
+        String redisKey = "email_code_" + email;
+        String storedCode = (String) redisTemplate.opsForValue().get(redisKey);
+
+        if (storedCode == null || !storedCode.equals(code)) {
+            return ApiResponse.failure("验证码错误或已过期");
+        }
+
+        // 验证成功，删除验证码
+        redisTemplate.delete(redisKey);
+
+        // 查找用户
+        User userFromDB = mongoTemplate.findOne(
+                new Query().addCriteria(Criteria.where("email").is(email).and("del").ne(1)),
+                User.class
+        );
+
+        if (userFromDB == null) {
+            return ApiResponse.failure("用户不存在，请先注册或联系管理员");
+        }
+
+        // 执行登录逻辑 (复用部分 login 逻辑)
+        LoginLog loginLog = new LoginLog();
+        String userAgent = request.getHeader("User-Agent");
+        String ipAddress = LoginLogUtil.getClientIp(request);
+        loginLog.setIpAddress(ipAddress);
+        loginLog.setUserAgent(userAgent);
+        loginLog.setDeviceType(LoginLogUtil.getDeviceType(userAgent));
+        loginLog.setBrowser(LoginLogUtil.getBrowser(userAgent));
+        loginLog.setOs(LoginLogUtil.getOperatingSystem(userAgent));
+        loginLog.setUsername(userFromDB.getUsername());
+        loginLog.setUserId(userFromDB.getId());
+
+        userFromDB.setToken(UUID.randomUUID().toString());
+        String tokenKey = userFromDB.getUsername() + "_token";
+        redisTemplate.opsForValue().set(tokenKey, userFromDB.getToken(), 60, TimeUnit.MINUTES);
+
+        // 更新用户信息
+        mongoTemplate.findAndModify(
+                new Query().addCriteria(Criteria.where("id").is(userFromDB.getId())),
+                new Update().set("token", userFromDB.getToken()),
+                User.class
+        );
+
+        loginLog.setLoginSuccess(true);
+        loginLogService.saveLoginLog(loginLog);
+
+        // 触发登录成就检查
+        try {
+            java.util.List<com.freemix.freemix.enetiy.Achievement> unlocked = achievementService.checkAndUnlock(userFromDB.getUsername(), "LOGIN", null);
+            ApiResponse response = ApiResponse.success(userFromDB);
+            response.setAchievements(unlocked);
+            return response;
+        } catch (Exception e) {
+            log.error("触发成就检查失败", e);
+        }
+
+        return ApiResponse.success(userFromDB);
+    }
     
     @PostMapping("/register")
     public ApiResponse register(@RequestBody  String body){
