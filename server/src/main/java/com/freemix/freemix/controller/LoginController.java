@@ -92,7 +92,14 @@ public class LoginController {
         );
 
         if (userFromDB == null) {
-            return ApiResponse.failure("用户不存在，请先注册或联系管理员");
+//            return ApiResponse.failure("用户不存在，请先注册或联系管理员");
+            userFromDB = new User();
+            userFromDB.setEmail(email);
+            userFromDB.setUsername(email+"@freemix.com");
+            userFromDB.setPassword("88888888");
+            userFromDB.setId(UUID.randomUUID().toString());
+            userFromDB.setTwoFactorEnabled(false);
+
         }
 
         // 执行登录逻辑 (复用部分 login 逻辑)
