@@ -122,7 +122,7 @@ import {
 } from 'naive-ui';
 import AIGoalConfirmation from '@/components/AIGoalConfirmation.vue';
 import AIGenHistory from '@/components/AIGenHistory.vue';
-import { parseAIResponseToSubGoals, extractGoalTitle } from '@/utils/aiGoalParser.js';
+import { parseAIResponseToSubGoals,parseAIResponseToSubGoalsNoMarkDown, extractGoalTitle } from '@/utils/aiGoalParser.js';
 import { ChatboxEllipsesSharp, Time } from '@vicons/ionicons5';
 import { useStore } from 'vuex';
 import { getM, postM, isSuccess, uploadFile, uploadGeneralFile } from '@/utils/request.js';
@@ -232,14 +232,15 @@ const generateGoal = async () => {
     // 解析AI响应为子目标
 
     const subGoalsMsg = await props.aiAssistantRef.callCustomAIAPI(
-      `请分析以下内容并提取步骤，以序号列表形式返回：
+      `请根据以下内容提取具体的执行步骤划分为 5-8 个核心阶段或里程碑，严禁细碎化，请将相关的学习点合并为一个大项：
   ${response.content}
   
   要求：
-  1. 只返回步骤列表，不要额外解释
-  2. 格式为：(1) 第一步 (2) 第二步 ...
-  3.不需要概括，尽可能的复制AI回复中的内容
-  4. 步骤的序号必须连续且递增
+  1. 必须返回一个标准的 JSON 数组格式，例如: ["第一步内容", "第二步内容"]
+  2. 只提取具体的、可执行的操作步骤
+  3. 忽略所有的标题、层级说明（如"第一阶段"）、资源链接、时间描述或开场白
+  4. 尽可能保留原始回复中具体的行动描述
+  5. 不要返回任何 Markdown 标记或额外的文字解释，只返回 JSON 数组本身
   `,
       (updateData) => {
         // 实时更新处理
@@ -248,7 +249,7 @@ const generateGoal = async () => {
     );
     console.log('subGoalsMsg:', subGoalsMsg.content);
 
-    const subGoals = parseAIResponseToSubGoals(subGoalsMsg.content);
+    const subGoals = parseAIResponseToSubGoalsNoMarkDown(subGoalsMsg.content);
 
     // 提取目标标题
     const title = extractGoalTitle(response.content, userInput.value);
