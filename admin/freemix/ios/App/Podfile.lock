@@ -1,6 +1,10 @@
 PODS:
   - Capacitor (7.4.4):
     - CapacitorCordova
+  - CapacitorApp (7.1.2):
+    - Capacitor
+  - CapacitorBrowser (7.0.5):
+    - Capacitor
   - CapacitorCamera (7.0.3):
     - Capacitor
   - CapacitorCordova (7.4.4)
@@ -8,6 +12,8 @@ PODS:
     - Capacitor
     - GoogleMLKit/BarcodeScanning (= 7.0.0)
   - CapacitorSplashScreen (7.0.3):
+    - Capacitor
+  - CapacitorToast (7.0.4):
     - Capacitor
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
@@ -58,10 +64,13 @@ PODS:
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorMlkitBarcodeScanning (from `../../node_modules/@capacitor-mlkit/barcode-scanning`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
+  - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
 
 SPEC REPOS:
   trunk:
@@ -80,6 +89,10 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
   CapacitorCamera:
     :path: "../../node_modules/@capacitor/camera"
   CapacitorCordova:
@@ -88,13 +101,18 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor-mlkit/barcode-scanning"
   CapacitorSplashScreen:
     :path: "../../node_modules/@capacitor/splash-screen"
+  CapacitorToast:
+    :path: "../../node_modules/@capacitor/toast"
 
 SPEC CHECKSUMS:
   Capacitor: 358dd1c3fdd71d969547b17e159fd8a7736cb45f
+  CapacitorApp: f01a913211780e0718dae9750442c3e23f96e106
+  CapacitorBrowser: 6d09f59655e89aede71654ef08b98de55cf032b6
   CapacitorCamera: 6746827d82376f31cea9224945c0458c9fd0b0b2
   CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
   CapacitorMlkitBarcodeScanning: 2d4d1420f3989d6c3a3c21dac796ebb5cad499de
   CapacitorSplashScreen: e388b8e0ed0e982a9d3a40417f478e7a018a8763
+  CapacitorToast: 72753efca4a9725a312109418e6d04559ac05e10
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleMLKit: eff9e23ec1d90ea4157a1ee2e32a4f610c5b3318
   GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
@@ -107,6 +125,6 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
-PODFILE CHECKSUM: 3850f3ac38711e1b7f6338486c58279573434262
+PODFILE CHECKSUM: de0b470ca82b67589a3b690fa746c784cb4a9cc9
 
 COCOAPODS: 1.16.2
