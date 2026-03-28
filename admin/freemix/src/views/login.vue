@@ -114,21 +114,6 @@
                   验证并登录
                 </n-button>
               </div>
-
-              <!-- 第三方登录（可选保留） -->
-              <n-divider dashed style="margin: 20px 0;">或</n-divider>
-              <n-button block @click="handleGitHubLogin" class="github-login-btn"
-                style="display: flex; align-items: center; justify-content: center;">
-                <template #icon>
-                  <n-icon>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                      <path fill="currentColor"
-                        d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                    </svg>
-                  </n-icon>
-                </template>
-                <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
-              </n-button>
             </div>
           </n-tab-pane>
           <n-tab-pane name="signin" tab="登录">
@@ -161,22 +146,33 @@
             <n-button type="primary" block secondary strong @click="prepareLogin" class="login-btn-gradient">
               登录
             </n-button>
-            <n-divider dashed style="margin: 20px 0;">或</n-divider>
-            <n-button block @click="handleGitHubLogin" class="github-login-btn"
-              style="display: flex; align-items: center; justify-content: center;">
-              <template #icon>
-                <n-icon>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                    <path fill="currentColor"
-                      d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                  </svg>
-                </n-icon>
-              </template>
-              <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
-            </n-button>
           </n-tab-pane>
-         
         </n-tabs>
+
+        <!-- 第三方登录 (统一放在 Tabs 下方，确保在所有登录方式下都可见) -->
+        <n-divider dashed style="margin: 20px 0;">或使用第三方登录</n-divider>
+        <div class="social-login-group">
+          <n-button block @click="handleGitHubLogin" class="github-login-btn"
+            style="display: flex; align-items: center; justify-content: center;">
+            <template #icon>
+              <n-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                </svg>
+              </n-icon>
+            </template>
+            <span style="margin-left: 8px; font-weight: 500;">使用 GitHub 登录</span>
+          </n-button>
+          <n-button block @click="handleQQLogin" class="qq-login-btn">
+            <template #icon>
+              <n-icon size="20">
+                <img src="https://wiki.connect.qq.com/wp-content/uploads/2013/10/03_qq_symbol-1-250x300.png" alt="QQ Logo" class="qq-icon-img" />
+              </n-icon>
+            </template>
+            <span class="qq-login-text">使用 QQ 登录</span>
+          </n-button>
+        </div>
       </div>
 
       <!-- 2. 点选验证 (Click Sequence Captcha) - 替换了原来的滑块 -->
@@ -275,6 +271,8 @@
 </template>
 
 <script setup lang="ts">
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import {
   NCard,
   NTabs,
@@ -819,6 +817,62 @@ const handleGitHubLogin = () => {
   }
 };
 
+const handleQQLogin = async () => {
+  const isProd = import.meta.env.PROD;
+  const backendUrl = isProd || isDesktopEnv ? 'https://freemix.bond' : 'http://localhost:8888';
+  const qqAuthUrl = `${backendUrl}/auth/qq/render`;
+
+  // 使用 Capacitor 官方推荐的判断方式
+  const isCapacitorApp = Capacitor.isNativePlatform();
+
+  if (isCapacitorApp) {
+    console.log('检测到 Capacitor 原生环境，准备打开内置浏览器:', qqAuthUrl);
+    await openInAppBrowser(qqAuthUrl);
+  } else {
+    console.log('非原生环境或 Web 环境，执行普通跳转');
+    window.location.href = qqAuthUrl;
+  }
+};
+
+/**
+ * 方案 B 核心逻辑：应用内浏览器拦截
+ * 适用于跨平台框架（如 Uni-app / Webview 容器）
+ */
+const openInAppBrowser = async (url: string) => {
+  // 优先处理 Capacitor 环境
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // 使用 Capacitor Browser 插件打开
+      await Browser.open({ 
+        url,
+        windowName: '_blank',
+        presentationStyle: 'fullscreen'
+      });
+
+      // 监听 URL 变化
+      // 注意：Capacitor Browser 插件本身不直接提供 URL 拦截回调
+      // 这里的逻辑通常需要后端在授权成功后通过 Custom URL Scheme (freemix://) 唤回 App
+      // 或者在后端重定向到一个特定的 H5 页面，该页面调用 App 提供的 JSBridge
+      
+      const handleFinished = async (event: any) => {
+        // 部分插件版本支持 finished 事件
+        console.log('Browser finished:', event);
+      };
+      
+      Browser.addListener('browserFinished', () => {
+        console.log('用户关闭了内置浏览器');
+      });
+
+    } catch (e) {
+      console.error('Capacitor Browser 打开失败', e);
+      window.location.href = url;
+    }
+    return;
+  }
+
+
+};
+
 // 加载验证码
 const loadCaptcha = async () => {
   if (!user.value.username) {
@@ -836,7 +890,7 @@ const loadCaptcha = async () => {
 };
 
 // 监听登录步骤变化
-watch(loginStep, (newStep) => {
+watch(loginStep, (newStep: string) => {
   if (newStep === '2fa-verify') {
     nextTick(() => {
       setTimeout(() => {
@@ -1156,6 +1210,63 @@ onUnmounted(() => {
   border-color: #1b1f23 !important;
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.qq-login-btn {
+  margin-top: 12px;
+  background-color: #0099ff !important;
+  border-color: #0099ff !important;
+  color: white !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.qq-login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: all 0.6s;
+}
+
+.qq-login-btn:hover {
+  background-color: #1aa3ff !important;
+  border-color: #1aa3ff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 153, 255, 0.3);
+}
+
+.qq-login-btn:hover::before {
+  left: 100%;
+}
+
+.qq-login-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 153, 255, 0.2);
+}
+
+.qq-login-text {
+  margin-left: 8px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.qq-icon-img {
+  width: 18px;
+  height: auto;
+  vertical-align: middle;
 }
 
 .qr-login-container {

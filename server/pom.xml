@@ -155,6 +155,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
+		<!-- JustAuth 第三方登录 -->
+		<dependency>
+			<groupId>me.zhyd.oauth</groupId>
+			<artifactId>JustAuth</artifactId>
+			<version>1.16.6</version>
+		</dependency>
+		<!-- JustAuth 依赖的 HTTP 客户端 -->
+		<dependency>
+			<groupId>com.xkcoding.http</groupId>
+			<artifactId>simple-http</artifactId>
+			<version>1.0.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>

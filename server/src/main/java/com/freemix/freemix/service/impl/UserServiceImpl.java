@@ -22,6 +22,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findByQqOpenId(String qqOpenId) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("qqOpenId").is(qqOpenId));
+        return mongoTemplate.findOne(query, User.class);
+    }
+
+    @Override
     public User save(User user) {
         return mongoTemplate.save(user);
     }

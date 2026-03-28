@@ -49,5 +49,13 @@ spring:
           socketFactory:
             port: 465
             class: javax.net.ssl.SSLSocketFactory
+
+justauth:
+  type:
+    qq:
+      client-id: ${QQ_CLIENT_ID:1903677422}
+      client-secret: ${QQ_CLIENT_SECRET:eDXcU7WgdMq55qMe}
+      redirect-uri: ${QQ_REDIRECT_URI:https://freemix.bond/auth/qq/callback}
+
 server:
   port: 8888

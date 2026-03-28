@@ -47,6 +47,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/oauth2/, '/oauth2')
       },
+      '/auth': {
+        target: 'http://localhost:8888', // 后端地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/auth/, '/auth')
+      },
     },
     host: '0.0.0.0',
   },

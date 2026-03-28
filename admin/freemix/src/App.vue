@@ -51,6 +51,17 @@
               </n-card>
             </n-modal>
 
+            <!-- OAuth 登录中提示 -->
+            <n-modal v-model:show="oauthLoading" :show-icon="false" :closable="false" :mask-closable="false"
+              class="global-loading-modal">
+              <n-card :bordered="false" class="global-loading-card">
+                <div class="loading-content">
+                  <n-spin size="large" />
+                  <div class="loading-text">登录中...</div>
+                </div>
+              </n-card>
+            </n-modal>
+
             <!-- 移动端浮动导航组件 -->
             <MobileFloatingNav v-if="false" />
             <MessageCenter ref="mcter" v-show="false"/>
@@ -101,6 +112,9 @@ import TabsView from '@/components/TabsView.vue';
 import { saveToken, getToken } from '@/utils/tokenUtils.js';
 import { useRoute, useRouter } from 'vue-router';
 import globalMessageListener from '@/utils/globalMessageListener.js';
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
+import { Toast } from '@capacitor/toast';
 import {
   NConfigProvider,
   darkTheme,
@@ -133,6 +147,7 @@ import UpdateNotification from '@/components/UpdateNotification.vue';
 import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue'; // 导入加载页面组件
 import request, { postM, isSuccess, getM,getMPaths } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
+import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js';
 import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
 import { connect, disconnect } from '@/utils/websocket.js'
 import { genMsg } from '@/utils/genMsg.js'
@@ -306,9 +321,76 @@ const handleIncomingMessage = (messageStr) => {
 }
 
 const updateNotification = ref(null);
+const error = ref(false)
+const errorMessage = ref('')
+const oauthLoading = ref(false) // OAuth 登录 loading 状态
 
 // 初始化时读取保存的主题状态
 onMounted(async () => {
+  // Capacitor 应用唤回监听 (处理 QQ 登录等外部认证后的 Token 回传)
+  if ((window as any).Capacitor) {
+    console.log('注册 appUrlOpen 监听器...');
+    App.addListener('appUrlOpen', async (data: any) => {
+      oauthLoading.value = true // 显示登录中
+      const logMsg = `App 唤回 URL: ${data.url}`;
+      console.log(logMsg);
+      // await Toast.show({ text: logMsg, duration: 'long' });
+
+      try {
+        const url = new URL(data.url);
+        // 匹配 Scheme: mobile.freemix.app://oauth/callback?token=xxx&qqOpenId=xxx
+        if (url.host === 'oauth' || url.pathname.includes('/oauth')) {
+          const params = url.searchParams;
+          const token = params.get('token');
+          const qqOpenId = params.get('qqOpenId');
+          const githubId = params.get('githubId');
+
+          const queryMsg = `解析参数: token=${token}, qqOpenId=${qqOpenId}, githubId=${githubId}`;
+          console.log(queryMsg);
+          // await Toast.show({ text: queryMsg, duration: 'long' });
+
+          if (token) {
+            // 构造跳转参数并导航到回调页面处理逻辑
+            const query: any = { token };
+            if (qqOpenId) query.qqOpenId = qqOpenId;
+            if (githubId) query.githubId = githubId;
+
+            console.log('准备跳转到回调页面:', query);
+            
+            // 尝试关闭应用内浏览器
+            try {
+              await Browser.close();
+            } catch (e) {
+              console.warn('关闭浏览器失败:', e);
+            }
+
+            // 导航到专门的回调处理组件
+            router.push({
+              path: '/oauth/callback',
+              query: query
+            });
+            oauthLoading.value = false; // 关闭登录中提示
+          } else {
+            const noTokenMsg = '唤回成功但未找到 Token';
+            console.error(noTokenMsg);
+            // await Toast.show({ text: noTokenMsg, duration: 'long' });
+            oauthLoading.value = false; // 关闭登录中提示
+          }
+        } else {
+          const unknownHostMsg = `未知的唤回路径: ${url.host}`;
+          console.warn(unknownHostMsg);
+          // await Toast.show({ text: unknownHostMsg, duration: 'short' });
+          oauthLoading.value = false; // 关闭登录中提示
+        }
+      } catch (err: any) {
+        const errClsMsg = `解析唤回 URL 失败: ${err.message}`;
+        console.error(errClsMsg, err);
+        // await Toast.show({ text: errClsMsg, duration: 'long' });
+        oauthLoading.value = false; // 关闭登录中提示
+      }
+    });
+  }
+
   getDeskToken();
   const savedTheme = localStorage.getItem('theme-dark');
   if (savedTheme) {

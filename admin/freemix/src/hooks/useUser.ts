@@ -46,7 +46,12 @@ export function useUser() {
       
       // 设置头像URL
       if (user.avatarUrl) {
-        avatarUrl.value = `${baseURL()}${user.avatarUrl}`;
+        console.log(user.avatarUrl);
+        if (user.avatarUrl.includes('://')) {
+          avatarUrl.value = user.avatarUrl;
+        }else{
+          avatarUrl.value = `${baseURL()}${user.avatarUrl}`;
+        }
       } else {
         // 默认头像
         avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';

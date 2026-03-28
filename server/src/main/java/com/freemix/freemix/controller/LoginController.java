@@ -570,4 +570,24 @@ public class LoginController {
         
         return ApiResponse.success(null, "密码修改成功");
     }
+
+//    @PostMapping("/githubIdFindUser")
+//    public ApiResponse githubIdFindUser(@RequestBody String body) {
+//        JSONObject jsonObject = JSONObject.parseObject(body);
+//        String githubId = jsonObject.getString("githubId");
+//        Query query = new Query();
+//        query.addCriteria(Criteria.where("githubId").is(githubId));
+//        User user = mongoTemplate.findOne(query, User.class);
+//        return ApiResponse.success(user);
+//    }
+
+    @PostMapping("/qqIdFindUser")
+    public ApiResponse qqIdFindUser(@RequestBody String body) {
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        String qqOpenId = jsonObject.getString("qqOpenId");
+        Query query = new Query();
+        query.addCriteria(Criteria.where("qqOpenId").is(qqOpenId));
+        User user = mongoTemplate.findOne(query, User.class);
+        return ApiResponse.success(user);
+    }
 }

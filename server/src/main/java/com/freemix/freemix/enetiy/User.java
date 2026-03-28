@@ -23,6 +23,7 @@ public class User {
     String avatarUrl;
     String fashionTitle;
     String githubId;  // GitHub用户ID
+    String qqOpenId;  // QQ用户唯一标识
     
     // Google Authenticator 双因素认证字段
     boolean twoFactorEnabled = false;  // 是否启用2FA

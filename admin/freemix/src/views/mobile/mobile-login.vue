@@ -107,6 +107,12 @@
                   </svg>
                   <span>GitHub</span>
                 </div>
+                <div class="social-btn qq" @click="handleQQLogin" v-ripple>
+
+                <img src="https://wiki.connect.qq.com/wp-content/uploads/2013/10/03_qq_symbol-1-250x300.png" alt="QQ Logo" class="qq-icon-img" />
+
+                  <span>QQ</span>
+                </div>
               </div>
             </div>
           </div>
@@ -188,6 +194,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // @ts-ignore
 import { useStore } from 'vuex';
+import { NIcon } from 'naive-ui';
 import { postM, isSuccess } from '@/utils/request';
 import { isDesktop } from '@/utils/device.js';
 import { generateDesktopToken, saveLocalStorageDesktopToken } from '@/utils/desktopToken.js';
@@ -505,19 +512,25 @@ const handleGitHubLogin = () => {
     window.location.href = '/oauth2/authorization/github';
   }
 };
+
+const handleQQLogin = () => {
+  const isProd = import.meta.env.PROD;
+  const backendUrl = isProd || isDesktop() ? 'https://freemix.bond' : 'http://localhost:8888';
+  window.location.href = `${backendUrl}/auth/qq/render`;
+};
 </script>
 
 <style scoped lang="scss">
 /* 引入 Google Fonts 提升质感 */
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
-$primary-color: #00f2fe;
-$secondary-color: #4facfe;
-$bg-dark: #0f0c29;
-$glass-bg: rgba(255, 255, 255, 0.05);
-$glass-border: rgba(255, 255, 255, 0.1);
-$text-main: #ffffff;
-$text-sub: #b0bac9;
+$primary-color: #81c683;
+$secondary-color: #6ab870;
+$bg-dark: #121212;
+$glass-bg: rgba(30, 30, 30, 0.6);
+$glass-border: rgba(129, 198, 131, 0.2);
+$text-main: #e0e0e0;
+$text-sub: #a0a0a0;
 
 .mobile-login-container {
   position: relative;
@@ -541,8 +554,8 @@ $text-sub: #b0bac9;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle at center, #302b63 0%, #0f0c29 70%);
-  animation: bgRotate 20s linear infinite;
+  background: radial-gradient(circle at center, #34632b 0%, #0f0c29 70%);
+  // animation: bgRotate 20s linear infinite;
   z-index: 0;
 }
 
@@ -552,7 +565,8 @@ $text-sub: #b0bac9;
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background: radial-gradient(ellipse at top, rgba(129, 198, 131, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at bottom right, rgba(129, 198, 131, 0.05) 0%, transparent 40%);
   z-index: 1;
 }
 
@@ -586,7 +600,7 @@ $text-sub: #b0bac9;
       width: 100%;
       height: 100%;
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+      box-shadow: 0 0 20px rgba(129, 198, 131, 0.4);
     }
   }
 
@@ -594,7 +608,7 @@ $text-sub: #b0bac9;
     font-size: 32px;
     font-weight: 700;
     margin: 0;
-    background: linear-gradient(to right, $primary-color, #fff);
+    background: linear-gradient(to right, $primary-color, #a8d8a8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: 2px;
@@ -613,6 +627,11 @@ $text-sub: #b0bac9;
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
+}
+.qq-icon-img {
+  width: 18px;
+  height: auto;
+  vertical-align: middle;
 }
 
 /* 玻璃卡片主体 */
@@ -640,17 +659,18 @@ $text-sub: #b0bac9;
   }
 
   .glass-input {
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: rgba(30, 30, 30, 0.6) !important;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08); // 默认边框
+    border: 1px solid rgba(129, 198, 131, 0.15);
     padding: 10px 15px;
-    color: #fff;
+    color: #e0e0e0;
     align-items: center;
     transition: border-color 0.3s;
 
     /* 输入框得到焦点时的边框颜色 */
     &:focus-within {
       border-color: $primary-color;
+      box-shadow: 0 0 8px rgba(129, 198, 131, 0.2);
     }
 
     /* 覆盖 Vant 默认背景 */
@@ -658,17 +678,17 @@ $text-sub: #b0bac9;
       background: transparent;
     }
     :deep(.van-field__control) {
-      color: #fff;
+      color: #e0e0e0;
       font-size: 16px;
     
       &::placeholder {
-        color: rgba(255, 255, 255, 0.4);
+        color: rgba(160, 160, 160, 0.6);
       }
     }
     
     .field-icon {
       font-size: 20px;
-      color: $secondary-color;
+      color: $primary-color;
       margin-right: 10px;
     }
   }
@@ -685,24 +705,25 @@ $text-sub: #b0bac9;
   
   .captcha-box {
     flex: 4;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(30, 30, 30, 0.6);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: background 0.3s;
+    border: 1px solid rgba(129, 198, 131, 0.15);
+    transition: all 0.3s;
 
     &:active {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(129, 198, 131, 0.15);
+      border-color: rgba(129, 198, 131, 0.3);
     }
 
     .captcha-text {
       font-weight: bold;
       color: $primary-color;
       font-size: 18px;
-      text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
+      text-shadow: 0 0 5px rgba(129, 198, 131, 0.3);
     }
   }
 }
@@ -714,11 +735,12 @@ $text-sub: #b0bac9;
   font-size: 18px;
   font-weight: bold;
   border: none;
-  background: linear-gradient(90deg, #24c6dc, #514a9d);
-  box-shadow: 0 4px 15px rgba(81, 74, 157, 0.4);
+  background: linear-gradient(135deg, #81c683 0%, #6ab870 100%);
+  box-shadow: 0 4px 15px rgba(129, 198, 131, 0.35);
   
   &:active {
     opacity: 0.9;
+    box-shadow: 0 2px 8px rgba(129, 198, 131, 0.25);
   }
 }
 
@@ -739,7 +761,6 @@ $text-sub: #b0bac9;
   }
 }
 
-/* 第三方登录 */
 .social-login {
   margin-top: 30px;
   text-align: center;
@@ -751,9 +772,9 @@ $text-sub: #b0bac9;
     span {
       position: relative;
       z-index: 1;
-      background: transparent; /* 复杂背景下不需要背景色遮挡 */
+      background: transparent;
       padding: 0 10px;
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(160, 160, 160, 0.6);
       font-size: 12px;
     }
     
@@ -765,7 +786,7 @@ $text-sub: #b0bac9;
       left: 10%;
       right: 10%;
       height: 1px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(129, 198, 131, 0.2);
       z-index: 0;
     }
   }
@@ -786,12 +807,38 @@ $text-sub: #b0bac9;
       width: 20px;
       height: 20px;
     }
+  }
 
-    &:active {
-      transform: scale(0.95);
+  .qq {
+    background: #0099ff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 153, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .qq-icon {
+      width: 20px;
+      height: 20px;
     }
   }
 }
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+    //&:active {
+    //  transform: scale(0.95);
+    //}
+  //}
+//}
 
 /* 2FA 步骤样式 */
 .step-container {
@@ -820,9 +867,9 @@ $text-sub: #b0bac9;
        aspect-ratio: 6 / 7; /* 保持宽高比 48:56 */
        height: auto; /* 高度随宽度自动调整 */
        
-       background: rgba(0, 0, 0, 0.3);
+       background: rgba(30, 30, 30, 0.6);
        color: $primary-color;
-       border: 1px solid rgba(255, 255, 255, 0.1);
+       border: 1px solid rgba(129, 198, 131, 0.2);
        border-radius: 12px;
        font-size: 24px;
        font-weight: bold;
@@ -832,14 +879,14 @@ $text-sub: #b0bac9;
        
        &:focus {
          border-color: $primary-color;
-         box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-         background: rgba(0, 0, 0, 0.5);
+         box-shadow: 0 0 15px rgba(129, 198, 131, 0.3);
+         background: rgba(30, 30, 30, 0.8);
          transform: translateY(-2px);
        }
        
        &::selection {
-         background: rgba(0, 242, 254, 0.3);
-         color: #fff;
+         background: rgba(129, 198, 131, 0.3);
+         color: #e0e0e0;
        }
      }
    }
@@ -862,14 +909,14 @@ $text-sub: #b0bac9;
 }
 
 .glass-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: rgba(30, 30, 30, 0.6) !important;
+  color: #e0e0e0 !important;
+  border: 1px solid rgba(129, 198, 131, 0.3) !important;
 }
 
 .copyright {
   margin-top: 30px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(160, 160, 160, 0.4);
   font-size: 12px;
 }
 

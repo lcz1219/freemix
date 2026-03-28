@@ -40,4 +40,8 @@ public class EnvironmentChecker {
         }
         return "";
     }
+
+    public boolean isProd() {
+        return env.acceptsProfiles("prod");
+    }
 }

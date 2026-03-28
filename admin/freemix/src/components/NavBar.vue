@@ -197,7 +197,12 @@ onMounted(() => {
   console.log('saveAvatarUrl', saveAvatarUrl);
 
   if (saveAvatarUrl) {
-    avatarUrl.value = `${baseURL()}${saveAvatarUrl}`;
+     console.log(user.avatarUrl);
+        if (user.avatarUrl.includes('://')) {
+          avatarUrl.value = user.avatarUrl;
+        }else{
+          avatarUrl.value = `${baseURL()}${user.avatarUrl}`;
+        }
   } else {
     // 默认头像
     avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';
