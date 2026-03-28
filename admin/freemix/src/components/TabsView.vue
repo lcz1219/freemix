@@ -123,23 +123,24 @@ const activeTab = ref('')
 
 // 路由名称到标签标题的映射
 const routeTitleMap: Record<string, string> = {
-  'Home': '首页',
-  'GoalStructure': '目标结构',
-  'recycle': '回收站',
-  'Login': '登录',
-  'Register': '注册',
-  'AddGoal': '添加目标',
-  'GoalManagement': '目标管理',
-  'Statistics': '统计',
-  'Settings': '设置',
-  'LoginLog': '登录日志',
-  "Messages": "消息",
-  "Profile": "个人信息",
-  "UserGuide": "使用指引",
-  "UpdateLogManager": "更新日志管理",
-  "Achievements":"成就系统",
-  "Calendar":"时间规划",
+  'Home': '指挥中心',
+  'GoalStructure': '目标星系',
+  'recycle': '黑洞回收',
+  'Login': '接入终端',
+  'Register': '创建宇航员',
+  'AddGoal': '发射新目标',
+  'GoalManagement': '目标舰队',
+  'Statistics': '数据星云',
+  'Settings': '星舰配置',
+  'LoginLog': '星际航行日志',
+  "Messages": "信号收发站",
+  "Profile": "宇航员档案",
+  "UserGuide": "新手启航指南",
+  "UpdateLogManager": "版本星际日志",
+  "Achievements":"荣誉星章",
+  "Calendar":"星历规划",
   "GoalLibrary":"星际航道",
+  "RecurringGoals":"定期巡航"
 }
 
 // 获取路由标题
