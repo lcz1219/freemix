@@ -183,7 +183,7 @@ const selectValue = ref('');
 const { avatarUrl, fashionTitle, uploadAvatar, renderCustomHeader, editFashionTitle, logout: userLogout } = useUser();
 
 // 添加折叠状态
-const isCollapsed = ref(false);
+const isCollapsed = ref(true);
 
 // 切换折叠状态函数
 const toggleCollapse = () => {

@@ -199,7 +199,7 @@ const isDark = ref(true);
 const isMobileDevice = isMobile(); // 调用函数获取是否为移动端
 
 // 侧边栏折叠状态
-const isSidebarCollapsed = ref(false);
+const isSidebarCollapsed = ref(true);
 const mcter=ref(null)
 // 计算当前激活的标签
 const activeTab = computed(() => {
