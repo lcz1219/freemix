@@ -140,8 +140,30 @@ public class QQAuthController extends BaseController {
             user.setToken(token);
             userService.save(user);
 
-            String tokenKey = user.getUsername() + "_token";
-            redisTemplate.opsForValue().set(tokenKey, token, 60, TimeUnit.MINUTES);
+            // 获取请求信息
+            String userAgent = request.getHeader("User-Agent");
+            boolean isDesktop = userAgent != null && userAgent.contains("Electron");
+            boolean isMobile = isMobileDevice(request);
+
+            // 设置 Token 过期时间逻辑
+            if (isDesktop) {
+                // 桌面端 30 天免登，Key 格式需与 CheckAspect 匹配
+                log.info("桌面端 QQ 登录，设置 30 天 Token: {}", user.getUsername());
+                String desktopTokenKey = "desktop_token_" + token;
+                redisTemplate.opsForValue().set(desktopTokenKey, user.getId(), 30, TimeUnit.DAYS);
+                user.setDeskToken(token);
+                userService.save(user);
+            } else if (isMobile) {
+                // 移动端 不退出不登录
+                log.info("移动端 QQ 登录，设置长效 Token: {}", user.getUsername());
+                user.setMobileToken(token);
+                userService.save(user);
+            } else {
+                // 普通 Web 端 60 分钟
+                log.info("Web 端 QQ 登录，设置 60 分钟 Token: {}", user.getUsername());
+                String webTokenKey = user.getUsername() + "_token";
+                redisTemplate.opsForValue().set(webTokenKey, token, 60, TimeUnit.MINUTES);
+            }
 
             // 保存到 Session
             HttpSession session = request.getSession();
@@ -154,24 +176,18 @@ public class QQAuthController extends BaseController {
                 log.error("触发成就失败", e);
             }
 
-            // 判断是否为桌面端（Electron）或移动端 App (Capacitor)
-            String userAgent = request.getHeader("User-Agent");
-            boolean isDesktop = userAgent != null && userAgent.contains("Electron");
-//            boolean isMobileApp = userAgent != null && (userAgent.contains("Capacitor") || userAgent.contains("mobile-app"));
-            
-            log.info("QQ登录环境判断: isDesktop={}, isMobileApp={}", isDesktop, isMobileDevice(request));
+            log.info("QQ登录环境判断: isDesktop={}, isMobile={}", isDesktop, isMobile);
 
             // 重定向逻辑
             String redirectUrl;
-            if (isMobileDevice(request)) {
+            if (isMobile) {
                 // 移动端 App 使用 Custom URL Scheme 唤回
-                // 格式: mobile.freemix.app://login?token=xxx&user=xxx
-                String encodedUser = java.net.URLEncoder.encode(JSONObject.toJSONString(user), "UTF-8");
                 redirectUrl = "mobile.freemix.app://oauth/callback?token=" + token + "&qqOpenId=" + qqOpenId;
                 log.info("移动端 App 唤回跳转: {}", redirectUrl);
             } else {
                 // Web 端或桌面端跳转
                 String baseUrl = environmentChecker.isProd() ? "https://freemix.bond" : "http://localhost:5173";
+                // 统一桌面端 OAuth 回调参数：如果是桌面端，token 传的就是 desktopToken
                 redirectUrl = baseUrl + "/#/oauth/callback?token=" + token + "&qqOpenId=" + qqOpenId;
                 if (isDesktop) {
                     redirectUrl += "&isDesktop=true";

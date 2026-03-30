@@ -51,7 +51,7 @@ const callback = async () => {
     }
 
     // 获取token参数
-    const token = route.query.token as string
+    const token = (route.query.token as string) || (route.query.deskToken as string)
     if (!token) {
       error.value = true
       errorMessage.value = '登录失败：缺少访问令牌'
@@ -83,22 +83,20 @@ const callback = async () => {
     // 检查是否为桌面端
     const isDesktopDevice = route.query.isDesktop === 'true' || isDesktop()
     
-    // 如果是桌面端，生成并保存桌面端token
+    // 针对桌面端持久化 Token (不管是弹窗还是直接跳转)
     if (isDesktopDevice) {
-      // 生成并保存桌面端token
-      const desktopToken = generateDesktopToken();
-      saveTokenUtil(desktopToken);
-      saveLocalStorageDesktopToken(desktopToken);
+      console.log('桌面端环境，持久化 Token:', token);
+      saveTokenUtil(token);
+      saveLocalStorageDesktopToken(token);
       try {
-        await postM('verify-desktop-token', { desktopToken, username: user.username });
-        console.log('桌面端token已保存到服务器');
+        postM('verify-desktop-token', { desktopToken: token, username: user.username });
       } catch (error) {
-        console.error('保存桌面端token失败:', error);
+        console.error('同步桌面端token到服务器失败:', error);
       }
     } else {
-      await saveTokenUtil(user.token);
+      saveTokenUtil(user.token || token);
     }
-    
+
     loading.value = false
     router.replace('/home');
   } catch (err) {
