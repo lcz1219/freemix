@@ -1,5 +1,6 @@
 package com.freemix.freemix.util;
 
+import com.freemix.freemix.controller.BaseController;
 import com.freemix.freemix.enetiy.AgentModel;
 import com.freemix.freemix.enetiy.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +52,7 @@ public class UserContextUtil {
         } else {
             if (token != null && !token.isEmpty()) {
                 // 检查是否为移动端UA
-                if (userAgent != null && (userAgent.contains("App/1") || userAgent.contains("android") || userAgent.contains("iphone"))) {
+                if (new BaseController().isMobileDevice(request)) {
                     // 移动端优先尝试查询 mobileToken
                     Query mobileQuery = new Query();
                     mobileQuery.addCriteria(Criteria.where("mobileToken").is(token));
