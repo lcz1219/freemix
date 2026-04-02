@@ -88,12 +88,13 @@ public class GoalController extends BaseController {
             } else {
                 goal.setStatus("in-progress");
             }
+            Integer newProgress = computedProgress(goal);
+            goal.setProgress(newProgress);
 
             if (goal.getProgress() == 100) {
                 goal.setStatus("completed");
             }
-            Integer newProgress = computedProgress(goal);
-            goal.setProgress(newProgress);
+
 
             mongoTemplate.save(goal);
             // 触发完成目标成就 (如果是更新导致完成)

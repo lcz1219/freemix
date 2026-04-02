@@ -197,11 +197,10 @@ onMounted(() => {
   console.log('saveAvatarUrl', saveAvatarUrl);
 
   if (saveAvatarUrl) {
-     console.log(user.avatarUrl);
-        if (user.avatarUrl.includes('://')) {
-          avatarUrl.value = user.avatarUrl;
+        if (saveAvatarUrl.includes('://')) {
+          avatarUrl.value = saveAvatarUrl;
         }else{
-          avatarUrl.value = `${baseURL()}${user.avatarUrl}`;
+          avatarUrl.value = `${baseURL()}${saveAvatarUrl}`;
         }
   } else {
     // 默认头像
