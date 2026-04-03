@@ -264,8 +264,8 @@
                     <van-cell-group inset>
                     <van-cell v-for="(subGoal, index) in (selectedGoal?.childGoals || [])" :key="subGoal._id"
                       class="subgoal-item">
-                      <van-checkbox v-model="subGoal.finish" :name="subGoal._id" shape="round" checked-color="#00c9a7"
-                        @click="()=>handleSubGoalChange(subGoal, index)" :disabled="isExp">
+                      <van-checkbox :name="subGoal._id" shape="round" checked-color="#00c9a7"
+                        @click="handleSubGoalChange(subGoal, index)" :disabled="isExp">
                         <span :class="{ 'text-crossed': checkedSubGoals.includes(subGoal._id) }">{{ subGoal.message
                           }}</span>
                       </van-checkbox>
@@ -438,25 +438,39 @@ const markGoalFinished = async (goal: any) => {
 }
 
 const handleSubGoalChange = async (subGoal, index) => {
- if(isExp.value) return
-  
+  if (isExp.value) return;
+
+  // 立即通过 nextTick 确保 checkedSubGoals 已经由 van-checkbox-group 更新
+  await nextTick();
+
   try {
     const data = {
       goalId: selectedGoal.value._id,
       childGoalIds: checkedSubGoals.value
-    }
-    const res = await postM('finishGoal', data)
+    };
+    const res = await postM('finishGoal', data);
     if (isSuccess(res)) {
-      await fetchGoals()
-      showToast('进度更新成功')
+      // 更新本地数据，避免全量刷新导致的状态闪烁或错位
+      if (selectedGoal.value && selectedGoal.value.childGoals) {
+        selectedGoal.value.childGoals.forEach(sg => {
+          sg.finish = checkedSubGoals.value.includes(sg._id);
+        });
+      }
+      // 同步更新列表中的数据
+      const goalIndex = goals.value.findIndex(g => (g._id || g.id) === selectedGoal.value._id);
+      if (goalIndex > -1) {
+        goals.value[goalIndex].childGoals = JSON.parse(JSON.stringify(selectedGoal.value.childGoals));
+      }
+      
+      showToast('进度更新成功');
     } else {
-      showToast('更新失败')
+      showToast('更新失败');
     }
   } catch (error) {
-    console.error('更新子目标失败:', error)
-    showToast('更新失败')
+    console.error('更新子目标失败:', error);
+    showToast('更新失败');
   }
-}
+};
 
 const formatDate = (dateString: string) => {
   if (!dateString) return ''
