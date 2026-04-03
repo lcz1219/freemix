@@ -80,7 +80,7 @@ public class GoalController extends BaseController {
                     achievementService.checkAndUnlock(goal.getOwner(), "GOAL_CREATE", goal);
                 }
             } catch (Exception e) {
-                log.error("触发创建目标成就失败", e);
+                log.error("触发创建目标成就失败:", e);
             }
         } else {
             if (System.currentTimeMillis() > goal.getDeadline().getTime()) {
