@@ -219,7 +219,7 @@ onMounted(() => {
     // 默认头像
     avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';
   }
-  toggleCollapse()
+  // toggleCollapse()
 });
 
 
