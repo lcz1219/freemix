@@ -13,6 +13,7 @@ import MobileRegister from '@/views/mobile/mobile-register.vue'
 import MobileExample from '@/views/mobile-example.vue'
 import MobileVantHome from '@/views/mobile-vant-home.vue'
 import GitHubOAuthCallback from '@/views/github-oauth-callback.vue'
+import LogManagement from '@/views/log-management.vue'
 import ShareView from '@/views/ShareView.vue';
 import AIGenHistory from '@/components/AIGenHistory.vue';
 
@@ -120,6 +121,11 @@ const routes = [
     path: '/login-log', 
     name: 'LoginLog', 
     component: getComponent(LoginLog, LoginLog) 
+  },
+  { 
+    path: '/log-management', 
+    name: 'LogManagement', 
+    component: LogManagement 
   },
   {
     path: '/oauth/callback',

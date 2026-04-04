@@ -140,7 +140,8 @@ const routeTitleMap: Record<string, string> = {
   "Achievements":"荣誉星章",
   "Calendar":"星历规划",
   "GoalLibrary":"星际航道",
-  "RecurringGoals":"定期巡航"
+  "RecurringGoals":"定期巡航",
+  "LogManagement":"航线档案"
 }
 
 // 获取路由标题

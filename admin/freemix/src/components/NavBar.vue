@@ -84,6 +84,13 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">回收站</span>
       </n-button>
+      <n-button v-if="isAdmin" text type="primary" class="nav-link" :class="{ active: activeTab === 'log-management' }" :title="isCollapsedTitle('日志管理')"
+        @click="goTo('/log-management')">
+        <NIcon class="icon">
+          <ReaderOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">日志管理</span>
+      </n-button>
     </nav>
 
     <div class="sidebar-footer">
@@ -139,7 +146,8 @@ import {
   TrophyOutline,
   CalendarOutline,
   PlanetOutline,
-  RepeatOutline
+  RepeatOutline,
+  ReaderOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
@@ -181,6 +189,11 @@ const selectValue = ref('');
 
 // 使用useUser hook
 const { avatarUrl, fashionTitle, uploadAvatar, renderCustomHeader, editFashionTitle, logout: userLogout } = useUser();
+
+// 管理员权限检查
+const isAdmin = computed(() => {
+  return store.state.user?.email === '1033519224@qq.com';
+});
 
 // 添加折叠状态
 const isCollapsed = ref(true);

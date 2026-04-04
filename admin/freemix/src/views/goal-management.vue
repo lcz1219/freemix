@@ -1029,11 +1029,16 @@ const refreshGoals = () => {
         selectedGoal.value = { ...updatedGoal };
       }
     }
+    console.log("currentSelectedGoal.value",currentSelectedGoal.value);
+    
     // 同步更新右侧详情面板的数据
     if (currentSelectedGoal.value && currentSelectedGoal.value._id) {
       const updatedCurrentGoal = goals.value.find(g => g._id === currentSelectedGoal.value._id);
       if (updatedCurrentGoal) {
         currentSelectedGoal.value = { ...updatedCurrentGoal };
+      }else{
+        currentSelectedGoal.value =goals.value[0];
+
       }
     }
   });
