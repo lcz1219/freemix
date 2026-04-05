@@ -110,8 +110,10 @@
                 <div v-for="goal in recentCompletedGoals" :key="goal.id" class="list-row">
                   <div class="row-main">
                     <div class="row-title">{{ goal.title }}</div>
-                    <div class="row-sub">{{ formatDate(goal.completedAt) }}</div>
+                    <div class="row-sub">{{ formatDate(goal.deadline) }}</div>
                   </div>
+                   <van-tag color="#259f25" plain round>完</van-tag>
+
                 </div>
               </div>
               <div v-else class="empty-text">暂无记录</div>
@@ -429,8 +431,8 @@ const resizeCharts = () => {
 
 const loadData = async () => {
   try {
-    loading.value = true
-    showLoadingToast({ message: '同步数据...', forbidClick: true, duration: 0 })
+    // loading.value = true
+    // showLoadingToast({ message: '同步数据...', forbidClick: true, duration: 0 })
     const response = await getMPaths("getGoals", userInfo.value.username, "正在获取目标数据...");
     goals.value = response.data.data || []
     initCharts()

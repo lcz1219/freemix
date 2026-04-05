@@ -69,6 +69,7 @@ public class LogController extends BaseController {
         long failCount = mongoTemplate.count(Query.of(statsQuery).addCriteria(Criteria.where("result.code").ne(200)), ApiLog.class);
 
         query.with(Sort.by(Sort.Direction.DESC, "createTime"));
+        query.with(Sort.by(Sort.Direction.DESC, "createTimeStr"));
         query.with(PageRequest.of(page - 1, size));
 
         List<ApiLog> logs = mongoTemplate.find(query, ApiLog.class);

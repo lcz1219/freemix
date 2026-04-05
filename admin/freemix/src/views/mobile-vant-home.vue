@@ -461,6 +461,7 @@ const handleSubGoalChange = async (subGoal, index) => {
       if (goalIndex > -1) {
         goals.value[goalIndex].childGoals = JSON.parse(JSON.stringify(selectedGoal.value.childGoals));
       }
+      await fetchGoals()
       
       showToast('进度更新成功');
     } else {

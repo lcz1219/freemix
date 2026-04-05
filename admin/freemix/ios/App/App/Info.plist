@@ -42,6 +42,14 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>我们需要使用相机扫描二维码以登录网页版</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>我们需要使用麦克风进行语音消息录制</string>
+    <key>NSCameraUsageDescription</key>
+    <string>应用需要您的同意才能访问相机，以便拍摄照片发送给好友</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>应用需要您的同意才能保存图片到相册</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>应用需要您的同意才能访问相册，以便选择照片发送给好友</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

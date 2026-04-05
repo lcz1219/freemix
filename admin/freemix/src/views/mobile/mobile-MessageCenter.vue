@@ -148,7 +148,35 @@
 
                 <!-- 消息气泡 -->
                 <div class="bubble">
-                  <div class="bubble-text">{{ msg.content }}</div>
+                  <!-- 文本消息 -->
+                  <div v-if="msg.type === 'text' || !msg.type" class="bubble-text">{{ msg.content }}</div>
+                  
+                  <!-- 图片消息 -->
+                  <div v-else-if="msg.type === 'image'" class="bubble-image">
+                    <van-image 
+                      :src="msg.content" 
+                      fit="cover"
+                      class="msg-image"
+                      @click="previewImage(msg.content)"
+                    />
+                  </div>
+                  
+                  <!-- 语音消息 -->
+                  <!-- <div v-else-if="msg.type === 'voice'" class="bubble-voice">
+                    <div class="voice-player" @click="playVoice(msg)">
+                      <van-icon name="volume-o" class="voice-icon" />
+                      <span class="voice-duration">{{ getVoiceDuration(msg.content) }}"</span>
+                    </div>
+                  </div> -->
+                  <!-- 语音消息 -->
+                <div v-else-if="msg.type === 'voice'" class="bubble-voice">
+                  <div class="voice-player" @click="playVoice(msg)">
+                    <!-- 根据 playingVoiceId 判断是否加上 is-playing 动画类 -->
+                    <van-icon name="volume-o" class="voice-icon" :class="{ 'is-playing': playingVoiceId === msg.id }" />
+                    <span class="voice-duration">{{ getVoiceDuration(msg.content) }}"</span>
+                  </div>
+                </div>
+                  
                   <div class="bubble-meta">
                     <span class="meta-time">{{ formatTimeOnly(msg.createdAt) }}</span>
                     <van-icon v-if="msg.fromUser === currentUser.username && msg.isRead" name="success" class="read-icon" />
@@ -164,26 +192,99 @@
 
         <!-- 底部输入区域 -->
         <div class="chat-input-bar glass-effect">
+          <!-- 输入区域 -->
           <div class="input-container">
             <van-field
+              v-if="!isRecording"
               v-model="newMessage"
               rows="1"
               autosize
               type="textarea"
-              placeholder="发消息..."
+              placeholder="说点什么..."
               class="custom-field"
               :border="false"
               @focus="scrollToBottom(true)"
             />
+            
+            <!-- 录音状态显示 -->
+            <div v-if="isRecording" class="recording-display">
+              <div class="recording-waves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+              </div>
+              <span class="recording-time">{{ getRecordingTime() }}</span>
+            </div>
+            
+            <!-- 发送按钮 -->
             <button 
-              class="send-btn" 
-              :class="{ 'active': newMessage.trim() }"
+              v-if="newMessage.trim() && !isRecording" 
               @click="handleSend"
-              :disabled="sendingMessage || !newMessage.trim()"
+              class="send-btn"
+              :disabled="sendingMessage"
             >
-              <van-loading v-if="sendingMessage" type="spinner" size="20px" color="#fff" />
-              <van-icon v-else name="arrow-up" size="20" />
+              <van-icon v-if="sendingMessage" name="loading" class="loading-icon" />
+              <span v-else>发送</span>
             </button>
+          </div>
+
+          <!-- 功能工具栏 -->
+          <div class="function-toolbar">
+            <button 
+              class="tool-btn emoji-btn" 
+              @click="showEmojiPicker = !showEmojiPicker"
+              :class="{ active: showEmojiPicker }"
+            >
+              <van-icon name="smile-o" />
+            </button>
+            <button 
+              class="tool-btn" 
+              @click="selectImage"
+            >
+              <van-icon name="photograph" />
+            </button>
+            
+            <!-- 录音按钮 -->
+            <button 
+              v-if="!isRecording"
+              class="tool-btn voice-btn"
+              @touchstart="startVoiceRecording"
+              @touchend="stopVoiceRecording"
+              @touchcancel="cancelVoiceRecording"
+            >
+              <van-icon name="volume-o" />
+            </button>
+            
+            <!-- 录音中按钮 -->
+            <button 
+              v-if="isRecording"
+              class="tool-btn recording-btn"
+              @touchend="stopVoiceRecording"
+              @touchcancel="cancelVoiceRecording"
+            >
+              <van-icon name="plus" />
+            </button>
+          </div>
+
+          <!-- 表情选择器 -->
+          <div class="emoji-picker-container" v-show="showEmojiPicker">
+            <div class="emoji-picker-header">
+              <span>表情</span>
+              <button @click="showEmojiPicker = false" class="close-btn">
+                <van-icon name="cross" />
+              </button>
+            </div>
+            <EmojiPicker 
+              :native="true" 
+              @select="onEmojiSelect" 
+              :group-names="optionsName" 
+              :display-recent="true"
+              :hide-search="true" 
+              :disable-skin-tones="true" 
+              theme="auto" 
+            />
           </div>
         </div>
       </div>
@@ -198,12 +299,31 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { getM, postM, isSuccess, baseURL } from '@/utils/request.js'
 import { sendMessageWeb } from '@/utils/websocket.js'
-import { showToast } from 'vant'
+import { showToast, ImagePreview } from 'vant'
+import EmojiPicker from 'vue3-emoji-picker'
+import 'vue3-emoji-picker/css'
+
+import Recorder from 'recorder-core'
+import 'recorder-core/src/engine/mp3'
+import 'recorder-core/src/engine/mp3-engine'
 
 // --- 基础配置 ---
 const router = useRouter()
 const store = useStore()
 const currentUser = computed(() => store.state.user || { username: 'guest' })
+
+// 表情选择器配置
+const optionsName = {
+  'Smileys & Emotion': '笑脸与表情',
+  'People & Body': '人物与身体',
+  'Animals & Nature': '动物与自然',
+  'Food & Drink': '食物与饮料',
+  'Activities': '活动',
+  'Travel & Places': '旅行与地点',
+  'Objects': '物品',
+  'Symbols': '符号',
+  'Flags': '旗帜'
+}
 
 // --- 状态数据 ---
 const refreshing = ref(false)
@@ -222,6 +342,19 @@ const newMessage = ref('')
 const sendingMessage = ref(false)
 const bottomAnchor = ref(null) // 滚动锚点
 let statusInterval = null
+
+// 表情选择器状态
+const showEmojiPicker = ref(false)
+
+// 语音录制状态
+const isRecording = ref(false)
+const recordingStartTime = ref(0)
+const touchStartY = ref(0)
+const isSwipingUp = ref(false)
+const recordingTimer = ref(null)
+const rec = ref(null) // 存放 recorder-core 实例
+// 👇 新增这行，记录正在播放的语音消息 ID
+const playingVoiceId = ref(null)
 
 // --- 计算属性 ---
 const filteredUsers = computed(() => {
@@ -397,11 +530,424 @@ const scrollToBottom = (instant = false) => {
   })
 }
 
-// 点击背景收起键盘
-const hideKeyboard = () => {
-  if (document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur()
+// 获取录音时长
+const getRecordingTime = () => {
+  if (!isRecording.value || !recordingStartTime.value) return '0:00'
+  const elapsed = Date.now() - recordingStartTime.value
+  const seconds = Math.floor(elapsed / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+// 表情选择处理
+const onEmojiSelect = (emoji) => {
+  console.log('选择的表情:', emoji)
+  if (emoji) {
+    // vue3-emoji-picker 返回的是表情对象，需要获取实际的表情字符
+    let emojiChar = ''
+    
+    if (typeof emoji === 'string') {
+      emojiChar = emoji
+    } else if (emoji && emoji.i) {
+      // 如果是对象，获取 i 属性（表情字符）
+      emojiChar = emoji.i
+    } else if (emoji && typeof emoji === 'object') {
+      // 尝试其他可能的属性
+      emojiChar = emoji.emoji || emoji.char || emoji.native || Object.values(emoji)[0]
+    }
+    
+    if (emojiChar) {
+      newMessage.value += emojiChar
+      // showEmojiPicker.value = false
+      console.log('插入的表情:', emojiChar)
+    } else {
+      console.warn('无法获取表情字符:', emoji)
+      showToast('表情格式错误')
+    }
+  } else {
+    console.warn('表情数据为空:', emoji)
   }
+}
+
+// 图片选择处理
+const selectImage = async () => {
+  try {
+    // 使用 Capacitor Camera 插件
+    const { Camera } = await import('@capacitor/camera')
+    
+    // 检查相机权限
+    const permission = await Camera.checkPermissions()
+    if (permission.camera !== 'granted') {
+      const result = await Camera.requestPermissions()
+      if (result.camera !== 'granted') {
+        showToast('需要相机权限才能选择图片')
+        return
+      }
+    }
+    
+    // 选择图片
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: true,
+      resultType: 'DataUrl',
+      source: 'PHOTOS' // 从相册选择
+    })
+    
+    console.log('选择的图片:', image)
+    
+    // 检查图片数据
+    if (!image || !image.webPath) {
+      showToast('图片获取失败')
+      return
+    }
+    
+    // 发送图片消息
+    sendImageMessage(image.webPath)
+  } catch (error) {
+    console.error('选择图片失败:', error)
+    showToast('选择图片失败: ' + error.message)
+  }
+}
+
+// 按住说话 - 开始录音
+// 按住说话 - 开始录音
+const startVoiceRecording = (event) => {
+  if (event) event.preventDefault()
+  
+  if (isRecording.value) return;
+
+  try {
+    // 记录触摸起始位置，用于判断上滑取消
+    touchStartY.value = event.touches ? event.touches[0].clientY : 0
+    isSwipingUp.value = false
+
+    // 1. 初始化录音实例，强制输出 MP3 格式 (跨端兼容性最好)
+    rec.value = Recorder({
+      type: "mp3", 
+      sampleRate: 16000, 
+      bitRate: 16,
+      onProcess: function (buffers, powerLevel, bufferDuration, bufferSampleRate, newSpk) {
+        // 这里可以用来做音量波形动画，如果需要的话可以读取 powerLevel (0-100)
+      }
+    });
+
+    // 2. 请求麦克风权限并打开录音
+    rec.value.open(function(){
+      // 成功打开麦克风，开始录制
+      rec.value.start();
+      
+      isRecording.value = true;
+      recordingStartTime.value = Date.now();
+      showToast('正在录音...');
+
+      // 设置最大录音时长 60 秒
+      recordingTimer.value = setTimeout(() => {
+        if (isRecording.value) {
+          stopVoiceRecording(null, true) // 强制停止并保存
+          showToast('录音时长已达上限')
+        }
+      }, 60000);
+
+    }, function(msg, isUserNotAllow){
+      // 权限被拒绝或设备不支持
+      console.error((isUserNotAllow ? "用户拒绝了权限：" : "无法录音：") + msg);
+      showToast('无法录音，请检查麦克风权限');
+    });
+
+  } catch (error) {
+    console.error('录音初始化失败:', error)
+    showToast('录音初始化失败')
+  }
+}
+
+// 按住说话 - 停止录音
+// 按住说话 - 停止录音
+const stopVoiceRecording = (event, isForceStop = false) => {
+  if (event) event.preventDefault()
+  
+  if (!isRecording.value || !rec.value) return;
+
+  // 清除超时定时器
+  if (recordingTimer.value) {
+    clearTimeout(recordingTimer.value)
+    recordingTimer.value = null
+  }
+
+  // 检查是否上滑取消 (仅在手指操作时检查)
+  if (!isForceStop && event && event.changedTouches) {
+    const currentY = event.changedTouches[0].clientY
+    const deltaY = touchStartY.value - currentY
+    if (deltaY > 50) {
+      isSwipingUp.value = true
+    }
+  }
+
+  // 核心：调用 recorder-core 的 stop 拿到数据
+  rec.value.stop(async function(blob, duration){
+    // 释放麦克风资源
+    rec.value.close();
+    rec.value = null;
+    isRecording.value = false;
+
+    if (isSwipingUp.value) {
+      showToast('已取消录音')
+      return;
+    }
+
+    if (duration < 1000) { // 少于1秒
+      showToast('录音时间太短')
+      return;
+    }
+
+    // 拿到 mp3 Blob 数据，发送语音
+    await sendVoiceMessage(blob)
+
+  }, function(msg){
+    console.error("录音停止出错:"+msg);
+    if(rec.value) rec.value.close();
+    rec.value = null;
+    isRecording.value = false;
+    showToast('录音失败');
+  });
+}
+
+// 按住说话 - 取消录音
+// 按住说话 - 取消录音
+const cancelVoiceRecording = (event) => {
+  if (event) event.preventDefault()
+  
+  if (!isRecording.value || !rec.value) return;
+
+  // 强制标记为取消
+  isSwipingUp.value = true;
+  // 调用停止逻辑，里面会处理取消操作
+  stopVoiceRecording(event);
+}
+
+// 发送语音消息
+const sendVoiceMessage = async (audioBlob) => {
+  if (!selectedUser.value) return
+  
+  sendingMessage.value = true
+  try {
+    // 将音频转换为 base64
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const base64Audio = e.target?.result as string
+      
+      const messageData = {
+        toUser: selectedUser.value.username,
+        content: base64Audio,
+        type: 'voice',
+        timestamp: Date.now()
+      }
+      
+       const res = await postM('messages/send', messageData)
+    sendMessageWeb(JSON.stringify(messageData))
+    
+    if (isSuccess(res)) {
+      messages.value.push(res.data.data)
+      newMessage.value = ''
+      scrollToBottom()
+    }
+      await fetchMessages()
+      showToast('语音发送成功')
+    }
+    reader.readAsDataURL(audioBlob)
+  } catch (error) {
+    console.error('发送语音失败:', error)
+    showToast('发送失败')
+  } finally {
+    sendingMessage.value = false
+  }
+}
+
+// 发送图片消息
+const sendImageMessage = async (imageDataUrl) => {
+  if (!selectedUser.value) return
+  
+  sendingMessage.value = true
+  try {
+    // 如果是 webPath，需要转换为 base64
+    let finalImageData = imageDataUrl
+    if (imageDataUrl.startsWith('file://')) {
+      // 在移动端，需要将文件路径转换为 base64
+      const response = await fetch(imageDataUrl)
+      const blob = await response.blob()
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        finalImageData = e.target?.result as string
+        // 继续发送
+        sendImageData(finalImageData)
+      }
+      reader.readAsDataURL(blob)
+      return
+    }
+    
+    sendImageData(finalImageData)
+  } catch (error) {
+    console.error('发送图片失败:', error)
+    showToast('发送失败')
+  } finally {
+    sendingMessage.value = false
+  }
+}
+
+// 发送图片数据的辅助函数
+const sendImageData = async (imageData) => {
+  try {
+    const messageData = {
+      toUser: selectedUser.value.username,
+      content: imageData,
+      type: 'image',
+      timestamp: Date.now()
+    }
+    console.log("sendImageMessage", messageData)
+    
+    const res = await postM('messages/send', messageData)
+    sendMessageWeb(JSON.stringify(messageData))
+    
+    if (isSuccess(res)) {
+      messages.value.push(res.data.data)
+      newMessage.value = ''
+      scrollToBottom()
+    }
+    await fetchMessages()
+    showToast('图片发送成功')
+  } catch (error) {
+    console.error('发送图片失败:', error)
+    showToast('发送失败')
+  }
+}
+
+// 播放语音消息
+// 播放语音消息
+const playVoice = async (msg) => {
+  try {
+    console.log('准备播放语音:', msg.id)
+    
+    let audioSrc = msg.content
+    
+    // 【关键修复 1】：在处理任何异步操作之前，先实例化 Audio 对象。
+    // 在 iOS 中，Audio 对象的创建和初步的 play() 尝试最好在用户点击事件的同一个执行栈中。
+    const audio = new Audio()
+    
+    // 强制设置音频上下文，尝试绕过 iOS 的物理静音键限制（部分浏览器有效）
+    // 注意：如果是套壳 App（如 Capacitor/Cordova），这招不一定绝对管用，最根本的还是提醒用户关掉静音键。
+    if (window.AudioContext || window.webkitAudioContext) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        // 唤醒 audio context
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+    }
+
+    // 如果是 base64 数据，需要转换为 blob URL
+    if (msg.content && msg.content.startsWith('data:audio/')) {
+      try {
+        // 【关键修复 2】：Base64 转 Blob 推荐使用 atob 方式，比 fetch 更稳定，兼容性更好
+        const base64Data = msg.content.split(',')[1]
+        const contentType = msg.content.split(',')[0].split(':')[1].split(';')[0]
+        
+        const byteCharacters = atob(base64Data)
+        const byteArrays = []
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512)
+          const byteNumbers = new Array(slice.length)
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i)
+          }
+          const byteArray = new Uint8Array(byteNumbers)
+          byteArrays.push(byteArray)
+        }
+        
+        const audioBlob = new Blob(byteArrays, { type: contentType || 'audio/wav' })
+        audioSrc = URL.createObjectURL(audioBlob)
+      } catch (blobError) {
+        console.error('转换音频 base64 失败:', blobError)
+        showToast('音频解析失败', blobError)
+        return
+      }
+    }
+    
+    // 设置音频源
+    audio.src = audioSrc
+    audio.preload = 'auto'
+    audio.playsInline = true
+    
+    // 事件监听
+    audio.onplay = () => {
+      showToast('正在播放语音')
+      console.log('音频开始播放')
+      playingVoiceId.value = msg.id;
+    }
+    
+    audio.onended = () => {
+      console.log('音频播放结束')
+      playingVoiceId.value = null;
+      if (audioSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(audioSrc) // 及时释放内存
+      }
+    }
+    
+    audio.onerror = (e) => {
+      console.error('音频播放错误:', e)
+      playingVoiceId.value = null;
+      showToast(`播放失败，格式不支持, ${JSON.stringify(e)}`)
+    }
+    
+    // 【关键修复 3】：处理播放 Promise，捕获 iOS 的拦截异常
+    const playPromise = audio.play()
+    
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // 播放成功
+      }).catch(error => {
+        console.error('iOS/浏览器拦截了播放:', error)
+        showToast(`iOS/浏览器拦截了播放: ${JSON.stringify(error)}`)
+        // 在这里可以判断，如果是被拦截，通常是因为没有用户交互，或者静音键问题
+        if (error.name === 'NotAllowedError') {
+           showToast('请检查手机是否开启了静音模式')
+        } else {
+           showToast('无法播放此音频')
+        }
+      })
+    }
+    
+  } catch (error) {
+    console.error('播放语音逻辑崩溃:', error)
+    showToast('播放出错', error)
+  }
+}
+
+// 预览图片
+const previewImage = (imageUrl) => {
+  try {
+    console.log('预览图片:', imageUrl)
+    
+    // 使用 Vant 的图片预览功能
+    ImagePreview({
+      images: [imageUrl],
+      startPosition: 0,
+      closeable: true,
+      showIndicators: true
+    })
+  } catch (error) {
+    console.error('预览图片失败:', error)
+    // 备用方案：在新窗口打开
+    window.open(imageUrl, '_blank')
+  }
+}
+
+// 获取语音时长（估算）
+const getVoiceDuration = (base64Audio) => {
+  // 简单估算：根据 base64 字符串长度估算时长
+  // 实际项目中应该从音频文件中读取真实时长
+  const estimatedLength = Math.floor(base64Audio.length / 10000)
+  return `${estimatedLength}"`
 }
 
 // --- 生命周期 ---
@@ -462,6 +1008,17 @@ watch(() => messages.value.length, () => {
 /* --- 2. 首页样式 --- */
 .main-view {
   padding-bottom: env(safe-area-inset-bottom);
+}
+/* 语音播放时的动画效果 */
+.voice-icon.is-playing {
+  animation: voicePlaying 1s linear infinite;
+  color: #30D158; /* 播放时变成绿色，更明显 */
+}
+
+@keyframes voicePlaying {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
 }
 
 .sticky-header {
@@ -659,7 +1216,8 @@ watch(() => messages.value.length, () => {
 }
 
 .bottom-anchor {
-  height: 70px; /* 留出 footer 空间 */
+  height: 120px; /* 留出 footer 空间 */
+   padding-bottom: env(safe-area-inset-bottom); /* 适配 iPhone 底部小黑条 */
 }
 
 /* 消息行 */
@@ -752,20 +1310,352 @@ watch(() => messages.value.length, () => {
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 10px 16px;
-  /* 适配 iPhone 底部横条 */
-  padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  border-top: 0.5px solid var(--divider);
+  background: rgba(20, 25, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px 20px;
   z-index: 100;
 }
 
+/* 输入容器 */
 .input-container {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  background: var(--input-bg);
-  padding: 6px;
-  border-radius: 24px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* 输入框样式 */
+.custom-field {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 10px 16px;
+  font-size: 16px;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  
+  &:focus-within {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(10, 132, 255, 0.5);
+    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+  }
+  
+  :deep(.van-field__control) {
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.4;
+    min-height: 20px;
+    
+    &::placeholder {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+  }
+}
+
+/* 发送按钮 */
+.send-btn {
+  min-width: 60px;
+  height: 40px;
+  background: linear-gradient(135deg, #0A84FF, #0056CC);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:active {
+    transform: scale(0.95);
+    background: linear-gradient(135deg, #0056CC, #003D8F);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .loading-icon {
+    animation: spin 1s linear infinite;
+  }
+}
+
+/* 功能工具栏 */
+.function-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* 工具按钮 */
+.tool-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:active {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(0.9);
+  }
+  
+  &.active {
+    background: rgba(10, 132, 255, 0.2);
+    border-color: rgba(10, 132, 255, 0.4);
+    color: #0A84FF;
+  }
+  
+  &.emoji-btn {
+    &:active {
+      background: rgba(255, 215, 0, 0.2);
+      border-color: rgba(255, 215, 0, 0.3);
+      color: #FFD700;
+    }
+    
+    &.active {
+      background: rgba(255, 215, 0, 0.2);
+      border-color: rgba(255, 215, 0, 0.4);
+      color: #FFD700;
+    }
+  }
+}
+
+/* 录音显示样式 */
+.recording-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 20px;
+  padding: 10px 16px;
+  gap: 12px;
+}
+
+.recording-waves {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.wave {
+  width: 3px;
+  height: 20px;
+  background: #e74c3c;
+  border-radius: 2px;
+  animation: waveAnimation 1s ease-in-out infinite;
+  
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.1s; }
+  &:nth-child(3) { animation-delay: 0.2s; }
+  &:nth-child(4) { animation-delay: 0.3s; }
+  &:nth-child(5) { animation-delay: 0.4s; }
+}
+
+.recording-time {
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+}
+
+@keyframes waveAnimation {
+  0%, 100% {
+    height: 20px;
+    opacity: 0.3;
+  }
+  50% {
+    height: 30px;
+    opacity: 1;
+  }
+}
+
+/* 语音按钮样式 */
+.voice-btn {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 142, 83, 0.2));
+  border-color: rgba(255, 107, 107, 0.3);
+  color: #FF6B6B;
+  
+  &:active {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.3));
+    border-color: rgba(231, 76, 60, 0.5);
+    transform: scale(0.9);
+  }
+}
+
+/* 录音中按钮样式 */
+.recording-btn {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.3));
+  border-color: rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+  animation: recordingPulse 1.5s ease-in-out infinite;
+  
+  &:active {
+    transform: scale(0.8);
+    background: linear-gradient(135deg, rgba(192, 57, 43, 0.4), rgba(169, 50, 38, 0.4));
+  }
+}
+
+@keyframes recordingPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+  }
+}
+
+/* 表情选择器容器 */
+.emoji-picker-container {
+  background: rgba(20, 20, 30, 0.98);
+  border-radius: 16px 16px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: 40vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+.emoji-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  
+  span {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+  }
+}
+
+/* 动画效果 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.bubble-image {
+  .msg-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+}
+
+@keyframes voicePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+/* 表情选择器弹窗 */
+.emoji-picker-popup {
+  background: var(--card-bg);
+  
+  :deep(.van-popup__content) {
+    background: var(--card-bg);
+  }
+}
+
+.emoji-picker-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+}
+
+.emoji-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--divider);
+  
+  span {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .van-button {
+    color: var(--text-secondary);
+    font-size: 20px;
+  }
+}
+
+.emoji-picker {
+  flex: 1;
+  overflow-y: auto;
+  
+  :deep(.emoji-picker) {
+    background: var(--card-bg);
+    
+    .emoji-picker__search {
+      background: var(--input-bg);
+      border: 1px solid var(--divider);
+      color: var(--text-primary);
+    }
+    
+    .emoji-picker__emoji {
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+    }
+    
+    .emoji-picker__category-name {
+      color: var(--text-secondary);
+    }
+  }
 }
 
 .custom-field {

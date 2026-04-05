@@ -15,6 +15,7 @@ dependencies {
     implementation project(':capacitor-camera')
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-toast')
+    implementation project(':capacitor-voice-recorder')
 
 }
 
