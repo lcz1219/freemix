@@ -107,7 +107,27 @@
             :class="['message-item', message.fromUser === currentUser.username ? 'sent' : 'received']"
           >
             <div class="message-content">
-              <div class="message-text">{{ message.content }}</div>
+              <!-- 文本消息 -->
+              <div v-if="message.type === 'text' || !message.type" class="message-text">{{ message.content }}</div>
+              
+              <!-- 图片消息 -->
+              <div v-else-if="message.type === 'image'" class="message-image">
+                <img 
+                  :src="message.content" 
+                  alt="图片"
+                  class="msg-image"
+                  @click="previewImage(message.content)"
+                />
+              </div>
+              
+              <!-- 语音消息 -->
+              <div v-else-if="message.type === 'voice'" class="message-voice">
+                <div class="voice-player" @click="playVoice(message)">
+                  <n-icon :component="MicrophoneIcon" class="voice-icon" />
+                  <span class="voice-duration">{{ getVoiceDuration(message.content) }}"</span>
+                </div>
+              </div>
+              
               <div class="message-time">
                 {{ formatTime(message.createdAt) }}
               </div>
@@ -120,23 +140,72 @@
           v-if="selectedUser"
           style="padding: 16px; height: 20%; min-height: 100px;"
         >
-          <div style="display: flex; gap: 10px; height: 100%;">
-            <n-input 
-              v-model:value="newMessage" 
-              type="textarea" 
-              placeholder="输入消息..." 
-              :autosize="{ minRows: 2, maxRows: 4 }"
-              @keydown.enter="handleSendMessage"
-              style="flex: 1;"
-            />
-            <!-- <n-button 
-              type="primary" 
-              @click="sendMessage"
-              :disabled="!newMessage.trim()"
-              style="height: fit-content;"
-            >
-              发送
-            </n-button> -->
+          <div class="input-area">
+            <!-- 主输入区 -->
+             <!-- 功能按钮区 -->
+            <div class="function-buttons">
+              <!-- <n-button circle @click="showEmojiPicker = !showEmojiPicker" title="表情">
+                <template #icon>
+                  <n-icon><SmileIcon /></n-icon>
+                </template>
+              </n-button> -->
+              <n-button circle @click="selectImage" title="图片">
+                <template #icon>
+                  <n-icon><ImageIcon /></n-icon>
+                </template>
+              </n-button>
+              <!-- <n-button circle @click="toggleVoiceRecording" :type="isRecording ? 'error' : 'default'" title="语音">
+                <template #icon>
+                  <n-icon><MicrophoneIcon /></n-icon>
+                </template>
+              </n-button> -->
+              <!-- <n-button type="primary" @click="sendMessage" :disabled="!newMessage.trim()">
+                发送
+              </n-button> -->
+            </div>
+            <div class="input-container">
+              <n-input 
+                v-model:value="newMessage" 
+                type="textarea" 
+                placeholder="输入消息..." 
+                :autosize="{ minRows: 2, maxRows: 4 }"
+                @keydown.enter="handleSendMessage"
+                style="flex: 1;"
+              />
+            </div>
+            
+            
+            
+            <!-- 表情选择器 -->
+            <div class="emoji-picker-container" v-show="showEmojiPicker">
+              <div class="emoji-picker-header">
+                <span>表情</span>
+                <button @click="showEmojiPicker = false" class="close-btn">
+                  ×
+                </button>
+              </div>
+              <EmojiPicker 
+                :native="true" 
+                @select="onEmojiSelect" 
+                :group-names="optionsName" 
+                :display-recent="true"
+                :hide-search="true" 
+                :disable-skin-tones="true" 
+                theme="auto" 
+              />
+            </div>
+            
+            <!-- 录音状态显示 -->
+            <div v-if="isRecording" class="recording-display">
+              <div class="recording-waves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+              </div>
+              <span class="recording-time">{{ getRecordingTime() }}</span>
+            </div>
           </div>
         </n-layout-footer>
         
@@ -144,7 +213,7 @@
           <n-empty description="请选择一个用户开始聊天">
             <template #icon>
               <n-icon>
-                <Chat />
+                <Chatbox />
               </n-icon>
             </template>
           </n-empty>
@@ -199,6 +268,7 @@ import {
   Accessibility
   
 } from '@vicons/ionicons5'
+import { sendMessageWeb } from '@/utils/websocket.js'
 import {
   NLayout,
   NLayoutHeader,
@@ -221,10 +291,13 @@ import {
   NIcon,
   NSpin
 } from 'naive-ui'
+import { MoodSmile as SmileIcon, Photo as ImageIcon, Microphone as MicrophoneIcon,  } from '@vicons/tabler'
 import router from "@/router";
-import {sendMessageWeb} from '@/utils/websocket.js'
 import {genMsg} from '@/utils/genMsg.js'
-// import defaultAvatar from '@/assets/images/default-avatar.png'
+import EmojiPicker from 'vue3-emoji-picker'
+import 'vue3-emoji-picker/css'
+import { showImagePreview } from 'vant'
+import 'vant/lib/index.css'
 
 // 定义消息类型
 interface Message {
@@ -261,6 +334,21 @@ const showAvatar=(item)=>{
   return `${baseURL()}${item}` 
 }
 // 响应式数据
+
+// 表情选择器配置
+const optionsName = {
+  'Smileys & Emotion': '笑脸与表情',
+  'People & Body': '人物与身体',
+  'Animals & Nature': '动物与自然',
+  'Food & Drink': '食物与饮料',
+  'Activities': '活动',
+  'Travel & Places': '旅行与地点',
+  'Objects': '物品',
+  'Symbols': '符号',
+  'Flags': '旗帜'
+}
+
+// --- 状态数据 ---
 const collapsed = ref(false)
 const searchUser = ref('')
 const selectedUser = ref<User | null>(null)
@@ -271,8 +359,6 @@ const sendingMessage = ref(false)
 const userStatus = ref<Record<string, boolean>>({})
 
 // 轮询相关
-
-
 // 表单相关
 const messageFormRef = ref()
 const messageForm = ref({
@@ -283,7 +369,6 @@ const computedBadge=(item)=>{
   let count = 0
 return badge.value[item]
 }
-
 const messageRules = {
   toUser: {
     required: true,
@@ -296,6 +381,16 @@ const messageRules = {
     trigger: 'blur'
   }
 }
+
+// 表情选择器状态
+const showEmojiPicker = ref(false)
+
+// 语音录制状态
+const isRecording = ref(false)
+const recordingStartTime = ref(0)
+const mediaRecorder = ref(null)
+const audioChunks = ref([])
+const recordingTimer = ref(null)
 
 // 当前用户
 const currentUser = computed(() => store.state.user)
@@ -598,6 +693,298 @@ const sendDirectMessage = async () => {
   }
 }
 
+// 表情选择处理
+const onEmojiSelect = (emoji) => {
+  console.log('选择的表情:', emoji)
+  if (emoji) {
+    // vue3-emoji-picker 返回的是表情对象，需要获取实际的表情字符
+    let emojiChar = ''
+    
+    if (typeof emoji === 'string') {
+      emojiChar = emoji
+    } else if (emoji && emoji.i) {
+      // 如果是对象，获取 i 属性（表情字符）
+      emojiChar = emoji.i
+    } else if (emoji && typeof emoji === 'object') {
+      // 尝试其他可能的属性
+      emojiChar = emoji.emoji || emoji.char || emoji.native || Object.values(emoji)[0]
+    }
+    
+    if (emojiChar) {
+      newMessage.value += emojiChar
+      console.log('插入的表情:', emojiChar)
+    } else {
+      console.warn('无法获取表情字符:', emoji)
+      message.error('表情格式错误')
+    }
+  } else {
+    console.warn('表情数据为空:', emoji)
+  }
+}
+
+// 图片选择处理
+const selectImage = async () => {
+  try {
+    // 创建文件输入元素
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.multiple = false
+    
+    input.onchange = async (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        // 转换为 base64
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const imageData = e.target.result
+          sendImageMessage(imageData)
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+    
+    input.click()
+  } catch (error) {
+    message.error('选择图片失败: ' + error.message)
+  }
+}
+
+// 发送图片消息
+const sendImageMessage = async (imageData) => {
+  if (!selectedUser.value) return
+  
+  sendingMessage.value = true
+  try {
+    const messageData = {
+      toUser: selectedUser.value.username,
+      content: imageData,
+      type: 'image',
+      timestamp: Date.now()
+    }
+    
+    const res = await postM('messages/send', messageData)
+    sendMessageWeb(JSON.stringify(messageData))
+    
+    if (isSuccess(res)) {
+      messages.value.push(res.data.data)
+      scrollToBottom()
+    }
+    await fetchMessages()
+    message.success('图片发送成功')
+  } catch (error) {
+    message.error('发送失败')
+  } finally {
+    sendingMessage.value = false
+  }
+}
+
+
+
+const previewImage = (imageUrl) => {
+  try {
+    console.log('预览图片:', imageUrl)
+    // 使用 Vant 的图片预览功能
+    showImagePreview({
+      images: [imageUrl],
+      startPosition: 0,
+      closeable: true,
+      showIndicators: true
+    })
+  } catch (error) {
+    console.error('预览图片失败:', error)
+    // 降级方案：在新窗口打开图片
+    window.open(imageUrl, '_blank')
+  }
+}
+
+// 切换语音录制
+const toggleVoiceRecording = () => {
+  if (isRecording.value) {
+    stopVoiceRecording()
+  } else {
+    startVoiceRecording()
+  }
+}
+
+// 开始录音
+const startVoiceRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    
+    mediaRecorder.value = new MediaRecorder(stream)
+    audioChunks.value = []
+    
+    mediaRecorder.value.ondataavailable = (event) => {
+      audioChunks.value.push(event.data)
+    }
+    
+    mediaRecorder.value.onstop = async () => {
+      const audioBlob = new Blob(audioChunks.value, { type: 'audio/wav' })
+      await sendVoiceMessage(audioBlob)
+      
+      // 清理资源
+      audioChunks.value = []
+      mediaRecorder.value = null
+      stream.getTracks().forEach(track => track.stop())
+    }
+    
+    // 开始录音
+    mediaRecorder.value.start()
+    isRecording.value = true
+    recordingStartTime.value = Date.now()
+    
+    // 设置最大录音时长 60 秒
+    recordingTimer.value = setTimeout(() => {
+      if (isRecording.value) {
+        stopVoiceRecording()
+        message.warning('录音时长已达上限')
+      }
+    }, 60000)
+    
+  } catch (error) {
+    message.error('录音失败: ' + error.message)
+  }
+}
+
+// 停止录音
+const stopVoiceRecording = () => {
+  if (!isRecording.value) return
+  
+  try {
+    // 停止录音
+    if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+      mediaRecorder.value.stop()
+    }
+    
+    // 清除定时器
+    if (recordingTimer.value) {
+      clearTimeout(recordingTimer.value)
+      recordingTimer.value = null
+    }
+    
+    // 重置状态
+    isRecording.value = false
+    
+  } catch (error) {
+    message.error('停止录音失败: ' + error.message)
+  }
+}
+
+// 发送语音消息
+const sendVoiceMessage = async (audioBlob) => {
+  if (!selectedUser.value) return
+  
+  try {
+    // 将音频转换为 base64
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64Audio = reader.result
+      
+      const messageData = {
+        toUser: selectedUser.value.username,
+        content: base64Audio,
+        type: 'voice',
+        timestamp: Date.now()
+      }
+      
+      const res = await postM('messages/send', messageData)
+      sendMessageWeb(JSON.stringify(messageData))
+      
+      if (isSuccess(res)) {
+        messages.value.push(res.data.data)
+        scrollToBottom()
+      }
+      await fetchMessages()
+    }
+    reader.readAsDataURL(audioBlob)
+  } catch (error) {
+    message.error('语音发送失败')
+  }
+}
+
+// 播放语音消息
+const playVoice = async (msg) => {
+  try {
+    console.log('播放语音:', msg.content)
+    
+    // 检查是否为 base64 数据
+    let audioSrc = msg.content
+    
+    // 如果是 base64 数据，需要转换为 blob URL
+    if (msg.content && msg.content.startsWith('data:audio/')) {
+      try {
+        const audioBlob = await fetch(msg.content).then(r => r.blob())
+        audioSrc = URL.createObjectURL(audioBlob)
+        console.log('转换后的音频 URL:', audioSrc)
+      } catch (blobError) {
+        console.error('转换音频 blob 失败:', blobError)
+        message.error('音频格式错误')
+        return
+      }
+    }
+    
+    // 创建音频对象
+    const audio = new Audio(audioSrc)
+    
+    // 设置音频属性以确保在浏览器上正常播放
+    audio.preload = 'auto'
+    
+    // 添加事件监听
+    audio.addEventListener('loadstart', () => {
+      console.log('音频开始加载')
+    })
+    
+    audio.addEventListener('canplay', () => {
+      console.log('音频可以播放')
+    })
+    
+    audio.addEventListener('play', () => {
+      console.log('音频开始播放')
+    })
+    
+    audio.addEventListener('ended', () => {
+      console.log('音频播放结束')
+      // 清理 blob URL
+      if (audioSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(audioSrc)
+      }
+    })
+    
+    audio.addEventListener('error', (e) => {
+      console.error('音频播放错误:', e)
+      message.error('播放失败')
+      // 清理 blob URL
+      if (audioSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(audioSrc)
+      }
+    })
+    
+    // 尝试播放
+    await audio.play()
+    
+  } catch (error) {
+    console.error('播放语音失败:', error)
+    message.error('播放失败')
+  }
+}
+
+// 获取录音时长
+const getRecordingTime = () => {
+  if (!isRecording.value || !recordingStartTime.value) return '0:00'
+  const elapsed = Date.now() - recordingStartTime.value
+  const seconds = Math.floor(elapsed / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+// 获取语音时长（简化版本）
+const getVoiceDuration = (audioData) => {
+  // 这里返回一个估算值，实际项目中可能需要更精确的计算
+  return '0:05'
+}
+
 // 处理回车发送消息
 const handleSendMessage = (e: KeyboardEvent) => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -750,6 +1137,157 @@ defineExpose({
 </script>
 
 <style scoped>
+.input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.input-container {
+  flex: 1;
+}
+
+.function-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emoji-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: bold;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.recording-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.recording-waves {
+  display: flex;
+  gap: 3px;
+}
+
+.wave {
+  width: 3px;
+  height: 16px;
+  background: #409eff;
+  border-radius: 2px;
+  animation: wave 1s ease-in-out infinite;
+}
+
+.wave:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.wave:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.wave:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.wave:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes wave {
+  0%, 100% {
+    height: 8px;
+  }
+  50% {
+    height: 16px;
+  }
+}
+
+.recording-time {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.message-image {
+  margin-bottom: 8px;
+}
+
+.msg-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.msg-image:hover {
+  transform: scale(1.02);
+}
+
+.message-voice {
+  margin-bottom: 8px;
+}
+
+.voice-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.voice-player:hover {
+  background: #e0e0e0;
+}
+
+.voice-icon {
+  font-size: 16px;
+  color: #666;
+}
+
+.voice-duration {
+  font-size: 12px;
+  color: #666;
+}
+
 .message-item {
   margin-bottom: 16px;
   display: flex;

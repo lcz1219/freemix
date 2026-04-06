@@ -241,7 +241,7 @@
             </button>
             <button 
               class="tool-btn" 
-              @click="selectImage"
+              @click="showImageActionSheet"
             >
               <van-icon name="photograph" />
             </button>
@@ -289,6 +289,15 @@
         </div>
       </div>
     </van-popup>
+    <van-action-sheet
+  v-model:show="showActionSheetMenu"
+  :actions="imageActions"
+  cancel-text="取消"
+  close-on-click-action
+  @select="onImageActionSelect"
+  title="选择图片"
+  description="请选择图片来源"
+/>
   </div>
 </template>
 
@@ -299,7 +308,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { getM, postM, isSuccess, baseURL } from '@/utils/request.js'
 import { sendMessageWeb } from '@/utils/websocket.js'
-import { showToast, ImagePreview } from 'vant'
+import { showToast, showImagePreview ,showDialog} from 'vant'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
@@ -569,11 +578,27 @@ const onEmojiSelect = (emoji) => {
     console.warn('表情数据为空:', emoji)
   }
 }
+// 唤起选择菜单（拍照 or 相册）
+// --- 图片选择菜单相关变量 ---
+const showActionSheetMenu = ref(false)
+const imageActions = ref([
+  { name: '拍照', value: 'CAMERA' },
+  { name: '从相册选择', value: 'PHOTOS' }
+])
 
-// 图片选择处理
-const selectImage = async () => {
+// 唤起选择菜单
+const showImageActionSheet = () => {
+  showActionSheetMenu.value = true
+}
+
+// 用户点击了菜单项
+const onImageActionSelect = (action) => {
+  selectImage(action.value)
+}
+
+// --- 改造后的图片选择处理 ---
+const selectImage = async (sourceType) => {
   try {
-    // 使用 Capacitor Camera 插件
     const { Camera } = await import('@capacitor/camera')
     
     // 检查相机权限
@@ -581,32 +606,56 @@ const selectImage = async () => {
     if (permission.camera !== 'granted') {
       const result = await Camera.requestPermissions()
       if (result.camera !== 'granted') {
-        showToast('需要相机权限才能选择图片')
+        showToast('需要相机权限才能选择/拍摄图片')
         return
       }
     }
     
-    // 选择图片
+    // 调用 Capacitor 相机
     const image = await Camera.getPhoto({
-      quality: 90,
-      allowEditing: true,
-      resultType: 'DataUrl',
-      source: 'PHOTOS' // 从相册选择
+      quality: 80, 
+      allowEditing: false, // ⚠️关闭编辑，防止部分安卓机返回空数据
+      resultType: 'DataUrl', // 直接获取 base64
+      source: sourceType // 'CAMERA' 或 'PHOTOS'
     })
     
-    console.log('选择的图片:', image)
+    // 检查并构建图片数据
+    let finalImageData = null
     
-    // 检查图片数据
-    if (!image || !image.webPath) {
-      showToast('图片获取失败')
+    if (image.dataUrl) {
+      finalImageData = image.dataUrl
+    } else if (image.base64String) {
+      // 某些情况下 Capacitor 只返回 base64String，需要手动拼装 dataUrl
+      const format = image.format || 'jpeg'
+      finalImageData = `data:image/${format};base64,${image.base64String}`
+    } else if (image.webPath) {
+      finalImageData = image.webPath
+    }
+    
+    if (!finalImageData) {
+      showDialog({
+        title: '图片获取失败',
+        message: '无法获取有效的图片数据，请重试',
+        theme: 'round-button',
+      })
       return
     }
     
     // 发送图片消息
-    sendImageMessage(image.webPath)
+    if (finalImageData.startsWith('data:')) {
+      sendImageData(finalImageData)
+    } else {
+      sendImageMessage(finalImageData)
+    }
+    
   } catch (error) {
-    console.error('选择图片失败:', error)
-    showToast('选择图片失败: ' + error.message)
+    console.error('相机/相册调用失败:', error)
+    // 捕获异常也用 Dialog 显示
+    showDialog({
+      title: '操作异常',
+      message: error.message || '调用相机或相册时发生错误',
+      theme: 'round-button',
+    })
   }
 }
 
@@ -929,7 +978,7 @@ const previewImage = (imageUrl) => {
     console.log('预览图片:', imageUrl)
     
     // 使用 Vant 的图片预览功能
-    ImagePreview({
+    showImagePreview({
       images: [imageUrl],
       startPosition: 0,
       closeable: true,
@@ -1130,9 +1179,60 @@ watch(() => messages.value.length, () => {
 }
 
 /* --- 3. 聊天窗口样式 --- */
-.chat-window-popup {
-  background-color: var(--bg-color);
+/* ActionSheet 主题适配 */
+:deep(.van-action-sheet) {
+  background-color: #1c1c1e !important;
+  color: #ffffff !important;
 }
+
+:deep(.van-action-sheet__item) {
+  background-color: #1c1c1e !important;
+  color: #ffffff !important;
+}
+
+:deep(.van-action-sheet__cancel) {
+  background-color: #2c2c2e !important;
+  color: #ff3b30 !important;
+  border-top: 8px solid #000000;
+}
+
+:deep(.van-action-sheet__header) {
+  color: #ffffff !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.van-action-sheet__description) {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Dialog 主题适配 */
+:deep(.van-dialog) {
+  background-color: #1c1c1e !important;
+  color: #ffffff !important;
+}
+
+:deep(.van-dialog__header) {
+  color: #ffffff !important;
+}
+
+:deep(.van-dialog__message) {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+:deep(.van-dialog__footer) {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.van-dialog__confirm) {
+  background-color: #1c1c1e !important;
+  color: #0a84ff !important;
+}
+
+:deep(.van-dialog__cancel) {
+  background-color: #1c1c1e !important;
+  color: #ff3b30 !important;
+}
+
 
 .chat-layout {
   display: flex;
@@ -1696,5 +1796,35 @@ watch(() => messages.value.length, () => {
 .fade-slide-enter-from, .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+</style>
+<style>
+/* 全局 Dialog 主题适配 (因为 showDialog 挂载在 body 上，scoped 无法生效) */
+.van-dialog {
+  background-color: #1c1c1e !important;
+}
+.van-dialog__header {
+  color: #ffffff !important;
+}
+.van-dialog__message {
+  color: rgba(255, 255, 255, 0.8) !important;
+  /* 针对报错信息，左对齐并允许长单词换行，方便阅读 */
+  text-align: left !important; 
+  word-break: break-all !important;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.van-dialog__footer {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: #1c1c1e !important;
+}
+.van-dialog__confirm, .van-dialog__cancel {
+  background-color: #1c1c1e !important;
+}
+.van-dialog__confirm {
+  color: #0a84ff !important;
+}
+.van-dialog__cancel {
+  color: #ff3b30 !important;
 }
 </style>
