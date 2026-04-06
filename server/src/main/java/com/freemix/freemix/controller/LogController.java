@@ -38,16 +38,25 @@ public class LogController extends BaseController {
             log.warn("用户 {} 尝试无权访问日志管理", currentUser.getUsername());
             return ApiResponse.failure("您没有权限查看系统日志", 403);
         }
-
+        Criteria criteria = new Criteria().orOperator(
+                Criteria.where("result.code").is(200),
+                Criteria.where("result.code").exists(false)
+        );
+        Criteria failCriteria = new Criteria().andOperator(
+                Criteria.where("result.code").ne(200),
+                Criteria.where("result.code").exists(true)
+        );
         Query query = new Query();
         if (username != null && !username.isEmpty()) {
             query.addCriteria(Criteria.where("username").regex(username, "i"));
         }
         if (status != null) {
             if (status == 200) {
-                query.addCriteria(Criteria.where("result.code").is(200));
+
+                query.addCriteria(criteria);
             } else {
-                query.addCriteria(Criteria.where("result.code").ne(200));
+
+                query.addCriteria(failCriteria);
             }
         }
         if (url != null && !url.isEmpty()) {
@@ -64,9 +73,10 @@ public class LogController extends BaseController {
         if (url != null && !url.isEmpty()) {
             statsQuery.addCriteria(Criteria.where("classMethod").regex(url, "i"));
         }
-        
-        long successCount = mongoTemplate.count(Query.of(statsQuery).addCriteria(Criteria.where("result.code").is(200)), ApiLog.class);
-        long failCount = mongoTemplate.count(Query.of(statsQuery).addCriteria(Criteria.where("result.code").ne(200)), ApiLog.class);
+
+//        long successCount = mongoTemplate.count(Query.of(statsQuery).addCriteria(Criteria.where("result.code").is(200)), ApiLog.class);
+        long successCount = mongoTemplate.count(Query.of(statsQuery).addCriteria(criteria), ApiLog.class);
+        long failCount = mongoTemplate.count(Query.of(statsQuery).addCriteria(failCriteria), ApiLog.class);
 
         query.with(Sort.by(Sort.Direction.DESC, "createTime"));
         query.with(Sort.by(Sort.Direction.DESC, "createTimeStr"));

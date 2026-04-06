@@ -370,6 +370,7 @@ const getMethodTagType = (result) => {
   
   switch (result.code) {
     case 200: return 'success';
+    case undefined: return 'success';
   
     default: return 'error';
   }
