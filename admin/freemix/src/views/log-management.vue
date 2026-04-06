@@ -52,8 +52,15 @@
         <!-- <n-form-item label="操作人">
           <n-input v-model:value="queryParams.username" placeholder="搜索用户名" clearable />
         </n-form-item> -->
-        <n-form-item label="请求路径">
-          <n-input v-model:value="queryParams.url" placeholder="请求路径关键字" clearable />
+        <n-form-item label="请求方法">
+          <n-select
+            v-model:value="queryParams.url"
+            placeholder="请选择或搜索方法"
+            :options="classMethodOptions"
+            filterable
+            clearable
+            style="width: 300px"
+          />
         </n-form-item>
         <n-form-item label="请求状态">
           <n-select
@@ -157,15 +164,31 @@ const stats = reactive({
 const queryParams = reactive({
   username: '',
   status: null,
-  url: ''
+  url: null
 });
+
+const classMethodOptions = ref([]);
+
+const fetchClassMethods = async () => {
+  try {
+    const res = await getM('/api/logs/classMethods');
+    if (res.data.code === 200) {
+      classMethodOptions.value = res.data.data.map(item => ({
+        label: item.replace("com.freemix.freemix.controller.", ""),
+        value: item
+      }));
+    }
+  } catch (error) {
+    console.error('获取方法列表失败', error);
+  }
+};
 
 const pagination = reactive({
   page: 1,
-  pageSize: 20,
+  pageSize: 10,
   itemCount: 0,
   showSizePicker: true,
-  pageSizes: [20, 50, 100]
+  pageSizes: [10, 30, 100]
 });
 
 const statusOptions = [
@@ -270,11 +293,16 @@ const fetchLogs = async () => {
 
 onMounted(() => {
   fetchLogs();
-  window.addEventListener('resize', handleResize);
+  fetchClassMethods();
+  window.addEventListener('resize', () => {
+    myChart && myChart.resize();
+  });
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('resize', () => {
+    myChart && myChart.resize();
+  });
   if (myChart) {
     myChart.dispose();
   }
@@ -460,7 +488,7 @@ const isErrorResult = (result) => {
   return str.includes('"code":500') || str.includes('"code":40') || str.includes('Error');
 };
 
-onMounted(fetchLogs);
+// onMounted(fetchLogs);
 </script>
 
 <style scoped lang="scss">

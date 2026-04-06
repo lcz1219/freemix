@@ -64,7 +64,7 @@
 
             <!-- 移动端浮动导航组件 -->
             <MobileFloatingNav v-if="false" />
-            <MessageCenter ref="mcter" v-show="false"/>
+            <!-- <MessageCenter ref="mcter" v-show="false"/> -->
             <!-- 全局浮动按钮组件 -->
             <UnifiedFloatButton v-if="showContentByStoreUser&&isnAiPage&&!isMobileDevice" :goals="goals" :formatDate="formatDate" :checktype="checktype"
               @dateSelected="handleCalendarUpdate" />
