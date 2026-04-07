@@ -55,11 +55,11 @@ public class LogController extends BaseController {
 
         Criteria successCriteria = new Criteria().orOperator(
                 Criteria.where("result.code").is(200),
-                Criteria.where("result.code").exists(false)
+                Criteria.where("result.code").is(null)
         );
+
         Criteria failCriteria = new Criteria().andOperator(
-                Criteria.where("result.code").ne(200),
-                Criteria.where("result.code").exists(true)
+                Criteria.where("result.code").nin(200, null)
         );
 
         // 1. 异步查询：分页列表
@@ -138,9 +138,7 @@ public class LogController extends BaseController {
     // --- 提取一个公用方法，保证各线程拥有独立且干净的 Query 对象，避免线程安全问题 ---
     private Query buildBaseQuery(String username, String url) {
         Query query = new Query();
-        if (username != null && !username.isEmpty()) {
-            query.addCriteria(Criteria.where("username").regex(username, "i"));
-        }
+
         if (url != null && !url.isEmpty()) {
             // 修改为精确匹配，因为前端现在改成了下拉框
             query.addCriteria(Criteria.where("classMethod").is(url));
