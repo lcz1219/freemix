@@ -266,7 +266,7 @@ const fetchLogs = async () => {
     if (res.data.code === 200) {
       const { list, total, successCount, failCount } = res.data.data;
       logList.value = list;
-      pagination.itemCount = total;
+      pagination.itemCount = !queryParams.status ? total : queryParams.status==200 ? successCount: failCount;
       
       stats.success = successCount || 0;
       stats.fail = failCount || 0;
