@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +70,7 @@ public class LogController extends BaseController {
         Criteria failCriteria = new Criteria().andOperator(
                 Criteria.where("result.code").nin(200, null)
         );
-        String timeThreshold = getTimeThresholdForLatest10000();
+        Date timeThreshold = getTimeThresholdForLatest10000();
 
         // 1. 异步查询：分页列表
         CompletableFuture<List<ApiLog>> logsFuture = CompletableFuture.supplyAsync(() -> {
@@ -154,11 +155,11 @@ public class LogController extends BaseController {
             return ApiResponse.failure("系统繁忙，请稍后再试");
         }
     }
-
+    private static final List<String> EXCLUDED_METHODS = Arrays.asList("com.freemix.freemix.controller.UserStatusController.getAllUserStatus");
 
 
     // --- 提取一个公用方法，保证各线程拥有独立且干净的 Query 对象，避免线程安全问题 ---
-    private Query buildBaseQuery(String username, String url,String timeThreshold) {
+    private Query buildBaseQuery(String username, String url,Date timeThreshold) {
         Query query = new Query();
 // 计算一个月前的日期字符串（格式必须与 createTimeStr 一致："yyyy-MM-dd HH:mm:ss"）
 //        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
@@ -166,27 +167,30 @@ public class LogController extends BaseController {
 //
 //        // 字符串范围比较（注意：这无法使用索引，会全表扫描）
 //        query.addCriteria(Criteria.where("createTimeStr").gte(startDateStr));
-
+        // 排除 classMethod 在排除列表中的文档
+        if (!EXCLUDED_METHODS.isEmpty()) {
+            query.addCriteria(Criteria.where("classMethod").nin(EXCLUDED_METHODS));
+        }
         if (url != null && !url.isEmpty()) {
             // 修改为精确匹配，因为前端现在改成了下拉框
             query.addCriteria(Criteria.where("classMethod").is(url));
         }
         if (timeThreshold != null) {
-            query.addCriteria(Criteria.where("createTimeStr").gte(timeThreshold));
+            query.addCriteria(Criteria.where("createTime").gte(timeThreshold));
         }
         return query;
     }
-    private String getTimeThresholdForLatest10000() {
+    private Date getTimeThresholdForLatest10000() {
         // 查询第 10000 条记录（跳过 9999 条，取 1 条）
         Query query = new Query()
-                .with(Sort.by(Sort.Direction.DESC, "createTimeStr"))
+                .with(Sort.by(Sort.Direction.DESC, "createTime"))
                 .limit(1)
-                .skip(9999);
+                .skip(2999);
         // 只投影 createTime 字段，减少数据传输
-        query.fields().include("createTimeStr");
+        query.fields().include("createTime");
         ApiLog log = mongoTemplate.findOne(query, ApiLog.class);
-        if (log != null && log.getCreateTimeStr() != null) {
-            return log.getCreateTimeStr();
+        if (log != null && log.getCreateTime() != null) {
+            return log.getCreateTime();
         }
         return null; // 总数不足 10000，不限制时间
     }

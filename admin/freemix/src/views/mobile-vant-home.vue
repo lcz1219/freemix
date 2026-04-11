@@ -412,7 +412,12 @@ const goToAIAssistant = () => router.push('/AIAssistantWindow')
 const showGoalDetail = (goal: any) => {
   selectedGoal.value = goal
   const subs = goal?.childGoals || []
-  checkedSubGoals.value = subs.filter((sub: any) => sub.finish).map((sub: any) => sub._id)
+  if(goal.childGoals){
+
+    checkedSubGoals.value = subs.filter((sub: any) => sub.finish).map((sub: any) => sub._id)
+  }else{
+    checkedSubGoals.value = [];
+  }
   console.log("checkedSubGoals.value", checkedSubGoals.value)
   showDetailModal.value = true
 }
@@ -442,6 +447,8 @@ const handleSubGoalChange = async (subGoal, index) => {
 
   // 立即通过 nextTick 确保 checkedSubGoals 已经由 van-checkbox-group 更新
   await nextTick();
+  // 过滤掉传入的 null 或 undefined 值
+  checkedSubGoals.value = checkedSubGoals.value.filter(n => n !== null && n !== undefined);
 
   try {
     const data = {

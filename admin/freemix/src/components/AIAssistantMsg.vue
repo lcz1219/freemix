@@ -307,6 +307,8 @@ const scrollToBottom = () => {
   })
 };
 
+import { handleMQLResponse } from '../utils/MQLHandler';
+
 // 处理历史记录导航
 const handleScrollToHistory = (historyIndex) => {
   // 获取历史记录中对应的用户消息索引
@@ -356,7 +358,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: "ea16730874-single_user", // 用户标识
-        query: `${question}用markdown的格式返回`,
+        query: `当前时间是：${new Date().toLocaleString()}。用户问题：${question}。请用markdown格式返回。`,
         stream: true // 启用流式响应
       })
     });
@@ -548,6 +550,21 @@ const callCustomAIAPI = async (question, onUpdate) => {
       thinkingContent: thinkingContent,
       followUpQuestions: followUpQuestions
     };
+    
+    // 方案二：截获 MQL 并自动执行
+    const mqlResult = await handleMQLResponse(fullResponse);
+    if (mqlResult && mqlResult.success) {
+      // 触发二次对话：让 AI 总结结果
+      const summaryPrompt = `
+      用户问题：${question}
+      数据库执行结果（原始数据）：${JSON.stringify(mqlResult.rawData)}
+      请结合上述数据，用专业、自然的口吻回答用户，并给出分析结论。不要再次输出 [MQL_START] 标签。
+      `;
+      
+      // 递归调用 callCustomAIAPI 获取最终总结
+      const finalResult = await callCustomAIAPI(summaryPrompt, onUpdate);
+      return finalResult;
+    }
     
     // 如果没有获取到有效响应，返回默认消息
     if (!fullResponse.trim() && followUpQuestions.length === 0 && !thinkingContent.trim()) {

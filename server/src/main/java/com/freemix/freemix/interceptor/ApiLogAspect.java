@@ -65,6 +65,7 @@ public class ApiLogAspect {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String formattedTime = LocalDateTime.now().format(formatter);
                 apiLog.setCreateTimeStr(formattedTime);
+                apiLog.setCreateTime(new Date());
                 
                 if (request != null) {
                     apiLog.setUrl(request.getRequestURL().toString());

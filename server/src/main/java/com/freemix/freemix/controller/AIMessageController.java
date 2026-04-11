@@ -3,8 +3,17 @@ package com.freemix.freemix.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.AIMessage;
+import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.service.AIMessageService;
 import com.freemix.freemix.util.ApiResponse;
+import org.bson.Document;
+import com.mongodb.client.AggregateIterable;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +28,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/ai-messages")
 @CrossOrigin(origins = "*") // 允许跨域请求
-public class AIMessageController {
+public class AIMessageController extends BaseController {
 
     private static final Logger log = LoggerFactory.getLogger(AIMessageController.class);
     
@@ -111,6 +120,48 @@ public class AIMessageController {
         return aiMessageService.getAIMessageCount();
     }
     
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    /**
+     * 执行由 AI 生成的 MQL (MongoDB 聚合管道)
+     * @param body 包含 pipeline (JSON 字符串) 和 collection (可选，默认 goal)
+     * @return ApiResponse 包含查询结果列表
+     */
+    @PostMapping("/query-mql")
+    @CheckToken
+    public ApiResponse executeMql(@RequestBody JSONObject body) {
+        User currentUser = getCurrentUser();
+        // 权限校验：仅管理员可进行统计分析
+        // if (currentUser == null || !"1033519224@qq.com".equals(currentUser.getEmail())) {
+        //     return ApiResponse.failure("您没有权限执行数据统计分析", 403);
+        // }
+
+        try {
+            String pipelineJson = body.getString("pipeline");
+            String collectionName = body.getString("collection"); // 默认为 "goal"
+            if (collectionName == null || collectionName.isEmpty()) {
+                collectionName = "goal";
+            }
+
+            log.info("用户 {} 执行 MQL 统计, 集合: {}, Pipeline: {}", currentUser.getUsername(), collectionName, pipelineJson);
+            String cleanedMql = pipelineJson.replaceAll("ISODate\\(\"([^\"]+)\"\\)", "new Date(\"$1\")");
+            // 将 JSON 数组解析为 MongoDB Pipeline
+            List<Document> pipeline = com.alibaba.fastjson2.JSON.parseArray(cleanedMql, Document.class);
+            
+            // 执行聚合查询
+            AggregateIterable<Document> results = mongoTemplate.getCollection(collectionName).aggregate(pipeline);
+            
+            List<Document> output = new ArrayList<>();
+            results.forEach(output::add);
+            
+            return ApiResponse.success(output);
+        } catch (Exception e) {
+            log.error("MQL 执行失败", e);
+            return ApiResponse.failure("查询语法错误或数据库异常: " + e.getMessage());
+        }
+    }
+
     /**
      * 获取指定用户的历史AI消息记录
      * @param username 用户名

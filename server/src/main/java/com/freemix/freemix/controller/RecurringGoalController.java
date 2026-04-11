@@ -61,7 +61,9 @@ public class RecurringGoalController extends BaseController {
             rule.setCreateTime(new Date());
             rule.setDel(0);
             rule.setIsActive(true);
-            
+            rule.getChildGoals().forEach(ruleChild -> {
+                ruleChild.set_id(UUID.randomUUID().toString());
+            });
             // 设置首次执行时间
             rule.setNextExecutionTime(calculateInitialExecutionTime(rule));
             
