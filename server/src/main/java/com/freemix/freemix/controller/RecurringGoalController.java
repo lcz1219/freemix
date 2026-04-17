@@ -84,6 +84,12 @@ public class RecurringGoalController extends BaseController {
             } else {
                 rule.setNextExecutionTime(existing.getNextExecutionTime());
             }
+            rule.getChildGoals().forEach(ruleChild -> {
+                if(StringUtil.isNullOrEmpty(ruleChild.get_id())){
+                    ruleChild.set_id(UUID.randomUUID().toString());
+                }
+            });
+
             
             rule.setOwner(currentUser.getUsername());
             rule.setLastGeneratedTime(existing.getLastGeneratedTime());
