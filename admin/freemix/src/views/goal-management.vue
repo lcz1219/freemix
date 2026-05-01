@@ -112,6 +112,7 @@
                           </svg>
                         </n-icon>
                         <h2 class="card-title">目标列表</h2>
+                        <h2 class="card-title">{{ filteredGoals.length }}个目标</h2>
                       </div>
                     </template>
 
@@ -992,6 +993,7 @@ const getGoals = async () => {
     const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
     if (isSuccess(res)) {
       goals.value = res.data.data || [];
+      
       goals.value.forEach(goal => {
         goal.deadlineString = formatDate(goal.deadline);
       });
@@ -1371,12 +1373,20 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: flex-start;
 }
 
 .card-title {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
+}
+
+.card-title:last-child {
+  font-size: 16px;
+  font-weight: 400;
+  color: #999;
+  margin-left: auto;
 }
 
 /* ----------------------------------

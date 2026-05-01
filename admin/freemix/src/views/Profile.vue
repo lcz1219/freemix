@@ -314,7 +314,7 @@ const goToSettings = (section = 'profile') => {
 const activeTab = ref('overview');
 const tabs = computed(() => [
   { name: 'overview', label: '概览', count: null },
-  { name: 'goals', label: '目标', count: goalsStore.goals.value.length },
+  // { name: 'goals', label: '目标', count: goalsStore.goals.value.length },
   { name: 'analytics', label: '分析', count: null },
   { name: 'achievements', label: '成就', count: null}
 ]);

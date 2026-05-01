@@ -2,7 +2,10 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 
@@ -11,6 +14,23 @@ export default defineConfig({
   base: './', // 使用相对路径，确保打包后资源能正确加载
   plugins: [
     vue(),
+    AutoImport({
+      imports: [
+        'vue',
+        {
+          'naive-ui': [
+            'useDialog',
+            'useMessage',
+            'useNotification',
+            'useLoadingBar'
+          ]
+        }
+      ],
+      dts: 'src/auto-import.d.ts'
+    }),
+    Components({
+      resolvers: [NaiveUiResolver()]
+    }),
     vueJsx(),
     vueDevTools(),
   ],

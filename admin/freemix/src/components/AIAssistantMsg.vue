@@ -358,7 +358,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: "ea16730874-single_user", // 用户标识
-        query: `当前时间是：${new Date().toLocaleString()}。用户问题：${question}。请用markdown格式返回。`,
+        query: `当前时间是：${new Date().toLocaleString()}。用户问题：${question}。当前用户是${currentUser.value.username}请用markdown格式返回。`,
         stream: true // 启用流式响应
       })
     });

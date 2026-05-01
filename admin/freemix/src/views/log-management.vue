@@ -86,6 +86,7 @@
       :pagination="pagination"
       :row-key="(row) => row.id"
       @update:page="handlePageChange"
+      @update:page-size="handlePageSizeChange"
       class="log-table"
     />
 
@@ -128,11 +129,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, h, watch, nextTick, onUnmounted } from 'vue';
-import { 
-  NButton, NDataTable, NCard, NForm, NFormItem, NInput, NSelect, 
-  NTag, NSpace, NIcon, NDrawer, NDrawerContent, NDescriptions, 
-  NDescriptionsItem, NText, useDialog, useMessage, NGrid, NGridItem, NStatistic
-} from 'naive-ui';
+import { NTag,NText,NButton,NIcon} from 'naive-ui'; 
 import { 
   RefreshOutline, 
   TrashOutline, 
@@ -436,6 +433,12 @@ const getSpendTimeType = (time) => {
 
 const handlePageChange = (page) => {
   pagination.page = page;
+  fetchLogs();
+};
+
+const handlePageSizeChange = (pageSize) => {
+  pagination.pageSize = pageSize;
+  pagination.page = 1; // 切换每页数量时重置到第一页
   fetchLogs();
 };
 
