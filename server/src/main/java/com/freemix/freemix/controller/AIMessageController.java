@@ -144,7 +144,7 @@ public class AIMessageController extends BaseController {
                 collectionName = "goal";
             }
 
-            log.info("用户 {} 执行 MQL 统计, 集合: {}, Pipeline: {}", currentUser.getUsername(), collectionName, pipelineJson);
+            log.info(" 执行 MQL 统计, 集合: {}, Pipeline: {}",  collectionName, pipelineJson);
             String cleanedMql = pipelineJson.replaceAll("ISODate\\(\"([^\"]+)\"\\)", "new Date(\"$1\")");
             // 将 JSON 数组解析为 MongoDB Pipeline
             List<Document> pipeline = com.alibaba.fastjson2.JSON.parseArray(cleanedMql, Document.class);

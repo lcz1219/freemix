@@ -940,6 +940,7 @@ const addGoal = () => {
 
 // 显示使用指南
 const showGuide = async () => {
+  // router.push("/AIAssistantWindow")
   const windowId = generateWindowId();
   try {
     await createNewWindow(windowId, {

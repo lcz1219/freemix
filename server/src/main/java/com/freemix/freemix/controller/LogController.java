@@ -161,19 +161,13 @@ public class LogController extends BaseController {
     // --- 提取一个公用方法，保证各线程拥有独立且干净的 Query 对象，避免线程安全问题 ---
     private Query buildBaseQuery(String username, String url,Date timeThreshold) {
         Query query = new Query();
-// 计算一个月前的日期字符串（格式必须与 createTimeStr 一致："yyyy-MM-dd HH:mm:ss"）
-//        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-//        String startDateStr = oneMonthAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//
-//        // 字符串范围比较（注意：这无法使用索引，会全表扫描）
-//        query.addCriteria(Criteria.where("createTimeStr").gte(startDateStr));
-        // 排除 classMethod 在排除列表中的文档
-        if (!EXCLUDED_METHODS.isEmpty()) {
-            query.addCriteria(Criteria.where("classMethod").nin(EXCLUDED_METHODS));
-        }
+
+
         if (url != null && !url.isEmpty()) {
-            // 修改为精确匹配，因为前端现在改成了下拉框
-            query.addCriteria(Criteria.where("classMethod").is(url));
+            // 合并条件：同一个字段的多个约束必须链式调用
+            query.addCriteria(Criteria.where("classMethod").is(url).nin(EXCLUDED_METHODS));
+        } else {
+            query.addCriteria(Criteria.where("classMethod").nin(EXCLUDED_METHODS));
         }
         if (timeThreshold != null) {
             query.addCriteria(Criteria.where("createTime").gte(timeThreshold));
