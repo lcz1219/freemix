@@ -339,12 +339,12 @@ const closeWindow = () => {
 const maskMQL = (text) => {
    // 1. 匹配完整的标签
   let processed = text.replace(/\[MQL_START\][\s\S]*?\[MQL_END\]/g, () => {
-    return '[MQL_START]\n*************\n[MQL_END]';
+    return '[MQL_START]\n正在查询你的专属数据\n[MQL_END]';
   });
   
   // 2. 匹配已开始但未结束的标签（防止流式输出过程中闪现真实内容）
   if (processed.includes('[MQL_START]') && !processed.includes('[MQL_END]')) {
-    processed = processed.substring(0, processed.indexOf('[MQL_START]')) + '[MQL_START]\n*************';
+    processed = processed.substring(0, processed.indexOf('[MQL_START]')) + '[MQL_START]\n正在查询你的专属数据';
   }
   
   return processed;
