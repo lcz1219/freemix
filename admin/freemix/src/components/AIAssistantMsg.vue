@@ -336,9 +336,28 @@ const closeWindow = () => {
     window.close();
   }
 };
-
+const maskMQL = (text) => {
+   // 1. 匹配完整的标签
+  let processed = text.replace(/\[MQL_START\][\s\S]*?\[MQL_END\]/g, () => {
+    return '[MQL_START]\n*************\n[MQL_END]';
+  });
+  
+  // 2. 匹配已开始但未结束的标签（防止流式输出过程中闪现真实内容）
+  if (processed.includes('[MQL_START]') && !processed.includes('[MQL_END]')) {
+    processed = processed.substring(0, processed.indexOf('[MQL_START]')) + '[MQL_START]\n*************';
+  }
+  
+  return processed;
+};
 // 调用自定义AI API
 const callCustomAIAPI = async (question, onUpdate) => {
+   const originalOnUpdate = onUpdate;
+  onUpdate = (data) => {
+    if (data && data.content) {
+      data.content = maskMQL(data.content);
+    }
+    if (originalOnUpdate) originalOnUpdate(data);
+    };
   // 使用Coze平台的官方API端点
   const API_ENDPOINT = 'https://api.coze.cn/open_api/v1/chat';
   
@@ -419,6 +438,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
                     if (jsonData.message.content) {
                       fullResponse += jsonData.message.content;
                     }
+                    
                     // 处理AI的思考过程
                     if (jsonData.message.reasoning_content) {
                       thinkingContent += jsonData.message.reasoning_content;
@@ -427,7 +447,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
                     if (onUpdate) {
                       onUpdate({
                         messageType: 'answer',
-                        content: fullResponse,
+                        content: maskMQL(fullResponse), // 界面显示脱敏版
                         thinkingContent: thinkingContent,
                         isProcessing: true
                       });
@@ -474,7 +494,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
                       if (onUpdate) {
                         onUpdate({
                           messageType: 'verbose',
-                          content: thinkingContent,
+                          content: maskMQL(thinkingContent),
                           thinkingContent: thinkingContent,
                           isProcessing: true
                         });
@@ -508,6 +528,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
                 if (jsonData.message.content) {
                   fullResponse += jsonData.message.content;
                 }
+                
                 break;
               case 'follow_up':
                 if (jsonData.message.content) {
@@ -546,7 +567,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
     // 构建最终响应对象
     const result = {
       messageType: 'answer',
-      content: fullResponse,
+      content: maskMQL(fullResponse), // 界面显示脱敏版, // 传给 UI 的是脱敏后的内容
       thinkingContent: thinkingContent,
       followUpQuestions: followUpQuestions
     };
