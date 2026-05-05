@@ -200,7 +200,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(129, 198, 131, 0.1) 0%, transparent 50%, rgba(76, 175, 80, 0.05) 100%);
+  background: linear-gradient(135deg, #00c9a7 0%, transparent 50%, rgba(76, 175, 80, 0.05) 100%);
   pointer-events: none;
 }
 
@@ -218,7 +218,7 @@ onMounted(() => {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(129, 198, 131, 0.2);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(129, 198, 131, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px #00c9a7;
 }
 
 .share-header {
@@ -226,7 +226,7 @@ onMounted(() => {
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(129, 198, 131, 0.2);
-  background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
+  background: linear-gradient(90deg, #00c9a7, transparent);
   border-radius: 12px;
   padding: 20px;
   margin: -16px -16px 30px -16px;
@@ -235,7 +235,7 @@ onMounted(() => {
 .share-title {
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(90deg, #81c683, #4CAF50);
+  background: linear-gradient(90deg, #00c9a7, #4CAF50);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -264,7 +264,7 @@ onMounted(() => {
 }
 
 .goal-description {
-  background: rgba(129, 198, 131, 0.1);
+  background: #00c9a7;
   padding: 16px;
   border-radius: 12px;
   border-left: 4px solid #4CAF50;
@@ -274,7 +274,7 @@ onMounted(() => {
 
 .goal-description h4 {
   margin: 0 0 8px 0;
-  color: #81c683;
+  color: #00c9a7;
   font-size: 16px;
   font-weight: 600;
 }
@@ -291,7 +291,7 @@ onMounted(() => {
 }
 
 .ai-response-section h4 {
-  color: #81c683;
+  color: #00c9a7;
   font-size: 18px;
   margin: 0 0 12px 0;
   font-weight: 600;
@@ -303,7 +303,7 @@ onMounted(() => {
   border-radius: 12px;
   color: #e0e0e0;
   line-height: 1.7;
-  border: 1px solid rgba(129, 198, 131, 0.1);
+  border: 1px solid #00c9a7;
   backdrop-filter: blur(10px);
 }
 
@@ -312,7 +312,7 @@ onMounted(() => {
 }
 
 .subgoals-section h4 {
-  color: #81c683;
+  color: #00c9a7;
   font-size: 18px;
   margin: 0 0 12px 0;
   font-weight: 600;
@@ -435,7 +435,7 @@ onMounted(() => {
 }
 
 .light .goal-description {
-  background: rgba(129, 198, 131, 0.1);
+  background: #00c9a7;
   border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
@@ -472,7 +472,7 @@ onMounted(() => {
 .ai-response :deep(h2),
 .ai-response :deep(h3) {
   margin: 16px 0 8px 0;
-  color: #81c683;
+  color: #00c9a7;
   font-weight: 600;
 }
 
@@ -507,7 +507,7 @@ onMounted(() => {
 }
 
 .ai-response :deep(strong) {
-  color: #81c683;
+  color: #00c9a7;
   font-weight: 600;
 }
 
@@ -518,7 +518,7 @@ onMounted(() => {
 
 .ai-response :deep(code) {
   background: rgba(129, 198, 131, 0.2);
-  color: #81c683;
+  color: #00c9a7;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -544,7 +544,7 @@ onMounted(() => {
   border-left: 4px solid rgba(129, 198, 131, 0.5);
   margin: 16px 0;
   padding: 8px 16px;
-  background: rgba(129, 198, 131, 0.1);
+  background: #00c9a7;
   border-radius: 0 8px 8px 0;
   color: #a0a0a0;
 }
@@ -566,8 +566,8 @@ onMounted(() => {
 }
 
 .ai-response :deep(th) {
-  background: rgba(129, 198, 131, 0.1);
-  color: #81c683;
+  background: #00c9a7;
+  color: #00c9a7;
   font-weight: 600;
 }
 
@@ -599,12 +599,12 @@ onMounted(() => {
 
 .light .ai-response :deep(blockquote) {
   border-left-color: #4CAF50;
-  background: rgba(129, 198, 131, 0.1);
+  background: #00c9a7;
   color: #666;
 }
 
 .light .ai-response :deep(th) {
-  background: rgba(129, 198, 131, 0.1);
+  background: #00c9a7;
   color: #4CAF50;
 }
 

@@ -141,7 +141,7 @@
 
                   <n-progress type="line" :percentage="goal.progress" :indicator-placement="'inside'" :height="8"
                     processing :rail-color="isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgb(235 235 235)'"
-                    :fill-color="'linear-gradient(90deg, #81c683, #4b0082)'" />
+                    :fill-color="'linear-gradient(90deg, #00c9a7, #4b0082)'" />
 
                   <div class="goal-details">
                     <div :class="checkThemebyDetail">
@@ -354,7 +354,7 @@
                         <p>圆形图表显示了所有目标的状态分布：</p>
                         <ul>
                           <li><span style="color: #00c9a7;">绿色</span>表示已完成的目标</li>
-                          <li><span style="color: #81c683;">紫色</span>表示进行中的目标</li>
+                          <li><span style="color: #00c9a7;">紫色</span>表示进行中的目标</li>
                           <li><span style="color: #3a3a4a;">灰色</span>表示未开始的目标</li>
                         </ul>
                         <n-image width="100" :src="overviewChartImage" preview-disabled />
@@ -686,7 +686,7 @@ const columns = [
           percentage: row.progress,
           indicatorPlacement: 'inside',
           processing: row.status === 'in-progress',
-          color: row.status === 'completed' ? '#00c9a7' : row.status === 'expired' ? '#ff6b6b' : '#81c683'
+          color: row.status === 'completed' ? '#00c9a7' : row.status === 'expired' ? '#ff6b6b' : '#00c9a7'
         })
       ]);
     }
@@ -923,7 +923,7 @@ const saveGoal = (updatedGoal) => {
 const railStyle = ({ focused, checked }) => {
   const style = {};
   if (checked) {
-    style.background = '#81c683';
+    style.background = '#00c9a7';
     if (focused) style.boxShadow = '0 0 0 2px #d0305040';
   } else {
     style.background = '#2080f0';
@@ -1046,7 +1046,7 @@ onMounted(async () => {
       animationType: 'scale',
       animationEasing: 'elasticOut'
     }],
-    color: ['#00c9a7', '#81c683', '#3a3a4a']
+    color: ['#00c9a7', '#00c9a7', '#3a3a4a']
   });
 
   // 趋势图表图标 (ECharts)
@@ -1102,7 +1102,7 @@ onMounted(async () => {
       labels: ['已完成', '进行中', '未开始'],
       datasets: [{
         data: [goalFinishCount, goalIngCount, goalExpireCount],
-        backgroundColor: ['#00c9a7', '#81c683', '#3a3a4a'],
+        backgroundColor: ['#00c9a7', '#00c9a7', '#3a3a4a'],
         borderWidth: 0
       }]
     },
@@ -1291,7 +1291,7 @@ onMounted(async () => {
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #81c683, transparent 70%);
+  background: radial-gradient(circle, #00c9a7, transparent 70%);
   top: 40%;
   left: 40%;
 }
@@ -1315,7 +1315,7 @@ onMounted(async () => {
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #81c683, #4b0082);
+  background: linear-gradient(135deg, #00c9a7, #4b0082);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -1323,7 +1323,7 @@ onMounted(async () => {
 }
 
 .logo-text {
-  background: linear-gradient(to right, #81c683, #4b0082);
+  background: linear-gradient(to right, #00c9a7, #4b0082);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1347,7 +1347,7 @@ onMounted(async () => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #81c683, #4b0082);
+  background: linear-gradient(90deg, #00c9a7, #4b0082);
 }
 
 .header-actions {
@@ -1564,7 +1564,7 @@ onMounted(async () => {
   transform: translateY(-50%);
   width: 8px;
   height: 32px;
-  background: linear-gradient(to bottom, #81c683, #81c683);
+  background: linear-gradient(to bottom, #00c9a7, #00c9a7);
   border-radius: 4px;
 }
 
@@ -1727,13 +1727,13 @@ onMounted(async () => {
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid rgba(129, 198, 131, 0.3);
-  background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
+  background: linear-gradient(90deg, #00c9a7, transparent);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 1.5em;
-  background: linear-gradient(90deg, #81c683, #4CAF50);
+  background: linear-gradient(90deg, #00c9a7, #4CAF50);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

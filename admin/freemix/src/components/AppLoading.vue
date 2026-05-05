@@ -37,7 +37,7 @@
   width: 50px;
   height: 50px;
   border: 5px solid var(--border-color, #e0e0e0);
-  border-top: 5px solid var(--primary-color, #81c683);
+  border-top: 5px solid var(--primary-color, #00c9a7);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -45,7 +45,7 @@
 
 .dark-theme .spinner {
   border: 5px solid var(--border-color, #333333);
-  border-top: 5px solid var(--primary-color, #81c683);
+  border-top: 5px solid var(--primary-color, #00c9a7);
 }
 
 .loading-text {

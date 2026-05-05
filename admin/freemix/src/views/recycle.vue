@@ -310,7 +310,7 @@ const pagination = reactive({
     font-size: 28px;
     font-weight: 600;
     margin: 0;
-    background: linear-gradient(to right, #81c683, #82c582);
+    background: linear-gradient(to right, #00c9a7, #82c582);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

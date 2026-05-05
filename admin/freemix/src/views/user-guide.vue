@@ -2,28 +2,15 @@
   <div class="user-guide-wrapper" :style="cssVars">
     <n-layout class="user-guide-layout" has-sider position="absolute">
       <!-- 左侧悬浮导航 -->
-      <n-layout-sider width="120" content-style="padding: 32px 16px;" bordered class="guide-sidebar"
-        :native-scrollbar="false">
-        <!-- <div class="sidebar-header">
-          <div class="logo-icon">
-            <n-icon size="28" :color="themeVars.primaryColor">
-              <BookOutline />
-            </n-icon>
-          </div>
-          <h1 class="logo-text">用户指南</h1>
-        </div> -->
+    
 
-      
-
-
-      </n-layout-sider>
- <div class="section-header-large">
-              <h1 class="gradient-title">FreeMix 文档中心</h1>
-              <p class="subtitle">探索功能，释放潜能。您的全能目标管理助手。</p>
-            </div>
       <!-- 右侧流式内容 -->
       <n-layout-content class="guide-main" :native-scrollbar="false" ref="contentRef" id="guide-scroll-container">
         <div class="content-container">
+           <div class="section-header-large">
+              <h1 class="gradient-title">FreeMix 文档中心</h1>
+              <p class="subtitle">探索功能，释放潜能。您的全能目标管理助手。</p>
+            </div>
 
           <!-- 1. 欢迎页面 (Bento Grid) -->
           <section id="welcome" class="guide-section hero-section">
@@ -667,6 +654,7 @@ const sendChat = () => {
 .user-guide-wrapper {
   height: 100vh;
   width: 100vw;
+
   background-color: var(--bg-color);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
@@ -674,6 +662,8 @@ const sendChat = () => {
 
 .user-guide-layout {
   height: 100%;
+  
+ 
 }
 
 .guide-sidebar {
@@ -721,8 +711,8 @@ const sendChat = () => {
 }
 
 .content-container {
-  max-width: 960px;
-  margin: 0 20%;
+  /* max-width: 960px; */
+  margin: 0 14%;
   padding: 48px 24px 100px;
 }
 
@@ -738,7 +728,7 @@ const sendChat = () => {
 }
 
 .gradient-title {
-  font-size: 56px;
+  font-size: 40px;
   font-weight: 800;
   margin-bottom: 24px;
   background: linear-gradient(120deg, var(--primary-color), #00c9a7);

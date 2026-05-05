@@ -275,7 +275,7 @@ const confirm = async () => {
 
 .confirmation-content :deep(.n-form-item-label) {
   font-weight: 500;
-  color: #333;
+  color: #00c9a7;
   font-size: 14px;
 }
 
@@ -300,6 +300,8 @@ const confirm = async () => {
 
 .sub-goals-container :deep(.n-dynamic-input-item) {
   margin-bottom: 8px;
+  border-left: 3px solid #00c9a7;
+  padding-left: 12px;
 }
 
 /* 其他设置布局 */

@@ -443,16 +443,42 @@ const handleHistoryGoalCreated = (goalObject) => {
   justify-content: center;
 }
 
-/* 暗色主题适配 */
-.dark .goal-description {
-  color: #e0e0e0;
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.ai-chat-container {
-  /* margin: 20px 0; */
-  /* height: 400px; */
-  border-radius: 12px;
-  /* overflow: hidden; */
+.step-header .n-icon {
+  color: #00c9a7;
+}
+
+.generator-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.input-section {
+  background: rgba(0, 201, 167, 0.05);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 201, 167, 0.1);
+}
+
+.gen-button {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  background: #00c9a7;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.2);
+}
+
+.gen-button:hover {
+  background: #00b899;
+  box-shadow: 0 6px 16px rgba(0, 201, 167, 0.3);
 }
 
 .history-quick-access {
@@ -465,7 +491,8 @@ const handleHistoryGoalCreated = (goalObject) => {
 .history-button {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 25px;
-  background: rgba(255, 255, 255, 0.148);
+  background: #00c9a7;
+  color: #fff;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }

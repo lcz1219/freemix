@@ -113,7 +113,7 @@ const toggleGoals = () => {
 .modal-header h2 {
   margin: 0;
   font-size: 1.5em;
-  color: #81c683;
+  color: #00c9a7;
 }
 
 .goals-content {

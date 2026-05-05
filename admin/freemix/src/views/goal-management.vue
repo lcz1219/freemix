@@ -98,7 +98,7 @@
                     content-style="padding: 10px;">
                     <template #header>
                       <div class="card-header-inner">
-                        <n-icon size="24" color="#81c683">
+                        <n-icon size="24" color="#00c9a7">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
                             fill="currentColor">
                             <path
@@ -827,7 +827,7 @@ const getStatusColor = (status: string) => {
     case 'completed':
       return '#00c9a7'; // 绿色
     case 'in-progress':
-      return '#81c683'; // 紫色
+      return '#00c9a7'; // 紫色
     case 'expired':
       return '#ff6b6b'; // 红色
     default:
@@ -837,13 +837,13 @@ const getStatusColor = (status: string) => {
 
 // 获取进度条颜色
 const getProgressColor = (goal: any) => {
-  if (!goal.childGoals || goal.childGoals.length === 0) return '#81c683';
+  if (!goal.childGoals || goal.childGoals.length === 0) return '#00c9a7';
 
   const finishedCount = goal.childGoals.filter((c: any) => c.finish).length;
   const progress = Math.round(finishedCount / goal.childGoals.length * 100);
 
   if (progress === 100) return '#00c9a7';
-  if (progress >= 50) return '#81c683';
+  if (progress >= 50) return '#00c9a7';
   return '#409eff';
 };
 

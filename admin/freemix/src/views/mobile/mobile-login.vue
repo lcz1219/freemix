@@ -524,7 +524,7 @@ const handleQQLogin = () => {
 /* 引入 Google Fonts 提升质感 */
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
-$primary-color: #81c683;
+$primary-color: #00c9a7;
 $secondary-color: #6ab870;
 $bg-dark: #121212;
 $glass-bg: rgba(30, 30, 30, 0.6);
@@ -735,7 +735,7 @@ $text-sub: #a0a0a0;
   font-size: 18px;
   font-weight: bold;
   border: none;
-  background: linear-gradient(135deg, #81c683 0%, #6ab870 100%);
+  background: linear-gradient(135deg, #00c9a7 0%, #6ab870 100%);
   box-shadow: 0 4px 15px rgba(129, 198, 131, 0.35);
   
   &:active {

@@ -120,7 +120,7 @@ const handleCalendarUpdate = (value) => {
 }
 
 :deep(.n-calendar-cell--today) {
-  border: 2px solid #81c683;
+  border: 2px solid #00c9a7;
 }
 
 .modal-light :deep(.n-calendar-cell--selected) {
@@ -128,6 +128,6 @@ const handleCalendarUpdate = (value) => {
 }
 
 .modal-light :deep(.n-calendar-cell--today) {
-  border: 2px solid #81c683;
+  border: 2px solid #00c9a7;
 }
 </style>

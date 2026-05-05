@@ -463,7 +463,7 @@ onMounted(() => {
 
 .record-item:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: var(--n-color-hover, #81c6831f);
+  background-color: var(--n-color-hover, #00c9a71f);
 }
 
 .record-item.expired {

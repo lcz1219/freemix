@@ -18,6 +18,11 @@ public class AIMessage {
      */
     @Id
     private String id;
+
+    /**
+     * 会话ID (复用 id 字段作为 sessionId 的逻辑关联)
+     */
+    private String sessionId;
     
     /**
      * 用户名
@@ -73,6 +78,8 @@ public class AIMessage {
         this.aiAnswer = aiAnswer;
         this.messageType = "answer";
         this.createdAt = System.currentTimeMillis();
+        // 默认将 id 或某个值赋给 sessionId
+        this.sessionId = this.id;
     }
 
     /**
@@ -83,15 +90,17 @@ public class AIMessage {
      * @param thinkingContent 思考内容
      * @param followUpQuestions 推荐问题
      * @param messageType 消息类型
+     * @param sessionId 会话ID
      */
     public AIMessage(String username, String userQuestion, String aiAnswer, 
-                    String thinkingContent, List<String> followUpQuestions, String messageType) {
+                    String thinkingContent, List<String> followUpQuestions, String messageType, String sessionId) {
         this.username = username;
         this.userQuestion = userQuestion;
         this.aiAnswer = aiAnswer;
         this.thinkingContent = thinkingContent;
         this.followUpQuestions = followUpQuestions;
         this.messageType = messageType;
+        this.sessionId = sessionId;
         this.createdAt = System.currentTimeMillis();
     }
 }

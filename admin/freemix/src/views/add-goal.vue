@@ -415,7 +415,7 @@ const formRules: FormRules = {
 const railStyle = ({ focused, checked }: { focused: boolean; checked: boolean }) => {
   const style: { background?: string; boxShadow?: string } = {};
   if (checked) {
-    style.background = '#81c683';
+    style.background = '#00c9a7';
     if (focused) style.boxShadow = '0 0 0 2px #d0305040';
   } else {
     style.background = '#2080f0';
@@ -568,7 +568,7 @@ defineExpose({
 .gradient-circle.purple {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #81c683, transparent 70%);
+  background: radial-gradient(circle, #00c9a7, transparent 70%);
   top: 50%;
   left: 30%;
 }
@@ -592,7 +592,7 @@ defineExpose({
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #81c683, #4b0082);
+  background: linear-gradient(135deg, #00c9a7, #4b0082);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -600,7 +600,7 @@ defineExpose({
 }
 
 .logo-text {
-  background: linear-gradient(to right, #81c683, #4b0082);
+  background: linear-gradient(to right, #00c9a7, #4b0082);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -623,7 +623,7 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #81c683, #4b0082);
+  background: linear-gradient(90deg, #00c9a7, #4b0082);
 }
 
 .header-actions {
@@ -696,7 +696,7 @@ defineExpose({
   font-size: 36px;
   font-weight: 700;
   margin-bottom: 20px;
-  background: linear-gradient(to right, #fff, #81c683);
+  background: linear-gradient(to right, #fff, #00c9a7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

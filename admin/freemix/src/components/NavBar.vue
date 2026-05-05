@@ -338,10 +338,10 @@ const MoonIcon = MoonOutline;
 const railStyle = ({ focused, checked }) => {
   const style = {};
   if (checked) {
-    style.background = '#81c683';
+    style.background = '#00c9a7';
     if (focused) style.boxShadow = '0 0 0 2px #d0305040';
   } else {
-    style.background = '#81c683';
+    style.background = '#00c9a7';
     if (focused) style.boxShadow = '0 0 0 2px #2080f040';
   }
   return style;
@@ -409,7 +409,7 @@ const goTo = async (path) => {
 .logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #81c683, #4b0082);
+  background: linear-gradient(135deg, #00c9a7, #4b0082);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -424,7 +424,7 @@ const goTo = async (path) => {
 }
 
 .logo-text {
-  background: linear-gradient(to right, #81c683, #056154);
+  background: linear-gradient(to right, #00c9a7, #056154);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
@@ -477,12 +477,12 @@ const goTo = async (path) => {
 }
 
 .nav-link:hover {
-  background-color: rgba(129, 198, 131, 0.1);
+  background-color: #00c9a7;
 }
 
 .nav-link.active {
   background-color: rgba(129, 198, 131, 0.2);
-  color: #81c683;
+  color: #00c9a7;
 }
 
 .nav-link.active::after {

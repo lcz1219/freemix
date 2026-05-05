@@ -371,7 +371,7 @@ watch(() => props.initialEnabled, (newVal) => {
 
 .form-input:focus {
   outline: none;
-  border-color: #81c683;
+  border-color: #00c9a7;
 }
 
 .btn {
@@ -390,7 +390,7 @@ watch(() => props.initialEnabled, (newVal) => {
 }
 
 .btn.primary {
-  background-color: #81c683;
+  background-color: #00c9a7;
   color: white;
 }
 </style>

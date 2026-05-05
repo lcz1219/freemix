@@ -101,7 +101,7 @@ onMounted(() => {
       itemStyle: {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
           offset: 0,
-          color: '#81c683'
+          color: '#00c9a7'
         }, {
           offset: 1,
           color: '#4b0082'
@@ -161,7 +161,7 @@ onMounted(() => {
 .echart-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #81c683, #4b0082);
+  background: linear-gradient(135deg, #00c9a7, #4b0082);
   border-radius: 10px;
   margin-right: 12px;
   display: flex;
@@ -191,7 +191,7 @@ onMounted(() => {
 }
 
 .timeline-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #81c683, #4b0082);
+  background: linear-gradient(135deg, #00c9a7, #4b0082);
   border-radius: 3px;
 }
 

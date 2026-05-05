@@ -69,7 +69,7 @@ const toggleTheme = inject('toggleTheme', (value) => {})
 const railStyle = inject('railStyle', ({ focused, checked }) => {
   const style = {}
   if (checked) {
-    style.background = '#81c683'
+    style.background = '#00c9a7'
     if (focused) style.boxShadow = '0 0 0 2px rgba(129, 198, 131, 0.3)'
   } else {
     style.background = '#e0e0e0'
@@ -378,7 +378,7 @@ defineExpose({
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #81c683, #5baa73);
+  background: linear-gradient(90deg, #00c9a7, #5baa73);
   border-radius: 3px;
 }
 
@@ -393,7 +393,7 @@ defineExpose({
 
 :deep(.n-tabs-tab__close:hover) {
   background-color: rgba(129, 198, 131, 0.2);
-  color: #81c683;
+  color: #00c9a7;
   opacity: 1;
   transform: scale(1.1);
 }

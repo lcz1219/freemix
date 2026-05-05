@@ -21,10 +21,10 @@
     
     <div class="chat-layout">
       <!-- 历史记录侧边栏 -->
-      <HistorySidebar 
+      <!-- <HistorySidebar 
         :chat-messages="chatMessages"
         @scroll-to-history="handleScrollToHistory"
-      />
+      /> -->
       
       <!-- 聊天容器 -->
       <div class="chat-main">
@@ -58,19 +58,45 @@
 </template>
 
 <script setup>
-import { ref, inject, nextTick, onMounted, computed } from 'vue';
+import { ref, inject, nextTick, onMounted, computed, watch, defineProps, defineEmits } from 'vue';
 import { NButton, NIcon, NInput, NSpin } from 'naive-ui';
 import AIChatContainer from './AIChatContainer.vue';
 import HistorySidebar from './HistorySidebar.vue';
 import { useStore } from 'vuex';
-import { postM, getM } from '@/utils/request.js';
+import { postM, getM, isSuccess } from '@/utils/request.js';
 
 // 响应式数据
+const props = defineProps({
+  initialMessages: {
+    type: Array,
+    default: () => []
+  },
+  currentSessionId: {
+    type: String,
+    default: null
+  }
+});
+
+const emit = defineEmits(['update-messages']);
+
 const isDark = inject('isDark', ref(true));
 const userInput = ref('');
 const isSending = ref(false);
-const chatMessages = ref([]);
+const chatMessages = ref(props.initialMessages && props.initialMessages.length > 0 ? [...props.initialMessages] : []);
 const chatContainerRef = ref(null);
+
+// 监听 props 变化，切换会话时更新消息列表
+watch(() => props.initialMessages, (newMsgs) => {
+  chatMessages.value = newMsgs && newMsgs.length > 0 ? [...newMsgs] : [];
+  nextTick(() => {
+    scrollToBottom();
+  });
+}, { deep: true });
+
+// 消息更新同步
+const notifyUpdate = () => {
+  emit('update-messages', [...chatMessages.value]);
+};
 
 // 获取用户信息
 const store = useStore();
@@ -127,6 +153,7 @@ const clearChatHistory = () => {
 const saveAIMessageToServer = async (userQuestion, aiAnswer, thinkingContent,followUpQuestions,messageType ) => {
   try {
     const messageData = {
+      sessionId: props.currentSessionId, // 关联当前会话 ID
       username: currentUser.value.username,
       userQuestion: userQuestion.userQuestion,
       aiAnswer: userQuestion.aiAnswer,
@@ -141,27 +168,32 @@ const saveAIMessageToServer = async (userQuestion, aiAnswer, thinkingContent,fol
     return response;
   } catch (error) {
     console.error('保存AI消息到服务器失败:', error);
-    // 不抛出错误，避免影响用户体验
     return null;
   }
 };
 
-// 从服务器获取用户历史AI记录
+// 从服务器获取当前会话的历史AI记录
 const loadAIMessagesFromServer = async () => {
+  if (!props.currentSessionId) return [];
+  console.log("props.currentSessionId}",props.currentSessionId);
+  
   try {
-    const response = await getM(`ai-messages/${currentUser.value.username}/history`);
-    if (response && response.data) {
-      const historyMessages = response.data.data.map(item => ({
-        type: 'user',
-        content: item.userQuestion,
-        timestamp: new Date(item.createdAt)
-      }));
+    const response = await getM(`ai-messages/session/${props.currentSessionId}`);
+    if (response && response.data && isSuccess(response)) {
+      const historyMessages = [];
       
-      // 添加AI回复
       response.data.data.forEach(item => {
+        // 添加用户问题
+        historyMessages.push({
+          type: 'user',
+          content: item.userQuestion,
+          timestamp: new Date(item.createdAt)
+        });
+        
+        // 添加AI回复
         if (item.aiAnswer) {
           historyMessages.push({
-            messageType: 'answer',
+            messageType: item.messageType || 'answer',
             type: 'ai',
             content: item.aiAnswer,
             thinkingContent: item.thinkingContent,
@@ -171,22 +203,31 @@ const loadAIMessagesFromServer = async () => {
         }
       });
       
-      // 按时间排序
-      historyMessages.sort((a, b) => a.timestamp - b.timestamp);
-      console.log('历史消息:', historyMessages);
-      
       return historyMessages;
     }
     return [];
   } catch (error) {
-    console.error('从服务器加载AI历史记录失败:', error);
+    console.error('从服务器加载AI会话历史记录失败:', error);
     return [];
   }
 };
 
 // 格式化时间
 const formatTime = (timestamp) => {
-  return timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  } else if (diffDays === 1) {
+    return '昨天';
+  } else if (diffDays < 7) {
+    return `${diffDays}天前`;
+  } else {
+    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  }
 };
 
 // 发送推荐问题
@@ -206,6 +247,7 @@ const sendMessage = async () => {
     timestamp: new Date()
   };
   chatMessages.value.push(userMessage);
+  notifyUpdate();
   
   // 清空输入框
   const userQuestion = userInput.value;
@@ -224,6 +266,7 @@ const sendMessage = async () => {
   };
   const processingMessageIndex = chatMessages.value.length;
   chatMessages.value.push(processingMessage);
+  notifyUpdate();
   
   // 滚动到底部
   scrollToBottom();
@@ -270,6 +313,7 @@ const sendMessage = async () => {
     
     // 保存聊天记录到本地存储
     saveChatHistory();
+    notifyUpdate();
     
     // 滚动到底部
     scrollToBottom();
@@ -364,7 +408,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
   // 注意：您需要在Coze平台获取有效的API密钥
   const PERSONAL_ACCESS_TOKEN = 'sat_alIbwyaIhODXfXtTHCuj74C3swKTZd08L82jZDfMsfzplbENrkX5bu3ddTU5VHdn'; // 请替换为您的实际API密钥
   const BOT_ID = '7569182284998524934'; // 您的Bot ID
-  
+  const custQuestion=`当前时间是：${new Date().toLocaleString()}。用户问题：${question}。当前用户是${currentUser.value.username}请用markdown格式返回。`
   try {
     // 使用标准的Bearer Token认证方式
     const response = await fetch(API_ENDPOINT, {
@@ -377,7 +421,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: "ea16730874-single_user", // 用户标识
-        query: `当前时间是：${new Date().toLocaleString()}。用户问题：${question}。当前用户是${currentUser.value.username}请用markdown格式返回。`,
+        query: custQuestion,
         stream: true // 启用流式响应
       })
     });
@@ -573,7 +617,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
     };
     
     // 方案二：截获 MQL 并自动执行
-    const mqlResult = await handleMQLResponse(fullResponse);
+    const mqlResult = await handleMQLResponse(fullResponse,question);
     if (mqlResult && mqlResult.success) {
       // 触发二次对话：让 AI 总结结果
       const summaryPrompt = `
@@ -660,14 +704,14 @@ defineExpose({
   align-items: center;
   padding: 2px 2px 2px 16px;
 
-  border-bottom: 1px solid rgba(129, 198, 131, 0.3);
-  background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
+  border-bottom: 1px solid rgba(0, 201, 167, 0.3);
+  background: #00c9a7;
 }
 
 .window-header h2 {
   margin: 0;
   font-size: 1.5em;
-  background: linear-gradient(90deg, #81c683, #4CAF50);
+  background: white;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -696,11 +740,11 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background: rgba(129, 198, 131, 0.05);
+  background: rgba(0, 201, 167, 0.05);
   margin: 11px 16px -4px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(129, 198, 131, 0.1);
+  border: 1px solid #00c9a7;
 }
 
 .message {
@@ -718,15 +762,15 @@ defineExpose({
 }
 
 .message.user {
-  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
   margin-left: 70%;
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .message.ai {
   background: linear-gradient(135deg, #f5f5f5, #eeeeee);
   margin-right: 30%;
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .message.error {
@@ -736,8 +780,8 @@ defineExpose({
 }
 
 .message.processing {
-  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
+  border: 1px solid rgba(0, 201, 167, 0.3);
   text-align: center;
 }
 
@@ -793,7 +837,7 @@ defineExpose({
 
 .processing-indicator span {
   font-weight: 500;
-  color: #4CAF50;
+  color: #00c9a7;
 }
 
 .input-container {
@@ -802,25 +846,25 @@ defineExpose({
   gap: 12px;
   padding: 16px;
   margin: 16px 16px 0px 16px;
-  background: rgba(129, 198, 131, 0.05);
+  background: rgba(0, 201, 167, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(129, 198, 131, 0.1);
+  border: 1px solid #00c9a7;
 }
 
 .send-button {
   align-self: flex-end;
   width: 100px;
-  background: linear-gradient(135deg, #81c683, #4CAF50);
+  background: #00c9a7;
   border: none;
   color: white;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(129, 198, 131, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
 }
 
 .send-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(129, 198, 131, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 201, 167, 0.5);
 }
 
 .send-button:disabled {
@@ -836,13 +880,13 @@ defineExpose({
   gap: 12px;
   margin-top: 16px;
   padding: 16px;
-  background: rgba(129, 198, 131, 0.05);
+  background: rgba(0, 201, 167, 0.05);
   border-radius: 8px;
-  border: 1px dashed rgba(129, 198, 131, 0.3);
+  border: 1px dashed rgba(0, 201, 167, 0.3);
 }
 
 .follow-up-buttons strong {
-  color: #4CAF50;
+  color: #00c9a7;
   margin-bottom: 8px;
   display: block;
 }
@@ -851,7 +895,7 @@ defineExpose({
   text-align: left;
   justify-content: flex-start;
   background: linear-gradient(135deg, #ffffff, #f8f9fa);
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  border: 1px solid rgba(0, 201, 167, 0.3);
   border-radius: 8px;
   padding: 12px 16px;
   transition: all 0.3s ease;
@@ -859,27 +903,27 @@ defineExpose({
 }
 
 .follow-up-button:hover {
-  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(129, 198, 131, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
 }
 
 /* 暗色主题适配 */
 .ai-assistant-window.dark .chat-container {
   background: rgba(42, 42, 42, 0.7);
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .ai-assistant-window.dark .message.user {
-  background: linear-gradient(135deg, #1565c0, #0d47a1);
+  background: #00c9a7;
   color: white;
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  border: 1px solid rgba(0, 201, 167, 0.3);
 }
 
 .ai-assistant-window.dark .message.ai {
   background: linear-gradient(135deg, #424242, #2d2d2d);
   color: #e0e0e0;
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  border: 1px solid rgba(0, 201, 167, 0.3);
 }
 
 .ai-assistant-window.dark .message.error {
@@ -890,7 +934,7 @@ defineExpose({
 
 .ai-assistant-window.dark .message.processing {
   background: linear-gradient(135deg, #37474f, #263238);
-  border: 1px solid rgba(129, 198, 131, 0.4);
+  border: 1px solid rgba(0, 201, 167, 0.4);
 }
 
 .ai-assistant-window.dark .thinking-content {
@@ -902,28 +946,28 @@ defineExpose({
 .ai-assistant-window.dark .thinking-process {
   background: linear-gradient(135deg, #37474f, #263238);
   color: #e0e0e0;
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  border: 1px solid rgba(0, 201, 167, 0.3);
 }
 
 .ai-assistant-window.dark .input-container {
   background: rgba(42, 42, 42, 0.7);
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .ai-assistant-window.dark .follow-up-buttons {
   background: rgba(42, 42, 42, 0.7);
-  border: 1px dashed rgba(129, 198, 131, 0.4);
+  border: 1px dashed rgba(0, 201, 167, 0.4);
 }
 
 .ai-assistant-window.dark .follow-up-button {
   background: linear-gradient(135deg, #424242, #333333);
   color: #e0e0e0;
-  border: 1px solid rgba(129, 198, 131, 0.4);
+  border: 1px solid rgba(0, 201, 167, 0.4);
 }
 
 .ai-assistant-window.dark .follow-up-button:hover {
   background: linear-gradient(135deg, #37474f, #263238);
-  border: 1px solid rgba(129, 198, 131, 0.6);
+  border: 1px solid rgba(0, 201, 167, 0.6);
 }
 </style>
 

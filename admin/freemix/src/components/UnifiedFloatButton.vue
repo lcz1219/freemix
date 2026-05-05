@@ -756,7 +756,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
   width: 40px;
   height: 40px;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #81c683b6, #366237);
+  background: linear-gradient(135deg, #00c9a7b6, #366237);
   border: none;
   box-shadow: 0 4px 12px rgba(129, 198, 131, 0.132);
 }
@@ -798,13 +798,13 @@ const callCustomAIAPI = async (question, onUpdate) => {
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid rgba(129, 198, 131, 0.3);
-  background: linear-gradient(90deg, rgba(129, 198, 131, 0.1), transparent);
+  background: linear-gradient(90deg, #00c9a7, transparent);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 1.5em;
-  background: linear-gradient(90deg, #81c683, #4CAF50);
+  background: linear-gradient(90deg, #00c9a7, #4CAF50);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -830,7 +830,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
   border-radius: 12px;
   margin-bottom: 16px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(129, 198, 131, 0.1);
+  border: 1px solid #00c9a7;
 }
 
 .message {
@@ -933,13 +933,13 @@ const callCustomAIAPI = async (question, onUpdate) => {
   padding: 16px;
   background: rgba(129, 198, 131, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(129, 198, 131, 0.1);
+  border: 1px solid #00c9a7;
 }
 
 .send-button {
   align-self: flex-end;
   width: 100px;
-  background: linear-gradient(135deg, #81c683, #4CAF50);
+  background: linear-gradient(135deg, #00c9a7, #4CAF50);
   border: none;
   color: white;
   font-weight: 600;
@@ -1100,11 +1100,11 @@ const callCustomAIAPI = async (question, onUpdate) => {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #81c683, transparent);
+  background: linear-gradient(90deg, transparent, #00c9a7, transparent);
 }
 
 .modal-dark .chat-container::before {
-  background: linear-gradient(90deg, transparent, #81c683, transparent);
+  background: linear-gradient(90deg, transparent, #00c9a7, transparent);
 }
 
 .calendar-cell-content {

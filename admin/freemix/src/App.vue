@@ -296,7 +296,7 @@ const handleIncomingMessage = (messageStr) => {
           ElNotification({
             title: message.fromUserChinesename || message.fromUser,
             message: h('i', {
-              style: `color: ${isDarkTheme ? '#81c683' : '#81c683'}; font-style: normal; font-weight: 500;`
+              style: `color: ${isDarkTheme ? '#00c9a7' : '#00c9a7'}; font-style: normal; font-weight: 500;`
             }, message.content),
             dangerouslyUseHTMLString: true,
             duration: 4500,
@@ -526,13 +526,13 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
         textColorBase: '#e0e0e0',
         borderColor: '#333333',
         hoverColor: '#2a2a2a',
-        primaryColor: '#81c683',
-        primaryColorHover: '#81c683',
-        primaryColorPressed: '#81c683',
-        primaryColorSuppl: '#81c683'
+        primaryColor: '#00c9a7',
+        primaryColorHover: '#00c9a7',
+        primaryColorPressed: '#00c9a7',
+        primaryColorSuppl: '#00c9a7'
       },
       Switch: {
-        railColorActive: '#81c683'
+        railColorActive: '#00c9a7'
       }
     };
   } else {
@@ -547,13 +547,13 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
         textColorBase: '#333333',
         borderColor: '#e0e0e0',
         hoverColor: '#f5f5f5',
-        primaryColor: '#81c683',
-        primaryColorHover: '#81c683',
-        primaryColorPressed: '#81c683',
-        primaryColorSuppl: '#81c683'
+        primaryColor: '#00c9a7',
+        primaryColorHover: '#00c9a7',
+        primaryColorPressed: '#00c9a7',
+        primaryColorSuppl: '#00c9a7'
       },
       Switch: {
-        railColorActive: '#81c683'
+        railColorActive: '#00c9a7'
       }
     };
   }
@@ -570,7 +570,7 @@ const railStyle = ({
 }) => {
   const style: CSSProperties = {};
   if (checked) {
-    style.background = '#81c683';
+    style.background = '#00c9a7';
     if (focused) style.boxShadow = '0 0 0 2px rgba(129, 198, 131, 0.3)';
   } else {
     style.background = '#e0e0e0';
@@ -852,7 +852,7 @@ body {
 }
 
 .beian-link:hover {
-  color: #81c683;
+  color: #00c9a7;
   text-decoration: underline;
 }
 
@@ -863,6 +863,6 @@ body {
 }
 
 .dark-theme .beian-link:hover {
-  color: #81c683;
+  color: #00c9a7;
 }
 </style>

@@ -36,15 +36,45 @@ public class AIMessageController extends BaseController {
     private AIMessageService aiMessageService;
     
     /**
+     * 获取指定用户的会话列表（通过聚合获取唯一 sessionId）
+     */
+    @GetMapping("/sessions/{username}")
+    @CheckToken
+    public ApiResponse<List<JSONObject>> getSessions(@PathVariable String username) {
+        log.info("获取用户 {} 的会话列表", username);
+        return aiMessageService.getUserSessions(username);
+    }
+
+    /**
+     * 获取指定会话的历史消息记录
+     */
+    @GetMapping("/session/{sessionId}")
+    @CheckToken
+    public ApiResponse<List<AIMessage>> getSessionHistory(@PathVariable String sessionId) {
+        log.info("获取会话 {} 的历史消息", sessionId);
+        return aiMessageService.getSessionMessages(sessionId);
+    }
+
+    /**
+     * 删除指定的会话及其所有消息
+     */
+    @GetMapping("/delsession/{sessionId}")
+    @CheckToken
+    public ApiResponse<String> deleteSession(@PathVariable String sessionId) {
+        log.info("删除会话及其所有消息: {}", sessionId);
+        return aiMessageService.deleteSession(sessionId);
+    }
+
+    /**
      * 保存AI消息
-     * @param aiMessage AI消息对象
+     * @param body AI消息JSON
      * @return ApiResponse 包含保存结果的响应
      */
     @PostMapping("/save")
     @CheckToken
     public ApiResponse<AIMessage> saveAIMessage(@RequestBody String body) {
         AIMessage aiMessage = JSONObject.parseObject(body, AIMessage.class);
-        log.info("保存AI消息: 用户问题 = {}", aiMessage.getUserQuestion());
+        log.info("保存AI消息: 用户 = {}, 会话 = {}, 问题 = {}", aiMessage.getUsername(), aiMessage.getSessionId(), aiMessage.getUserQuestion());
         return aiMessageService.saveAIMessage(aiMessage);
     }
     
@@ -140,11 +170,13 @@ public class AIMessageController extends BaseController {
         try {
             String pipelineJson = body.getString("pipeline");
             String collectionName = body.getString("collection"); // 默认为 "goal"
+            String question = body.getString("question"); // 默认为 "goal"
+
             if (collectionName == null || collectionName.isEmpty()) {
                 collectionName = "goal";
             }
 
-            log.info(" 执行 MQL 统计, 集合: {}, Pipeline: {}",  collectionName, pipelineJson);
+            log.info("问题内容:{} 执行 MQL 统计, 集合: {}, Pipeline: {}",question,  collectionName, pipelineJson);
             String cleanedMql = pipelineJson.replaceAll("ISODate\\(\"([^\"]+)\"\\)", "new Date(\"$1\")");
             // 将 JSON 数组解析为 MongoDB Pipeline
             List<Document> pipeline = com.alibaba.fastjson2.JSON.parseArray(cleanedMql, Document.class);

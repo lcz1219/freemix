@@ -172,6 +172,8 @@ public class LogController extends BaseController {
         if (timeThreshold != null) {
             query.addCriteria(Criteria.where("createTime").gte(timeThreshold));
         }
+        query.with(Sort.by(Sort.Direction.DESC, "createTime"));
+
         return query;
     }
     private Date getTimeThresholdForLatest10000() {

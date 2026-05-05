@@ -190,24 +190,24 @@ const initLogicFlow = () => {
     style: {
       rect: {
         fill: '#f0f5ff',
-        stroke: '#81c683',
+        stroke: '#00c9a7',
         strokeWidth: 2,
         radius: 8,
       },
       circle: {
         fill: '#f0f5ff',
-        // stroke: '#81c683',
+        // stroke: '#00c9a7',
         strokeWidth: 2,
       },
       polyline: {
-        // stroke: '#81c683',
+        // stroke: '#00c9a7',
         strokeWidth: 2,
         // 添加 lineCap 和 lineJoin 以确保线条端点和连接处可见
         lineCap: 'round',
         lineJoin: 'round',
       },
       anchor: {
-        // stroke: '#81c683',
+        // stroke: '#00c9a7',
         fill: '#ffffff',
         r: 4,
       },
@@ -687,7 +687,7 @@ const toggleTheme = () => {
 }
 
 .dark-theme .n-input:focus {
-  border-color: #81c683;
+  border-color: #00c9a7;
 }
 
 .dark-theme .n-form-item-label {

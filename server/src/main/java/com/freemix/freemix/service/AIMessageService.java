@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * AI消息服务类
@@ -49,12 +50,6 @@ public class AIMessageService {
      * @return ApiResponse
      */
     public ApiResponse<AIMessage> saveAIMessage(AIMessage aiMessage) {
-        // 验证用户是否登录
-//        String currentUser = getCurrentUsername();
-//        if (currentUser == null) {
-//            return ApiResponse.failure("用户未登录", 401);
-//        }
-
         // 验证参数
         if (aiMessage.getUserQuestion() == null || aiMessage.getUserQuestion().trim().isEmpty()) {
             return ApiResponse.failure("用户问题不能为空", 400);
@@ -62,6 +57,11 @@ public class AIMessageService {
 
         if (aiMessage.getAiAnswer() == null || aiMessage.getAiAnswer().trim().isEmpty()) {
             return ApiResponse.failure("AI回答不能为空", 400);
+        }
+
+        // 设置会话ID（如果前端没传，给个默认的，或者复用 id）
+        if (aiMessage.getSessionId() == null || aiMessage.getSessionId().isEmpty()) {
+            aiMessage.setSessionId(UUID.randomUUID().toString());
         }
 
         // 设置用户名
@@ -78,6 +78,44 @@ public class AIMessageService {
         // 保存AI消息
         AIMessage savedMessage = mongoTemplate.save(aiMessage);
         return ApiResponse.success(savedMessage);
+    }
+
+    /**
+     * 获取指定用户的会话列表（按 sessionId 分组并获取最后一条消息作为标题预览）
+     */
+    public ApiResponse<List<com.alibaba.fastjson2.JSONObject>> getUserSessions(String username) {
+        // 聚合查询：按 sessionId 分组，取最后一条消息内容作为标题预览
+        org.springframework.data.mongodb.core.aggregation.Aggregation agg = org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation(
+            org.springframework.data.mongodb.core.aggregation.Aggregation.match(Criteria.where("username").is(username)),
+            org.springframework.data.mongodb.core.aggregation.Aggregation.sort(Sort.by(Sort.Direction.DESC, "createdAt")),
+            org.springframework.data.mongodb.core.aggregation.Aggregation.group("sessionId")
+                .first("userQuestion").as("title")
+                .first("createdAt").as("updatedAt")
+                .first("sessionId").as("id"),
+            org.springframework.data.mongodb.core.aggregation.Aggregation.sort(Sort.by(Sort.Direction.DESC, "updatedAt"))
+        );
+
+        List<com.alibaba.fastjson2.JSONObject> results = mongoTemplate.aggregate(agg, "aiMsgs", com.alibaba.fastjson2.JSONObject.class).getMappedResults();
+        return ApiResponse.success(results);
+    }
+
+    /**
+     * 获取指定会话的消息记录
+     */
+    public ApiResponse<List<AIMessage>> getSessionMessages(String sessionId) {
+        Query query = new Query(Criteria.where("sessionId").is(sessionId))
+                .with(Sort.by(Sort.Direction.ASC, "createdAt"));
+        List<AIMessage> messages = mongoTemplate.find(query, AIMessage.class);
+        return ApiResponse.success(messages);
+    }
+
+    /**
+     * 删除会话及其所有消息
+     */
+    public ApiResponse<String> deleteSession(String sessionId) {
+        Query query = new Query(Criteria.where("sessionId").is(sessionId));
+        mongoTemplate.remove(query, AIMessage.class);
+        return ApiResponse.success("会话已删除");
     }
 
     /**

@@ -165,7 +165,7 @@ defineExpose({
   margin: 11px 16px -4px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(129, 198, 131, 0.1);
+  border: 1px solid #00c9a7;
 }
 
 .message {
@@ -183,7 +183,7 @@ defineExpose({
 }
 
 .message.user {
-  background: #56b359;
+  background: #00c9a7;
   margin-left: 70%;
   border: 1px solid rgba(129, 198, 131, 0.2);
 }

@@ -260,7 +260,7 @@ function showAboutDialog() {
           width: 80px;
           height: 80px;
           margin: 20px auto;
-          background-color: #81c683;
+          background-color: #00c9a7;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -283,7 +283,7 @@ function showAboutDialog() {
           margin-bottom: 20px;
         }
         .close-btn {
-          background-color: #81c683;
+          background-color: #00c9a7;
           color: white;
           border: none;
           padding: 10px 20px;

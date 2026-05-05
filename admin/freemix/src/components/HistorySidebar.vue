@@ -148,7 +148,7 @@ onMounted(() => {
   flex-direction: column;
   width: 220px;
   background: rgba(129, 198, 131, 0.05);
-  border-right: 1px solid rgba(129, 198, 131, 0.1);
+  border-right: 1px solid #00c9a7;
   transition: width 0.3s ease;
   height: 100%;
   overflow: hidden;
@@ -163,7 +163,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 5px;
-  border-bottom: 1px solid rgba(129, 198, 131, 0.1);
+  border-bottom: 1px solid #00c9a7;
 }
 
 .sidebar-header h3 {
@@ -202,7 +202,7 @@ onMounted(() => {
 }
 
 .history-item:hover {
-  background: rgba(129, 198, 131, 0.1);
+  background: #00c9a7;
 }
 
 .history-item.active {

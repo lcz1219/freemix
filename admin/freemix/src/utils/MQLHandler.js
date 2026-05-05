@@ -2,13 +2,12 @@
  * MQL 处理工具：解析文本中的 [MQL_START] 标签并执行
  */
 import { postM } from '@/utils/request'
-export const handleMQLResponse = async (text) => {
+export const handleMQLResponse = async (text,question) => {
   const MQL_START = '[MQL_START]';
   const MQL_END = '[MQL_END]';
   
   const startIndex = text.indexOf(MQL_START);
   const endIndex = text.indexOf(MQL_END);
-
   if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
     const pipelineStr = text.substring(startIndex + MQL_START.length, endIndex).trim();
     try {
@@ -16,7 +15,8 @@ export const handleMQLResponse = async (text) => {
       
       const response = await postM('/ai-messages/query-mql', JSON.stringify({
           pipeline: pipelineStr,
-          collection: 'goal'
+          collection: 'goal',
+          question:question
         }));
       
       const result = response;
