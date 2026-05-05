@@ -227,163 +227,138 @@ defineExpose({
 .answer-content,
 .thinking-process {
   line-height: 1.8;
+  font-size: 14px;
+  color: inherit;
 }
 
-.answer-content h1,
-.answer-content h2,
-.answer-content h3,
-.answer-content h4,
-.answer-content h5,
-.answer-content h6,
-.thinking-process h1,
-.thinking-process h2,
-.thinking-process h3,
-.thinking-process h4,
-.thinking-process h5,
-.thinking-process h6 {
-  margin: 24px 0 16px 0;
+.answer-content :deep(h1),
+.answer-content :deep(h2),
+.answer-content :deep(h3),
+.answer-content :deep(h4),
+.thinking-process :deep(h1),
+.thinking-process :deep(h2),
+.thinking-process :deep(h3),
+.thinking-process :deep(h4) {
+  margin: 1.5em 0 1em;
   font-weight: 600;
-  line-height: 1.25;
-  position: relative;
+  line-height: 1.3;
 }
 
-.answer-content h1,
-.thinking-process h1 {
-  font-size: 2em;
-  border-bottom: 2px solid #eaecef;
+.answer-content :deep(h1),
+.thinking-process :deep(h1) {
+  font-size: 1.8em;
+  border-bottom: 2px solid rgba(0, 201, 167, 0.2);
   padding-bottom: 0.3em;
-  color: #0969da;
-  padding-left: 8px;
-  margin-left: -8px;
 }
 
-.answer-content h2,
-.thinking-process h2 {
+.answer-content :deep(h2),
+.thinking-process :deep(h2) {
   font-size: 1.5em;
-  border-bottom: 1px solid #eaecef;
-  padding-bottom: 0.3em;
-  color: #0969da;
-  padding-left: 6px;
-  margin-left: -6px;
+  border-bottom: 1px solid rgba(0, 201, 167, 0.1);
+  padding-bottom: 0.2em;
 }
 
-.answer-content h3,
-.thinking-process h3 {
+.answer-content :deep(h3),
+.thinking-process :deep(h3) {
   font-size: 1.25em;
-  color: #0969da;
-  padding-left: 4px;
-  border-left: 3px solid #0969da;
-  padding-left: 12px;
+  color: #00c9a7;
 }
 
-.answer-content h4,
-.thinking-process h4 {
-  font-size: 1.1em;
-  color: #0969da;
-  padding-left: 4px;
-  border-left: 2px solid #0969da;
-  padding-left: 10px;
+.answer-content :deep(p),
+.thinking-process :deep(p) {
+  margin: 1em 0;
 }
 
-.answer-content h5,
-.thinking-process h5 {
-  font-size: 1em;
-  color: #0969da;
-  padding-left: 4px;
+.answer-content :deep(ul),
+.answer-content :deep(ol),
+.thinking-process :deep(ul),
+.thinking-process :deep(ol) {
+  margin: 1em 0;
+  padding-left: 1.5em;
 }
 
-.answer-content h6,
-.thinking-process h6 {
-  font-size: 0.9em;
-  color: #0969da;
-  padding-left: 4px;
+.answer-content :deep(li),
+.thinking-process :deep(li) {
+  margin: 0.5em 0;
 }
 
-.answer-content p,
-.thinking-process p {
-  margin: 16px 0;
-  padding: 0 4px;
-}
-
-.answer-content div > h1:first-child,
-.thinking-process div > h1:first-child,
-.answer-content div > h2:first-child,
-.thinking-process div > h2:first-child,
-.answer-content div > h3:first-child,
-.thinking-process div > h3:first-child {
-  margin-top: 0;
-}
-
-.answer-content ul,
-.answer-content ol,
-.thinking-process ul,
-.thinking-process ol {
-  margin: 16px 0;
-  padding-left: 32px;
-}
-
-.answer-content li,
-.thinking-process li {
-  margin: 8px 0;
-  padding-left: 4px;
-}
-
-.answer-content li > p,
-.thinking-process li > p {
-  margin: 0;
-}
-
-.answer-content code,
-.thinking-process code {
-  background-color: rgba(110, 118, 129, 0.4);
+.answer-content :deep(code),
+.thinking-process :deep(code) {
+  background-color: rgba(0, 201, 167, 0.1);
+  color: #00c9a7;
   padding: 0.2em 0.4em;
-  border-radius: 6px;
-  font-size: 85%;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
 }
 
-.answer-content pre,
-.thinking-process pre {
-  padding: 16px;
-  overflow: auto;
-  background-color: #161b22;
-  border-radius: 6px;
-  margin: 16px 0;
+.answer-content :deep(pre),
+.thinking-process :deep(pre) {
+  background-color: #1a1a1a;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1em 0;
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
-.answer-content pre > code,
-.thinking-process pre > code {
-  background: transparent;
+.answer-content :deep(pre code),
+.thinking-process :deep(pre code) {
+  background-color: transparent;
+  color: #e0e0e0;
   padding: 0;
-  font-size: 100%;
+  border-radius: 0;
+  font-size: 0.9em;
 }
 
-.answer-content blockquote,
-.thinking-process blockquote {
-  margin: 16px 0;
-  padding: 0 1em;
-  color: #6a737d;
-  border-left: 0.25em solid #dfe2e5;
+.answer-content :deep(blockquote),
+.thinking-process :deep(blockquote) {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  color: #666;
+  border-left: 4px solid #00c9a7;
+  background: rgba(0, 201, 167, 0.05);
+  border-radius: 0 4px 4px 0;
 }
 
-.answer-content table,
-.thinking-process table {
-  border-collapse: collapse;
-  margin: 16px 0;
+.answer-content :deep(table),
+.thinking-process :deep(table) {
   width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9em;
 }
 
-.answer-content th,
-.answer-content td,
-.thinking-process th,
-.thinking-process td {
-  padding: 6px 13px;
-  border: 1px solid #dfe2e5;
+.answer-content :deep(th),
+.answer-content :deep(td),
+.thinking-process :deep(th),
+.thinking-process :deep(td) {
+  border: 1px solid rgba(0, 201, 167, 0.2);
+  padding: 0.6em;
+  text-align: left;
 }
 
-.answer-content tr:nth-child(2n),
-.thinking-process tr:nth-child(2n) {
-  background-color: #f6f8fa;
+.answer-content :deep(th),
+.thinking-process :deep(th) {
+  background: rgba(0, 201, 167, 0.1);
+  font-weight: 600;
+}
+
+.message.user .answer-content :deep(code) {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.message.ai .answer-content :deep(h1),
+.message.ai .answer-content :deep(h2),
+.message.ai .answer-content :deep(h3) {
+  color: #00c9a7;
+}
+
+.dark .answer-content :deep(blockquote),
+.dark .thinking-process :deep(blockquote) {
+  color: #aaa;
+  background: rgba(0, 201, 167, 0.1);
 }
 
 /* 暗色主题下的Markdown样式 */
@@ -446,7 +421,7 @@ defineExpose({
 
 .message-time {
   font-size: 12px;
-  color: #999;
+  color: white;
   text-align: right;
   margin-top: 8px;
 }
