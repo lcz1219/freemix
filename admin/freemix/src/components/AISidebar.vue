@@ -102,13 +102,14 @@ const formatDate = (ts) => {
 
 <style scoped lang="scss">
 .ai-sidebar {
-  width: 280px;
+  width: 260px;
   height: 100%;
   background: var(--card-bg);
   display: flex;
   flex-direction: column;
   color: var(--text-color);
   border-right: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -162,7 +163,7 @@ const formatDate = (ts) => {
 .session-list-container {
   flex: 1;
   overflow-y: auto;
-  padding: 0 12px;
+  padding: 0 12px 20px;
 }
 
 .session-item {

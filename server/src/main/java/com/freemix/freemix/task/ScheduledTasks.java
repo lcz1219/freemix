@@ -45,7 +45,7 @@ public class ScheduledTasks {
 
 //           editGoal(goal.toString());
             }else{
-                log.info("[ScheduledTasks] goal noexpired");
+//                log.info("[ScheduledTasks] goal noexpired");
             }
 
         });

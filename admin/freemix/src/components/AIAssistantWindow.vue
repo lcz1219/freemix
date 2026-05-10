@@ -249,26 +249,50 @@ onMounted(() => {
 
 <style scoped>
 .ai-menu-page {
- 
-  padding-top: 5px;
-  height: calc(100vh - 60px);
+  height: 100vh;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  background: var(--bg-color);
+  overflow: hidden;
 }
 
 .ai-menu-container {
   display: flex;
   flex: 1;
+  overflow: hidden;
 }
 
 .menu-sidebar {
-  width: 80px;
+  width: 72px;
   background: var(--card-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0;
+  padding: 16px 0;
   border-right: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.content-area {
+  flex: 1;
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.production-page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
 :deep(.n-menu) {

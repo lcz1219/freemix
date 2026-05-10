@@ -691,6 +691,7 @@ defineExpose({
   height: 100%;
   background: var(--bg-color);
   color: var(--text-color);
+  overflow: hidden;
 }
 
 .ai-assistant-window.dark {
@@ -739,12 +740,12 @@ defineExpose({
 .chat-container {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
   background: var(--bg-color);
-  margin: 11px 16px -4px 16px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid #00c9a7;
+  margin: 0;
+  border-radius: 0;
+  backdrop-filter: none;
+  border: none;
 }
 
 .message {
@@ -844,11 +845,11 @@ defineExpose({
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
-  margin: 16px 16px 0px 16px;
+  padding: 20px;
   background: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid #00c9a7;
+  border-top: 1px solid var(--border-color);
+  margin: 0;
+  border-radius: 0;
 }
 
 .send-button {

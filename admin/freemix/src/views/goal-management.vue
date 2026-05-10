@@ -74,6 +74,9 @@
                     <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
                       style="width: 120px;" />
 
+                    <n-select v-model:value="tagFilter" :options="tagOptions" multiple clearable placeholder="标签筛选"
+                      style="width: 180px;" />
+
                     <n-dropdown trigger="click" :options="exportOptions" @select="handleExport">
                       <n-button>
                         <template #icon>
@@ -137,8 +140,8 @@
                       </el-table-column>
                       <el-table-column label="进度" width="100">
                         <template #default="scope">
-                          <el-progress :percentage="scope.row.status == 'expired' ? 100 : scope.row.progress"
-                            :stroke-width="6" :show-text="false" :color="getStatusColor(scope.row.status)"
+                          <el-progress :percentage="scope.row.progress"
+                            :stroke-width="20" text-inside="true"  :color="getStatusColor(scope.row.status)"
                             :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
                         </template>
                       </el-table-column>
@@ -494,6 +497,11 @@ const isOwner = (goal: any) => {
 const goals = ref<any[]>([]);
 const loading = ref(false);
 const showDetailModal = ref(false);
+// const searchQuery = ref('');
+// const statusFilter = ref(null);
+const tagFilter = ref([]);
+// const ownershipFilter = ref(null);
+// const dateFilter = ref(null);
 const selectedGoal = ref<any>({});
 const currentSelectedGoal = ref<any>(null);
 
@@ -505,6 +513,44 @@ const celebrationGoalTitle = ref('');
 const handleRowClick = (row: any) => {
   currentSelectedGoal.value = row;
 };
+
+// const expiredGoalToast = (res: any) => {
+//   message.error(res.data.message || '操作失败');
+// };
+
+// const finishChildGoal = async (row: any, index: number) => {
+//   try {
+//     const updatedGoal = JSON.parse(JSON.stringify(row));
+//     updatedGoal.childGoals[index].finish = true;
+//     updatedGoal.childGoals[index].finishDate = new Date();
+//     const res = await postM('editGoal', updatedGoal);
+//     if (isSuccess(res)) {
+//       message.success('已完成子目标');
+//       getGoals();
+//     } else {
+//       expiredGoalToast(res);
+//     }
+//   } catch (error) {
+//     message.error('操作失败');
+//   }
+// };
+
+// const unfinishChildGoal = async (row: any, index: number) => {
+//   try {
+//     const updatedGoal = JSON.parse(JSON.stringify(row));
+//     updatedGoal.childGoals[index].finish = false;
+//     updatedGoal.childGoals[index].finishDate = null;
+//     const res = await postM('editGoal', updatedGoal);
+//     if (isSuccess(res)) {
+//       message.success('已取消完成子目标');
+//       getGoals();
+//     } else {
+//       expiredGoalToast(res);
+//     }
+//   } catch (error) {
+//     message.error('操作失败');
+//   }
+// };
 
 // 表格行样式
 const tableRowClassName = ({ row }: { row: any }) => {
@@ -606,6 +652,17 @@ const exportOptions = [
   { label: '导出 Excel', key: 'excel' },
   { label: '导出 PDF', key: 'pdf' }
 ];
+
+// 标签筛选选项
+const tagOptions = computed(() => {
+  const tags = new Set<string>();
+  goals.value.forEach(goal => {
+    if (goal.tags && Array.isArray(goal.tags)) {
+      goal.tags.forEach(tag => tags.add(tag));
+    }
+  });
+  return Array.from(tags).map(tag => ({ label: tag, value: tag }));
+});
 
 // 所有权筛选选项
 const ownershipOptions = [
@@ -935,9 +992,16 @@ const filteredGoals = computed(() => {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(goal =>
       goal.title.toLowerCase().includes(query) ||
-      goal.description.toLowerCase().includes(query) ||
-      goal.owner.toLowerCase().includes(query)
+      (goal.description && goal.description.toLowerCase().includes(query))
     );
+  }
+
+  // 所有人过滤
+  if (ownershipFilter.value) {
+    result = result.filter(goal => {
+      const isOwned = goal.owner === store.state.user.username;
+      return ownershipFilter.value === 'mine' ? isOwned : !isOwned;
+    });
   }
 
   // 状态过滤
@@ -945,13 +1009,12 @@ const filteredGoals = computed(() => {
     result = result.filter(goal => goal.status === statusFilter.value);
   }
 
-  // 所有权过滤
-  if (ownershipFilter.value) {
-    if (ownershipFilter.value === 'mine') {
-      result = result.filter(goal => isOwner(goal));
-    } else if (ownershipFilter.value === 'collab') {
-      result = result.filter(goal => !isOwner(goal));
-    }
+  // 标签过滤
+  if (tagFilter.value && tagFilter.value.length > 0) {
+    result = result.filter(goal => {
+      if (!goal.tags) return false;
+      return tagFilter.value.every(t => goal.tags.includes(t));
+    });
   }
 
   // 时间过滤
