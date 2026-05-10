@@ -460,10 +460,10 @@ const handleHistoryGoalCreated = (goalObject) => {
 }
 
 .input-section {
-  background: rgba(0, 201, 167, 0.05);
+  background: var(--card-bg);
   padding: 24px;
   border-radius: 16px;
-  border: 1px solid rgba(0, 201, 167, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .gen-button {

@@ -689,8 +689,8 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  color: #333333;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .ai-assistant-window.dark {
@@ -740,7 +740,7 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background: rgba(0, 201, 167, 0.05);
+  background: var(--bg-color);
   margin: 11px 16px -4px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
@@ -846,7 +846,7 @@ defineExpose({
   gap: 12px;
   padding: 16px;
   margin: 16px 16px 0px 16px;
-  background: rgba(0, 201, 167, 0.05);
+  background: var(--card-bg);
   border-radius: 12px;
   border: 1px solid #00c9a7;
 }

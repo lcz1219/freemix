@@ -104,10 +104,11 @@ const formatDate = (ts) => {
 .ai-sidebar {
   width: 280px;
   height: 100%;
-  background: #141414;
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
-  color: #e0e0e0;
+  color: var(--text-color);
+  border-right: 1px solid var(--border-color);
 }
 
 .sidebar-header {
@@ -134,7 +135,7 @@ const formatDate = (ts) => {
 .tab-switcher {
   display: flex;
   margin: 0 16px 15px;
-  background: #252525;
+  background: var(--hover-color);
   padding: 4px;
   border-radius: 10px;
   
@@ -145,10 +146,16 @@ const formatDate = (ts) => {
     font-size: 13px;
     border-radius: 7px;
     cursor: pointer;
-    color: #888;
+    color: var(--text-color);
+    opacity: 0.6;
     transition: all 0.3s;
     
-    &.active { background: #333; color: #00c9a7; font-weight: bold; }
+    &.active { 
+      background: #00c9a7; 
+      color: white; 
+      font-weight: bold; 
+      opacity: 1;
+    }
   }
 }
 
@@ -167,33 +174,35 @@ const formatDate = (ts) => {
   cursor: pointer;
   transition: background 0.2s;
   border: 1px solid transparent;
+  background: var(--card-bg);
 
   &:hover { 
-    background: #202020;
+    background: var(--hover-color);
     .delete-icon { opacity: 1; }
   }
   
   &.active { 
-    background: #202020; 
+    background: var(--hover-color); 
     border-color: rgba(0, 201, 167, 0.5);
     .icon-wrap { color: #00c9a7; }
   }
 
-  .icon-wrap { font-size: 18px; color: #555; margin-right: 12px; display: flex; }
+  .icon-wrap { font-size: 18px; color: var(--text-color); opacity: 0.5; margin-right: 12px; display: flex; }
   
   .session-info {
     flex: 1;
     overflow: hidden;
     
-    .session-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ccc; }
-    .session-time { font-size: 11px; color: #555; margin-top: 2px; }
+    .session-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
+    .session-time { font-size: 11px; color: var(--text-color); opacity: 0.4; margin-top: 2px; }
   }
 
   .delete-icon { 
     opacity: 0; 
-    color: #444; 
+    color: var(--text-color);
+    opacity: 0.3;
     font-size: 16px;
-    &:hover { color: #ff4d4f; }
+    &:hover { color: #ff4d4f; opacity: 1; }
   }
 }
 

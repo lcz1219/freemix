@@ -161,11 +161,11 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background: rgba(129, 198, 131, 0.05);
+  background: var(--bg-color);
   margin: 11px 16px -4px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid #00c9a7;
+  border: 1px solid rgba(0, 201, 167, 0.3);
 }
 
 .message {
@@ -173,7 +173,7 @@ defineExpose({
   padding: 16px;
   border-radius: 12px;
   animation: fadeIn 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
@@ -184,36 +184,40 @@ defineExpose({
 
 .message.user {
   background: #00c9a7;
+  color: white;
   margin-left: 70%;
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .message.ai {
-  background: linear-gradient(135deg, #252525, #242424);
-  margin-right: 30%;
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  background: var(--card-bg);
+  color: var(--text-color);
+  margin-right: 20%;
+  border: 1px solid var(--border-color);
 }
 .message.ai-gen {
-  background: linear-gradient(135deg, #252525, #242424);
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
   height: 64vh;
   overflow-y: auto;
 }
 
 .message.error {
-  background: linear-gradient(135deg, #ffebee, #ffcdd2);
-  color: #c62828;
-  border: 1px solid rgba(255, 0, 0, 0.2);
+  background: #fff5f5;
+  color: #c53030;
+  border: 1px solid rgba(245, 101, 101, 0.2);
 }
 
 .message.processing {
-  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid rgba(0, 201, 167, 0.3);
   text-align: center;
 }
 
 .message.highlighted {
-  box-shadow: 0 0 0 2px rgba(129, 198, 131, 0.5);
+  box-shadow: 0 0 0 2px #00c9a7;
   transform: scale(1.02);
   transition: all 0.3s ease;
 }
@@ -294,7 +298,7 @@ defineExpose({
 
 .answer-content :deep(pre),
 .thinking-process :deep(pre) {
-  background-color: #1a1a1a;
+  background-color: var(--card-bg);
   padding: 1em;
   border-radius: 8px;
   overflow-x: auto;
@@ -305,7 +309,7 @@ defineExpose({
 .answer-content :deep(pre code),
 .thinking-process :deep(pre code) {
   background-color: transparent;
-  color: #e0e0e0;
+  color: var(--text-color);
   padding: 0;
   border-radius: 0;
   font-size: 0.9em;
@@ -362,66 +366,56 @@ defineExpose({
 }
 
 /* 暗色主题下的Markdown样式 */
-.dark .answer-content h1,
-.dark .answer-content h2,
-.dark .answer-content h3,
-.dark .answer-content h4,
-.dark .answer-content h5,
-.dark .answer-content h6,
-.dark .thinking-process h1,
-.dark .thinking-process h2,
-.dark .thinking-process h3,
-.dark .thinking-process h4,
-.dark .thinking-process h5,
-.dark .thinking-process h6 {
-  color: #58a6ff;
-  border-bottom-color: #30363d;
+.dark .answer-content :deep(h1),
+.dark .answer-content :deep(h2),
+.dark .answer-content :deep(h3),
+.dark .answer-content :deep(h4),
+.dark .answer-content :deep(h5),
+.dark .answer-content :deep(h6),
+.dark .thinking-process :deep(h1),
+.dark .thinking-process :deep(h2),
+.dark .thinking-process :deep(h3),
+.dark .thinking-process :deep(h4),
+.dark .thinking-process :deep(h5),
+.dark .thinking-process :deep(h6) {
+  color: #00c9a7;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.dark .answer-content h1 {
-  border-bottom: 2px solid #30363d;
+.dark .answer-content :deep(code),
+.dark .thinking-process :deep(code) {
+  background-color: rgba(0, 201, 167, 0.2);
 }
 
-.dark .answer-content h2 {
-  border-bottom: 1px solid #30363d;
-}
-
-.dark .answer-content h3,
-.dark .answer-content h4 {
-  border-left-color: #58a6ff;
-}
-
-.dark .answer-content code,
-.dark .thinking-process code {
-  background-color: rgba(110, 118, 129, 0.4);
-}
-
-.dark .answer-content pre,
-.dark .thinking-process pre {
+.dark .answer-content :deep(pre),
+.dark .thinking-process :deep(pre) {
   background-color: #161b22;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-.dark .answer-content blockquote,
-.dark .thinking-process blockquote {
+.dark .answer-content :deep(pre code),
+.dark .thinking-process :deep(pre code) {
+  color: #e0e0e0;
+}
+
+.dark .answer-content :deep(blockquote),
+.dark .thinking-process :deep(blockquote) {
   color: #8b949e;
-  border-left-color: #30363d;
+  border-left-color: #00c9a7;
+  background: rgba(0, 201, 167, 0.1);
 }
 
-.dark .answer-content tr:nth-child(2n),
-.dark .thinking-process tr:nth-child(2n) {
-  background-color: rgba(110, 118, 129, 0.1);
-}
-
-.dark .answer-content th,
-.dark .answer-content td,
-.dark .thinking-process th,
-.dark .thinking-process td {
-  border-color: #30363d;
+.dark .answer-content :deep(th),
+.dark .answer-content :deep(td),
+.dark .thinking-process :deep(th),
+.dark .thinking-process :deep(td) {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .message-time {
   font-size: 12px;
-  color: white;
+  color: var(--text-color);
+  opacity: 0.5;
   text-align: right;
   margin-top: 8px;
 }
@@ -430,12 +424,13 @@ defineExpose({
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  border: 1px solid rgba(0, 201, 167, 0.3);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background: var(--bg-color);
 }
 
 .thinking-content strong {
-  color: #ff9800;
+  color: #00c9a7;
   display: block;
   margin-bottom: 8px;
 }
@@ -444,12 +439,12 @@ defineExpose({
   padding: 16px;
   border-radius: 8px;
   white-space: pre-wrap;
-  border: 1px solid rgba(129, 198, 131, 0.2);
+  border: 1px solid var(--border-color);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .thinking-process strong {
-  color: #4CAF50;
+  color: #00c9a7;
   display: block;
   margin-bottom: 8px;
 }
@@ -464,7 +459,7 @@ defineExpose({
 
 .processing-indicator span {
   font-weight: 500;
-  color: #4CAF50;
+  color: #00c9a7;
 }
 
 .follow-up-buttons {
@@ -473,13 +468,13 @@ defineExpose({
   gap: 12px;
   margin-top: 16px;
   padding: 16px;
-  background: rgba(129, 198, 131, 0.05);
+  background: var(--hover-color);
   border-radius: 8px;
-  border: 1px dashed rgba(129, 198, 131, 0.3);
+  border: 1px dashed rgba(0, 201, 167, 0.3);
 }
 
 .follow-up-buttons strong {
-  color: #4CAF50;
+  color: #00c9a7;
   margin-bottom: 8px;
   display: block;
 }
@@ -487,8 +482,9 @@ defineExpose({
 .follow-up-button {
   text-align: left;
   justify-content: flex-start;
-  /* background: linear-gradient(135deg, #ffffff, #f8f9fa); */
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
   border-radius: 8px;
   padding: 12px 16px;
   transition: all 0.3s ease;
@@ -496,65 +492,57 @@ defineExpose({
 }
 
 .follow-up-button:hover {
-  background: linear-gradient(135deg, #222523, #234224);
+  background: var(--hover-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(129, 198, 131, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.2);
 }
 
 /* 暗色主题适配 */
 .chat-container.dark {
-  background: rgba(42, 42, 42, 0.7);
-  border: 1px solid rgba(129, 198, 131, 0.2);
-}
-
-.chat-container.dark .message.user {
-  background: linear-gradient(135deg, #1565c0, #0d47a1);
-  color: white;
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-container.dark .message.ai {
-  background: linear-gradient(135deg, #424242, #2d2d2d);
+  background: #252525;
   color: #e0e0e0;
-  border: 1px solid rgba(129, 198, 131, 0.3);
 }
 
 .chat-container.dark .message.error {
-  background: linear-gradient(135deg, #424242, #333333);
+  background: #331111;
   color: #ef9a9a;
-  border: 1px solid rgba(255, 0, 0, 0.3);
+  border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
 .chat-container.dark .message.processing {
-  background: linear-gradient(135deg, #37474f, #263238);
-  border: 1px solid rgba(129, 198, 131, 0.4);
+  background: #252525;
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .chat-container.dark .thinking-content {
-  background: linear-gradient(135deg, #37474f, #263238);
-  color: #e0e0e0;
-  border: 1px solid rgba(255, 193, 7, 0.4);
+  background: #252525;
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .chat-container.dark .thinking-process {
-  background: linear-gradient(135deg, #37474f, #263238);
+  background: #252525;
   color: #e0e0e0;
-  border: 1px solid rgba(129, 198, 131, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-container.dark .follow-up-buttons {
-  background: rgba(42, 42, 42, 0.7);
-  border: 1px dashed rgba(129, 198, 131, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .chat-container.dark .follow-up-button {
-  background: linear-gradient(135deg, #424242, #333333);
+  background: #252525;
   color: #e0e0e0;
-  border: 1px solid rgba(129, 198, 131, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-container.dark .follow-up-button:hover {
-  background: linear-gradient(135deg, #37474f, #263238);
-  border: 1px solid rgba(129, 198, 131, 0.6);
+  background: #333333;
+  border: 1px solid #00c9a7;
 }
 </style>

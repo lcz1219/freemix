@@ -263,12 +263,12 @@ onMounted(() => {
 
 .menu-sidebar {
   width: 80px;
-  background: #1a1a1a;
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px 0;
-  border-right: 1px solid #2a2a2a;
+  border-right: 1px solid var(--border-color);
 }
 
 :deep(.n-menu) {
@@ -289,13 +289,12 @@ onMounted(() => {
 
 .content-area {
   flex: 1;
-  background: var(--card-background);
+  background: var(--bg-color);
   border-radius: 8px;
   /* padding: 20px; */
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
 }
@@ -317,5 +316,9 @@ onMounted(() => {
 .dark .content-area {
   background: rgba(42, 42, 42, 0.7);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ai-menu-page {
+  background-color: var(--bg-color);
 }
 </style>
