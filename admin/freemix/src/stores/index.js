@@ -9,10 +9,18 @@ export default createStore({
     // 从 localStorage 恢复用户状态
     const savedUser = localStorage.getItem('user');
     return {
-      user: savedUser ? JSON.parse(savedUser) : {}        // 数据源
+      user: savedUser ? JSON.parse(savedUser) : {},        // 数据源
+      showAiDrawer: false,                                 // AI 抽屉显示状态
+      aiInputContent: ''                                   // 传递给 AI 的输入内容
     }
   },
   mutations: {                // 同步修改
+    setAiDrawer(state, show) {
+      state.showAiDrawer = show;
+    },
+    setAiInputContent(state, content) {
+      state.aiInputContent = content;
+    },
     saveUser(state, user) {
       state.user = user;
       // 将用户信息保存到 localStorage

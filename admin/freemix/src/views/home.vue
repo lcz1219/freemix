@@ -1,8 +1,26 @@
 <template>
   <n-layout :native-scrollbar="true" :class="isDark ? 'home-container' : 'home-container-light'">
-    <!-- <common>
-      <template #content> -->
     <n-layout-content class="main-content-wrapper">
+      <!-- 全局快捷搜索框 -->
+      <div class="global-search-container">
+        <n-input-group>
+          <n-input
+            round
+            placeholder="直接问 AI 帮你寻找目标或制定计划... (Alt + Enter)"
+            class="cmd-k-input"
+            v-model:value="aiSearchInput"
+            @keyup.alt.enter="handleAiSearch"
+          >
+            <!-- <template #prefix>
+              <n-icon :component="SearchOutline" />
+            </template>
+            <template #suffix>
+              <div class="cmd-k-badge">⌘ K</div>
+            </template> -->
+          </n-input>
+        </n-input-group>
+      </div>
+
       <div class="main-content">
         <!-- 英雄区域 -->
         <section class="hero-section">
@@ -42,8 +60,8 @@
               </template>
               添加新目标
             </n-button>
-            <n-button ghost strong secondary round text-color="#8a2be2" style=" backgroundColor:#076055"
-              @click="showGuide">
+            <n-button ghost strong  round text-color="#8a2be2" style=" backgroundColor:#076055"
+              @click="store.commit('setAiDrawer', true)">
               <template #icon>
                 <n-icon size="24">
                   <AIAssistantIcon />
@@ -547,12 +565,8 @@
         </n-layout-footer> -->
       </div>
     </n-layout-content>
-    <!-- </template>
-    </common> -->
 
-    <!-- 主内容区域 -->
-
-  <n-modal
+     <n-modal
       v-model:show="showGoals"
       :mask-closable="true"
       draggable
@@ -570,7 +584,6 @@
         <RecentGoals v-if="showGoals" :goals="goals" :formatDate="formatDate" :checktype="checktype" />
       <!-- </div> -->
     </n-modal>
-
   </n-layout>
 </template>
 
@@ -608,7 +621,11 @@ import {
   NCollapse,
   NCollapseItem,
   NTable,
-  NPagination
+  NPagination,
+  NDrawer,
+  NDrawerContent,
+  NInput,
+  NInputGroup
 } from 'naive-ui';
 import Chart from 'chart.js/auto';
 import * as echarts from 'echarts/core';
@@ -622,7 +639,7 @@ import {
 import StatsOverview from '@/components/StatsOverview.vue';
 import RecentGoals from '@/components/RecentGoals.vue';
 import { CanvasRenderer } from 'echarts/renderers';
-import { AccessibilitySharp, CalendarSharp, ArrowRedoSharp } from '@vicons/ionicons5';
+import { AccessibilitySharp, CalendarSharp, ArrowRedoSharp, SearchOutline } from '@vicons/ionicons5';
 import aiAssistantIcon from '@/assets/ai2.png';
 import AIAssistantIcon from '@/components/icons/AIAssistantIcon.vue';
 import { useRouter } from 'vue-router'
@@ -634,7 +651,6 @@ import GoalDetail from '@/components/GoalDetail.vue';
 
 import { useUser } from '@/hooks/useUser';
 import { useSettings } from '@/hooks/useSettings';
-// import { log } from 'echarts/types/src/util/log.js';
 
 // 图片占位符
 const welcomeImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=8";
@@ -656,6 +672,7 @@ const checkThemebyStat = computed(() => {
 const pagination = {
   pageSize: 3
 };
+
 const columns = [
   {
     title: '目标名称',
@@ -761,6 +778,22 @@ echarts.use([
 ]);
 
 
+const aiSearchInput = ref('');
+const handleAiSearch = () => {
+  console.log("aiSearchInput.value",aiSearchInput.value);
+  
+  if (!aiSearchInput.value.trim()) return;
+  store.commit('setAiDrawer', true);
+  store.commit('setAiInputContent', aiSearchInput.value);
+  aiSearchInput.value = '';
+};
+
+const closeAiDrawer=()=>{
+store.commit('setAiDrawer', false)
+}
+const showAiDrawerMethod=()=>{
+  store.commit('setAiDrawer', true)
+}
 const router = useRouter()
 // 图标组件
 const SunIcon = {
@@ -1203,6 +1236,60 @@ onMounted(async () => {
     flex: auto;
     width: 100%;
   }
+}
+
+/* 方案四：直观化入口样式 */
+.global-search-container {
+  max-width: 600px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+  position: sticky;
+  top: 20px;
+  z-index: 100;
+}
+
+.cmd-k-input {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.cmd-k-input:hover, .cmd-k-input:focus-within {
+  transform: translateY(-2px);
+  border-color: #8a2be2;
+  box-shadow: 0 12px 48px rgba(138, 43, 226, 0.15);
+}
+
+.cmd-k-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: monospace;
+}
+
+/* AI 侧边栏样式 */
+.ai-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ai-sidebar-drawer :deep(.n-drawer-body-content-wrapper) {
+  padding: 0 !important;
+}
+
+.ai-sidebar-body {
+  height: 100%;
+}
+
+.ai-sidebar-body :deep(.ai-menu-page) {
+  height: 100%;
 }
 
 .details-section {

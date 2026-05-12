@@ -87,6 +87,31 @@
                   target="_blank" class="beian-link">粤公网安备44010602014148号</a>
               </div>
             </div>
+
+    <!-- 全局 AI 助手抽屉 -->
+    <n-drawer
+      v-model:show="showAiDrawer"
+      :default-width="1200"
+      :default-height="100"
+      resizable
+      placement="right"
+      class="ai-sidebar-drawer"
+      :show-mask="true"
+    >
+      <n-drawer-content closable>
+        <template #header>
+          <div class="ai-sidebar-header">
+            <n-icon size="24" color="#8a2be2">
+              <SparklesOutline />
+            </n-icon>
+            <span>AI 智能助手</span>
+          </div>
+        </template>
+        <div class="ai-sidebar-body">
+          <AIAssistantWindow />
+        </div>
+      </n-drawer-content>
+    </n-drawer>
           </n-message-provider>
           </n-notification-provider>
         </n-loading-bar-provider>
@@ -100,6 +125,7 @@
         @close="showCelebration = false" 
       />
     </van-config-provider>
+
   </n-config-provider>
 </template>
 
@@ -145,6 +171,8 @@ import MessageCenter from './views/MessageCenter.vue';
 import AppLoading from '@/components/AppLoading.vue';
 import UpdateNotification from '@/components/UpdateNotification.vue';
 import UnifiedFloatButton from '@/components/UnifiedFloatButton.vue'; // 导入加载页面组件
+import AIAssistantWindow from '@/components/AIAssistantWindow.vue';
+import { SparklesOutline } from '@vicons/ionicons5';
 import request, { postM, isSuccess, getM,getMPaths } from '@/utils/request'
 import { isDesktop } from '@/utils/device.js'
 import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js';
@@ -505,6 +533,12 @@ const handleCalendarUpdate = (value) => {
 const isLoading = computed(() => store.state.loading.loading);
 const loadingText = computed(() => store.state.loading.loadingText);
 
+// AI 抽屉状态
+const showAiDrawer = computed({
+  get: () => store.state.showAiDrawer,
+  set: (val) => store.commit('setAiDrawer', val)
+});
+
 // 主题样式覆盖配置
 const themeOverrides = computed<GlobalThemeOverrides>(() => {
   const commonOverrides = {
@@ -864,5 +898,26 @@ body {
 
 .dark-theme .beian-link:hover {
   color: #00c9a7;
+}
+
+/* AI 侧边栏样式 */
+.ai-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ai-sidebar-drawer :deep(.n-drawer-body-content-wrapper) {
+  padding: 0 !important;
+}
+
+.ai-sidebar-body {
+  height: 100%;
+}
+
+.ai-sidebar-body :deep(.ai-menu-page) {
+  height: 100%;
 }
 </style>

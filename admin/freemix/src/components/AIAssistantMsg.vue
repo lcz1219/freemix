@@ -74,6 +74,10 @@ const props = defineProps({
   currentSessionId: {
     type: String,
     default: null
+  },
+  isSessionLoading: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -87,10 +91,14 @@ const chatContainerRef = ref(null);
 
 // 监听 props 变化，切换会话时更新消息列表
 watch(() => props.initialMessages, (newMsgs) => {
-  chatMessages.value = newMsgs && newMsgs.length > 0 ? [...newMsgs] : [];
-  nextTick(() => {
-    scrollToBottom();
-  });
+  // 只有当本地消息为空，或者不是正在发送状态时，才接受父组件的更新
+  // 防止 sendMessage 过程中被旧的历史记录覆盖
+  if (!isSending.value) {
+    chatMessages.value = newMsgs && newMsgs.length > 0 ? [...newMsgs] : [];
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
 }, { deep: true });
 
 // 消息更新同步
@@ -100,6 +108,24 @@ const notifyUpdate = () => {
 
 // 获取用户信息
 const store = useStore();
+
+// 监听全局 AI 输入内容
+watch( () => store.state.aiInputContent,  (newContent) => {
+  if (newContent && newContent.trim() && props.currentSessionId) {
+    // 如果正在加载会话，等待加载完成后再发送
+    const unwatchLoading = watch(() => props.isSessionLoading, (isLoading) => {
+      if (!isLoading) {
+        nextTick(() => {
+          userInput.value = newContent;
+          sendMessage();
+          store.commit('setAiInputContent', '');
+          unwatchLoading(); // 停止监听
+        });
+      }
+    }, { immediate: true });
+  }
+}, { immediate: true });
+
 const currentUser = computed(() => {
   return store.state.user;
 });
@@ -169,46 +195,6 @@ const saveAIMessageToServer = async (userQuestion, aiAnswer, thinkingContent,fol
   } catch (error) {
     console.error('保存AI消息到服务器失败:', error);
     return null;
-  }
-};
-
-// 从服务器获取当前会话的历史AI记录
-const loadAIMessagesFromServer = async () => {
-  if (!props.currentSessionId) return [];
-  console.log("props.currentSessionId}",props.currentSessionId);
-  
-  try {
-    const response = await getM(`ai-messages/session/${props.currentSessionId}`);
-    if (response && response.data && isSuccess(response)) {
-      const historyMessages = [];
-      
-      response.data.data.forEach(item => {
-        // 添加用户问题
-        historyMessages.push({
-          type: 'user',
-          content: item.userQuestion,
-          timestamp: new Date(item.createdAt)
-        });
-        
-        // 添加AI回复
-        if (item.aiAnswer) {
-          historyMessages.push({
-            messageType: item.messageType || 'answer',
-            type: 'ai',
-            content: item.aiAnswer,
-            thinkingContent: item.thinkingContent,
-            followUpQuestions: item.followUpQuestions,
-            timestamp: new Date(item.createdAt)
-          });
-        }
-      });
-      
-      return historyMessages;
-    }
-    return [];
-  } catch (error) {
-    console.error('从服务器加载AI会话历史记录失败:', error);
-    return [];
   }
 };
 
@@ -646,36 +632,20 @@ const callCustomAIAPI = async (question, onUpdate) => {
   }
 };
 
-// 初始化欢迎消息和加载历史记录
-onMounted(async () => {
-  try {
-    // 尝试从服务器加载用户的AI历史记录
-    const historyMessages = await loadAIMessagesFromServer();
-    console.log('历史记录:', historyMessages);
-    if (historyMessages.length > 0) {
-      // 如果有历史记录，加载到聊天界面
-      chatMessages.value = historyMessages;
-      // 滚动到底部
-      nextTick(() => {
-        scrollToBottom();
-      });
-    } else {
-      // 如果没有历史记录，显示欢迎消息
-      chatMessages.value.push({
-        type: 'ai',
-        content: '您好！我是您的Freemix AI助手，请问有什么我可以帮助您的吗？',
-        timestamp: new Date()
-      });
-    }
-  } catch (error) {
-    console.error('初始化AI助手失败:', error);
-    // 如果加载历史记录失败，至少显示欢迎消息
+// 初始化欢迎消息
+onMounted(() => {
+  if (chatMessages.value.length === 0) {
+    // 如果没有历史记录，显示欢迎消息
     chatMessages.value.push({
       type: 'ai',
       content: '您好！我是您的Freemix AI助手，请问有什么我可以帮助您的吗？',
       timestamp: new Date()
     });
   }
+  // 初始滚动到底部
+  nextTick(() => {
+    scrollToBottom();
+  });
 });
 
 // 暴露callCustomAIAPI方法供外部使用

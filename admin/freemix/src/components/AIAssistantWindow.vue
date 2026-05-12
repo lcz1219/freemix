@@ -35,6 +35,7 @@
             :key="currentSessionId"
             :currentSessionId="currentSessionId"
             :initial-messages="currentSession.messages"
+            :isSessionLoading="isSessionLoading"
             @update-messages="syncMessagesToSession"
             ref="aiAssistantRef" 
           />
@@ -66,6 +67,18 @@ const store = useStore();
 const message = useMessage();
 const activeMenu = ref('ai-chat');
 const aiAssistantRef = ref(null);
+const isSessionLoading = ref(false); // 新增：会话加载状态
+
+// 监听全局 AI 输入内容，确保会话存在
+watch(() => store.state.aiInputContent, async (newContent) => {
+  if (newContent && newContent.trim()) {
+    activeMenu.value = 'ai-chat';
+    // 如果没有当前会话，或者当前会话是空的，确保先初始化
+    if (!currentSessionId.value) {
+      createNewSession();
+    }
+  }
+});
 
 // 数据状态
 const sessions = ref([]);
@@ -107,17 +120,16 @@ const createNewSession = () => {
 };
 
 const switchSession = async (id) => {
+  if (isSessionLoading.value) return; // 防止重复加载
   currentSessionId.value = id;
-  console.log("id",id);
   
-  // 切换时如果消息为空，从后端拉取
   const session = sessions.value.find(s => s.id === id);
-  if (session ) {
+  if (session) {
+    isSessionLoading.value = true;
     try {
       const res = await getM(`/ai-messages/session/${id}`);
       if (isSuccess(res)) {
-        // 转换后端消息格式为前端显示格式
-        session.messages = res.data.data.map(m => ([
+        const loadedMessages = res.data.data.map(m => ([
           { type: 'user', content: m.userQuestion, timestamp: new Date(m.createdAt) },
           { 
             type: 'ai', 
@@ -128,12 +140,19 @@ const switchSession = async (id) => {
             timestamp: new Date(m.createdAt) 
           }
         ])).flat();
-        if(session.messages.length ==0) {
+        
+        // 始终以加载的历史数据为基础，如果本地有刚发送但还没保存完的消息，则合并
+        // 这里简化逻辑：直接覆盖为最新的历史数据，因为 sendMessage 之后会再次调用 save 接口
+        session.messages = loadedMessages;
+        
+        if(session.messages.length == 0) {
            createNewSession()
         }
       }
     } catch (e) {
       console.error('获取会话详情失败:', e);
+    } finally {
+      isSessionLoading.value = false;
     }
   }
 };
@@ -249,7 +268,7 @@ onMounted(() => {
 
 <style scoped>
 .ai-menu-page {
-  height: 100vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   background: var(--bg-color);

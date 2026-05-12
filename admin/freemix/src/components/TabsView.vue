@@ -27,9 +27,28 @@
           {{ tab.title }}
         </n-tab>
       </n-tabs>
-      <div class="theme-switch-container">
+      
+      <div class="header-actions">
         <n-tooltip placement="bottom">
           <template #trigger>
+            <div class="ai-trigger-wrapper" @click="store.commit('setAiDrawer', true)">
+              <div class="ai-trigger-content">
+                <div class="ai-icon-box">
+                  <AIAssistantIcon />
+                </div>
+                <!-- <span class="ai-text">AI 助手</span> -->
+              </div>
+              <div class="ai-glow"></div>
+            </div>
+          </template>
+          <span>唤起 AI 智能助手 (Alt + Enter)</span>
+        </n-tooltip>
+      </div>
+
+        <div class="theme-switch-container">
+        <n-tooltip placement="bottom">
+          <template #trigger>
+          
             <n-switch 
               v-model:value="isDark" 
               :rail-style="railStyle" 
@@ -56,6 +75,7 @@ import { NTabs, NTab, NDropdown, NSwitch, NTooltip, NIcon } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5'
 import { useStore } from 'vuex'
+import AIAssistantIcon from '@/components/icons/AIAssistantIcon.vue'
 
 // 获取路由和路由器实例
 const route = useRoute()
@@ -326,6 +346,101 @@ defineExpose({
 
 .tabs-container {
   flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+/* AI 助手触发器样式优化 */
+.ai-trigger-wrapper {
+  position: relative;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 20px;
+  /* background: rgba(7, 96, 85, 0.15); */
+  /* border: 1px solid rgba(138, 43, 226, 0.3); */
+  /* transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  margin-right: 29px;
+}
+
+.ai-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.ai-icon-box {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  transition: transform 0.3s ease;
+}
+
+.ai-text {
+  font-size: 13px;
+  font-weight: 600;
+  /* color: #8a2be2; */
+  letter-spacing: 0.5px;
+}
+
+.ai-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  /* background: radial-gradient(circle, rgba(138, 43, 226, 0.2) 0%, transparent 70%); */
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s ease;
+  z-index: 1;
+}
+
+.ai-trigger-wrapper:hover {
+  /* border-color: #8a2be2; */
+  background: rgba(7, 96, 85, 0.25);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
+  transform: translateY(-1px);
+}
+
+.ai-trigger-wrapper:hover .ai-icon-box {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.ai-trigger-wrapper:hover .ai-glow {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* 深色模式适配 */
+/* .dark-theme .ai-trigger-wrapper {
+  background: rgba(138, 43, 226, 0.1);
+  border-color: rgba(138, 43, 226, 0.4);
+}
+
+.dark-theme .ai-trigger-wrapper:hover {
+  background: rgba(138, 43, 226, 0.2);
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+} */
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .ai-text {
+    display: none;
+  }
+  .ai-trigger-wrapper {
+    padding: 6px;
+    border-radius: 50%;
+  }
 }
 
 .theme-switch-container {
