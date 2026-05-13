@@ -41,7 +41,7 @@
               <div class="ai-glow"></div>
             </div>
           </template>
-          <span>唤起 AI 智能助手 (Alt + Enter)</span>
+          <span>唤起 Freemix AI（Alt+K）</span>
         </n-tooltip>
       </div>
 

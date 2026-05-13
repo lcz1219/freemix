@@ -27,8 +27,8 @@
           v-for="session in sessions" 
           :key="session.id"
           class="session-item"
-          :class="{ active: currentSessionId === session._id }"
-          @click="$emit('select-session', session._id)"
+          :class="{ active: currentSessionId === session.id }"
+          @click="$emit('select-session', session.id)"
         >
           <div class="icon-wrap"><n-icon><ChatbubbleEllipsesOutline /></n-icon></div>
           <div class="session-info">
@@ -104,58 +104,65 @@ const formatDate = (ts) => {
 .ai-sidebar {
   width: 260px;
   height: 100%;
-  background: var(--card-bg);
+  background: rgba(var(--card-bg-rgb), 0.3);
   display: flex;
   flex-direction: column;
   color: var(--text-color);
   border-right: 1px solid var(--border-color);
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
 }
 
 .sidebar-header {
-  padding: 20px 16px;
+  padding: 24px 16px;
 }
 
 .new-chat-btn {
-  background: #00c9a7;
-  height: 44px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #00c9a7, #00897b);
+  height: 48px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   font-weight: 600;
+  color: white;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 201, 167, 0.2);
   
-  &:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 201, 167, 0.3); }
+  &:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(0, 201, 167, 0.4);
+    filter: brightness(1.1);
+  }
   &:active { transform: scale(0.96); }
 }
 
 .tab-switcher {
   display: flex;
-  margin: 0 16px 15px;
-  background: var(--hover-color);
+  margin: 0 16px 20px;
+  background: rgba(0, 0, 0, 0.05);
   padding: 4px;
-  border-radius: 10px;
+  border-radius: 12px;
   
   .tab-item {
     flex: 1;
     text-align: center;
-    padding: 6px;
+    padding: 8px;
     font-size: 13px;
-    border-radius: 7px;
+    border-radius: 9px;
     cursor: pointer;
     color: var(--text-color);
     opacity: 0.6;
     transition: all 0.3s;
     
     &.active { 
-      background: #00c9a7; 
-      color: white; 
+      background: var(--card-bg); 
+      color: #00c9a7; 
       font-weight: bold; 
       opacity: 1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
   }
 }
@@ -163,52 +170,97 @@ const formatDate = (ts) => {
 .session-list-container {
   flex: 1;
   overflow-y: auto;
-  padding: 0 12px 20px;
+  padding: 0 12px 24px;
+
+  /* 自定义滚动条 */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+  }
 }
 
 .session-item {
   display: flex;
   align-items: center;
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border-radius: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   border: 1px solid transparent;
-  background: var(--card-bg);
+  background: transparent;
 
   &:hover { 
     background: var(--hover-color);
-    .delete-icon { opacity: 1; }
+    .delete-icon { opacity: 0.6; }
   }
   
   &.active { 
     background: var(--hover-color); 
-    border-color: rgba(0, 201, 167, 0.5);
-    .icon-wrap { color: #00c9a7; }
+    border-color: rgba(0, 201, 167, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    .icon-wrap { color: #00c9a7; opacity: 1; }
+    .session-title { color: #00c9a7; font-weight: 600; }
   }
 
-  .icon-wrap { font-size: 18px; color: var(--text-color); opacity: 0.5; margin-right: 12px; display: flex; }
+  .icon-wrap { 
+    font-size: 20px; 
+    color: var(--text-color); 
+    opacity: 0.4; 
+    margin-right: 14px; 
+    display: flex; 
+    transition: all 0.3s ease;
+  }
   
   .session-info {
     flex: 1;
     overflow: hidden;
     
-    .session-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
-    .session-time { font-size: 11px; color: var(--text-color); opacity: 0.4; margin-top: 2px; }
+    .session-title { 
+      font-size: 14px; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+    .session-time { 
+      font-size: 11px; 
+      color: var(--text-color); 
+      opacity: 0.4; 
+      margin-top: 4px; 
+    }
   }
 
   .delete-icon { 
     opacity: 0; 
     color: var(--text-color);
-    opacity: 0.3;
     font-size: 16px;
-    &:hover { color: #ff4d4f; opacity: 1; }
+    padding: 4px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    
+    &:hover { 
+      color: #ff4d4f; 
+      background: rgba(255, 77, 79, 0.1);
+      opacity: 1 !important;
+    }
   }
 }
 
-.gen-record {
-  .icon-wrap { color: #ff9800 !important; }
+.dark {
+  .tab-switcher {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .session-list-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+  }
 }
 </style>
 

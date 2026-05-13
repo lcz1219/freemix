@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, h, computed } from 'vue';
+import { ref, onMounted, h, computed, watch } from 'vue';
 import { NMenu, NIcon, useMessage } from 'naive-ui';
 import AIAssistantMsg from '@/components/AIAssistantMsg.vue';
 import AIGoalGenerator from '@/components/AIGoalGenerator.vue';
@@ -268,37 +268,45 @@ onMounted(() => {
 
 <style scoped>
 .ai-menu-page {
-  height: 90vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--bg-color);
   overflow: hidden;
+  padding: 12px;
 }
 
 .ai-menu-container {
   display: flex;
   flex: 1;
   overflow: hidden;
+  background: var(--card-bg);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
 }
 
 .menu-sidebar {
-  width: 72px;
-  background: var(--card-bg);
+  width: 68px;
+  background: rgba(var(--card-bg-rgb), 0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 0;
+  padding: 20px 0;
   border-right: 1px solid var(--border-color);
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .content-area {
   flex: 1;
-  background: var(--bg-color);
+  background: transparent;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  padding: 0; /* 内部组件自带 padding */
 }
 
 .chat-container {
@@ -311,40 +319,43 @@ onMounted(() => {
 .production-page {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 24px;
 }
 
 :deep(.n-menu) {
+  .n-menu-item {
+    margin-bottom: 12px;
+  }
   .n-menu-item-content {
     padding: 0 !important;
     display: flex;
     justify-content: center;
+    border-radius: 12px !important;
+    width: 44px;
+    height: 44px;
+    margin: 0 auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     &.n-menu-item-content--selected {
-      color: #00c9a7 !important;
-      .n-menu-item-content__icon { color: #00c9a7 !important; }
+      background: linear-gradient(135deg, #00c9a7, #00897b) !important;
+      box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
+      .n-menu-item-content__icon { 
+        color: white !important; 
+        transform: scale(1.1);
+      }
+    }
+
+    &:hover:not(.n-menu-item-content--selected) {
+      background: var(--hover-color);
     }
     
-    .n-menu-item-content__icon { margin-right: 0 !important; font-size: 24px; }
+    .n-menu-item-content__icon { 
+      margin-right: 0 !important; 
+      font-size: 22px;
+      transition: all 0.3s ease;
+    }
     .n-menu-item-content-header { display: none; }
   }
-}
-
-.content-area {
-  flex: 1;
-  background: var(--bg-color);
-  border-radius: 8px;
-  /* padding: 20px; */
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.chat-container {
-  flex: 1;
-  overflow-y: auto;
 }
 
 .empty-chat-state {
@@ -352,16 +363,44 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0.6;
+}
+
+/* 隐藏原本冗余的旧样式 */
+.content-area-old {
+  display: none;
 }
 
 /* 暗色主题适配 */
-.dark .menu-sidebar,
-.dark .content-area {
-  background: rgba(42, 42, 42, 0.7);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.dark .ai-menu-container {
+  background: rgba(30, 30, 30, 0.8);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .menu-sidebar {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .ai-menu-page {
   background-color: var(--bg-color);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="ai-assistant-window" :class="isDark ? 'dark' : 'light'">
-    <div class="window-header">
-      <h2>AI助手</h2>
+    <!-- <div class="window-header"> -->
+      <!-- <h2>AI助手</h2> -->
       <!-- <n-button @click="closeWindow" class="close-button" quaternary circle>
         <n-icon>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
@@ -9,7 +9,7 @@
           </svg>
         </n-icon>
       </n-button> -->
-    </div>
+    <!-- </div> -->
     
     <!-- AI目标确认对话框
     <AIGoalConfirmation 

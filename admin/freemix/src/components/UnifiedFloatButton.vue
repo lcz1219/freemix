@@ -326,21 +326,22 @@ const toggleGoals = () => {
 };
 
 const openAIAssistant = async () => {
-  showMenu.value = false;
+  store.commit('setAiDrawer', true)
+  // showMenu.value = false;
  
   
-  const windowId = generateWindowId();
-  try {
-    await createNewWindow(windowId, {
-      width: 1100,
-      height: 600,
-      minWidth: 400,
-      minHeight: 500
-    }, '/AIAssistantWindow');
+  // const windowId = generateWindowId();
+  // try {
+  //   await createNewWindow(windowId, {
+  //     width: 1100,
+  //     height: 600,
+  //     minWidth: 400,
+  //     minHeight: 500
+  //   }, '/AIAssistantWindow');
     
-  } catch (error) {
-    console.error('创建AI助手窗口失败:', error);
-  }
+  // } catch (error) {
+  //   console.error('创建AI助手窗口失败:', error);
+  // }
 };
 
 const isDateDisabled = (timestamp) => {

@@ -13,83 +13,77 @@
               </p>
             </section>
 
-            <!-- 控制面板 -->
-            <section class="control-section">
-              <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
-                <n-space justify="space-between" align="center">
-                  <n-space>
-                    <n-button type="primary" @click="addNewGoal">
+            <!-- 控制面板 (方案一：重构指挥部) -->
+            <section class="command-deck-section">
+              <div class="command-deck" :class="{ 'expanded': showAdvancedFilters }">
+                <!-- 第一层：核心操作与快速搜索 -->
+                <div class="command-main-row">
+                  <div class="action-group">
+                    <n-button type="primary" round secondary strong @click="addNewGoal" class="deck-btn main-action">
                       <template #icon>
-                        <n-icon>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                            fill="currentColor">
-                            <path d="M20,12H4v-1c0-0.6,0.4-1,1-1h14c0.6,0,1,0.4,1,1V12z"></path>
-                            <path d="M4,12h16v1c0,0.6-0.4,1-1,1H5c-0.6,0-1-0.4-1-1V12z"></path>
-                            <path
-                              d="M20,10H4c-0.6,0-1,0.4-1,1v2c0,0.6,0.4,1,1,1h16c0.6,0,1-0.4,1-1v-2C21,10.4,20.6,10,20,10z M20,12H4v-1h16V12z">
-                            </path>
-                          </svg>
-                        </n-icon>
+                        <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></n-icon>
                       </template>
                       添加新目标
                     </n-button>
-
+                    <div class="divider-vertical"></div>
                     <ExcelImport @import-success="refreshGoals" />
-
-                    <n-button @click="refreshGoals">
+                    <n-button circle quaternary @click="refreshGoals" title="刷新数据">
                       <template #icon>
-                        <n-icon>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                            fill="currentColor">
-                            <path
-                              d="M17.6,6.4C16.2,5,14.2,4.2,12,4.2c-2.2,0-4.2,0.8-5.6,2.2l1.4,1.4C8.9,6.8,10.4,6.2,12,6.2 c1.6,0,3.1,0.6,4.2,1.6c1.1,1.1,1.7,2.6,1.7,4.2c0,1.6-0.6,3.1-1.7,4.2c-1.1,1.1-2.6,1.7-4.2,1.7c-1.6,0-3.1-0.6-4.2-1.7 L6.4,17.6c1.4,1.4,3.4,2.2,5.6,2.2c2.2,0,4.2-0.8,5.6-2.2c1.4-1.4,2.2-3.4,2.2-5.6C19.8,9.8,19,7.8,17.6,6.4z">
-                            </path>
-                          </svg>
-                        </n-icon>
+                        <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></n-icon>
                       </template>
-                      刷新
                     </n-button>
-                  </n-space>
+                  </div>
 
-                  <n-space>
-                    <n-input v-model:value="searchQuery" placeholder="搜索目标..." clearable style="width: 200px;">
+                  <div class="search-group">
+                    <n-input v-model:value="searchQuery" round placeholder="快速搜索目标..." clearable class="deck-search">
                       <template #prefix>
-                        <n-icon>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
-                            fill="currentColor">
-                            <path
-                              d="M21.7,20.3L18,16.6c1.2-1.5,1.9-3.4,1.9-5.4c0-4.4-3.6-8-8-8s-8,3.6-8,8s3.6,8,8,8c2,0,3.9-0.7,5.4-1.9 l3.7,3.7c0.2,0.2,0.5,0.3,0.7,0.3s0.5-0.1,0.7-0.3C22.1,21.3,22.1,20.7,21.7,20.3z M11,17c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6 S14.3,17,11,17z">
-                            </path>
-                          </svg>
-                        </n-icon>
+                        <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.71-.71A6.471 6.471 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16a6.471 6.471 0 0 0 4.21-1.21l.71.71v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14z"/></svg></n-icon>
                       </template>
                     </n-input>
-
-                    <n-date-picker v-model:value="dateFilter" type="daterange" clearable placeholder="选择日期范围"
-                      style="width: 240px;" />
-
-                    <n-select v-model:value="ownershipFilter" :options="ownershipOptions" clearable placeholder="我的/协作"
-                      style="width: 120px;" />
-
-                    <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="状态筛选"
-                      style="width: 120px;" />
-
-                    <n-select v-model:value="tagFilter" :options="tagOptions" multiple clearable placeholder="标签筛选"
-                      style="width: 180px;" />
-
+                    <n-button 
+                      round 
+                      :secondary="!showAdvancedFilters" 
+                      :type="showAdvancedFilters ? 'primary' : 'default'"
+                      @click="showAdvancedFilters = !showAdvancedFilters"
+                      class="filter-toggle-btn"
+                    >
+                      <template #icon>
+                        <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg></n-icon>
+                      </template>
+                      筛选
+                    </n-button>
                     <n-dropdown trigger="click" :options="exportOptions" @select="handleExport">
-                      <n-button>
+                      <n-button circle quaternary>
                         <template #icon>
-                          <n-icon>
-                            <CloudDownloadOutline />
-                          </n-icon>
+                          <n-icon><CloudDownloadOutline /></n-icon>
                         </template>
-                        导出
                       </n-button>
                     </n-dropdown>
-                  </n-space>
-                </n-space>
-              </n-card>
+                  </div>
+                </div>
+
+                <!-- 第二层：高级筛选器 (折叠区域) -->
+                <transition name="expand-fade">
+                  <div v-if="showAdvancedFilters" class="command-advanced-row">
+                    <div class="filter-item">
+                      <span class="filter-label">日期范围</span>
+                      <n-date-picker v-model:value="dateFilter" type="daterange" clearable placeholder="选择周期" />
+                    </div>
+                    <div class="filter-item">
+                      <span class="filter-label">所有权</span>
+                      <n-select v-model:value="ownershipFilter" :options="ownershipOptions" clearable placeholder="全部类型" />
+                    </div>
+                    <div class="filter-item">
+                      <span class="filter-label">状态</span>
+                      <n-select v-model:value="statusFilter" :options="statusOptions" clearable placeholder="全部状态" />
+                    </div>
+                    <div class="filter-item">
+                      <span class="filter-label">标签</span>
+                      <n-select v-model:value="tagFilter" :options="tagOptions" multiple clearable placeholder="选择标签" />
+                    </div>
+                  </div>
+                </transition>
+              </div>
             </section>
 
             <!-- 目标列表与详情双栏布局 -->
@@ -119,45 +113,48 @@
                       </div>
                     </template>
 
-                    <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
-                      style="width: 100%; cursor: pointer;height: 100%;" @row-click="handleRowClick"
-                      :row-class-name="tableRowClassName" highlight-current-row>
-                      <el-table-column label="目标名称" prop="title" show-overflow-tooltip min-width="180">
-                        <template #default="scope">
-                          <div style="display: flex; align-items: center; gap: 6px;">
-                            <n-tag v-if="isOwner(scope.row)" size="small" type="primary" :bordered="false" round
-                              style="font-size: 10px; height: 20px; padding: 0 6px;">
-                              我的
+                    <div class="stagger-list-container">
+                      <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
+                        style="width: 100%; cursor: pointer;height: 100%;" @row-click="handleRowClick"
+                        :row-class-name="tableRowClassName" highlight-current-row>
+                        <!-- ... 列表内容保持不变 ... -->
+                        <el-table-column label="目标名称" prop="title" show-overflow-tooltip min-width="180">
+                          <template #default="scope">
+                            <div style="display: flex; align-items: center; gap: 6px;" class="stagger-item">
+                              <n-tag v-if="isOwner(scope.row)" size="small" type="primary" :bordered="false" round
+                                style="font-size: 10px; height: 20px; padding: 0 6px;">
+                                我的
+                              </n-tag>
+                              <n-tag v-else size="small" type="warning" :bordered="false" round
+                                style="font-size: 10px; height: 20px; padding: 0 6px;">
+                                协作
+                              </n-tag>
+                              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{
+                                scope.row.title }}</span>
+                            </div>
+                          </template>
+                        </el-table-column>
+                        <el-table-column label="进度" width="100">
+                          <template #default="scope">
+                            <el-progress :percentage="scope.row.progress"
+                              :stroke-width="20" text-inside="true"  :color="getStatusColor(scope.row.status)"
+                              :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
+                          </template>
+                        </el-table-column>
+                        <el-table-column label="状态" width="80">
+                          <template #default="scope">
+                            <n-tag :type="getStatusTagType(scope.row.status)" size="small">
+                              {{ getStatusLabel(scope.row.status) }}
                             </n-tag>
-                            <n-tag v-else size="small" type="warning" :bordered="false" round
-                              style="font-size: 10px; height: 20px; padding: 0 6px;">
-                              协作
-                            </n-tag>
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{
-                              scope.row.title }}</span>
-                          </div>
-                        </template>
-                      </el-table-column>
-                      <el-table-column label="进度" width="100">
-                        <template #default="scope">
-                          <el-progress :percentage="scope.row.progress"
-                            :stroke-width="20" text-inside="true"  :color="getStatusColor(scope.row.status)"
-                            :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
-                        </template>
-                      </el-table-column>
-                      <el-table-column label="状态" width="80">
-                        <template #default="scope">
-                          <n-tag :type="getStatusTagType(scope.row.status)" size="small">
-                            {{ getStatusLabel(scope.row.status) }}
-                          </n-tag>
-                        </template>
-                      </el-table-column>
-                      <el-table-column label="截止时间" width="120">
-                        <template #default="scope">
-                          {{ scope.row.deadlineString }}
-                        </template>
-                      </el-table-column>
-                    </el-table>
+                          </template>
+                        </el-table-column>
+                        <el-table-column label="截止时间" width="120">
+                          <template #default="scope">
+                            {{ scope.row.deadlineString }}
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
                   </n-card>
                 </n-grid-item>
 
@@ -504,6 +501,9 @@ const tagFilter = ref([]);
 // const dateFilter = ref(null);
 const selectedGoal = ref<any>({});
 const currentSelectedGoal = ref<any>(null);
+
+// 高级筛选折叠状态
+const showAdvancedFilters = ref(false);
 
 // 庆祝动画状态
 const showCelebration = ref(false);
@@ -1334,6 +1334,34 @@ onMounted(() => {
   overflow-y: auto;
 }
 
+/* 列表入场动效 */
+.stagger-list-container :deep(.el-table__row) {
+  animation: staggerIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes staggerIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 为前10行设置交错延迟 */
+.stagger-list-container :deep(.el-table__row:nth-child(1)) { animation-delay: 0.05s; }
+.stagger-list-container :deep(.el-table__row:nth-child(2)) { animation-delay: 0.1s; }
+.stagger-list-container :deep(.el-table__row:nth-child(3)) { animation-delay: 0.15s; }
+.stagger-list-container :deep(.el-table__row:nth-child(4)) { animation-delay: 0.2s; }
+.stagger-list-container :deep(.el-table__row:nth-child(5)) { animation-delay: 0.25s; }
+.stagger-list-container :deep(.el-table__row:nth-child(6)) { animation-delay: 0.3s; }
+.stagger-list-container :deep(.el-table__row:nth-child(7)) { animation-delay: 0.35s; }
+.stagger-list-container :deep(.el-table__row:nth-child(8)) { animation-delay: 0.4s; }
+.stagger-list-container :deep(.el-table__row:nth-child(9)) { animation-delay: 0.45s; }
+.stagger-list-container :deep(.el-table__row:nth-child(10)) { animation-delay: 0.5s; }
+
 .main-content {
   padding: 24px 40px;
   max-width: 1600px;
@@ -1353,6 +1381,90 @@ onMounted(() => {
   font-weight: 800;
   margin-bottom: 8px;
   letter-spacing: -0.5px;
+}
+
+/* 方案一：控制面板样式重构 */
+.command-deck-section {
+  margin-bottom: 24px;
+}
+
+.command-deck {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  padding: 12px 20px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.command-deck.expanded {
+  padding-bottom: 20px;
+}
+
+.command-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.action-group, .search-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.divider-vertical {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 4px;
+}
+
+.deck-search {
+  width: 240px;
+  transition: all 0.3s ease;
+}
+
+.deck-search:focus-within {
+  width: 300px;
+}
+
+.command-advanced-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-color);
+  opacity: 0.6;
+  padding-left: 4px;
+}
+
+/* 动画效果 */
+.expand-fade-enter-active, .expand-fade-leave-active {
+  transition: all 0.3s ease;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.expand-fade-enter-from, .expand-fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
 }
 
 .hero-title {

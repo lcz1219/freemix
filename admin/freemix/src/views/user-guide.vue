@@ -70,7 +70,7 @@
           <section id="ai" class="guide-section">
             <h2 class="section-title"><n-icon>
                 <LogoReddit />
-              </n-icon> AI 智能助手</h2>
+              </n-icon> Freemix AI </h2>
             <p class="section-desc">试着与 AI 对话，体验智能生成目标的魅力。</p>
 
             <div class="mac-window simulator-window">

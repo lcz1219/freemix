@@ -263,31 +263,38 @@ const initStatusChart = () => {
   const chart = echarts.init(statusChart.value);
   
   const option = {
+    backgroundColor: 'transparent',
     title: {
       text: '目标状态分布',
       left: 'center',
       textStyle: {
-        color: isDark.value ? '#ffffff' : '#000000'
+        color: isDark.value ? '#ffffff' : '#2c3e50',
+        fontWeight: 600,
+        fontSize: 16
       }
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'item',
+      backgroundColor: isDark.value ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(10px)',
+      borderColor: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      textStyle: { color: isDark.value ? '#fff' : '#2c3e50' }
     },
     legend: {
       top: 'bottom',
       textStyle: {
-        color: isDark.value ? '#cccccc' : '#333333'
+        color: isDark.value ? '#aaaaaa' : '#666666'
       }
     },
     series: [
       {
         name: '目标状态',
         type: 'pie',
-        radius: ['40%', '70%'],
+        radius: ['45%', '75%'],
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 10,
-          borderColor: isDark.value ? '#0f0f13' : '#dadae3',
+          borderRadius: 12,
+          borderColor: 'transparent',
           borderWidth: 2
         },
         label: {
@@ -299,18 +306,46 @@ const initStatusChart = () => {
             show: true,
             fontSize: '18',
             fontWeight: 'bold'
+          },
+          itemStyle: {
+            shadowBlur: 20,
+            shadowColor: 'rgba(0, 201, 167, 0.3)'
           }
         },
         labelLine: {
           show: false
         },
         data: [
-          { value: completedGoals.value, name: '已完成', itemStyle: { color: '#00c9a7' } },
-          { value: inProgressGoals.value, name: '进行中', itemStyle: { color: '#00c9a7' } },
-          { value: expiredGoals.value, name: '已过期', itemStyle: { color: '#ff6b6b' } }
+          { 
+            value: completedGoals.value, 
+            name: '已完成', 
+            itemStyle: { 
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#00c9a7' },
+                { offset: 1, color: '#00897b' }
+              ])
+            } 
+          },
+          { 
+            value: inProgressGoals.value, 
+            name: '进行中', 
+            itemStyle: { 
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#00c9a7' },
+                { offset: 1, color: 'rgba(0, 201, 167, 0.5)' }
+              ])
+            } 
+          },
+          { 
+            value: expiredGoals.value, 
+            name: '已过期', 
+            itemStyle: { color: '#ff6b6b' } 
+          }
         ]
       }
-    ]
+    ],
+    animationDuration: 1500,
+    animationEasing: 'cubicOut'
   };
   
   chart.setOption(option);
@@ -357,40 +392,50 @@ const initMonthlyChart = () => {
   }
   
   const option = {
+    backgroundColor: 'transparent',
     title: {
       text: '月度目标完成趋势',
       left: 'center',
       textStyle: {
-        color: isDark.value ? '#ffffff' : '#000000'
+        color: isDark.value ? '#ffffff' : '#2c3e50',
+        fontWeight: 600,
+        fontSize: 16
       }
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      backgroundColor: isDark.value ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(10px)',
+      borderColor: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      textStyle: { color: isDark.value ? '#fff' : '#2c3e50' }
     },
     legend: {
       top: 'bottom',
       textStyle: {
-        color: isDark.value ? '#cccccc' : '#333333'
+        color: isDark.value ? '#aaaaaa' : '#666666'
       }
     },
     grid: {
       left: '3%',
       right: '4%',
       bottom: '15%',
+      top: '15%',
       containLabel: true
     },
     xAxis: {
       type: 'category',
       boundaryGap: false,
       data: months,
+      axisLine: { lineStyle: { color: isDark.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' } },
       axisLabel: {
-        color: isDark.value ? '#aaaaaa' : '#666666'
+        color: isDark.value ? '#888' : '#999'
       }
     },
     yAxis: {
       type: 'value',
+      splitLine: { lineStyle: { color: isDark.value ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } },
       axisLabel: {
-        color: isDark.value ? '#aaaaaa' : '#666666'
+        color: isDark.value ? '#888' : '#999'
       }
     },
     series: [
@@ -399,26 +444,16 @@ const initMonthlyChart = () => {
         type: 'line',
         stack: '总量',
         smooth: true,
-        lineStyle: {
-          width: 0
-        },
+        lineStyle: { width: 3, color: '#00c9a7' },
         showSymbol: false,
         areaStyle: {
-          opacity: 0.8,
+          opacity: 0.3,
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            {
-              offset: 0,
-              color: '#00c9a7'
-            },
-            {
-              offset: 1,
-              color: 'rgba(0, 201, 167, 0.1)'
-            }
+            { offset: 0, color: '#00c9a7' },
+            { offset: 1, color: 'transparent' }
           ])
         },
-        emphasis: {
-          focus: 'series'
-        },
+        emphasis: { focus: 'series' },
         data: completedData
       },
       {
@@ -426,26 +461,13 @@ const initMonthlyChart = () => {
         type: 'line',
         stack: '总量',
         smooth: true,
-        lineStyle: {
-          width: 0
-        },
+        lineStyle: { width: 2, type: 'dashed', color: '#00c9a7' },
         showSymbol: false,
         areaStyle: {
-          opacity: 0.8,
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            {
-              offset: 0,
-              color: '#00c9a7'
-            },
-            {
-              offset: 1,
-              color: '#00c9a7'
-            }
-          ])
+          opacity: 0.1,
+          color: '#00c9a7'
         },
-        emphasis: {
-          focus: 'series'
-        },
+        emphasis: { focus: 'series' },
         data: inProgressData
       },
       {
@@ -453,29 +475,21 @@ const initMonthlyChart = () => {
         type: 'line',
         stack: '总量',
         smooth: true,
-        lineStyle: {
-          width: 0
-        },
+        lineStyle: { width: 2, color: '#ff6b6b' },
         showSymbol: false,
         areaStyle: {
-          opacity: 0.8,
+          opacity: 0.2,
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            {
-              offset: 0,
-              color: '#ff6b6b'
-            },
-            {
-              offset: 1,
-              color: 'rgba(255, 107, 107, 0.1)'
-            }
+            { offset: 0, color: '#ff6b6b' },
+            { offset: 1, color: 'transparent' }
           ])
         },
-        emphasis: {
-          focus: 'series'
-        },
+        emphasis: { focus: 'series' },
         data: expiredData
       }
-    ]
+    ],
+    animationDuration: 2000,
+    animationEasing: 'exponentialOut'
   };
   
   chart.setOption(option);
