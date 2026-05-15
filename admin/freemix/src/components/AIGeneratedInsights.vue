@@ -3,7 +3,7 @@
     <div class="card-header-ai">
       <div class="header-left">
         <div class="ai-icon-wrapper">
-          <n-icon size="22" color="#a855f7">
+          <n-icon size="22" color="#00c9a7">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/>
             </svg>
@@ -108,7 +108,7 @@ onMounted(() => {
 .ai-icon-wrapper {
   width: 36px;
   height: 36px;
-  background: rgba(168, 85, 247, 0.15);
+  /* background: #00c9a7; */
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(to right, #fff, #d3c1ff);
+  background: white;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

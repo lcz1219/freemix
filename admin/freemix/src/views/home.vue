@@ -463,7 +463,7 @@ onMounted(async () => {
 .hero-title {
   font-size: 32px;
   font-weight: 800;
-  background: linear-gradient(to right, #fff, #d3c1ff);
+  background: linear-gradient(to right, #fff, #00c9a7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
