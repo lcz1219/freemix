@@ -147,10 +147,10 @@ onMounted(() => {
   width: 100%;
 }
 
-.feature-card:hover {
+/* .feature-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 40px rgba(129, 198, 131, 0.4);
-}
+} */
 
 .card-header {
   display: flex;

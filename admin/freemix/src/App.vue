@@ -30,7 +30,7 @@
 
                   <TabsView v-if="isnAiPage && !isMobileDevice"></TabsView>
                   <!-- 页面内容 -->
-                  <n-layout-content :class="isnAiPage ? content - wrapper : content - wrappe - ai">
+                  <n-layout-content :class="isnAiPage ? 'content-wrapper' : 'content-wrappe-ai'">
 
                     <router-view v-if="showContentByStoreUser || route.path == '/oauth/callback'" :class="themeClass" />
                     <!-- 应用加载页面 -->
@@ -938,10 +938,6 @@ body {
 .loading-text {
   font-size: 16px;
   font-weight: 500;
-}
-
-body {
-  overflow-y: auto;
 }
 
 /* 备案信息样式 */
