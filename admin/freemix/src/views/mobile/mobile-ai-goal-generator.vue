@@ -273,6 +273,7 @@ import MarkdownIt from 'markdown-it'
 import { parseAIResponseToSubGoals, extractGoalTitle } from '@/utils/aiGoalParser.js'
 import { getM, postM, isSuccess } from '@/utils/request.js'
 import { createGoalObject } from '@/utils/goalUtils.js'
+import { extractSubGoalsPromptMobile, chatPromptMobile } from '@/utils/aiPrompts.js'
 
 const md = new MarkdownIt({
   html: true,
@@ -361,7 +362,7 @@ const callLocalAIAPI = async (question, onUpdate) => {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: 'ea16730874-single_user',
-        query: `${question}用markdown的格式返回`,
+        query: chatPromptMobile(question),
         stream: true
       })
     })
@@ -503,7 +504,7 @@ const generateGoal = async () => {
 
     // 解析子目标
     let subGoalsMsgContent = ''
-    const subGoalsPrompt = `请分析以下内容并提取步骤，以序号列表形式返回：\n${response.content}\n\n要求：\n1. 只返回步骤列表，不要额外解释\n2. 格式为：(1) 第一步 (2) 第二步 ...\n3.不需要概括，尽可能的复制AI回复中的内容\n4. 步骤的序号必须连续且递增`
+    const subGoalsPrompt = extractSubGoalsPromptMobile(response.content)
 
     try {
       if (props.aiAssistantRef && typeof props.aiAssistantRef.callCustomAIAPI === 'function') {

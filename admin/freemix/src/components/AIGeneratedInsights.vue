@@ -48,6 +48,7 @@ import { NCard, NIcon, NButton, NSkeleton } from 'naive-ui';
 import { useStore } from 'vuex';
 import { postM } from '@/utils/request.js';
 import MarkdownIt from 'markdown-it';
+import { insightsPrompt } from '@/utils/aiPrompts.js';
 
 const md = new MarkdownIt({
   html: true,
@@ -114,17 +115,17 @@ const refreshInsights = async () => {
   const getres = await getInsightsFromServer();
   const list=getres.data.data;
   if(list.length >= 3){
-    currentInsightIndex.value = (currentInsightIndex.value + 1) % list.length
-    currentInsight.value = list[currentInsightIndex.value].currentInsight;
+    const randomIndex = Math.floor(Math.random() * list.length)
+    currentInsightIndex.value = randomIndex
+    // currentInsight.value = list[randomIndex].currentInsight
+    currentInsight.value = list[2].currentInsight
     setTimeout(() => {
       loading.value = false;
     }, 800);
     return;
   }
   nextTick(async () => {
-   const res = await aiAssistantMsg.value.callCustomAIAPI(`请根据用户 ${currentUser.value.username} 的目标和历史数据，
-    生成三条简短的智能建议。类似这种这么简短的建议：${insights.value.join("\n")} 用一句话描述（
-    不超过90字,总字数不能超过300个字,直接引用具体目标名称,给出可执行的行动建议`, (res1) => {
+   const res = await aiAssistantMsg.value.callCustomAIAPI(insightsPrompt({ examples: insights.value.join("\n") }), (res1) => {
       // console.log(res1);
     });
     // console.log("res",res);
@@ -252,12 +253,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* overflow-y: auto; */
 }
 
 .insight-card-inner {
   position: relative;
   padding: 1.5rem;
-  min-height: 20rem;
+  min-height: 0;
   /* background: linear-gradient(135deg, rgba(0, 201, 167, 0.08) 0%, rgba(0, 201, 167, 0.01) 100%); */
   border: 1px solid rgba(0, 201, 167, 0.2);
   /* border-left: 4px solid #00c9a7; */

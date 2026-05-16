@@ -338,6 +338,7 @@ const scrollToBottom = () => {
 };
 
 import { handleMQLResponse } from '../utils/MQLHandler';
+import { chatPrompt, mqlSummaryPrompt } from '@/utils/aiPrompts.js';
 
 // 处理历史记录导航
 const handleScrollToHistory = (historyIndex) => {
@@ -394,7 +395,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
   // 注意：您需要在Coze平台获取有效的API密钥
   const PERSONAL_ACCESS_TOKEN = 'sat_alIbwyaIhODXfXtTHCuj74C3swKTZd08L82jZDfMsfzplbENrkX5bu3ddTU5VHdn'; // 请替换为您的实际API密钥
   const BOT_ID = '7569182284998524934'; // 您的Bot ID
-  const custQuestion=`当前时间是：${new Date().toLocaleString()}。用户问题：${question}。当前用户是${currentUser.value.username}请用markdown格式返回。`
+  const custQuestion=chatPrompt({ question, username: currentUser.value.username })
   try {
     // 使用标准的Bearer Token认证方式
     const response = await fetch(API_ENDPOINT, {
@@ -613,11 +614,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
     const mqlResult = await handleMQLResponse(fullResponse,question);
     if (mqlResult && mqlResult.success) {
       // 触发二次对话：让 AI 总结结果
-      const summaryPrompt = `
-      用户问题：${question}
-      数据库执行结果（原始数据）：${JSON.stringify(mqlResult.rawData)}
-      请结合上述数据，用专业、自然的口吻回答用户，并给出分析结论。不要再次输出 [MQL_START] 标签。
-      `;
+      const summaryPrompt = mqlSummaryPrompt({ question, rawData: mqlResult.rawData })
       
       // 递归调用 callCustomAIAPI 获取最终总结
       const finalResult = await callCustomAIAPI(summaryPrompt, onUpdate);

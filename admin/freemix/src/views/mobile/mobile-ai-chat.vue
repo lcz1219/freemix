@@ -136,6 +136,7 @@ import { useStore } from 'vuex'
 import { showToast } from 'vant'
 import MarkdownIt from 'markdown-it'
 import { postM, getM } from '@/utils/request.js'
+import { chatPromptMobile } from '@/utils/aiPrompts.js'
 
 const md = new MarkdownIt({
   html: true,
@@ -360,7 +361,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: 'ea16730874-single_user',
-        query: `${question}用markdown的格式返回`,
+        query: chatPromptMobile(question),
         stream: true
       })
     })

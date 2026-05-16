@@ -322,31 +322,31 @@ onMounted(async () => {
 .home-container {
   background-color: #0f0f13;
   color: #ffffff;
-  min-height: 100%;
+  height: 100%;
 }
 
 .home-container-light {
   background-color: #f5f5f7;
   color: #000000;
-  min-height: 100%;
+  height: 100%;
 }
 
 .main-content-wrapper {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 强制主容器不产生内部滚动 */
 }
 
 .main-content {
   flex: 1;
   width: 100%;
-  max-width: 1600px; /* 拓宽主容器限制 */
+  max-width: 1600px;
   margin: 0 auto;
   padding: clamp(0.25rem, 1vh, 1.5rem) clamp(1rem, 2.5vw, 2.5rem);
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .global-search-container {
@@ -380,6 +380,25 @@ onMounted(async () => {
   flex: 1;
   min-height: 0;
   margin-top: 0 !important;
+  align-content: stretch;
+}
+
+.main-grid-container > :deep(.n-grid-item) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.bento-card :deep(.n-card__content) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bento-card :deep(.n-card__header) {
+  padding-bottom: 0;
 }
 
 .action-card:hover .arrow-icon {
@@ -467,7 +486,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 .card-headerstatic {
@@ -485,7 +505,14 @@ onMounted(async () => {
 .chart-container {
   flex: 1;
   width: 100%;
-  min-height: 20rem;
+  min-height: 0;
+  position: relative;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }
 
 @media (max-width: 900px) {
