@@ -100,7 +100,7 @@ public class AIMessageService {
     }
 
     /**
-     * 获取指定会话的消息记录00
+     * 获取指定会话的消息记录009
      */
     public ApiResponse<List<AIMessage>> getSessionMessages(String sessionId) {
         Query query = new Query(Criteria.where("sessionId").is(sessionId))
