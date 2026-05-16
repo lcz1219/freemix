@@ -111,7 +111,7 @@ const isDark = inject('isDark', false);
 
 <style scoped>
 .stats-overview {
-  margin-bottom: 20px;
+  margin-bottom: 0.75rem;
 }
 
 .stat-card, .stat-card-light {
@@ -134,13 +134,13 @@ const isDark = inject('isDark', false);
 .stat-card-content {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .stat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,13 +151,13 @@ const isDark = inject('isDark', false);
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: 13px;
   opacity: 0.8;
 }
 </style>

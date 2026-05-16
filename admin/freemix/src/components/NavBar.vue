@@ -364,7 +364,7 @@ const goTo = async (path) => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px 0;
+  padding: 0.55rem 0;
   background-color: var(--card-bg);
   transition: all 0.3s ease;
   width: 220px;

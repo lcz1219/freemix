@@ -28,6 +28,12 @@
               </template>
               添加新目标
             </n-button>
+            <n-button quaternary round strong @click="showRecentGoalsModal = true">
+              <template #icon>
+                <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89l.07.14L9 12H6a7 7 0 1 1 7 7a7.07 7.07 0 0 1-6-3.18l-1.42 1.42A8.9 8.9 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.25 2.52l.77-1.28l-3.52-2.09V8z"/></svg></n-icon>
+              </template>
+              近期目标
+            </n-button>
             <n-button ghost strong round @click="store.commit('setAiDrawer', true)">
               <template #icon>
                 <n-icon size="24"><AIAssistantIcon /></n-icon>
@@ -39,28 +45,9 @@
 
         <StatsOverview :total-goals="totalGoals" :completed-goals="completedGoals" :in-progress-goals="inProgressGoals"
           :expired-goals="expiredGoals" />
-<!-- <n-grid-item span="12"> -->
-            <div class="quick-actions-grid">
-              <n-card 
-                :class="isDark ? 'feature-card' : 'feature-card-light'" 
-                class="bento-card action-card clickable-card"
-                @click="showRecentGoalsModal = true"
-              >
-                <div class="action-card-content">
-                  <div class="action-icon recent-icon">
-                    <n-icon size="24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89l.07.14L9 12H6a7 7 0 1 1 7 7a7.07 7.07 0 0 1-6-3.18l-1.42 1.42A8.9 8.9 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.25 2.52l.77-1.28l-3.52-2.09V8z"/></svg></n-icon>
-                  </div>
-                  <div class="action-info">
-                    <div class="action-title">近期目标</div>
-                    <div class="action-desc">查看最近需要完成的任务进度</div>
-                  </div>
-                  <n-icon size="20" class="arrow-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6l-6 6l-1.41-1.41z"/></svg></n-icon>
-                </div>
-              </n-card>
-            </div>
-          <!-- </n-grid-item> -->
+
         <!-- Bento Grid 布局区域 -->
-        <n-grid :cols="12" :x-gap="20" :y-gap="20" item-responsive responsive="screen" style="margin-top: 1.5rem;">
+        <n-grid :cols="12" :x-gap="20" :y-gap="20" item-responsive responsive="screen" class="main-grid-container">
           <!-- 左侧：AI 智能洞察 (占 4/12) -->
           <n-grid-item span="12 m:4">
             <AIGeneratedInsights />
@@ -73,7 +60,7 @@
                 <div ref="trendChartIcon" class="echart-icon"></div>
                 <h2 class="card-title">完成趋势</h2>
               </div>
-              <div class="chart-container" style="height: 21.875rem;">
+              <div class="chart-container">
                 <canvas ref="trendChart"></canvas>
               </div>
             </n-card>
@@ -346,26 +333,34 @@ onMounted(async () => {
 
 .main-content-wrapper {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 强制主容器不产生内部滚动 */
 }
 
 .main-content {
-  max-width: 1400px;
+  flex: 1;
+  width: 100%;
+  max-width: 1600px; /* 拓宽主容器限制 */
   margin: 0 auto;
-  padding: clamp(1rem, 2.5vw, 2.5rem);
+  padding: clamp(0.25rem, 1vh, 1.5rem) clamp(1rem, 2.5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .global-search-container {
-  max-width: 600px;
+  flex-shrink: 0;
+  max-width: 480px; /* 缩小搜索框宽度至约 placeholder 长度 */
+  width: 100%;
   margin: 0 auto;
-  padding: 1rem clamp(1rem, 2vw, 1.5rem);
-  position: sticky;
-  top: 0.75rem;
+  padding: 1.15rem clamp(1rem, 2vw, 1.5rem);
   z-index: 100;
   transition: all 0.3s ease;
 }
 
 .home-container-light .global-search-container {
-  background: linear-gradient(to bottom, #f5f5f7 0%, rgba(245, 245, 247, 0) 100%);
+  /* background: linear-gradient(to bottom, #f5f5f7 0%, rgba(245, 245, 247, 0) 100%); */
 }
 
 .cmd-k-input {
@@ -381,55 +376,10 @@ onMounted(async () => {
 }
 
 /* 快捷操作卡片样式 */
-.quick-actions-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-}
-
-.clickable-card {
-  cursor: pointer;
-}
-
-.action-card-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem;
-}
-
-.action-icon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.recent-icon {
-  background: rgba(0, 201, 167, 0.15);
-  color: #00c9a7;
-}
-
-.action-info {
+.main-grid-container {
   flex: 1;
-}
-
-.action-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.action-desc {
-  font-size: 13px;
-  opacity: 0.6;
-}
-
-.arrow-icon {
-  opacity: 0.3;
-  transition: transform 0.3s ease;
+  min-height: 0;
+  margin-top: 0 !important;
 }
 
 .action-card:hover .arrow-icon {
@@ -452,36 +402,37 @@ onMounted(async () => {
 }
 
 .bento-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 2rem;
+  align-items: center; /* 居中对齐更节省高度 */
+  margin-bottom: clamp(0.25rem, 0.75vh, 0.75rem);
   padding: 0 0.625rem;
 }
 
 .hero-title {
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: clamp(1.2rem, 3vw, 1.6rem); /* 减小标题字号 */
   font-weight: 800;
   background: linear-gradient(to right, #fff, #00c9a7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .hero-title-light {
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: clamp(1.2rem, 3vw, 1.6rem); /* 减小标题字号 */
   font-weight: 800;
   color: #1a1a1a;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .hero-subtitle {
-  font-size: 1rem;
+  font-size: 0.875rem; /* 减小副标题 */
   color: rgba(255, 255, 255, 0.6);
 }
 
 .hero-subtitle-light {
-  font-size: 1rem;
+  font-size: 0.875rem; /* 减小副标题 */
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -491,9 +442,11 @@ onMounted(async () => {
 }
 
 .bento-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   border-radius: 1.25rem !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  /* background: rgba(30, 30, 42, 0.4) !important; */
   backdrop-filter: blur(20px);
   box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
@@ -513,15 +466,15 @@ onMounted(async () => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .card-headerstatic {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .echart-icon {
@@ -530,7 +483,9 @@ onMounted(async () => {
 }
 
 .chart-container {
+  flex: 1;
   width: 100%;
+  min-height: 20rem;
 }
 
 @media (max-width: 900px) {

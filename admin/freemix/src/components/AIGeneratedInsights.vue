@@ -3,11 +3,7 @@
     <div class="card-header-ai">
       <div class="header-left">
         <div class="ai-icon-wrapper">
-          <n-icon size="22" color="#00c9a7">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/>
-            </svg>
-          </n-icon>
+          <n-icon size="24"><AIAssistantIcon /></n-icon>
         </div>
         <h2 class="card-title-ai">AI 智能洞察</h2>
       </div>
@@ -27,25 +23,19 @@
       <n-skeleton text :repeat="2" style="margin-bottom: 12px" />
       <n-skeleton text style="width: 60%" />
       <div class="loading-hint">
-        <n-icon size="18" class="pulse-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"/></svg>
-        </n-icon>
+       <n-icon size="24"><AIAssistantIcon /></n-icon>
         <span>AI 正在分析你的目标数据...</span>
       </div>
 </div>
       <div v-else class="insight-content-wrapper">
-        <!-- <p :class="isDark ? 'insight-text' : 'insight-text-light'">
-          {{ currentInsight }}
-        </p> -->
-        <div class="answer-content" v-html="parseMarkdown(currentInsight)"></div>
-        <!-- <div class="insight-footer">
-          <n-button text type="primary" size="small" @click="showMoreInsights" class="more-btn">
-            <template #icon>
-              <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.17 11l-5.38-5.38L12.21 4.21L19 11l-6.79 6.79l-1.41-1.41L16.17 13H4v-2h12.17z"/></svg></n-icon>
-            </template>
-            查看更多建议
-          </n-button>
-        </div> -->
+        <div class="insight-card-inner">
+          <div class="insight-glow"></div>
+          <div class="insight-pattern"></div>
+          <!-- <div class="insight-quote-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C14.9124 8 14.017 7.10457 14.017 6V5C14.017 3.34315 15.3601 2 17.017 2H19.017C20.6739 2 22.017 3.34315 22.017 5V15C22.017 18.3137 19.3307 21 16.017 21H14.017ZM2.01697 21L2.01697 18C2.01697 16.8954 2.9124 16 4.01697 16H7.01697C7.56925 16 8.01697 15.5523 8.01697 15V9C8.01697 8.44772 7.56925 8 7.01697 8H4.01697C2.9124 8 2.01697 7.10457 2.01697 6V5C2.01697 3.34315 3.36012 2 5.01697 2H7.01697C8.67382 2 10.017 3.34315 10.017 5V15C10.017 18.3137 7.33068 21 4.01697 21H2.01697Z"/></svg>
+          </div> -->
+          <div class="answer-content" v-html="parseMarkdown(currentInsight)"></div>
+        </div>
       </div>
     </div>
   </n-card>
@@ -261,224 +251,145 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
 }
 
-.insight-text {
+.insight-card-inner {
+  position: relative;
+  padding: 1.5rem;
+  min-height: 20rem;
+  /* background: linear-gradient(135deg, rgba(0, 201, 167, 0.08) 0%, rgba(0, 201, 167, 0.01) 100%); */
+  border: 1px solid rgba(0, 201, 167, 0.2);
+  /* border-left: 4px solid #00c9a7; */
+  border-radius: 12px 24px 24px 12px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+}
+
+.dark .insight-card-inner {
+  background: linear-gradient(135deg, rgba(0, 201, 167, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+  border-color: rgba(0, 201, 167, 0.25);
+}
+
+.insight-card-inner:hover {
+  border-color: rgba(0, 201, 167, 0.5);
+  box-shadow: 0 15px 40px -12px rgba(0, 201, 167, 0.2);
+  transform: translateY(-4px) scale(1.01);
+}
+
+.insight-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(0, 201, 167, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.insight-quote-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 80px;
+  height: 80px;
+  color: rgba(0, 201, 167, 0.05);
+  transform: rotate(-15deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.insight-glow {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(0, 201, 167, 0.15) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.answer-content {
+  position: relative;
+  z-index: 1;
+  line-height: 1.8;
   font-size: 15px;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0;
-  font-weight: 400;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.01em;
 }
 
-.insight-text-light {
-  font-size: 15px;
-  line-height: 1.8;
-  color: rgba(0, 0, 0, 0.75);
-  margin: 0;
+.feature-card-light .answer-content {
+  color: #1a1a1a;
 }
 
-.insight-footer {
-  margin-top: 20px;
-}
-
-.more-btn {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  opacity: 0.8;
-  transition: all 0.3s ease;
-}
-
-.more-btn:hover {
-  opacity: 1;
-  transform: translateX(4px);
-}
-
-.skeleton-wrapper {
-  padding-top: 4px;
-}
-.answer-content,
-.thinking-process {
-  line-height: 1.8;
-  font-size: 14px;
-  color: inherit;
-}
-
-.answer-content :deep(h1),
-.answer-content :deep(h2),
-.answer-content :deep(h3),
-.answer-content :deep(h4),
-.thinking-process :deep(h1),
-.thinking-process :deep(h2),
-.thinking-process :deep(h3),
-.thinking-process :deep(h4) {
-  margin: 1.5em 0 1em;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.answer-content :deep(h1),
-.thinking-process :deep(h1) {
-  font-size: 1.8em;
-  border-bottom: 2px solid rgba(0, 201, 167, 0.2);
-  padding-bottom: 0.3em;
-}
-
-.answer-content :deep(h2),
-.thinking-process :deep(h2) {
-  font-size: 1.5em;
-  border-bottom: 1px solid rgba(0, 201, 167, 0.1);
-  padding-bottom: 0.2em;
-}
-
-.answer-content :deep(h3),
-.thinking-process :deep(h3) {
-  font-size: 1.25em;
+.answer-content :deep(strong) {
   color: #00c9a7;
-}
-
-.answer-content :deep(p),
-.thinking-process :deep(p) {
-  margin: 1em 0;
+  font-weight: 700;
+  padding: 0 2px;
+  background: linear-gradient(transparent 70%, rgba(0, 201, 167, 0.15) 30%);
 }
 
 .answer-content :deep(ul),
-.answer-content :deep(ol),
-.thinking-process :deep(ul),
-.thinking-process :deep(ol) {
-  margin: 1em 0;
-  padding-left: 1.5em;
-}
-
-.answer-content :deep(li),
-.thinking-process :deep(li) {
+.answer-content :deep(ol) {
   margin: 0.5em 0;
+  padding-left: 1.25em;
 }
 
-.answer-content :deep(code),
-.thinking-process :deep(code) {
-  background-color: rgba(0, 201, 167, 0.1);
+.answer-content :deep(li) {
+  margin: 0.6em 0;
+  position: relative;
+  list-style-type: none;
+}
+
+.answer-content :deep(li)::before {
+  content: "•";
   color: #00c9a7;
-  padding: 0.2em 0.4em;
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+.answer-content :deep(code) {
+  background-color: rgba(0, 201, 167, 0.15);
+  color: #00c9a7;
+  padding: 0.15em 0.4em;
   border-radius: 4px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.9em;
-}
-
-.answer-content :deep(pre),
-.thinking-process :deep(pre) {
-  background-color: var(--card-bg);
-  padding: 1em;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin: 1em 0;
   border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
-.answer-content :deep(pre code),
-.thinking-process :deep(pre code) {
-  background-color: transparent;
-  color: var(--text-color);
-  padding: 0;
-  border-radius: 0;
-  font-size: 0.9em;
+.answer-content :deep(blockquote) {
+  margin: 1em 0;
+  padding: 0.75em 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  border-left: 3px solid #00c9a7;
+  background: rgba(0, 201, 167, 0.08);
+  border-radius: 0 12px 12px 0;
+  font-style: italic;
 }
 
-.answer-content :deep(blockquote),
-.thinking-process :deep(blockquote) {
-  margin: 1em 0;
-  padding: 0.5em 1em;
-  color: #666;
-  border-left: 4px solid #00c9a7;
+.feature-card-light .answer-content :deep(blockquote) {
+  color: #57606a;
   background: rgba(0, 201, 167, 0.05);
-  border-radius: 0 4px 4px 0;
 }
 
-.answer-content :deep(table),
-.thinking-process :deep(table) {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1em 0;
-  font-size: 0.9em;
+.insight-text, .insight-text-light, .insight-footer, .more-btn, .thinking-process, .answer-content :deep(h1), .answer-content :deep(h2), .answer-content :deep(h3), .answer-content :deep(h4), .answer-content :deep(pre), .answer-content :deep(table) {
+  display: none;
 }
 
-.answer-content :deep(th),
-.answer-content :deep(td),
-.thinking-process :deep(th),
-.thinking-process :deep(td) {
-  border: 1px solid rgba(0, 201, 167, 0.2);
-  padding: 0.6em;
-  text-align: left;
-}
-
-.answer-content :deep(th),
-.thinking-process :deep(th) {
-  background: rgba(0, 201, 167, 0.1);
-  font-weight: 600;
-}
-
-.message.user .answer-content :deep(code) {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.message.ai .answer-content :deep(h1),
-.message.ai .answer-content :deep(h2),
-.message.ai .answer-content :deep(h3) {
-  color: #00c9a7;
-}
-
-.dark .answer-content :deep(blockquote),
-.dark .thinking-process :deep(blockquote) {
-  color: #aaa;
-  background: rgba(0, 201, 167, 0.1);
-}
-
-/* 暗色主题下的Markdown样式 */
-.dark .answer-content :deep(h1),
-.dark .answer-content :deep(h2),
-.dark .answer-content :deep(h3),
-.dark .answer-content :deep(h4),
-.dark .answer-content :deep(h5),
-.dark .answer-content :deep(h6),
-.dark .thinking-process :deep(h1),
-.dark .thinking-process :deep(h2),
-.dark .thinking-process :deep(h3),
-.dark .thinking-process :deep(h4),
-.dark .thinking-process :deep(h5),
-.dark .thinking-process :deep(h6) {
-  color: #00c9a7;
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark .answer-content :deep(code),
-.dark .thinking-process :deep(code) {
-  background-color: rgba(0, 201, 167, 0.2);
-}
-
-.dark .answer-content :deep(pre),
-.dark .thinking-process :deep(pre) {
-  background-color: #161b22;
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark .answer-content :deep(pre code),
-.dark .thinking-process :deep(pre code) {
-  color: #e0e0e0;
-}
-
-.dark .answer-content :deep(blockquote),
-.dark .thinking-process :deep(blockquote) {
-  color: #8b949e;
-  border-left-color: #00c9a7;
-  background: rgba(0, 201, 167, 0.1);
-}
-
-.dark .answer-content :deep(th),
-.dark .answer-content :deep(td),
-.dark .thinking-process :deep(th),
-.dark .thinking-process :deep(td) {
-  border-color: rgba(255, 255, 255, 0.1);
-}
 </style>
