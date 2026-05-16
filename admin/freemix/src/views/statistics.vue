@@ -59,7 +59,7 @@
             </n-grid-item>
             
             <!-- 目标类型分布 -->
-            <n-grid-item span="2">
+            <n-grid-item >
               <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
                 <div class="card-header">
                   <n-icon size="28" color="#00c9a7">
@@ -75,11 +75,35 @@
                 <div ref="typeChart" class="chart-container"></div>
               </n-card>
             </n-grid-item>
+            <n-grid-item >
+              <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
+            <div class="card-header">
+              <n-icon size="28" color="#ff6b6b">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+                  <path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M19,19H5V5h14V19z"/>
+                  <path d="M16,10H8c-0.6,0-1,0.4-1,1s0.4,1,1,1h8c0.6,0,1-0.4,1-1S16.6,10,16,10z"/>
+                  <path d="M16,7H8C7.4,7,7,7.4,7,8s0.4,1,1,1h8c0.6,0,1-0.4,1-1S16.6,7,16,7z"/>
+                  <path d="M12,13c-0.6,0-1,0.4-1,1s0.4,1,1,1s1-0.4,1-1S12.6,13,12,13z"/>
+                </svg>
+              </n-icon>
+              <h2 class="card-title">详细统计数据</h2>
+            </div>
+            
+            <n-data-table
+              :columns="columns"
+              :data="goals"
+              :pagination="pagination"
+              :bordered="false"
+              :single-line="false"
+              striped
+            />
+          </n-card>
+            </n-grid-item>
           </n-grid>
         </section>
         
         <!-- 详细统计数据 -->
-        <section class="details-section">
+        <!-- <section class="details-section">
           <n-card :class="isDark ? 'feature-card' : 'feature-card-light'">
             <div class="card-header">
               <n-icon size="28" color="#ff6b6b">
@@ -102,7 +126,7 @@
               striped
             />
           </n-card>
-        </section>
+        </section> -->
       </div>
     </n-layout-content>
       </template>
@@ -737,6 +761,7 @@ onMounted(async () => {
 }
 
 .feature-card, .feature-card-light {
+  height: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

@@ -60,7 +60,7 @@
             </div>
           <!-- </n-grid-item> -->
         <!-- Bento Grid 布局区域 -->
-        <n-grid :cols="12" :x-gap="20" :y-gap="20" item-responsive responsive="screen" style="margin-top: 24px;">
+        <n-grid :cols="12" :x-gap="20" :y-gap="20" item-responsive responsive="screen" style="margin-top: 1.5rem;">
           <!-- 左侧：AI 智能洞察 (占 4/12) -->
           <n-grid-item span="12 m:4">
             <AIGeneratedInsights />
@@ -73,7 +73,7 @@
                 <div ref="trendChartIcon" class="echart-icon"></div>
                 <h2 class="card-title">完成趋势</h2>
               </div>
-              <div class="chart-container" style="height: 350px;">
+              <div class="chart-container" style="height: 21.875rem;">
                 <canvas ref="trendChart"></canvas>
               </div>
             </n-card>
@@ -351,18 +351,17 @@ onMounted(async () => {
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 30px;
+  padding: clamp(1rem, 2.5vw, 2.5rem);
 }
 
 .global-search-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 16px 20px;
+  padding: 1rem clamp(1rem, 2vw, 1.5rem);
   position: sticky;
-  top: 0;
+  top: 0.75rem;
   z-index: 100;
   transition: all 0.3s ease;
-  background: linear-gradient(to bottom, #0f0f13 0%, rgba(15, 15, 19, 0) 100%);
 }
 
 .home-container-light .global-search-container {
@@ -385,7 +384,7 @@ onMounted(async () => {
 .quick-actions-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .clickable-card {
@@ -395,14 +394,14 @@ onMounted(async () => {
 .action-card-content {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 8px;
+  gap: 1rem;
+  padding: 0.5rem;
 }
 
 .action-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -456,47 +455,47 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 32px;
-  padding: 0 10px;
+  margin-bottom: 2rem;
+  padding: 0 0.625rem;
 }
 
 .hero-title {
-  font-size: 32px;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 800;
   background: linear-gradient(to right, #fff, #00c9a7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .hero-title-light {
-  font-size: 32px;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 800;
   color: #1a1a1a;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .hero-subtitle {
-  font-size: 16px;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
 }
 
 .hero-subtitle-light {
-  font-size: 16px;
+  font-size: 1rem;
   color: rgba(0, 0, 0, 0.6);
 }
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .bento-card {
-  border-radius: 20px !important;
+  border-radius: 1.25rem !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: rgba(30, 30, 42, 0.4) !important;
+  /* background: rgba(30, 30, 42, 0.4) !important; */
   backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -514,20 +513,20 @@ onMounted(async () => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .card-headerstatic {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .echart-icon {
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .chart-container {

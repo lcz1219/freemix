@@ -6,12 +6,18 @@ import com.freemix.freemix.enetiy.AIMessage;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.service.AIMessageService;
 import com.freemix.freemix.util.ApiResponse;
+import org.apache.poi.ss.formula.functions.T;
+import org.bson.BsonArray;
 import org.bson.Document;
 import com.mongodb.client.AggregateIterable;
+
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.slf4j.Logger;
@@ -19,7 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * AI消息控制器
@@ -76,6 +85,32 @@ public class AIMessageController extends BaseController {
         AIMessage aiMessage = JSONObject.parseObject(body, AIMessage.class);
         log.info("保存AI消息: 用户 = {}, 会话 = {}, 问题 = {}", aiMessage.getUsername(), aiMessage.getSessionId(), aiMessage.getUserQuestion());
         return aiMessageService.saveAIMessage(aiMessage);
+    }
+    String insights="insights";
+    @PostMapping("/saveInsights")
+    @CheckToken
+    public ApiResponse<T> saveInsights(@RequestBody String body) {
+
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        mongoTemplate.insert(jsonObject,insights);
+        return ApiResponse.success();
+
+    }
+    @PostMapping("/getInsights")
+    @CheckToken
+    public ApiResponse getInsights() {
+
+        User currentUser = getCurrentUser();
+       long earlyest = System.currentTimeMillis()-3600000;
+
+        Query query = new Query(Criteria.where("username")
+                .is(currentUser.getUsername()
+                ).and("createdAt").gte(earlyest)
+        );
+        List<JSONObject> jsonObjects = mongoTemplate.find(query, JSONObject.class, insights);
+
+        return ApiResponse.success(jsonObjects);
+
     }
     
     /**
@@ -175,12 +210,22 @@ public class AIMessageController extends BaseController {
             if (collectionName == null || collectionName.isEmpty()) {
                 collectionName = "goal";
             }
+            log.info("pipelineJson: {}",pipelineJson);
 
-            log.info("问题内容:{} 执行 MQL 统计, 集合: {}, Pipeline: {}",question,  collectionName, pipelineJson);
-            String cleanedMql = pipelineJson.replaceAll("ISODate\\(\"([^\"]+)\"\\)", "new Date(\"$1\")");
+            String cleanedMql = pipelineJson
+                    .replaceAll("ISODate\\(\"([^\"]+)\"\\)", "{\"\\$date\": \"$1\"}")
+                    .replaceAll("new Date\\(\"([^\"]+)\"\\)", "{\"\\$date\": \"$1\"}");
+
+            // 处理算术表达式 (例如 1000 * 60 * 60 * 24)
+            cleanedMql = evaluateArithmetic(cleanedMql);
+
             // 将 JSON 数组解析为 MongoDB Pipeline
-            List<Document> pipeline = com.alibaba.fastjson2.JSON.parseArray(cleanedMql, Document.class);
-            
+//            List<Document> pipeline = com.alibaba.fastjson2.JSON.parseArray(cleanedMql, Document.class);
+            log.info("问题内容:{} 执行 MQL 统计, 集合: {}, cleanedMql: {}",question,  collectionName, cleanedMql);
+
+            List<Document> pipeline = BsonArray.parse(cleanedMql).stream()
+                    .map(v -> Document.parse(v.asDocument().toJson()))
+                    .collect(Collectors.toList());
             // 执行聚合查询
             AggregateIterable<Document> results = mongoTemplate.getCollection(collectionName).aggregate(pipeline);
             
@@ -204,5 +249,35 @@ public class AIMessageController extends BaseController {
     public ApiResponse<List<AIMessage>> getUserHistory(@PathVariable String username) {
         log.info("获取用户 {} 的历史AI消息记录", username);
         return aiMessageService.getUserHistory(username);
+    }
+
+    /**
+     * 简单的算术表达式评估器，专门用于处理 JSON 中的数字乘法 (如 1000 * 60 * 60)
+     */
+    private String evaluateArithmetic(String input) {
+        if (input == null || !input.contains("*")) return input;
+        
+        // 匹配数字之间的乘号，支持多级乘法
+        // 匹配模式：数字、空格、星号、空格、数字...
+        Pattern pattern = Pattern.compile("(\\d+(?:\\s*\\*\\s*\\d+)+)");
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer sb = new StringBuffer();
+        
+        while (matcher.find()) {
+            String expression = matcher.group(1);
+            try {
+                long result = 1;
+                String[] parts = expression.split("\\*");
+                for (String part : parts) {
+                    result *= Long.parseLong(part.trim());
+                }
+                matcher.appendReplacement(sb, String.valueOf(result));
+            } catch (Exception e) {
+                // 如果解析失败，保留原样
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(expression));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

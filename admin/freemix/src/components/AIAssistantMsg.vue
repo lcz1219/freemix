@@ -477,6 +477,7 @@ const callCustomAIAPI = async (question, onUpdate) => {
                     if (onUpdate) {
                       onUpdate({
                         messageType: 'answer',
+                        success: true,
                         content: maskMQL(fullResponse), // 界面显示脱敏版
                         thinkingContent: thinkingContent,
                         isProcessing: true
@@ -597,12 +598,18 @@ const callCustomAIAPI = async (question, onUpdate) => {
     // 构建最终响应对象
     const result = {
       messageType: 'answer',
+      success: true,
       content: maskMQL(fullResponse), // 界面显示脱敏版, // 传给 UI 的是脱敏后的内容
       thinkingContent: thinkingContent,
       followUpQuestions: followUpQuestions
     };
     
     // 方案二：截获 MQL 并自动执行
+    const MQL_START = '[MQL_START]';
+    const startIndex = fullResponse.indexOf(MQL_START);
+    if(startIndex != -1){
+      
+    
     const mqlResult = await handleMQLResponse(fullResponse,question);
     if (mqlResult && mqlResult.success) {
       // 触发二次对话：让 AI 总结结果
@@ -615,6 +622,18 @@ const callCustomAIAPI = async (question, onUpdate) => {
       // 递归调用 callCustomAIAPI 获取最终总结
       const finalResult = await callCustomAIAPI(summaryPrompt, onUpdate);
       return finalResult;
+    }else{
+      const failResult = {
+        messageType: 'answer',
+        success: false,
+        content: "AI正在打瞌睡，请重新刷新",
+        thinkingContent: thinkingContent,
+        followUpQuestions: followUpQuestions
+      }
+      console.log("fail qlResult",failResult);
+
+     return failResult;
+    }
     }
     
     // 如果没有获取到有效响应，返回默认消息

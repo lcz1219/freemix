@@ -28,6 +28,11 @@ export const handleMQLResponse = async (text,question) => {
           mql: pipelineStr
         };
       } else {
+         return {
+          success: false,
+          rawData: result.data.msg,
+          mql: pipelineStr
+        };
         console.error('MQL Execution Failed:', result.msg);
       }
     } catch (error) {
