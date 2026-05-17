@@ -117,8 +117,8 @@ const refreshInsights = async () => {
   if(list.length >= 3){
     const randomIndex = Math.floor(Math.random() * list.length)
     currentInsightIndex.value = randomIndex
-    // currentInsight.value = list[randomIndex].currentInsight
-    currentInsight.value = list[2].currentInsight
+    currentInsight.value = list[randomIndex].currentInsight
+    // currentInsight.value = list[2].currentInsight
     setTimeout(() => {
       loading.value = false;
     }, 800);
@@ -365,16 +365,6 @@ onMounted(() => {
   vertical-align: middle;
 }
 
-.answer-content :deep(code) {
-  background-color: rgba(0, 201, 167, 0.15);
-  color: #00c9a7;
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.9em;
-  border: 1px solid rgba(0, 201, 167, 0.2);
-}
-
 .answer-content :deep(blockquote) {
   margin: 1em 0;
   padding: 0.75em 1.25rem;
@@ -390,7 +380,77 @@ onMounted(() => {
   background: rgba(0, 201, 167, 0.05);
 }
 
-.insight-text, .insight-text-light, .insight-footer, .more-btn, .thinking-process, .answer-content :deep(h1), .answer-content :deep(h2), .answer-content :deep(h3), .answer-content :deep(h4), .answer-content :deep(pre), .answer-content :deep(table) {
+.answer-content :deep(h1),
+.answer-content :deep(h2),
+.answer-content :deep(h3),
+.answer-content :deep(h4) {
+  font-size: inherit;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+  color: inherit;
+  line-height: 1.4;
+}
+
+.answer-content :deep(h1) { font-size: 1.3em; }
+.answer-content :deep(h2) { font-size: 1.2em; }
+.answer-content :deep(h3) { font-size: 1.1em; }
+.answer-content :deep(h4) { font-size: 1.05em; }
+
+.answer-content :deep(pre) {
+  display: block;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  margin: 0.5em 0;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.answer-content :deep(code) {
+  background: rgba(0, 201, 167, 0.15);
+  color: #00c9a7;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  border: 1px solid rgba(0, 201, 167, 0.2);
+}
+
+.answer-content :deep(pre code) {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+.answer-content :deep(table) {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+.answer-content :deep(th),
+.answer-content :deep(td) {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+
+.feature-card-light .answer-content :deep(th),
+.feature-card-light .answer-content :deep(td) {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.answer-content :deep(th) {
+  font-weight: 700;
+  background: rgba(0, 201, 167, 0.1);
+}
+
+.insight-text, .insight-text-light, .insight-footer, .more-btn, .thinking-process {
   display: none;
 }
 
