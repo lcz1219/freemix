@@ -542,13 +542,13 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
       common: {
         ...commonOverrides,
         bodyColor: '#121212',
-        cardColor: '#1e1e1e',
+        cardColor: '#121212',
         modalColor: '#252525',
         popoverColor: '#252525',
-        tableColor: '#1e1e1e',
+        tableColor: '#121212',
         textColorBase: '#e0e0e0',
-        borderColor: '#333333',
-        hoverColor: '#2a2a2a',
+        borderColor: '#1f1f1f',
+        hoverColor: '#1a1a1a',
         primaryColor: '#00c9a7',
         primaryColorHover: '#00c9a7',
         primaryColorPressed: '#00c9a7',
@@ -683,10 +683,10 @@ body {
 .dark-theme {
   --bg-color: #121212;
   --text-color: #e0e0e0;
-  --card-bg: #1e1e1e;
-  --card-bg-rgb: 30, 30, 30;
-  --border-color: #333333;
-  --hover-color: #2a2a2a;
+  --card-bg: #121212;
+  --card-bg-rgb: 18, 18, 18;
+  --border-color: #1f1f1f;
+  --hover-color: #1a1a1a;
 
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -789,7 +789,10 @@ body {
 .side-navbar {
   height: 100vh;
   padding: 20px 0;
-  /* background-color: var(--card-bg); */
+  background-color: var(--card-bg);
+}
+
+.dark-theme .side-navbar {
   background-color: rgb(18 18 18);
 }
 

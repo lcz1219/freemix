@@ -333,8 +333,10 @@ defineExpose({
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(10px);
+}
+
+:global(.dark-theme) .tabs-view-container {
   background-color: rgb(18 18 18);
 }
 
@@ -347,6 +349,10 @@ defineExpose({
 
 .tabs-container {
   flex: 1;
+  background-color: var(--card-bg);
+}
+
+:global(.dark-theme) .tabs-container {
   background-color: rgb(18 18 18);
 }
 
@@ -459,14 +465,20 @@ defineExpose({
 :deep(.n-tabs-nav) {
   border-bottom: 1px solid var(--border-color);
   padding: 8px 0;
+  background-color: var(--card-bg);
+}
+:global(.dark-theme) :deep(.n-tabs-nav) {
   background-color: rgb(18 18 18);
 }
 :deep(.n-tabs .n-tabs-nav.n-tabs-nav--card-type .n-tabs-tab){
+  background-color: var(--card-bg);
+}
+:global(.dark-theme) :deep(.n-tabs .n-tabs-nav.n-tabs-nav--card-type .n-tabs-tab){
   background-color: rgb(18 18 18);
 }
 :deep(.n-tabs-tab) {
   color: var(--text-color);
-  background-color: rgb(18 18 18);
+  background-color: var(--card-bg);
   border: none;
   border-radius: 8px 8px 0 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -474,8 +486,10 @@ defineExpose({
   font-weight: 500;
   position: relative;
   margin-right: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(10px);
+}
+:global(.dark-theme) :deep(.n-tabs-tab) {
+  background-color: rgb(18 18 18);
 }
 
 :deep(.n-tabs-tab:hover) {
@@ -484,10 +498,9 @@ defineExpose({
 }
 
 :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: rgb(18 18 18);
+  background: var(--card-bg);
   color: var(--text-color);
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -548,14 +561,14 @@ defineExpose({
 }
 
 /* 添加深色模式下的特殊效果 */
-.dark-theme :deep(.n-tabs-tab.n-tabs-tab--active) {
+:global(.dark-theme) :deep(.n-tabs-tab.n-tabs-tab--active) {
   background: rgb(18 18 18);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* 添加浅色模式下的特殊效果 */
-.light-theme :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+:global(.light-theme) :deep(.n-tabs-tab.n-tabs-tab--active) {
+  background: #ffffff;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 

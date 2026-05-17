@@ -365,11 +365,15 @@ const goTo = async (path) => {
   flex-direction: column;
   height: 100%;
   padding: 0.55rem 0;
-  background-color: rgb(18 18 18);
+  background-color: var(--card-bg);
   transition: all 0.3s ease;
   width: 220px;
   min-width: 220px;
   max-width: 220px;
+}
+
+:global(.dark-theme) .sidebar-container {
+  background-color: rgb(18 18 18);
 }
 
 .sidebar-container.collapsed {
