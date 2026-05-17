@@ -789,7 +789,8 @@ body {
 .side-navbar {
   height: 100vh;
   padding: 20px 0;
-  background-color: var(--card-bg);
+  /* background-color: var(--card-bg); */
+  background-color: rgb(18 18 18);
 }
 
 /* 顶部导航栏样式 */

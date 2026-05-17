@@ -19,6 +19,7 @@
         class="tabs-container"
       >
         <n-tab 
+        
           v-for="tab in tabs" 
           :key="tab.path" 
           :name="tab.path"
@@ -334,7 +335,7 @@ defineExpose({
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(10px);
-  background-color: rgba(var(--card-bg-rgb), 0.85);
+  background-color: rgb(18 18 18);
 }
 
 .tabs-header {
@@ -346,6 +347,7 @@ defineExpose({
 
 .tabs-container {
   flex: 1;
+  background-color: rgb(18 18 18);
 }
 
 .header-actions {
@@ -457,11 +459,14 @@ defineExpose({
 :deep(.n-tabs-nav) {
   border-bottom: 1px solid var(--border-color);
   padding: 8px 0;
+  background-color: rgb(18 18 18);
 }
-
+:deep(.n-tabs .n-tabs-nav.n-tabs-nav--card-type .n-tabs-tab){
+  background-color: rgb(18 18 18);
+}
 :deep(.n-tabs-tab) {
   color: var(--text-color);
-  background-color: transparent;
+  background-color: rgb(18 18 18);
   border: none;
   border-radius: 8px 8px 0 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -479,7 +484,7 @@ defineExpose({
 }
 
 :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: linear-gradient(145deg, var(--card-bg), var(--hover-color));
+  background: rgb(18 18 18);
   color: var(--text-color);
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -544,7 +549,7 @@ defineExpose({
 
 /* 添加深色模式下的特殊效果 */
 .dark-theme :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+  background: rgb(18 18 18);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
