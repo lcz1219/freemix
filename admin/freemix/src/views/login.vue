@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 背景光效 (可选，增加高级感) -->
-    <div class="ambient-light" v-if="isDesktopEnv"></div>
+    <!-- <div class="ambient-light" v-if="isDesktopEnv"></div> -->
 
     <n-card :style="cardStyle" class="login-card">
       <!-- 系统图标 -->
@@ -324,23 +324,12 @@ let qrCountdownTimer: number | null = null;
 let qrStatusTimer: number | null = null;
 // 计算卡片样式
 const cardStyle = computed(() => {
-  if (isDesktopEnv) {
-    // 桌面端环境下卡片占满整个窗口
-    return {
-      width: '100%',
-      height: '100vh',
-      margin: 0,
-      borderRadius: 0
-    };
-  } else {
-    // Web端保持原有样式
-    return {
-      width: '480px', // 稍微固定宽度以适应Canvas
-      marginTop: '10vh',
-      marginLeft: 'auto',
-      marginRight: 'auto'
-    };
-  }
+  return {
+    width: '480px',
+    marginTop: '10vh',
+    marginLeft: 'auto',
+    marginRight: 'auto'
+  };
 });
 
 // 登录步骤状态
