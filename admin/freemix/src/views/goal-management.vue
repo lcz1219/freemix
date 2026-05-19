@@ -923,7 +923,10 @@ const finishChildGoal = async (goal: any, index: number) => {
 
     const res = await postM('editGoal', updatedGoal);
     if (isSuccess(res)) {
-      showCelebration.value = true;
+      if(updatedGoal.status === 'completed'){
+
+        showCelebration.value = true;
+      }
 
       message.success('子目标已完成');
       // 更新本地数据
