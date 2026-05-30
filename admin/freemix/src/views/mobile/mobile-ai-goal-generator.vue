@@ -274,6 +274,7 @@ import { parseAIResponseToSubGoals, extractGoalTitle } from '@/utils/aiGoalParse
 import { getM, postM, isSuccess } from '@/utils/request.js'
 import { createGoalObject } from '@/utils/goalUtils.js'
 import { extractSubGoalsPromptMobile, chatPromptMobile } from '@/utils/aiPrompts.js'
+import { callCozeAPI } from '@/utils/aiService.js'
 
 const md = new MarkdownIt({
   html: true,
@@ -347,103 +348,8 @@ const priorityOptions = [
 
 // 本地AI API调用方法（当没有aiAssistantRef prop时使用）
 const callLocalAIAPI = async (question, onUpdate) => {
-  const API_ENDPOINT = 'https://api.coze.cn/open_api/v1/chat'
-  const PERSONAL_ACCESS_TOKEN = 'sat_alIbwyaIhODXfXtTHCuj74C3swKTZd08L82jZDfMsfzplbENrkX5bu3ddTU5VHdn'
-  const BOT_ID = '7569182284998524934'
-  
   try {
-    const response = await fetch(API_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PERSONAL_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream'
-      },
-      body: JSON.stringify({
-        bot_id: BOT_ID,
-        user: 'ea16730874-single_user',
-        query: chatPromptMobile(question),
-        stream: true
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`API请求失败: ${response.status} ${response.statusText}`)
-    }
-
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder('utf-8')
-    let done = false
-    let fullResponse = ''
-    let thinkingContent = ''
-    let buffer = ''
-    
-    while (!done) {
-      const { value, done: readerDone } = await reader.read()
-      done = readerDone
-      
-      if (value) {
-        const chunk = decoder.decode(value, { stream: true })
-        buffer += chunk
-        const lines = buffer.split('\n')
-        // 保留最后一行可能不完整的buffer
-        buffer = lines.pop() || ''
-        
-        for (const line of lines) {
-          if (line.trim() === '') continue
-          if (line.startsWith('data:')) {
-            const data = line.slice(5).trim()
-            if (data === '[DONE]') {
-              done = true
-              break
-            }
-            
-            try {
-              const jsonData = JSON.parse(data)
-              if (jsonData.message) {
-                switch (jsonData.message.type) {
-                  case 'answer':
-                    if (jsonData.message.content) {
-                      fullResponse += jsonData.message.content
-                    }
-                    if (onUpdate) {
-                      onUpdate({
-                        messageType: 'answer',
-                        content: fullResponse,
-                        thinkingContent: thinkingContent,
-                        isProcessing: true
-                      })
-                    }
-                    break
-                  case 'verbose':
-                  case 'thinking': // 兼容不同模型的思考过程类型
-                    if (jsonData.message.reasoning_content || jsonData.message.content) {
-                      thinkingContent += (jsonData.message.reasoning_content || jsonData.message.content)
-                    }
-                    if (onUpdate) {
-                      onUpdate({
-                        messageType: 'verbose',
-                        content: fullResponse,
-                        thinkingContent: thinkingContent,
-                        isProcessing: true
-                      })
-                    }
-                    break
-                }
-              }
-            } catch (e) {
-              // ignore parse error
-            }
-          }
-        }
-      }
-    }
-    
-    return {
-      messageType: 'answer',
-      content: fullResponse,
-      thinkingContent: thinkingContent
-    }
+    return await callCozeAPI(chatPromptMobile(question), onUpdate)
   } catch (error) {
     console.error('AI API调用失败:', error)
     throw error

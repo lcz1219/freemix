@@ -137,6 +137,7 @@ import { showToast } from 'vant'
 import MarkdownIt from 'markdown-it'
 import { postM, getM } from '@/utils/request.js'
 import { chatPromptMobile } from '@/utils/aiPrompts.js'
+import { callCozeAPI } from '@/utils/aiService.js'
 
 const md = new MarkdownIt({
   html: true,
@@ -343,142 +344,10 @@ const sendFollowUpQuestion = (question) => {
 
 // 调用自定义AI API
 const callCustomAIAPI = async (question, onUpdate) => {
-  // 使用Coze平台的官方API端点
-  const API_ENDPOINT = 'https://api.coze.cn/open_api/v1/chat'
-  
-  // 注意：这里使用了硬编码的API密钥和Bot ID，实际项目中应该从配置中获取
-  const PERSONAL_ACCESS_TOKEN = 'sat_alIbwyaIhODXfXtTHCuj74C3swKTZd08L82jZDfMsfzplbENrkX5bu3ddTU5VHdn'
-  const BOT_ID = '7569182284998524934'
-  
   try {
-    const response = await fetch(API_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PERSONAL_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream'
-      },
-      body: JSON.stringify({
-        bot_id: BOT_ID,
-        user: 'ea16730874-single_user',
-        query: chatPromptMobile(question),
-        stream: true
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`API请求失败: ${response.status} ${response.statusText}`)
-    }
-
-    // 处理流式响应
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder('utf-8')
-    let done = false
-    let fullResponse = ''
-    let thinkingContent = ''
-    let followUpQuestions = []
-    let buffer = ''
+    const result = await callCozeAPI(chatPromptMobile(question), onUpdate)
     
-    while (!done) {
-      const { value, done: readerDone } = await reader.read()
-      done = readerDone
-      
-      if (value) {
-        const chunk = decoder.decode(value, { stream: true })
-        buffer += chunk
-        
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-        
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const data = line.slice(5).trim()
-            
-            if (data === '[DONE]') {
-              done = true
-              break
-            }
-            
-            try {
-              const jsonData = JSON.parse(data)
-              
-              if (jsonData.message) {
-                switch (jsonData.message.type) {
-                  case 'answer':
-                    if (jsonData.message.content) {
-                      fullResponse += jsonData.message.content
-                    }
-                    if (onUpdate) {
-                      onUpdate({
-                        messageType: 'answer',
-                        content: fullResponse,
-                        thinkingContent: thinkingContent,
-                        isProcessing: true
-                      })
-                    }
-                    break
-                    
-                  case 'follow_up':
-                    if (jsonData.message.content) {
-                      try {
-                        const followUpData = JSON.parse(jsonData.message.content)
-                        if (Array.isArray(followUpData)) {
-                          followUpQuestions = followUpData
-                        }
-                      } catch (e) {
-                        followUpQuestions.push(jsonData.message.content)
-                      }
-                      if (onUpdate) {
-                        onUpdate({
-                          messageType: 'follow_up',
-                          followUpQuestions: followUpQuestions,
-                          isProcessing: true
-                        })
-                      }
-                    }
-                    break
-                    
-                  case 'verbose':
-                    if (jsonData.message.reasoning_content) {
-                      thinkingContent += jsonData.message.reasoning_content + '\n'
-                    } else if (jsonData.message.content) {
-                      try {
-                        const verboseData = JSON.parse(jsonData.message.content)
-                        if (verboseData.msg_type === 'reasoning') {
-                          thinkingContent += verboseData.data + '\n'
-                        }
-                      } catch (e) {
-                        thinkingContent += jsonData.message.content + '\n'
-                      }
-                      if (onUpdate) {
-                        onUpdate({
-                          messageType: 'verbose',
-                          content: fullResponse,
-                          thinkingContent: thinkingContent,
-                          isProcessing: true
-                        })
-                      }
-                    }
-                    break
-                }
-              }
-            } catch (parseError) {
-              console.warn('无法解析的响应数据:', data)
-            }
-          }
-        }
-      }
-    }
-    
-    // 构建最终响应
-    const result = {
-      messageType: 'answer',
-      content: fullResponse,
-      thinkingContent: thinkingContent,
-      followUpQuestions: followUpQuestions
-    }
-    
-    if (!fullResponse.trim() && followUpQuestions.length === 0 && !thinkingContent.trim()) {
+    if (!result.content.trim() && (!result.followUpQuestions || result.followUpQuestions.length === 0) && !result.thinkingContent.trim()) {
       result.content = 'AI助手已处理您的问题，但未返回有效回复。'
     }
     

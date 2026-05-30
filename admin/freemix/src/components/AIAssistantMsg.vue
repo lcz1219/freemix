@@ -339,6 +339,7 @@ const scrollToBottom = () => {
 
 import { handleMQLResponse } from '../utils/MQLHandler';
 import { chatPrompt, mqlSummaryPrompt } from '@/utils/aiPrompts.js';
+import { callCozeAPI } from '@/utils/aiService.js';
 
 // 处理历史记录导航
 const handleScrollToHistory = (historyIndex) => {
@@ -382,219 +383,20 @@ const maskMQL = (text) => {
 };
 // 调用自定义AI API
 const callCustomAIAPI = async (question, onUpdate) => {
-   const originalOnUpdate = onUpdate;
+  const originalOnUpdate = onUpdate;
   onUpdate = (data) => {
     if (data && data.content) {
       data.content = maskMQL(data.content);
     }
     if (originalOnUpdate) originalOnUpdate(data);
-    };
-  // 使用Coze平台的官方API端点
-  const API_ENDPOINT = 'https://api.coze.cn/open_api/v1/chat';
-  
-  // 注意：您需要在Coze平台获取有效的API密钥
-  const PERSONAL_ACCESS_TOKEN = 'sat_alIbwyaIhODXfXtTHCuj74C3swKTZd08L82jZDfMsfzplbENrkX5bu3ddTU5VHdn'; // 请替换为您的实际API密钥
-  const BOT_ID = '7569182284998524934'; // 您的Bot ID
-  const custQuestion=chatPrompt({ question, username: currentUser.value.username })
+  };
+  const custQuestion = chatPrompt({ question, username: currentUser.value.username })
   try {
-    // 使用标准的Bearer Token认证方式
-    const response = await fetch(API_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PERSONAL_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream'
-      },
-      body: JSON.stringify({
-        bot_id: BOT_ID,
-        user: "ea16730874-single_user", // 用户标识
-        query: custQuestion,
-        stream: true // 启用流式响应
-      })
-    });
-
-    if (!response.ok) {
-      // 获取详细的错误信息
-      const errorText = await response.text();
-      console.error('API请求失败详情:', errorText);
-      
-      // 如果是认证错误，提供更具体的错误信息
-      if (response.status === 401 || response.status === 403) {
-        throw new Error(`认证失败：${errorText}。请检查您的Personal Access Token是否正确且未过期。`);
-      }
-      
-      throw new Error(`API请求失败: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    // 处理流式响应
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let done = false;
-    let fullResponse = '';
-    let thinkingContent = '';
-    let followUpQuestions = [];
-    let buffer = ''; // 用于累积不完整的数据
-    
-    while (!done) {
-      const { value, done: readerDone } = await reader.read();
-      done = readerDone;
-      
-      if (value) {
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk; // 将新块添加到缓冲区
-        
-        // 按行分割缓冲区内容
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // 保留最后一个可能不完整的行在缓冲区中
-        
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const data = line.slice(5).trim(); // 移除 "data:" 前缀
-            
-            if (data === '[DONE]') {
-              // 流结束标记
-              done = true;
-              break;
-            }
-            
-            try {
-              const jsonData = JSON.parse(data);
-              
-              // 检查是否是消息类型的响应
-              if (jsonData.message) {
-                // 根据消息类型处理不同内容
-                switch (jsonData.message.type) {
-                  case 'answer':
-                    // 处理AI的回答内容
-                    if (jsonData.message.content) {
-                      fullResponse += jsonData.message.content;
-                    }
-                    
-                    // 处理AI的思考过程
-                    if (jsonData.message.reasoning_content) {
-                      thinkingContent += jsonData.message.reasoning_content;
-                    }
-                    // 实时更新聊天界面
-                    if (onUpdate) {
-                      onUpdate({
-                        messageType: 'answer',
-                        success: true,
-                        content: maskMQL(fullResponse), // 界面显示脱敏版
-                        thinkingContent: thinkingContent,
-                        isProcessing: true
-                      });
-                    }
-                    break;
-                    
-                  case 'follow_up':
-                    // 处理推荐问题
-                    if (jsonData.message.content) {
-                      try {
-                        const followUpData = JSON.parse(jsonData.message.content);
-                        if (Array.isArray(followUpData)) {
-                          followUpQuestions = followUpData;
-                        }
-                      } catch (e) {
-                        // 如果不是JSON格式，直接使用内容
-                        followUpQuestions.push(jsonData.message.content);
-                      }
-                      // 实时更新聊天界面
-                      if (onUpdate) {
-                        onUpdate({
-                          messageType: 'follow_up',
-                          followUpQuestions: followUpQuestions,
-                          isProcessing: true
-                        });
-                      }
-                    }
-                    break;
-                    
-                  case 'verbose':
-                    // 处理AI思考过程
-                    if (jsonData.message.reasoning_content) {
-                      thinkingContent += jsonData.message.reasoning_content + '\n';
-                    } else if (jsonData.message.content) {
-                      try {
-                        const verboseData = JSON.parse(jsonData.message.content);
-                        if (verboseData.msg_type === 'reasoning') {
-                          thinkingContent += verboseData.data + '\n';
-                        }
-                      } catch (e) {
-                        thinkingContent += jsonData.message.content + '\n';
-                      }
-                      // 实时更新聊天界面
-                      if (onUpdate) {
-                        onUpdate({
-                          messageType: 'verbose',
-                          content: maskMQL(thinkingContent),
-                          thinkingContent: thinkingContent,
-                          isProcessing: true
-                        });
-                      }
-                    }
-                    break;
-                }
-              } else if (jsonData.event === 'done') {
-                // 对话完成
-                done = true;
-                break;
-              }
-            } catch (parseError) {
-              // 忽略无法解析的行
-              console.warn('无法解析的响应数据:', data);
-            }
-          }
-        }
-      }
-    }
-    
-    // 处理缓冲区中剩余的数据
-    if (buffer.startsWith('data:')) {
-      const data = buffer.slice(5).trim();
-      if (data !== '[DONE]') {
-        try {
-          const jsonData = JSON.parse(data);
-          if (jsonData.message) {
-            switch (jsonData.message.type) {
-              case 'answer':
-                if (jsonData.message.content) {
-                  fullResponse += jsonData.message.content;
-                }
-                
-                break;
-              case 'follow_up':
-                if (jsonData.message.content) {
-                  try {
-                    const followUpData = JSON.parse(jsonData.message.content);
-                    if (Array.isArray(followUpData)) {
-                      followUpQuestions = followUpData;
-                    }
-                  } catch (e) {
-                    followUpQuestions.push(jsonData.message.content);
-                  }
-                }
-                break;
-              case 'verbose':
-                if (jsonData.message.reasoning_content) {
-                  thinkingContent += jsonData.message.reasoning_content + '\n';
-                } else if (jsonData.message.content) {
-                  try {
-                    const verboseData = JSON.parse(jsonData.message.content);
-                    if (verboseData.msg_type === 'reasoning') {
-                      thinkingContent += verboseData.data + '\n';
-                    }
-                  } catch (e) {
-                    thinkingContent += jsonData.message.content + '\n';
-                  }
-                }
-                break;
-            }
-          }
-        } catch (parseError) {
-          console.warn('无法解析的响应数据:', data);
-        }
-      }
-    }
+    const apiResult = await callCozeAPI(custQuestion, onUpdate);
+    const fullResponse = apiResult.content || '';
+    const thinkingContent = apiResult.thinkingContent || '';
+    const followUpQuestions = apiResult.followUpQuestions || [];
+    console.log("fullResponse",fullResponse);
     
     // 构建最终响应对象
     const result = {
@@ -957,7 +759,6 @@ defineExpose({
   border: 1px solid rgba(0, 201, 167, 0.6);
 }
 </style>
-
 
 
 
