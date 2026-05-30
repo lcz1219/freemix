@@ -699,7 +699,7 @@ defineExpose({
 
 /* 暗色主题适配 */
 .ai-assistant-window.dark .chat-container {
-  background: rgba(42, 42, 42, 0.7);
+  background: #121212;
   border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
@@ -739,12 +739,12 @@ defineExpose({
 }
 
 .ai-assistant-window.dark .input-container {
-  background: rgba(42, 42, 42, 0.7);
+  background: #121212;
   border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 .ai-assistant-window.dark .follow-up-buttons {
-  background: rgba(42, 42, 42, 0.7);
+  background: #121212;
   border: 1px dashed rgba(0, 201, 167, 0.4);
 }
 

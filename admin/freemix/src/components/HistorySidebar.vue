@@ -225,7 +225,7 @@ onMounted(() => {
 
 /* 暗色主题适配 */
 .dark .history-sidebar {
-  background: rgba(42, 42, 42, 0.7);
+  background: #121212;
   border-right-color: rgba(129, 198, 131, 0.2);
 }
 

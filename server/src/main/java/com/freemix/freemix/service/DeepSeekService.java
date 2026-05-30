@@ -4,6 +4,9 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.configurer.DeepSeekConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -17,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class DeepSeekService {
@@ -24,13 +29,33 @@ public class DeepSeekService {
     @Autowired
     private DeepSeekConfig deepSeekConfig;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    /**
+     * 从 MongoDB DeepSeek 集合中读取 apiKey
+     */
+    private String getApiKey() {
+        JSONObject config = mongoTemplate.findOne(
+                new Query().limit(1),
+                JSONObject.class,
+                "DeepSeek"
+        );
+        if (config == null || !config.containsKey("apiKey")) {
+            throw new IllegalStateException("MongoDB DeepSeek 集合中未找到 apiKey");
+        }
+        String apiKey = config.getString("apiKey");
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("MongoDB DeepSeek 集合中的 apiKey 为空");
+        }
+        return apiKey;
+    }
+
     /**
      * 建立到 DeepSeek 的流式连接，后续由控制器把结果转发给前端。
      */
     public HttpURLConnection createChatStreamConnection(String question, String currentUsername) throws IOException {
-        if (deepSeekConfig.getApiKey() == null || deepSeekConfig.getApiKey().isBlank()) {
-            throw new IllegalStateException("DeepSeek API Key 未配置");
-        }
+        String apiKey = getApiKey();
 
         String baseUrl = deepSeekConfig.getBaseUrl();
         if (baseUrl == null || baseUrl.isBlank()) {
@@ -56,7 +81,7 @@ public class DeepSeekService {
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(0);
         connection.setDoOutput(true);
-        connection.setRequestProperty("Authorization", "Bearer " + deepSeekConfig.getApiKey());
+        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept", "text/event-stream");
 
@@ -68,9 +93,16 @@ public class DeepSeekService {
     }
 
     /**
-     * 把 DeepSeek 的 OpenAI 兼容流式结果转换成当前前端已在使用的消息结构。
+     * 把 DeepSeek 的 OpenAI 兼容流式结果转换成当前前端已在使用的消息结构，
+     * 并在流结束时解析 [推荐问题] 标记，单独推送 follow_up 类型消息。
+     * 通过安全缓冲区避免 [推荐问题] 标记泄漏到前端正文里。
      */
     public void forwardDeepSeekStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+        StringBuilder fullContent = new StringBuilder();
+        StringBuilder safeContent = new StringBuilder();
+        boolean followUpStarted = false;
+        final String MARKER = "[推荐问题]";
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
             String line;
@@ -85,8 +117,6 @@ public class DeepSeekService {
                 }
 
                 if ("[DONE]".equals(data)) {
-                    writer.write("data: [DONE]\n\n");
-                    writer.flush();
                     break;
                 }
 
@@ -106,29 +136,130 @@ public class DeepSeekService {
                     String content = delta.getString("content");
                     String reasoningContent = delta.getString("reasoning_content");
 
+                    // 累积完整内容用于后续解析推荐问题
+                    if (content != null && !content.isEmpty()) {
+                        fullContent.append(content);
+                    }
+
                     if ((content == null || content.isEmpty()) && (reasoningContent == null || reasoningContent.isEmpty())) {
                         continue;
                     }
 
-                    JSONObject message = new JSONObject();
-                    if (reasoningContent != null && !reasoningContent.isEmpty()) {
-                        message.put("type", "thinking");
-                        message.put("reasoning_content", reasoningContent);
-                        message.put("content", content == null ? "" : content);
-                    } else {
-                        message.put("type", "answer");
-                        message.put("content", content);
+                    if (followUpStarted) {
+                        continue;
                     }
 
-                    JSONObject wrapper = new JSONObject();
-                    wrapper.put("message", message);
+                    // 使用安全缓冲区检测 [推荐问题] 标记，防止泄漏到前端正文
+                    if (content != null && !content.isEmpty()) {
+                        String combined = safeContent + content;
+                        int markerIdx = combined.indexOf(MARKER);
 
-                    writer.write("data: " + wrapper.toJSONString() + "\n\n");
-                    writer.flush();
+                        if (markerIdx >= 0) {
+                            // 标记前的干净内容写出
+                            if (markerIdx > 0) {
+                                writeAnswer(combined.substring(0, markerIdx), writer);
+                            }
+                            followUpStarted = true;
+                            safeContent.setLength(0);
+                            continue;
+                        }
+
+                        // 检查 combined 末尾是否可能是 MARKER 的前缀
+                        int partialLen = 0;
+                        for (int i = MARKER.length() - 1; i >= 1; i--) {
+                            if (combined.endsWith(MARKER.substring(0, i))) {
+                                partialLen = i;
+                                break;
+                            }
+                        }
+
+                        if (partialLen > 0) {
+                            int safeLen = combined.length() - partialLen;
+                            if (safeLen > 0) {
+                                writeAnswer(combined.substring(0, safeLen), writer);
+                            }
+                            safeContent.setLength(0);
+                            safeContent.append(combined.substring(safeLen));
+                        } else {
+                            writeAnswer(combined, writer);
+                            safeContent.setLength(0);
+                        }
+                    }
+
+                    // 思考过程正常转发
+                    if (reasoningContent != null && !reasoningContent.isEmpty()) {
+                        JSONObject message = new JSONObject();
+                        message.put("type", "thinking");
+                        message.put("reasoning_content", reasoningContent);
+                        JSONObject wrapper = new JSONObject();
+                        wrapper.put("message", message);
+                        writer.write("data: " + wrapper.toJSONString() + "\n\n");
+                        writer.flush();
+                    }
                 } catch (Exception ignored) {
                 }
             }
+
+            // 流结束，如果 safeContent 还有未发出的内容（没有触发标记），正常写出
+            if (safeContent.length() > 0 && !followUpStarted) {
+                writeAnswer(safeContent.toString(), writer);
+            }
+
+            // 从累积的完整内容中解析 [推荐问题]
+            String contentText = fullContent.toString();
+            if (contentText.contains(MARKER)) {
+                List<String> questions = parseFollowUpQuestions(contentText);
+                if (!questions.isEmpty()) {
+                    JSONObject followUpMsg = new JSONObject();
+                    followUpMsg.put("type", "follow_up");
+                    followUpMsg.put("content", JSONObject.toJSONString(questions));
+
+                    JSONObject wrapper = new JSONObject();
+                    wrapper.put("message", followUpMsg);
+
+                    writer.write("data: " + wrapper.toJSONString() + "\n\n");
+                    writer.flush();
+                }
+            }
+
+            writer.write("data: [DONE]\n\n");
+            writer.flush();
         }
+    }
+
+    private void writeAnswer(String content, BufferedWriter writer) throws IOException {
+        JSONObject message = new JSONObject();
+        message.put("type", "answer");
+        message.put("content", content);
+        JSONObject wrapper = new JSONObject();
+        wrapper.put("message", message);
+        writer.write("data: " + wrapper.toJSONString() + "\n\n");
+        writer.flush();
+    }
+
+    /**
+     * 从回答文本中提取 [推荐问题] 之后的问题列表
+     */
+    private List<String> parseFollowUpQuestions(String content) {
+        List<String> questions = new ArrayList<>();
+        int markerIndex = content.indexOf("[推荐问题]");
+        if (markerIndex < 0) {
+            return questions;
+        }
+
+        String afterMarker = content.substring(markerIndex + "[推荐问题]".length());
+        String[] lines = afterMarker.split("\n");
+        for (String line : lines) {
+            String trimmed = line.trim();
+            // 跳过空行和 markdown 分隔线
+            if (!trimmed.isEmpty() && !trimmed.matches("^[-*_=]+$")) {
+                questions.add(trimmed);
+            }
+            if (questions.size() >= 3) {
+                break;
+            }
+        }
+        return questions;
     }
 
     private JSONObject createMessage(String role, String content) {
@@ -241,6 +372,15 @@ public class DeepSeekService {
 
                 如果用户的问题不需要数据库查询，则按普通目标管理专家身份直接回答。
                 默认使用中文回答，必要时可使用 Markdown 提高可读性。
+
+                推荐问题要求：
+                在你每次回答的末尾，必须单独起一行添加 [推荐问题] 标记，然后紧接2-3个用户可能追问的相关问题，每行一个问题。
+                格式示例：
+                [推荐问题]
+                如何制定每周的执行计划？
+                有哪些工具可以帮助跟踪进度？
+                如果目标未达成应该怎么办？
+                注意：[推荐问题] 和后面的问题必须放在回答的最末尾，中间不要有空行。
                 """.formatted(username, LocalDateTime.now(), username);
     }
 }

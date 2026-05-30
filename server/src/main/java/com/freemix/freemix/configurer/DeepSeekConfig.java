@@ -9,6 +9,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "deepseek")
 public class DeepSeekConfig {
     private String baseUrl;
-    private String apiKey;
     private String model;
 }

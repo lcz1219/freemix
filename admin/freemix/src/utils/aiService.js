@@ -43,6 +43,7 @@ export const callCozeAPI = async (message, onUpdate) => {
     const decoder = new TextDecoder();
     let fullResponse = '';
     let thinkingContent = '';
+    let followUpQuestions = [];
     let buffer = '';
 
     while (true) {
@@ -82,6 +83,24 @@ export const callCozeAPI = async (message, onUpdate) => {
                 isProcessing: true
               });
             }
+          } else if (msg.type === 'follow_up') {
+            if (msg.content) {
+              try {
+                const questions = JSON.parse(msg.content);
+                if (Array.isArray(questions)) {
+                  followUpQuestions = questions;
+                }
+              } catch (e) {
+                followUpQuestions.push(msg.content);
+              }
+            }
+            if (onUpdate) {
+              onUpdate({
+                messageType: 'follow_up',
+                followUpQuestions: followUpQuestions,
+                isProcessing: false
+              });
+            }
           } else if (msg.type === 'verbose' || msg.type === 'thinking') {
             if (msg.reasoning_content) {
               thinkingContent += msg.reasoning_content;
@@ -108,7 +127,7 @@ export const callCozeAPI = async (message, onUpdate) => {
       success: true,
       content: fullResponse,
       thinkingContent: thinkingContent,
-      followUpQuestions: []
+      followUpQuestions: followUpQuestions
     };
   } catch (error) {
     console.error('AI API调用失败:', error);
