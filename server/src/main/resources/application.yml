@@ -70,5 +70,5 @@ logging:
 
 deepseek:
   base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
-  api-key: ${DEEPSEEK_API_KEY:sk-e6f7c3ba20ea4e9ab4869bd083e8e1b6}
+  api-key: ${DEEPSEEK_API_KEY:}
   model: ${DEEPSEEK_MODEL:deepseek-v4-pro}
