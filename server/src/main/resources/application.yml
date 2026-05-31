@@ -70,4 +70,4 @@ logging:
 
 deepseek:
   base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
-  model: ${DEEPSEEK_MODEL:deepseek-v4-pro}
+  model: ${DEEPSEEK_MODEL:deepseek-v4-flash}

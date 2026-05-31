@@ -80,6 +80,11 @@ const currentInsightIndex = ref(0);
 // const currentInsight = computed(() => insights.value[currentInsightIndex.value]);
 const currentInsight = ref("");
 const saveAIInsightsToServer = async (currentInsight) => {
+
+  if(!currentInsight){
+    refreshInsights()
+    return;
+  }
   try {
     const messageData = {
       username: currentUser.value.username,
