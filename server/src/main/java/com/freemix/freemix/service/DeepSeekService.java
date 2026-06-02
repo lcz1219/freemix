@@ -93,119 +93,83 @@ public class DeepSeekService {
     }
 
     /**
-     * 把 DeepSeek 的 OpenAI 兼容流式结果转换成当前前端已在使用的消息结构，
-     * 并在流结束时解析 [推荐问题] 标记，单独推送 follow_up 类型消息。
-     * 通过安全缓冲区避免 [推荐问题] 标记泄漏到前端正文里。
+     * 把 DeepSeek 的 OpenAI 兼容流式结果转换成前端消息结构。
+     * 使用极短回看窗口防止 [推荐问题] 标记泄漏，同时保证逐字即时推送。
      */
     public void forwardDeepSeekStream(InputStream inputStream, OutputStream outputStream) throws IOException {
         StringBuilder fullContent = new StringBuilder();
-        StringBuilder safeContent = new StringBuilder();
+        StringBuilder lookbehind = new StringBuilder();
         boolean followUpStarted = false;
         final String MARKER = "[推荐问题]";
+        final int LOOK_BEHIND = MARKER.length() - 1;
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (!line.startsWith("data:")) {
-                    continue;
-                }
-
+                if (!line.startsWith("data:")) continue;
                 String data = line.substring(5).trim();
-                if (data.isEmpty()) {
-                    continue;
-                }
-
-                if ("[DONE]".equals(data)) {
-                    break;
-                }
+                if (data.isEmpty()) continue;
+                if ("[DONE]".equals(data)) break;
 
                 try {
                     JSONObject jsonObject = JSONObject.parseObject(data);
                     JSONArray choices = jsonObject.getJSONArray("choices");
-                    if (choices == null || choices.isEmpty()) {
-                        continue;
-                    }
+                    if (choices == null || choices.isEmpty()) continue;
 
                     JSONObject choice = choices.getJSONObject(0);
                     JSONObject delta = choice.getJSONObject("delta");
-                    if (delta == null || delta.isEmpty()) {
-                        continue;
-                    }
+                    if (delta == null || delta.isEmpty()) continue;
 
                     String content = delta.getString("content");
                     String reasoningContent = delta.getString("reasoning_content");
 
-                    // 累积完整内容用于后续解析推荐问题
                     if (content != null && !content.isEmpty()) {
                         fullContent.append(content);
                     }
 
-                    if ((content == null || content.isEmpty()) && (reasoningContent == null || reasoningContent.isEmpty())) {
-                        continue;
-                    }
+                    boolean hasContent = content != null && !content.isEmpty();
+                    boolean hasReasoning = reasoningContent != null && !reasoningContent.isEmpty();
+                    if (!hasContent && !hasReasoning) continue;
 
-                    if (followUpStarted) {
-                        continue;
-                    }
+                    if (followUpStarted) continue;
 
-                    // 使用安全缓冲区检测 [推荐问题] 标记，防止泄漏到前端正文
-                    if (content != null && !content.isEmpty()) {
-                        String combined = safeContent + content;
-                        int markerIdx = combined.indexOf(MARKER);
-
-                        if (markerIdx >= 0) {
-                            // 标记前的干净内容写出
-                            if (markerIdx > 0) {
-                                writeAnswer(combined.substring(0, markerIdx), writer);
-                            }
-                            followUpStarted = true;
-                            safeContent.setLength(0);
-                            continue;
-                        }
-
-                        // 检查 combined 末尾是否可能是 MARKER 的前缀
-                        int partialLen = 0;
-                        for (int i = MARKER.length() - 1; i >= 1; i--) {
-                            if (combined.endsWith(MARKER.substring(0, i))) {
-                                partialLen = i;
-                                break;
-                            }
-                        }
-
-                        if (partialLen > 0) {
-                            int safeLen = combined.length() - partialLen;
-                            if (safeLen > 0) {
-                                writeAnswer(combined.substring(0, safeLen), writer);
-                            }
-                            safeContent.setLength(0);
-                            safeContent.append(combined.substring(safeLen));
-                        } else {
-                            writeAnswer(combined, writer);
-                            safeContent.setLength(0);
-                        }
-                    }
-
-                    // 思考过程正常转发
-                    if (reasoningContent != null && !reasoningContent.isEmpty()) {
-                        JSONObject message = new JSONObject();
-                        message.put("type", "thinking");
-                        message.put("reasoning_content", reasoningContent);
+                    // 思考过程即时转发
+                    if (hasReasoning) {
+                        JSONObject msg = new JSONObject();
+                        msg.put("type", "thinking");
+                        msg.put("reasoning_content", reasoningContent);
                         JSONObject wrapper = new JSONObject();
-                        wrapper.put("message", message);
+                        wrapper.put("message", msg);
                         writer.write("data: " + wrapper.toJSONString() + "\n\n");
                         writer.flush();
+                    }
+
+                    // 正文：即时推送 + 短回看窗口检测 [推荐问题]
+                    if (hasContent) {
+                        String inspect = lookbehind + content;
+                        int markerIdx = inspect.indexOf(MARKER);
+
+                        if (markerIdx >= 0) {
+                            int safeFromContent = markerIdx - lookbehind.length();
+                            if (safeFromContent > 0) {
+                                writeImmediate(content.substring(0, safeFromContent), writer);
+                            }
+                            followUpStarted = true;
+                            lookbehind.setLength(0);
+                        } else {
+                            writeImmediate(content, writer);
+                            lookbehind.append(content);
+                            if (lookbehind.length() > LOOK_BEHIND) {
+                                lookbehind.delete(0, lookbehind.length() - LOOK_BEHIND);
+                            }
+                        }
                     }
                 } catch (Exception ignored) {
                 }
             }
 
-            // 流结束，如果 safeContent 还有未发出的内容（没有触发标记），正常写出
-            if (safeContent.length() > 0 && !followUpStarted) {
-                writeAnswer(safeContent.toString(), writer);
-            }
-
-            // 从累积的完整内容中解析 [推荐问题]
+            // 从累积内容中解析 [推荐问题] 并单独推送
             String contentText = fullContent.toString();
             if (contentText.contains(MARKER)) {
                 List<String> questions = parseFollowUpQuestions(contentText);
@@ -213,10 +177,8 @@ public class DeepSeekService {
                     JSONObject followUpMsg = new JSONObject();
                     followUpMsg.put("type", "follow_up");
                     followUpMsg.put("content", JSONObject.toJSONString(questions));
-
                     JSONObject wrapper = new JSONObject();
                     wrapper.put("message", followUpMsg);
-
                     writer.write("data: " + wrapper.toJSONString() + "\n\n");
                     writer.flush();
                 }
@@ -227,7 +189,7 @@ public class DeepSeekService {
         }
     }
 
-    private void writeAnswer(String content, BufferedWriter writer) throws IOException {
+    private void writeImmediate(String content, BufferedWriter writer) throws IOException {
         JSONObject message = new JSONObject();
         message.put("type", "answer");
         message.put("content", content);

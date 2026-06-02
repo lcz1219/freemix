@@ -388,6 +388,9 @@ const callCustomAIAPI = async (question, onUpdate) => {
     if (data && data.content) {
       data.content = maskMQL(data.content);
     }
+    if (data && data.thinkingContent) {
+      data.thinkingContent = maskMQL(data.thinkingContent);
+    }
     if (originalOnUpdate) originalOnUpdate(data);
   };
   const custQuestion = chatPrompt({ question, username: currentUser.value.username })
