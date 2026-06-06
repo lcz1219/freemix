@@ -136,6 +136,18 @@
             </div>
           </div>
 
+          <!-- 我的好友 -->
+          <div class="section-card" @click="goToFriends">
+            <h3 class="card-title">我的好友</h3>
+            <div class="friend-entry">
+              <div class="friend-entry-info">
+                <van-icon name="friends-o" size="20" color="#00c9a7" />
+                <span>查看好友列表</span>
+              </div>
+              <van-icon name="arrow" />
+            </div>
+          </div>
+
           <!-- 安全与登录 -->
           <div class="section-card">
             <h3 class="card-title">安全与登录</h3>
@@ -258,6 +270,11 @@ const stats = ref({
 });
 const goBack=()=>{
     router.back();
+}
+
+// 跳转好友页面
+const goToFriends = () => {
+  router.push('/messages')
 }
 
 // Daily/Weekly/Monthly Stats Logic
@@ -581,15 +598,29 @@ onMounted(async () => {
   
   .tab-content {
     padding: 0 16px;
-  }
-  
   .section-card {
     background: var(--bg-primary);
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 16px;
     box-shadow: var(--card-shadow);
-    
+  }
+
+  /* 好友入口 */
+  .friend-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 6px;
+  }
+
+  .friend-entry-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+  }   
     .card-title {
       font-size: 16px;
       font-weight: 600;

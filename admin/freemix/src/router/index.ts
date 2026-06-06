@@ -191,7 +191,7 @@ const routes = [
     name: 'UpdateLogManager',
     component: () => import('@/views/UpdateLogManager.vue'),
     meta: { requiresAuth: true }
-  }
+  },
 ]
 
 const router = createRouter({

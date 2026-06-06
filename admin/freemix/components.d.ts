@@ -13,6 +13,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AchievementCard: typeof import('./src/components/AchievementCard.vue')['default']
+    AddFriendPanel: typeof import('./src/components/AddFriendPanel.vue')['default']
     AIAssistantIcon: typeof import('./src/components/icons/AIAssistantIcon.vue')['default']
     AIAssistantMsg: typeof import('./src/components/AIAssistantMsg.vue')['default']
     AIAssistantWindow: typeof import('./src/components/AIAssistantWindow.vue')['default']
@@ -90,6 +91,7 @@ declare module 'vue' {
 // For TSX support
 declare global {
   const AchievementCard: typeof import('./src/components/AchievementCard.vue')['default']
+  const AddFriendPanel: typeof import('./src/components/AddFriendPanel.vue')['default']
   const AIAssistantIcon: typeof import('./src/components/icons/AIAssistantIcon.vue')['default']
   const AIAssistantMsg: typeof import('./src/components/AIAssistantMsg.vue')['default']
   const AIAssistantWindow: typeof import('./src/components/AIAssistantWindow.vue')['default']

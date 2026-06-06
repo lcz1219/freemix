@@ -30,16 +30,24 @@
         @expand="collapsed = false"
       >
         <div style="padding: 16px; height: calc(100% - 32px); display: flex; flex-direction: column;">
-          <n-input 
-            v-model:value="searchUser" 
-            placeholder="搜索用户" 
-            clearable
-            style="margin-bottom: 16px;"
-          >
-            <template #prefix>
-              <n-icon><Search /></n-icon>
-            </template>
-          </n-input>
+          <!-- 搜索栏 + 添加按钮 -->
+          <div class="sidebar-search-row">
+            <n-input 
+              v-model:value="searchUser" 
+              placeholder="搜索好友" 
+              clearable
+            >
+              <template #prefix>
+                <n-icon><SearchCircleSharp /></n-icon>
+              </template>
+            </n-input>
+            <n-button circle size="small" type="primary" @click="openAddFriendPanel" class="add-friend-btn" title="添加好友">
+              <template #icon>
+                <n-icon><AddIcon/></n-icon>
+              </template>
+            </n-button>
+          </div>
+          
           
           <n-list style="flex: 1; overflow-y: auto;">
             <n-list-item 
@@ -85,7 +93,7 @@
       </n-layout-sider>
       
       <!-- 主内容区域 - 消息对话 -->
-      <n-layout>
+      <n-layout style="position: relative;">
         <n-layout-content 
           ref="messageContainer" 
           style="padding: 16px; height: 80%; overflow-y: scroll; overflow-x: hidden; min-height: 100px;"
@@ -218,6 +226,15 @@
             </template>
           </n-empty>
         </n-layout-content>
+
+        <!-- 添加好友滑动面板 -->
+        <div class="add-friend-overlay" :class="{ visible: showAddFriendPanel }" v-if="showAddFriendPanel">
+          <AddFriendPanel
+            ref="addFriendPanelRef"
+            @close="showAddFriendPanel = false"
+            @friend-added="onFriendAdded"
+          />
+        </div>
       </n-layout>
     </n-layout>
     
@@ -259,13 +276,15 @@ import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
 import { useMessage } from 'naive-ui'
 import NavBar from '@/components/NavBar.vue';
+import AddFriendPanel from '@/components/AddFriendPanel.vue';
 import { getM, postM, isSuccess,baseURL } from '@/utils/request'
 import { 
   Send, 
-  Search, 
+  SearchCircleSharp, 
   Chatbox,
   ArrowBack,
-  Accessibility
+  Accessibility,
+  Add as AddIcon
   
 } from '@vicons/ionicons5'
 import { sendMessageWeb } from '@/utils/websocket.js'
@@ -329,6 +348,19 @@ const show=()=>{
   
 }
 
+// 打开添加好友面板
+const openAddFriendPanel = () => {
+  showAddFriendPanel.value = true
+  nextTick(() => {
+    addFriendPanelRef.value?.init()
+  })
+}
+
+// 好友添加成功后刷新列表
+const onFriendAdded = async () => {
+  await fetchAllUsers()
+}
+
 const showAvatar=(item)=>{
   // if(!item) return `${baseURL()}${'/file/WechatIMG105.jpg'}`
   return `${baseURL()}${item}` 
@@ -357,6 +389,10 @@ const newMessage = ref('')
 const showSendMessageModal = ref(false)
 const sendingMessage = ref(false)
 const userStatus = ref<Record<string, boolean>>({})
+
+// 添加好友面板状态
+const showAddFriendPanel = ref(false)
+const addFriendPanelRef = ref(null)
 
 // 轮询相关
 // 表单相关
@@ -1363,5 +1399,40 @@ background-color: #e6f4ff1c;
 
 .status-indicator.offline {
   background-color: #9E9E9E; /* 灰色表示离线 */
+}
+
+/* 侧边栏搜索行 */
+.sidebar-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sidebar-search-row > *:first-child {
+  flex: 1;
+}
+
+.add-friend-btn {
+  flex-shrink: 0;
+  /* color: #00c9a7 !important; */
+}
+
+/* 添加好友滑动面板 */
+.add-friend-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 340px;
+  height: 100%;
+  z-index: 20;
+  border-left: 1px solid var(--border-color);
+  background: var(--card-bg);
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-friend-overlay.visible {
+  transform: translateX(0);
 }
 </style>

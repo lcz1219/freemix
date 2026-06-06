@@ -100,7 +100,7 @@
                     v-model:value="goalForm.owner" 
                     placeholder="请输入负责人姓名"
                   /> -->
-                      <n-popselect v-model:value="goalForm.owner" :options="owerOptions" size="medium" scrollable>
+                      <n-popselect disabled v-model:value="goalForm.owner" :options="owerOptions" size="medium" scrollable>
                         <n-button style="margin-right: 8px">
                           {{ goalForm.owner || '请选择负责人' }}
                         </n-button>

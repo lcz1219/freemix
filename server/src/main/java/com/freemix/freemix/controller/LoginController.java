@@ -2,6 +2,7 @@ package com.freemix.freemix.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
+import com.freemix.freemix.enetiy.Friendship;
 import com.freemix.freemix.enetiy.LoginLog;
 import com.freemix.freemix.enetiy.Message;
 import com.freemix.freemix.enetiy.User;
@@ -460,13 +461,34 @@ public class LoginController {
             }
         }
 
-        // 1. 获取所有消息，按创建时间倒序排列（最近的在前）
+        // 改造：只返回当前用户的好友列表（已确认的好友关系）
+        // 查询双向好友关系
+        Criteria friendCriteria = new Criteria().orOperator(
+                Criteria.where("fromUser").is(currentUsername),
+                Criteria.where("toUser").is(currentUsername)
+        );
+        friendCriteria.and("status").is("accepted");
+        friendCriteria.and("del").ne(1);
+
+        List<Friendship> friendships = mongoTemplate.find(
+                Query.query(friendCriteria).with(Sort.by(Sort.Direction.DESC, "acceptTime")),
+                Friendship.class);
+
+        // 提取好友用户名列表
+        List<String> friendUsernames = new ArrayList<>();
+        for (Friendship fs : friendships) {
+            String friendName = currentUsername.equals(fs.getFromUser())
+                    ? fs.getToUser() : fs.getFromUser();
+            friendUsernames.add(friendName);
+        }
+
+        // 1. 获取消息记录，提取最近联系人顺序
         List<Message> messages = mongoTemplate.find(
             new Query().with(Sort.by(Sort.Direction.DESC, "createdAt")),
             Message.class
         );
 
-        // 2. 提取最近联系人（有序去重）
+        // 2. 从消息中提取最近联系人（仅在好友范围内）
         List<String> recentContacts = new ArrayList<>();
         if (StringUtils.isNotEmpty(currentUsername)) {
             for (Message msg : messages) {
@@ -476,23 +498,24 @@ public class LoginController {
                 } else if (currentUsername.equals(msg.getToUser())) {
                     contact = msg.getFromUser();
                 }
-                
-                if (contact != null && !recentContacts.contains(contact)) {
+
+                if (contact != null && !recentContacts.contains(contact) && friendUsernames.contains(contact)) {
                     recentContacts.add(contact);
                 }
             }
         }
 
-        // 3. 获取所有用户
-        List<User> users = mongoTemplate.find(new Query().addCriteria(Criteria.where("del").ne(1)), User.class);
-        
-        // 4. 构建有序结果集
-        // 使用 LinkedHashSet 保持插入顺序
+        // 3. 获取好友用户信息
+        List<User> friendUsers = mongoTemplate.find(
+                Query.query(Criteria.where("username").in(friendUsernames).and("del").ne(1)),
+                User.class);
+
+        // 4. 构建有序结果集：最近联系人优先
         Set<JSONObject> result = new LinkedHashSet<>();
-        
-        // 4.1 先添加最近联系人
+
+        // 4.1 先添加最近联系人中的好友
         for (String contactName : recentContacts) {
-            users.stream()
+            friendUsers.stream()
                 .filter(u -> u.getUsername().equals(contactName))
                 .findFirst()
                 .ifPresent(u -> {
@@ -500,14 +523,13 @@ public class LoginController {
                     jsonObject.put("value", u.getUsername());
                     jsonObject.put("text", u.getUsername());
                     jsonObject.put("avatarUrl", u.getAvatarUrl());
-                    jsonObject.put("chinesename", u.getChinesename()); // 补充中文名
+                    jsonObject.put("chinesename", u.getChinesename());
                     result.add(jsonObject);
                 });
         }
 
-        // 4.2 再添加剩余用户
-        for (User u : users) {
-            // 检查是否已存在（避免重复添加）
+        // 4.2 再添加其余好友
+        for (User u : friendUsers) {
             boolean exists = result.stream().anyMatch(j -> u.getUsername().equals(j.getString("value")));
             if (!exists) {
                 JSONObject jsonObject = new JSONObject();

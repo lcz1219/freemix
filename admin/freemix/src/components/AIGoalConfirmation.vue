@@ -120,6 +120,10 @@ const props = defineProps({
   userQuestion: {
     type: String,
     default: ''
+  },
+  subGoals: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -170,7 +174,7 @@ watch(showModal, (newVal) => {
 // 初始化目标数据
 const initializeGoalData = () => {
   // 解析AI响应为子目标
-  const subGoals = parseAIResponseToSubGoals(props.aiResponse)
+  // const subGoals = parseAIResponseToSubGoals(props.aiResponse)
   
   // 提取目标标题
   const title = extractGoalTitle(props.aiResponse, props.userQuestion)
@@ -183,7 +187,7 @@ const initializeGoalData = () => {
   goalData.value = {
     title: title,
     description: props.userQuestion,
-    childGoals: subGoals,
+    childGoals: props.subGoals,
     deadline: oneWeekLater.getTime(),
     level: 'medium',
     tags: ['ai生成']

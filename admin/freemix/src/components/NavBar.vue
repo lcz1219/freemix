@@ -94,6 +94,13 @@
     </nav>
 
     <div class="sidebar-footer">
+      <!-- <n-button class="nav-link footer-button" :class="{ active: activeTab === 'friends' }" :title="isCollapsedTitle('好友')"
+        @click="goTo('/messages')">
+        <NIcon class="icon">
+          <PeopleOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">好友</span>
+      </n-button> -->
       <n-button class="nav-link footer-button" :class="{ active: activeTab === 'messages' }" :title="isCollapsedTitle('消息')"
         @click="goTo('/messages')">
         <NIcon class="icon">
@@ -147,7 +154,8 @@ import {
   CalendarOutline,
   PlanetOutline,
   RepeatOutline,
-  ReaderOutline
+  ReaderOutline,
+  PeopleOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';
