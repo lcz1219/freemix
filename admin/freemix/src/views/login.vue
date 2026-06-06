@@ -1175,7 +1175,7 @@ onUnmounted(() => {
 
 /* 登录按钮渐变 */
 .login-btn-gradient {
-  background: linear-gradient(92deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(92deg, #03c9a7, #03c9a7);
   border: none;
   box-shadow: 0 4px 10px rgba(37,99,235,0.3);
 }

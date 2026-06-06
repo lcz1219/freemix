@@ -23,52 +23,41 @@
       </van-nav-bar>
 
       <div class="content-wrapper">
-        <!-- Hero 区域 -->
+        <!-- Hero 区域（沉浸式大卡片） -->
         <section class="hero-section">
           <div class="hero-card">
+            <!-- 动态渐变装饰层 -->
+            <div class="hero-bg-layer"></div>
+            <div class="hero-bg-shape"></div>
+            <div class="hero-bg-shape-2"></div>
             <div class="hero-content">
               <div class="hero-text">
-                <h1>早安，进击者</h1>
-                <p>让每一个目标都清晰可见</p>
+                <p class="hero-date">{{ currentDate }}</p>
+                <h1 class="hero-title">早安，进击者</h1>
+                <p class="hero-sub">让每一个目标都清晰可见</p>
               </div>
               <div class="hero-decoration">
-                <van-icon name="fire" />
+                <van-icon name="fire-o" />
               </div>
             </div>
+            <!-- 半透明毛玻璃按钮 -->
             <div class="hero-actions">
-              <van-button class="action-btn primary" icon="plus" block @click="goToAddGoal">
-                新建目标
-              </van-button>
-              <van-button class="action-btn secondary" icon="chart-trending-o" block @click="goToStatistics">
-                数据统计
-              </van-button>
+              <van-button class="action-btn primary" icon="plus" @click="goToAddGoal">新建目标</van-button>
+              <van-button class="action-btn secondary" icon="chart-trending-o" @click="goToStatistics">数据统计</van-button>
             </div>
           </div>
         </section>
 
-        <!-- 快捷入口 -->
-        <section class="quick-grid-section">
-          <div class="grid-card">
-            <div class="grid-item" @click="goToAddGoal">
-              <div class="grid-icon-box blue"><van-icon name="flag-o" /></div>
-              <span>目标</span>
-            </div>
-            <div class="grid-item" @click="goToStatistics">
-              <div class="grid-icon-box green"><van-icon name="bar-chart-o" /></div>
-              <span>统计</span>
-            </div>
-            <div class="grid-item" @click="goToMessageCenter">
-              <div class="grid-icon-box orange"><van-icon name="chat-o" /></div>
-              <span>消息</span>
-            </div>
-            <div class="grid-item" @click="goToAIAssistant">
-              <div class="grid-icon-box teal"><van-icon name="smile-o" /></div>
-              <span>AI助手</span>
-            </div>
-            <div class="grid-item" @click="goToGuide">
-              <div class="grid-icon-box purple"><van-icon name="bulb-o" /></div>
-              <span>指南</span>
-            </div>
+        <!-- 快捷入口（胶囊风格，浮动在统计区上方） -->
+        <section class="quick-capsules">
+          <div class="capsule-item" @click="goToMessageCenter">
+            <van-icon name="chat-o" size="16" /><span>消息</span>
+          </div>
+          <div class="capsule-item" @click="goToAIAssistant">
+            <van-icon name="smile-o" size="16" /><span>AI助手</span>
+          </div>
+          <div class="capsule-item" @click="goToGuide">
+            <van-icon name="bulb-o" size="16" /><span>指南</span>
           </div>
         </section>
 
@@ -120,15 +109,17 @@
                 <div v-else>
                   <van-list v-model:loading="listLoading" :finished="listFinished" finished-text="没有更多了"
                     @load="loadMore">
+                    <!-- 目标卡片（左滑显示操作按钮） -->
                     <div class="goal-list-wrap">
-                      <van-swipe-cell v-for="goal in searchFilteredGoals" :key="goal.id" class="goal-card-swipe">
-                        <div class="goal-card" @click="showGoalDetail(goal)">
-                          <div class="card-status-line" :class="goal.status"></div>
+                      <van-swipe-cell v-for="goal in searchFilteredGoals" :key="goal.id" :right-width="120">
+                        <div class="goal-card-glass" @click="showGoalDetail(goal)">
+                          <!-- 左侧状态色点 -->
+                          <div class="card-dot" :class="goal.status"></div>
                           <div class="card-main">
                             <div class="card-header">
                               <h3 class="card-title">{{ goal.title }}</h3>
-                              <van-tag :type="getGoalStatusType(goal.status)" round class="status-pill">{{
-                                getGoalStatusText(goal.status) }}</van-tag>
+                              <van-tag :type="getGoalStatusType(goal.status)" round size="small" class="status-pill">
+                                {{ getGoalStatusText(goal.status) }}</van-tag>
                             </div>
                             <div class="card-meta">
                               <span class="meta-item"><van-icon name="clock-o" /> {{ goal.deadlineString }}</span>
@@ -143,19 +134,22 @@
                                 <span>进度</span>
                                 <span>{{ goalProgress(goal) }}%</span>
                               </div>
-                              <van-progress :percentage="goalProgress(goal)" :show-pivot="false" stroke-width="6"
-                                track-color="var(--bg-secondary)" />
+                              <van-progress :percentage="goalProgress(goal)" :show-pivot="false" stroke-width="2"
+                                track-color="var(--bg-glass)" />
                             </div>
                           </div>
-                          <van-icon name="arrow" class="card-arrow" />
                         </div>
                         <template #right>
-                          <div class="swipe-action-btn edit" @click="openEditGoal(goal)">
-                            <van-icon name="edit" size="20" />
+                          <van-button square class="swipe-btn edit"  text="编辑" @click="openEditGoal(goal)" />
+                          <van-button square class="swipe-btn finish"  text="完成" @click="markGoalFinished(goal)" />
+                          <!-- <div class="swipe-btn edit" @click="openEditGoal(goal)">
+                            <van-icon name="edit" size="18" />
+                            <span>编辑</span>
                           </div>
-                          <div class="swipe-action-btn success" @click="markGoalFinished(goal)">
-                            <van-icon name="success" size="20" />
-                          </div>
+                          <div class="swipe-btn finish" @click="markGoalFinished(goal)">
+                            <van-icon name="success" size="18" />
+                            <span>完成</span>
+                          </div> -->
                         </template>
                       </van-swipe-cell>
                     </div>
@@ -164,12 +158,14 @@
               </van-tab>
 
               <van-tab title="进行中">
-                <!-- 复用逻辑，仅过滤显示 -->
+                <!-- 沉浸式玻璃卡片列表 -->
                 <div class="goal-list-wrap pt-2">
                   <van-empty v-if="searchFilteredGoals.filter(g => g.status === 'in-progress').length === 0" description="暂无进行中的目标"
                     image="search" />
-                  <div v-else class="goal-card-simple" v-for="goal in searchFilteredGoals.filter(g => g.status === 'in-progress')"
-                    :key="goal.id" @click="showGoalDetail(goal)">
+                  <div v-else class="goal-card-glass"
+                    v-for="goal in searchFilteredGoals.filter(g => g.status === 'in-progress')" :key="goal.id"
+                    @click="showGoalDetail(goal)">
+                    <div class="card-dot in-progress"></div>
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
                       <div class="date">{{ formatDate(goal.deadline) }} 截止</div>
@@ -177,7 +173,7 @@
                         <van-tag v-for="tag in goal.tags" :key="tag" plain type="primary" size="mini" class="mr-1">{{ tag }}</van-tag>
                       </div>
                     </div>
-                    <van-icon name="arrow" color="#ccc" />
+                    <van-icon name="arrow" color="var(--text-secondary)" size="16" />
                   </div>
                 </div>
               </van-tab>
@@ -186,14 +182,15 @@
                 <div class="goal-list-wrap pt-2">
                   <van-empty v-if="searchFilteredGoals.filter(g => g.status === 'completed' || g.status === 'finished').length === 0" description="暂无已完成的目标"
                     image="search" />
-                  <div v-else class="goal-card-simple finished"
+                  <div v-else class="goal-card-glass finished"
                     v-for="goal in searchFilteredGoals.filter(g => g.status === 'completed' || g.status === 'finished')" :key="goal.id"
                     @click="showGoalDetail(goal)">
+                    <div class="card-dot completed"></div>
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
                       <div class="date">任务已完成</div>
                     </div>
-                    <van-icon name="checked" color="#00c9a7" />
+                    <van-icon name="checked" color="#00c9a7" size="16" />
                   </div>
                 </div>
               </van-tab>
@@ -202,14 +199,15 @@
                 <div class="goal-list-wrap pt-2">
                   <van-empty v-if="searchFilteredGoals.filter(g => g.status === 'expired').length === 0" description="暂无已过期的目标"
                     image="search" />
-                  <div v-else class="goal-card-simple expired"
+                  <div v-else class="goal-card-glass expired"
                     v-for="goal in searchFilteredGoals.filter(g => g.status === 'expired')" :key="goal.id"
                     @click="showGoalDetail(goal)">
+                    <div class="card-dot expired-dot"></div>
                     <div class="simple-info">
                       <div class="title">{{ goal.title }}</div>
                       <div class="date">{{ formatDate(goal.deadline) }} 截止</div>
                     </div>
-                    <van-icon name="warning-o" color="#ff6b6b" />
+                    <van-icon name="warning-o" color="#ff6b6b" size="16" />
                   </div>
                 </div>
               </van-tab>
@@ -225,9 +223,9 @@
         <van-tabbar-item replace to="/profile" icon="user-o">我的</van-tabbar-item>
       </van-tabbar> -->
 
-      <!-- 详情弹窗 (iOS Sheet 风格) -->
-      <van-popup v-model:show="showDetailModal" position="bottom" round closeable class="detail-popup"
-        :style="{ height: '85%' }">
+      <!-- 详情弹窗（毛玻璃半屏面板） -->
+      <van-popup v-model:show="showDetailModal" position="bottom" round closeable
+        class="detail-popup-glass" :style="{ height: '75%' }" overlay-class="glass-overlay">
         <div class="popup-wrapper">
           <div class="popup-header">
             <div class="popup-tag">
@@ -277,18 +275,7 @@
             </van-tabs>
           </div>
 
-          <div class="popup-footer">
-             <!-- 编辑按钮 -->
-              <van-button type="primary" block round color="linear-gradient(to right, #00c9a7, #00e0b0)" size="large"
-              class="shadow-btn" @click="openEditGoal(selectedGoal)">
-                编辑
-              </van-button>
-              <div style="height: 10px;"></div>
-            <van-button type="primary" block round color="linear-gradient(to right, #00c9a7, #00e0b0)" size="large"
-              class="shadow-btn" @click="markGoalFinished(selectedGoal)" :disabled="isExp">
-              标记为完成
-            </van-button>
-          </div>
+          
         </div>
       </van-popup>
 
@@ -329,6 +316,13 @@ const goalExpireCount = ref(0)
 const goalIngCount = ref(0)
 const constProgress = ref(0)
 const searchQuery = ref('')
+
+// 当前日期（用于 Hero 区域显示周几）
+const currentDate = computed(() => {
+  const now = new Date()
+  const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${weekDays[now.getDay()]}`
+})
 
 const searchFilteredGoals = computed(() => {
   if (!searchQuery.value) return goals.value
@@ -518,46 +512,57 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-/* --- 基础变量定义 --- */
+/* ============================================
+   沉浸式毛玻璃主题 - 全局变量
+   ============================================ */
 .app-container {
-  --bg-primary: #f7f8fa;
-  --bg-secondary: #ffffff;
-  --text-primary: #2c3e50;
-  --text-secondary: #8590a6;
-  --card-shadow: 0 8px 20px rgba(100, 100, 100, 0.06);
+  --bg-primary: #f0f2f5;
+  --bg-secondary: rgba(255, 255, 255, 0.72);
+  --bg-glass: rgba(255, 255, 255, 0.55);
+  --text-primary: #1a1a2e;
+  --text-secondary: #8e8e9a;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   --brand-color: #00c9a7;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --border-line: #f0f2f5;
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --border-line: rgba(0, 0, 0, 0.06);
 
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  /* 底层渐变背景（滚动时产生景深感） */
+  background: linear-gradient(160deg, #f0fdf9 0%, #f0f2f5 30%, #f8f4ff 70%, #f0fdf9 100%);
   color: var(--text-primary);
-  transition: all 0.3s ease;
+  transition: background 0.5s ease, color 0.3s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
 }
 
 /* --- 暗黑模式覆盖 --- */
 .app-container.dark-mode {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --text-primary: #e2e2ea;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: rgba(30, 30, 35, 0.7);
+  --bg-glass: rgba(30, 30, 35, 0.5);
+  --text-primary: #e8e8f0;
   --text-secondary: #888;
-  --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  --glass-bg: rgba(30, 30, 30, 0.85);
-  --border-line: #2c2c2c;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  --glass-bg: rgba(30, 30, 35, 0.75);
+  --border-line: rgba(255, 255, 255, 0.06);
+
+  background: linear-gradient(160deg, #0a0a0f 0%, #111118 30%, #0e0e1a 70%, #0a0a0f 100%);
 }
 
+/* ============================================
+   内容区
+   ============================================ */
 .content-wrapper {
   padding: 16px;
-  padding-bottom: 80px;
-  /* 留出 TabBar 空间 */
+  padding-bottom: 40px;
 }
 
-/* --- 顶部导航 --- */
+/* ============================================
+   顶部导航栏（毛玻璃吸附）
+   ============================================ */
 .glass-nav {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 
   ::v-deep(.van-nav-bar__content) {
     height: 50px;
@@ -567,7 +572,7 @@ onMounted(async () => {
 .nav-brand {
   font-size: 20px;
   font-weight: 800;
-  background: linear-gradient(90deg, var(--brand-color), #00a0e9);
+  background: linear-gradient(135deg, var(--brand-color), #00a0e9);
   -webkit-background-clip: text;
   color: transparent;
   letter-spacing: -0.5px;
@@ -575,7 +580,7 @@ onMounted(async () => {
 
 .nav-actions {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .icon-btn {
@@ -585,29 +590,79 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(125, 125, 125, 0.1);
+  background: rgba(125, 125, 125, 0.08);
   color: var(--text-primary);
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s;
 
   &:active {
     transform: scale(0.9);
+    background: rgba(0, 201, 167, 0.12);
   }
 }
 
-/* --- Hero 区域 --- */
+/* ============================================
+   Hero 区域（沉浸式大卡片，占屏 1/3）
+   ============================================ */
 .hero-section {
-  margin-top: 10px;
-  margin-bottom: 20px;
+  margin-top: 8px;
+  margin-bottom: 24px;
 }
 
 .hero-card {
   position: relative;
-  padding: 24px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #00c9a7 0%, #00b686 100%);
+  padding: 28px 24px 24px;
+  border-radius: 28px;
+  /* 动态渐变背景 */
+  background: linear-gradient(145deg, #00c9a7 0%, #009a8c 40%, #00b8a0 70%, #00d4b0 100%);
+  background-size: 200% 200%;
+  animation: heroGradient 8s ease-in-out infinite;
   color: white;
-  box-shadow: 0 10px 30px rgba(0, 201, 167, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 201, 167, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   overflow: hidden;
+}
+
+/* 动态渐变动画 */
+@keyframes heroGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* 装饰层 - 光晕 */
+.hero-bg-layer {
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* 装饰形状1 - 大圆 */
+.hero-bg-shape {
+  position: absolute;
+  bottom: -30px;
+  left: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+/* 装饰形状2 - 小圆 */
+.hero-bg-shape-2 {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
 }
 
 .hero-content {
@@ -616,28 +671,43 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
-.hero-text h1 {
-  margin: 0;
-  font-size: 24px;
+.hero-text {
+  flex: 1;
+}
+
+.hero-date {
+  margin: 0 0 8px;
+  font-size: 13px;
+  opacity: 0.75;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.hero-title {
+  margin: 0 0 8px;
+  font-size: 28px;
   font-weight: 700;
-  margin-bottom: 6px;
+  letter-spacing: -0.5px;
 }
 
-.hero-text p {
+.hero-sub {
   margin: 0;
-  font-size: 14px;
-  opacity: 0.9;
+  font-size: 15px;
+  opacity: 0.85;
+  font-weight: 400;
 }
 
 .hero-decoration {
-  font-size: 40px;
-  opacity: 0.2;
+  font-size: 52px;
+  opacity: 0.15;
   transform: rotate(15deg);
+  margin-top: -4px;
 }
 
+/* 半透明毛玻璃按钮 */
 .hero-actions {
   position: relative;
   z-index: 2;
@@ -646,163 +716,76 @@ onMounted(async () => {
 }
 
 .action-btn {
-  border-radius: 14px;
-  height: 44px;
+  border-radius: 16px;
+  height: 46px;
   font-weight: 600;
+  font-size: 15px;
   border: none;
+  flex: 1;
 }
 
 .action-btn.primary {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   color: #00c9a7;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .action-btn.secondary {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
   color: white;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-/* --- 快捷入口 --- */
-.quick-grid-section {
-  margin-bottom: 24px;
-}
-
-.grid-card {
+/* ============================================
+   快捷入口（胶囊按钮行）
+   ============================================ */
+.quick-capsules {
   display: flex;
-  justify-content: space-between;
-  background: var(--bg-secondary);
-  padding: 16px 20px;
-  border-radius: 20px;
-  box-shadow: var(--card-shadow);
-}
-
-.grid-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-
-/* 编辑弹窗样式 */
-.edit-popup {
-  display: flex;
-  flex-direction: column;
-}
-
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--border-line);
-}
-
-.popup-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.close-icon {
-  font-size: 20px;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.popup-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 0;
-}
-
-.custom-slider-button {
-  width: 36px;
-  color: #fff;
-  font-size: 10px;
-  line-height: 18px;
-  text-align: center;
-  background-color: #1989fa;
-  border-radius: 100px;
-}
-
-.tags-input-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.input-tag {
-  margin-right: 4px;
-}
-
-.add-tag-wrapper {
-  flex-grow: 1;
-  min-width: 100px;
-}
-
-.tag-input {
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 4px 0;
-  outline: none;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.grid-icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 22px;
-  transition: transform 0.2s;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.capsule-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--border-line);
+  box-shadow: var(--card-shadow);
+  transition: all 0.25s ease;
+  cursor: pointer;
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.95);
+    background: rgba(0, 201, 167, 0.12);
+    border-color: var(--brand-color);
   }
 }
 
-.grid-icon-box.blue {
-  background: rgba(79, 142, 247, 0.1);
-  color: #4f8ef7;
-}
-
-.grid-icon-box.green {
-  background: rgba(0, 201, 167, 0.1);
-  color: #00c9a7;
-}
-
-.grid-icon-box.orange {
-  background: rgba(255, 159, 67, 0.1);
-  color: #ff9f43;
-}
-
-.grid-icon-box.purple {
-  background: rgba(165, 94, 234, 0.1);
-  color: #a55eea;
-}
-
-.grid-icon-box.teal {
-  background: rgba(0, 201, 167, 0.1);
-  color: #00c9a7;
-}
-
-/* --- 统计概览 --- */
+/* ============================================
+   统计概览（玻璃卡片）
+   ============================================ */
 .stats-overview {
   margin-bottom: 24px;
 }
 
 .section-header {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   padding-left: 4px;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
 }
 
 .stats-row {
@@ -812,93 +795,125 @@ onMounted(async () => {
 }
 
 .stat-widget {
-  background: var(--bg-secondary);
-  padding: 12px;
-  border-radius: 16px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--border-line);
+  padding: 14px 12px;
+  border-radius: 20px;
   box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 90px;
+  height: 96px;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 .widget-head {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 12px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .widget-num {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 8px 0;
+  font-size: 28px;
+  font-weight: 300;
+  margin: 4px 0;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
 }
 
-.processing .widget-num {
-  color: #4f8ef7;
-}
+.processing .widget-num { color: #4f8ef7; }
+.finished .widget-num { color: #00c9a7; }
+.expired .widget-num { color: #ff6b6b; }
 
-.finished .widget-num {
-  color: #00c9a7;
-}
-
-.expired .widget-num {
-  color: #ff6b6b;
-}
-
-/* --- 目标列表 --- */
+/* ============================================
+   目标列表（无边框 + 分割线）
+   ============================================ */
 .goals-container {
   min-height: 300px;
+
+  /* 搜索框圆角调整 */
+  ::v-deep(.van-search__content) {
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+  }
 }
 
 .goal-list-wrap {
-  padding-top: 10px;
+  padding-top: 8px;
   padding-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .pt-2 {
-  padding-top: 20px;
+  padding-top: 16px;
 }
 
-/* 卡片样式 */
-.goal-card-swipe {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: var(--card-shadow);
+/* --- 左滑单元格分割线 --- */
+.goal-list-wrap ::v-deep(.van-swipe-cell) {
+  border-bottom: 0.5px solid var(--border-line);
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
-.goal-card {
+/* --- 沉浸式玻璃样式卡片 --- */
+.goal-card-glass {
   position: relative;
-  background: var(--bg-secondary);
-  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  padding: 16px 0;
+  background: transparent;
+  transition: background 0.2s;
+  cursor: pointer;
+
+  &:active {
+    background: rgba(0, 201, 167, 0.04);
+  }
 }
 
-.card-status-line {
-  width: 4px;
-  height: 40px;
+/* 完成 / 过期态的淡化处理 */
+.goal-card-glass.finished {
+  opacity: 0.65;
+  .title {
+    text-decoration: line-through;
+  }
+}
+
+.goal-card-glass.expired {
+  opacity: 0.7;
+  .title {
+    color: #ff6b6b;
+  }
+}
+
+/* 左侧 3px 状态色点 */
+.card-dot {
+  width: 3px;
+  min-height: 36px;
   border-radius: 2px;
-  background: #eee;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: #ddd;
 
-  &.in-progress {
-    background: #4f8ef7;
-  }
-
-  &.finished,
-  &.completed {
-    background: #00c9a7;
-  }
-
-  &.expired {
-    background: #ff6b6b;
-  }
+  &.in-progress { background: #4f8ef7; }
+  &.completed,
+  &.finished { background: #00c9a7; }
+  &.expired,
+  &.expired-dot { background: #ff6b6b; }
 }
 
 .card-main {
@@ -910,31 +925,32 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 70%;
+  color: var(--text-primary);
 }
 
 .card-meta {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .card-progress {
@@ -949,13 +965,8 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 
-.card-arrow {
-  color: #ccc;
-  font-size: 16px;
-}
-
 .card-tags {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -965,75 +976,64 @@ onMounted(async () => {
   margin-right: 4px;
 }
 
-.swipe-action-btn {
+/* --- 左滑操作按钮 --- */
+.swipe-btn {
   height: 100%;
-  width: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  // width: 100%;
+  // display: flex;
+  // flex-direction: column;
+  // align-items: center;
+  // justify-content: center;
+  // gap: 4px;
+  font-size: 11px;
   color: white;
-}
+  cursor: pointer;
 
-.swipe-action-btn.success {
-  background: #00c9a7;
-}
+  &.edit {
+    background: #4f8ef7;
+  }
 
-.swipe-action-btn.edit {
-  background: #1989fa;
-}
-
-/* 简易卡片样式 */
-.goal-card-simple {
-  background: var(--bg-secondary);
-  padding: 16px;
-  border-radius: 16px;
-  box-shadow: var(--card-shadow);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  &.finished {
-    opacity: 0.7;
-
-    .title {
-      text-decoration: line-through;
-    }
+  &.finish {
+    background: #00c9a7;
   }
 }
 
+/* --- 简易信息样式（其他 tab 复用） --- */
 .simple-info {
+  flex: 1;
   .title {
     font-weight: 600;
     font-size: 15px;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
+    color: var(--text-primary);
   }
 
   .date {
     font-size: 12px;
     color: var(--text-secondary);
   }
-}
 
-.goal-card-simple.expired {
-  opacity: 0.8;
-  border: 1px solid #ff6b6b;
-  
-  .title {
-    color: #ff6b6b;
+  .tags {
+    margin-top: 4px;
   }
 }
 
-/* --- 底部 Tabbar --- */
-.glass-tabbar {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border-top: none;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+/* ============================================
+   详情弹窗（毛玻璃半屏面板）
+   ============================================ */
+
+/* 弹窗背后遮罩毛玻璃 */
+:deep(.glass-overlay) {
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-/* --- 详情弹窗 --- */
-.detail-popup {
-  background: var(--bg-secondary);
+.detail-popup-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .popup-wrapper {
@@ -1043,14 +1043,15 @@ onMounted(async () => {
 }
 
 .popup-header {
-  padding: 24px;
+  padding: 24px 24px 16px;
   text-align: center;
-  border-bottom: 1px solid var(--border-line);
+  border-bottom: 0.5px solid var(--border-line);
 }
 
 .popup-title {
   margin: 12px 0;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -1073,7 +1074,7 @@ onMounted(async () => {
 }
 
 .section-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-secondary);
   margin-bottom: 8px;
@@ -1083,11 +1084,12 @@ onMounted(async () => {
 
 .desc-text {
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text-primary);
-  background: rgba(125, 125, 125, 0.05);
+  background: rgba(125, 125, 125, 0.04);
+  backdrop-filter: blur(4px);
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .progress-circle-wrap {
@@ -1113,31 +1115,43 @@ onMounted(async () => {
 }
 
 .popup-footer {
-display: flex;
+  display: flex;
+  flex-direction: column;
   padding: 16px 24px 32px;
-  /* iOS safe area */
-  background: var(--bg-secondary);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  background: transparent;
 }
 
 .shadow-btn {
-  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 201, 167, 0.3);
 }
 
-/* Skeleton & Loading */
+/* ============================================
+   Skeleton & 工具类
+   ============================================ */
 .skeleton-list {
   padding: 20px 0;
 }
 
 .custom-skeleton {
   margin-bottom: 20px;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(4px);
   padding: 16px;
   border-radius: 16px;
 }
 
 .mt-4 {
   margin-top: 16px;
+}
+
+/* ============================================
+   底部 Tabbar（保留备用）
+   ============================================ */
+.glass-tabbar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  border-top: none;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.03);
 }
 </style>
 
