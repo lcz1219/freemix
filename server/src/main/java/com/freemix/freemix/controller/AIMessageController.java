@@ -99,7 +99,11 @@ public class AIMessageController extends BaseController {
     @PostMapping("/getInsights")
     @CheckToken
     public ApiResponse getInsights() {
-
+        List<JSONObject> jsonObjects=new ArrayList<>();
+        String s = environmentChecker.checkEnvironment();
+        if("dev".equals(s)){
+            return ApiResponse.success(jsonObjects);
+        }
         User currentUser = getCurrentUser();
        long earlyest = System.currentTimeMillis()-3600000;
 
@@ -107,7 +111,7 @@ public class AIMessageController extends BaseController {
                 .is(currentUser.getUsername()
                 ).and("createdAt").gte(earlyest)
         );
-        List<JSONObject> jsonObjects = mongoTemplate.find(query, JSONObject.class, insights);
+        jsonObjects = mongoTemplate.find(query, JSONObject.class, insights);
 
         return ApiResponse.success(jsonObjects);
 

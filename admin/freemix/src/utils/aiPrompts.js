@@ -34,7 +34,7 @@ export const mqlSummaryPrompt = ({ question, rawData }) => {
 export const insightsPrompt = ({ examples }) => {
   return `请根据我的目标和历史数据，
     生成三条简短的智能建议。类似这种这么简短的建议：${examples} 用一句话描述（
-    不超过90字,总字数不能超过250个字,直接引用具体目标名称,给出可执行的行动建议`
+    不超过90字,总字数不能超过250个字,直接引用具体目标名称,给出可执行的行动建议,不需要返回推荐问题，如果有图标需要使用扁平化 ，最好能以表格直观的展示`
 }
 
 /**

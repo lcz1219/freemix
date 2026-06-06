@@ -31,10 +31,29 @@
         <div class="insight-card-inner">
           <div class="insight-glow"></div>
           <div class="insight-pattern"></div>
-          <!-- <div class="insight-quote-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C14.9124 8 14.017 7.10457 14.017 6V5C14.017 3.34315 15.3601 2 17.017 2H19.017C20.6739 2 22.017 3.34315 22.017 5V15C22.017 18.3137 19.3307 21 16.017 21H14.017ZM2.01697 21L2.01697 18C2.01697 16.8954 2.9124 16 4.01697 16H7.01697C7.56925 16 8.01697 15.5523 8.01697 15V9C8.01697 8.44772 7.56925 8 7.01697 8H4.01697C2.9124 8 2.01697 7.10457 2.01697 6V5C2.01697 3.34315 3.36012 2 5.01697 2H7.01697C8.67382 2 10.017 3.34315 10.017 5V15C10.017 18.3137 7.33068 21 4.01697 21H2.01697Z"/></svg>
-          </div> -->
-          <div class="answer-content" v-html="parseMarkdown(currentInsight)"></div>
+          <template v-if="currentInsight && currentInsight.trim() !== ''">
+            <div class="answer-content" v-html="parseMarkdown(currentInsight)"></div>
+          </template>
+          <div v-else class="empty-insight-state">
+            <div class="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.663 17H4.337C2.435 17 1 15.45 1 13.5C1 11.55 2.435 10 4.337 10H4.5C4.5 6.13 7.635 3 11.5 3C14.894 3 17.774 5.324 18.624 8.5C20.112 8.5 21.5 9.88 21.5 11.5C21.5 13.12 20.112 14.5 18.624 14.5H17.5M12 17L12 21M9 20L15 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 13V9M12 13L10 11M12 13L14 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="empty-title">暂无智能洞察</p>
+            <p class="empty-desc">点击下方按钮，让 AI 分析你的目标数据</p>
+            <n-button size="small" tertiary @click="refreshInsights" class="empty-refresh-btn">
+              <template #icon>
+                <n-icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                </n-icon>
+              </template>
+              生成洞察
+            </n-button>
+          </div>
         </div>
       </div>
     </div>
@@ -43,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue';
+import { ref, onMounted, computed, inject, nextTick } from 'vue';
 import { NCard, NIcon, NButton, NSkeleton } from 'naive-ui';
 import { useStore } from 'vuex';
 import { postM } from '@/utils/request.js';
@@ -130,15 +149,22 @@ const refreshInsights = async () => {
     return;
   }
   nextTick(async () => {
+    let time =0
    const res = await aiAssistantMsg.value.callCustomAIAPI(insightsPrompt({ examples: insights.value.join("\n") }), (res1) => {
       // console.log(res1);
     });
     // console.log("res",res);
      if(res.messageType == "answer"){
       // console.log("res.content",res.content);
-        currentInsight.value = res.content;
+        
         if(res.success){
+          currentInsight.value = res.content;
           saveAIInsightsToServer(currentInsight.value);
+        }else{
+          time++
+          if(time < 2){
+            refreshInsights()
+          }
         }
       }
       loading.value = false;
@@ -153,9 +179,7 @@ const showMoreInsights = () => {
 };
 
 onMounted(() => {
-  setTimeout(() => {
-    refreshInsights();
-  }, 1000);
+
 });
 </script>
 
@@ -165,11 +189,12 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  /* background: rgba(30, 30, 42, 0.4) !important; */
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 20px !important;
+  transition: all 0.3s ease;
 }
+
 .loading-hint {
   display: flex;
   align-items: center;
@@ -208,11 +233,11 @@ onMounted(() => {
 .ai-icon-wrapper {
   width: 36px;
   height: 36px;
-  /* background: #00c9a7; */
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #00c9a7;
 }
 
 .card-title-ai {
@@ -222,20 +247,24 @@ onMounted(() => {
   background: white;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #fff 0%, #a0a0c0 100%);
 }
 
 .feature-card-light .card-title-ai {
   background: none;
   -webkit-text-fill-color: initial;
   color: #1a1a1a;
+  background-image: none;
 }
 
 .refresh-btn {
   color: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s;
 }
 
 .refresh-btn:hover {
-  color: #a855f7;
+  color: #00c9a7;
+  transform: rotate(15deg);
 }
 
 .spinning {
@@ -258,16 +287,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* overflow-y: auto; */
 }
 
 .insight-card-inner {
   position: relative;
   padding: 1.5rem;
-  min-height: 0;
-  /* background: linear-gradient(135deg, rgba(0, 201, 167, 0.08) 0%, rgba(0, 201, 167, 0.01) 100%); */
+  min-height: 180px;
   border: 1px solid rgba(0, 201, 167, 0.2);
-  /* border-left: 4px solid #00c9a7; */
   border-radius: 12px 24px 24px 12px;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -275,8 +301,14 @@ onMounted(() => {
 }
 
 .dark .insight-card-inner {
-  background: linear-gradient(135deg, rgba(0, 201, 167, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(0, 201, 167, 0.08) 0%, rgba(0, 0, 0, 0.2) 100%);
   border-color: rgba(0, 201, 167, 0.25);
+}
+
+.feature-card-light .insight-card-inner {
+  background: linear-gradient(135deg, rgba(0, 201, 167, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%);
+  border-color: rgba(0, 201, 167, 0.15);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
 }
 
 .insight-card-inner:hover {
@@ -291,22 +323,10 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(rgba(0, 201, 167, 0.1) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(0, 201, 167, 0.08) 1px, transparent 1px);
   background-size: 20px 20px;
-  opacity: 0.5;
+  opacity: 0.3;
   pointer-events: none;
-}
-
-.insight-quote-icon {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 80px;
-  height: 80px;
-  color: rgba(0, 201, 167, 0.05);
-  transform: rotate(-15deg);
-  pointer-events: none;
-  z-index: 0;
 }
 
 .insight-glow {
@@ -315,7 +335,7 @@ onMounted(() => {
   right: -10%;
   width: 60%;
   height: 60%;
-  background: radial-gradient(circle, rgba(0, 201, 167, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 201, 167, 0.12) 0%, transparent 70%);
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
@@ -323,8 +343,8 @@ onMounted(() => {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.2); }
 }
 
 .answer-content {
@@ -385,78 +405,250 @@ onMounted(() => {
   background: rgba(0, 201, 167, 0.05);
 }
 
-.answer-content :deep(h1),
-.answer-content :deep(h2),
-.answer-content :deep(h3),
-.answer-content :deep(h4) {
-  font-size: inherit;
-  font-weight: 700;
-  margin: 0.8em 0 0.4em;
-  color: inherit;
-  line-height: 1.4;
+/* 空状态样式 - 扁平化设计 */
+.empty-insight-state {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem 0;
 }
 
-.answer-content :deep(h1) { font-size: 1.3em; }
-.answer-content :deep(h2) { font-size: 1.2em; }
-.answer-content :deep(h3) { font-size: 1.1em; }
-.answer-content :deep(h4) { font-size: 1.05em; }
-
-.answer-content :deep(pre) {
-  display: block;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.75em 1em;
-  margin: 0.5em 0;
-  overflow-x: auto;
-  font-size: 0.85em;
-  line-height: 1.5;
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  color: rgba(0, 201, 167, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.answer-content :deep(code) {
-  background: rgba(0, 201, 167, 0.15);
+.empty-insight-state:hover .empty-icon {
   color: #00c9a7;
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.9em;
-  border: 1px solid rgba(0, 201, 167, 0.2);
+  transform: scale(1.05);
 }
 
-.answer-content :deep(pre code) {
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.answer-content :deep(table) {
-  display: table;
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0.5em 0;
-  font-size: 0.9em;
+.feature-card-light .empty-title {
+  color: #1a1a1a;
 }
 
-.answer-content :deep(th),
-.answer-content :deep(td) {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.4em 0.6em;
-  text-align: left;
+.empty-desc {
+  font-size: 13px;
+  margin: 0 0 20px 0;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.feature-card-light .answer-content :deep(th),
-.feature-card-light .answer-content :deep(td) {
-  border-color: rgba(0, 0, 0, 0.15);
+.feature-card-light .empty-desc {
+  color: rgba(0, 0, 0, 0.5);
 }
 
-.answer-content :deep(th) {
-  font-weight: 700;
-  background: rgba(0, 201, 167, 0.1);
+.empty-refresh-btn {
+  border-radius: 20px;
+  padding: 4px 16px;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.empty-refresh-btn:hover {
+  transform: translateY(-2px);
 }
 
 .insight-text, .insight-text-light, .insight-footer, .more-btn, .thinking-process {
   display: none;
 }
+.answer-content,
+.thinking-process {
+  line-height: 1.8;
+  font-size: 14px;
+  color: inherit;
+}
 
+.answer-content :deep(h1),
+.answer-content :deep(h2),
+.answer-content :deep(h3),
+.answer-content :deep(h4),
+.thinking-process :deep(h1),
+.thinking-process :deep(h2),
+.thinking-process :deep(h3),
+.thinking-process :deep(h4) {
+  margin: 1.5em 0 1em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.answer-content :deep(h1),
+.thinking-process :deep(h1) {
+  font-size: 1.8em;
+  border-bottom: 2px solid rgba(0, 201, 167, 0.2);
+  padding-bottom: 0.3em;
+}
+
+.answer-content :deep(h2),
+.thinking-process :deep(h2) {
+  font-size: 1.5em;
+  border-bottom: 1px solid rgba(0, 201, 167, 0.1);
+  padding-bottom: 0.2em;
+}
+
+.answer-content :deep(h3),
+.thinking-process :deep(h3) {
+  font-size: 1.25em;
+  color: #00c9a7;
+}
+
+.answer-content :deep(p),
+.thinking-process :deep(p) {
+  margin: 1em 0;
+}
+
+.answer-content :deep(ul),
+.answer-content :deep(ol),
+.thinking-process :deep(ul),
+.thinking-process :deep(ol) {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.answer-content :deep(li),
+.thinking-process :deep(li) {
+  margin: 0.5em 0;
+}
+
+.answer-content :deep(code),
+.thinking-process :deep(code) {
+  background-color: rgba(0, 201, 167, 0.1);
+  color: #00c9a7;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.answer-content :deep(pre),
+.thinking-process :deep(pre) {
+  background-color: var(--card-bg);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1em 0;
+  border: 1px solid rgba(0, 201, 167, 0.2);
+}
+
+.answer-content :deep(pre code),
+.thinking-process :deep(pre code) {
+  background-color: transparent;
+  color: var(--text-color);
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+}
+
+.answer-content :deep(blockquote),
+.thinking-process :deep(blockquote) {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  color: #666;
+  border-left: 4px solid #00c9a7;
+  background: rgba(0, 201, 167, 0.05);
+  border-radius: 0 4px 4px 0;
+}
+
+.answer-content :deep(table),
+.thinking-process :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9em;
+}
+
+.answer-content :deep(th),
+.answer-content :deep(td),
+.thinking-process :deep(th),
+.thinking-process :deep(td) {
+  border: 1px solid rgba(0, 201, 167, 0.2);
+  padding: 0.6em;
+  text-align: left;
+}
+
+.answer-content :deep(th),
+.thinking-process :deep(th) {
+  background: rgba(0, 201, 167, 0.1);
+  font-weight: 600;
+}
+
+.message.user .answer-content :deep(code) {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.message.ai .answer-content :deep(h1),
+.message.ai .answer-content :deep(h2),
+.message.ai .answer-content :deep(h3) {
+  color: #00c9a7;
+}
+
+.dark .answer-content :deep(blockquote),
+.dark .thinking-process :deep(blockquote) {
+  color: #aaa;
+  background: rgba(0, 201, 167, 0.1);
+}
+
+/* 暗色主题下的Markdown样式 */
+.dark .answer-content :deep(h1),
+.dark .answer-content :deep(h2),
+.dark .answer-content :deep(h3),
+.dark .answer-content :deep(h4),
+.dark .answer-content :deep(h5),
+.dark .answer-content :deep(h6),
+.dark .thinking-process :deep(h1),
+.dark .thinking-process :deep(h2),
+.dark .thinking-process :deep(h3),
+.dark .thinking-process :deep(h4),
+.dark .thinking-process :deep(h5),
+.dark .thinking-process :deep(h6) {
+  color: #00c9a7;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .answer-content :deep(code),
+.dark .thinking-process :deep(code) {
+  background-color: rgba(0, 201, 167, 0.2);
+}
+
+.dark .answer-content :deep(pre),
+.dark .thinking-process :deep(pre) {
+  background-color: #161b22;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .answer-content :deep(pre code),
+.dark .thinking-process :deep(pre code) {
+  color: #e0e0e0;
+}
+
+.dark .answer-content :deep(blockquote),
+.dark .thinking-process :deep(blockquote) {
+  color: #8b949e;
+  border-left-color: #00c9a7;
+  background: rgba(0, 201, 167, 0.1);
+}
+
+.dark .answer-content :deep(th),
+.dark .answer-content :deep(td),
+.dark .thinking-process :deep(th),
+.dark .thinking-process :deep(td) {
+  border-color: rgba(255, 255, 255, 0.1);
+}
 </style>
