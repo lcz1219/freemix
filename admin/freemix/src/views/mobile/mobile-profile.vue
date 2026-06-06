@@ -495,8 +495,9 @@ onMounted(async () => {
   padding-bottom: 80px;
   
   :deep(.van-nav-bar) {
-    background-color: #121212;
-    backdrop-filter: blur(10px);
+    background-color: rgba(28, 28, 30, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     
     .nav-title {
       font-weight: 600;

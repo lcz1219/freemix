@@ -505,31 +505,26 @@ const cleanupCharts = () => {
   padding: 64px 16px 40px 16px; /* Space for fixed header */
 }
 
-/* --- Navigation Bar (Translucent) --- */
+/* --- Navigation Bar（毛玻璃统一） --- */
 .apple-nav-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 44px;
-  padding-top: env(safe-area-inset-top); /* Adapt to iPhone Notch */
+  padding-top: env(safe-area-inset-top);
   height: calc(44px + env(safe-area-inset-top));
   display: flex;
-  align-items: flex-end; /* Align items to bottom */
+  align-items: flex-end;
   justify-content: space-between;
   padding-bottom: 10px;
   padding-left: 16px;
   padding-right: 16px;
-  background: rgba(var(--ios-card), 0.8); /* Fallback */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background-color: transparent; /* Let blur do the work */
+  background: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   z-index: 100;
-  /* border-bottom: 0.5px solid var(--ios-separator); Optional */
 }
-
-[data-theme="light"] .apple-nav-bar { background: rgba(var(--ios-card), 0.8); }
-[data-theme="dark"] .apple-nav-bar { background: rgba(28,28,30,0.75); }
 
 .nav-left {
   display: flex;
@@ -566,14 +561,17 @@ const cleanupCharts = () => {
 }
 
 .stat-card {
-  background: var(--ios-card);
+  background: rgba(28, 28, 30, 0.55);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 100px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   
   .stat-icon-bg {
     width: 32px; height: 32px; border-radius: 50%;
@@ -585,7 +583,7 @@ const cleanupCharts = () => {
   .stat-label { font-size: 13px; color: var(--ios-text-secondary); font-weight: 500; }
   .stat-value { font-size: 24px; font-weight: 700; line-height: 1.1; }
   
-  &.primary { .stat-icon-bg { background: rgba(0,122,255,0.1); color: var(--ios-blue); } .stat-value { color: var(--ios-blue); } }
+  &.primary { .stat-icon-bg { background: rgba(0,201,167,0.12); color: #00c9a7; } .stat-value { color: #00c9a7; } }
   &.success { .stat-icon-bg { background: rgba(52,199,89,0.1); color: var(--ios-green); } .stat-value { color: var(--ios-green); } }
   &.warning { .stat-icon-bg { background: rgba(255,149,0,0.1); color: var(--ios-orange); } .stat-value { color: var(--ios-orange); } }
   &.danger  { .stat-icon-bg { background: rgba(255,59,48,0.1);  color: var(--ios-red); }  .stat-value { color: var(--ios-red); } }
@@ -612,7 +610,26 @@ const cleanupCharts = () => {
   .chart-title { font-size: 15px; font-weight: 600; }
 }
 
-.chart-box { height: 220px; width: 100%; }
+/* Chart 容器（毛玻璃边框美化） */
+.chart-box {
+  height: 220px;
+  width: 100%;
+  background: rgba(28, 28, 30, 0.3);
+  backdrop-filter: blur(8px);
+  border: 0.5px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 8px;
+}
+
+/* 折叠面板展开态美化 */
+.apple-group-card {
+  ::v-deep(.van-collapse-item__wrapper) {
+    background: transparent;
+  }
+  ::v-deep(.van-cell--clickable:active) {
+    background: rgba(0, 201, 167, 0.06);
+  }
+}
 
 /* --- Summary Footer Widget --- */
 .summary-card {

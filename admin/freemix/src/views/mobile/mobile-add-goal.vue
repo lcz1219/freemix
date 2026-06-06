@@ -864,7 +864,17 @@ $card-radius: 16px;
 
 .custom-tag {
   /* 覆盖 tag 内部样式 */
-  border: 1px solid rgba(0, 203, 165, 0.3);
+  border: 1px solid rgba(0, 201, 167, 0.3);
+  animation: tagFadeIn 0.25s ease;
+
+  ::v-deep(.van-tag__close) {
+    transition: opacity 0.2s;
+  }
+}
+
+@keyframes tagFadeIn {
+  0% { opacity: 0; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .note-input {

@@ -394,14 +394,14 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-/* 顶部导航毛玻璃 - 深色适配 */
+/* 顶部导航毛玻璃 — 统一风格 */
 .glass-nav-bar {
-  background: rgba(28, 28, 30, 0.85); /* 深色磨砂 */
-  backdrop-filter: blur(20px);
+  background: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 0.5px solid rgba(255,255,255,0.1);
 }
 
 .nav-title {

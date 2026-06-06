@@ -1008,11 +1008,13 @@ watch(() => messages.value.length, () => {
 }
 
 .custom-nav-bar {
-  background: transparent;
+  background: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 
   .page-title {
-    font-size: 28px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 700;
     color: var(--text-primary);
     margin-left: 4px;
   }
@@ -1062,11 +1064,12 @@ watch(() => messages.value.length, () => {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background: #30D158;
-  border: 2px solid var(--bg-color);
+  border: 2.5px solid var(--bg-color);
   border-radius: 50%;
+  box-shadow: 0 0 6px rgba(48, 209, 88, 0.3);
 }
 
 .content-box {
@@ -1303,6 +1306,13 @@ watch(() => messages.value.length, () => {
   line-height: 1.5;
   word-wrap: break-word;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: msgBounceIn 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes msgBounceIn {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .bubble-text {

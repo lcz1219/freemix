@@ -15,6 +15,18 @@
         <van-icon name="chat-o" size="40" color="#00c9a7" />
         <h3>欢迎使用AI助手</h3>
         <p>有什么可以帮助您的吗？</p>
+        <!-- 快捷提问胶囊 -->
+        <div class="quick-questions">
+          <div class="quick-chip" @click="sendQuickQuestion('帮我分析一下我的目标完成情况')">
+            <van-icon name="chart-trending-o" size="14" />分析我的目标
+          </div>
+          <div class="quick-chip" @click="sendQuickQuestion('帮我制定一个今天的工作计划')">
+            <van-icon name="todo-list-o" size="14" />制定今日计划
+          </div>
+          <div class="quick-chip" @click="sendQuickQuestion('给我一些提升效率的建议')">
+            <van-icon name="bulb-o" size="14" />效率提升建议
+          </div>
+        </div>
       </div>
       
       <!-- 消息列表 -->
@@ -258,6 +270,12 @@ const handleEnterKey = (e) => {
   sendMessage()
 }
 
+// 快捷提问
+const sendQuickQuestion = (question: string) => {
+  userInput.value = question
+  sendMessage()
+}
+
 // 发送消息
 const sendMessage = async () => {
   if (!userInput.value.trim() || isSending.value) return
@@ -468,8 +486,36 @@ defineExpose({
       }
       
       p {
-        margin: 0;
+        margin: 0 0 20px;
         font-size: 14px;
+      }
+
+      /* 快捷提问胶囊 */
+      .quick-questions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 16px;
+        margin-top: 20px;
+
+        .quick-chip {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 18px;
+          background: rgba(0, 201, 167, 0.08);
+          border: 1px solid rgba(0, 201, 167, 0.2);
+          border-radius: 16px;
+          color: var(--text-primary);
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:active {
+            background: rgba(0, 201, 167, 0.15);
+            transform: scale(0.98);
+          }
+        }
       }
     }
     

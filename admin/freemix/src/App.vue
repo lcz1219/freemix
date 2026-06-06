@@ -30,7 +30,7 @@
 
                   <TabsView v-if="isnAiPage && !isMobileDevice"></TabsView>
                   <!-- 页面内容 -->
-                  <n-layout-content :class="isnAiPage ? 'content-wrapper' : 'content-wrappe-ai'">
+                  <n-layout-content :class="[isnAiPage ? 'content-wrapper' : 'content-wrappe-ai', { 'mobile-content': isMobileDevice }]">
 
                     <router-view v-if="showContentByStoreUser || route.path == '/oauth/callback'" :class="themeClass" />
                     <!-- 应用加载页面 -->
@@ -809,6 +809,12 @@ body {
 .content-wrapper {
   /* padding: 10px; */
   height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+
+/* 移动端覆盖：去掉 PC 导航栏 64px 高度，避免双重滚动条 */
+.mobile-content {
+  height: 100vh;
   overflow-y: auto;
 }
 

@@ -6,7 +6,7 @@
         title="目标管理"
         left-arrow
         @click-left="goBack"
-        class="apple-nav-bar"
+        class="glass-nav"
         :safe-area-inset-top="true"
       >
         <template #left>
@@ -307,18 +307,14 @@ onMounted(() => {
   color: var(--van-text-color);
 }
 
-/* 导航栏 */
-.apple-nav-bar {
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--van-border-color);
+/* 导航栏（毛玻璃风格统一） */
+.glass-nav {
+  background-color: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   position: sticky;
   top: 0;
   z-index: 10;
-}
-
-.van-theme-dark .apple-nav-bar {
-  background-color: rgba(28, 28, 30, 0.7);
 }
 
 :deep(.van-nav-bar__title) {

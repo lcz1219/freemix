@@ -840,11 +840,16 @@ onMounted(async () => {
 .goals-container {
   min-height: 300px;
 
-  /* 搜索框圆角调整 */
+  /* 搜索框圆角调整 + 与 Tab 间距 */
   ::v-deep(.van-search__content) {
     background: var(--bg-glass);
     backdrop-filter: blur(10px);
     border-radius: 20px;
+  }
+
+  /* 下拉刷新图标颜色统一为品牌色 */
+  ::v-deep(.van-pull-refresh__head) {
+    color: #00c9a7;
   }
 }
 
@@ -1116,13 +1121,38 @@ onMounted(async () => {
 
 .popup-footer {
   display: flex;
-  flex-direction: column;
   padding: 16px 24px 32px;
   background: transparent;
 }
 
-.shadow-btn {
-  box-shadow: 0 4px 16px rgba(0, 201, 167, 0.3);
+.popup-actions-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+
+  .edit-btn {
+    flex: 1;
+    background: #4f8ef7;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    height: 46px;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 4px 16px rgba(79, 142, 247, 0.3);
+  }
+
+  .finish-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #00c9a7, #00b686);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    height: 46px;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 4px 16px rgba(0, 201, 167, 0.3);
+  }
 }
 
 /* ============================================

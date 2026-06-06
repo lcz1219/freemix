@@ -89,9 +89,9 @@
                   登 录
                 </van-button>
                 
-                <div class="sub-actions">
+                <!-- <div class="sub-actions">
                   <span @click="toRegister" class="link-text">注册账号</span>
-                </div>
+                </div> -->
               </div>
             </van-form>
 
