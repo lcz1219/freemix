@@ -1,6 +1,5 @@
 <template>
-  <div class="mobile-profile">
-    <!-- <div class="profile-content" :style="{ visibility: (showQrScanPopup && isNative) ? 'hidden' : 'visible' }"> -->
+  <div class="app-container mobile-profile" :class="{ 'dark-mode': true }">
     <div class="profile-content">
     <!-- 顶部导航栏 -->
     <van-nav-bar
@@ -26,12 +25,13 @@
         <van-uploader :after-read="handleAvatarUpload" :max-count="1">
           <div class="avatar-wrapper">
             <van-image
-              round
-              width="80"
-              height="80"
-              :src="avatarUrl"
+             round
+              width="50"
+              height="50"
               fit="cover"
-              class="user-avatar"
+              :src="avatarUrl"
+            
+            
             />
             <div class="edit-badge">
               <van-icon name="photograph" size="12" />
@@ -66,19 +66,7 @@
     </div>
 
     <!-- 主要内容标签页 -->
-    <van-tabs 
-      v-model:active="activeTab" 
-      sticky 
-      animated 
-      swipeable 
-      background="transparent"
-      line-width="20px"
-      line-height="3px"
-      color="var(--primary-color)"
-      title-active-color="var(--primary-color)"
-    >
-      <!-- 概览 Tab -->
-      <van-tab title="概览" name="overview">
+  
         <div class="tab-content">
           <!-- 进度概览 -->
           <div class="section-card">
@@ -132,110 +120,17 @@
           <div class="section-card heatmap-card">
             <h3 class="card-title">活跃热力图</h3>
             <div class="heatmap-wrapper">
-              <HotMap />
+              <HotMap  :goals="goalsStore.goals.value" />
             </div>
           </div>
 
-          <!-- 我的好友 -->
-          <div class="section-card" @click="goToFriends">
-            <h3 class="card-title">我的好友</h3>
-            <div class="friend-entry">
-              <div class="friend-entry-info">
-                <van-icon name="friends-o" size="20" color="#00c9a7" />
-                <span>查看好友列表</span>
-              </div>
-              <van-icon name="arrow" />
-            </div>
-          </div>
+        
 
-          <!-- 安全与登录 -->
-          <div class="section-card">
-            <h3 class="card-title">安全与登录</h3>
-          </div>
+         
         </div>
-      </van-tab>
 
-      <!-- 目标 Tab -->
-      <van-tab title="目标" name="goals">
-        <div class="tab-content">
-          <!-- 搜索与筛选 -->
-          <div class="filter-bar">
-            <van-search 
-              v-model="searchQuery" 
-              placeholder="搜索目标..." 
-              shape="round"
-              background="transparent"
-              class="goal-search"
-            />
-            <!-- <van-dropdown-menu :overlay="false" class="goal-filter">
-              <van-dropdown-item v-model="currentFilter" :options="filterOptions" />
-            </van-dropdown-menu> -->
-          </div>
 
-          <!-- 目标列表 -->
-          <div class="goals-list">
-            <van-empty v-if="filteredGoals.length === 0" description="暂无符合条件的目标" />
-            
-            <van-swipe-cell v-for="goal in filteredGoals" :key="goal.id" class="goal-swipe-item">
-              <div class="goal-card" @click="editGoal(goal)">
-                <div class="goal-card-header">
-                  <div class="title-wrap">
-                    <span class="goal-icon">🎯</span>
-                    <span class="goal-title">{{ goal.title }}</span>
-                  </div>
-                  <van-tag :type="getGoalTagType(goal.status)" size="medium">{{ getGoalStatusText(goal.status) }}</van-tag>
-                </div>
-                
-                <p class="goal-desc">{{ goal.description }}</p>
-                
-                <div class="goal-progress-row">
-                  <van-progress 
-                    :percentage="goal.progress" 
-                    :color="getProgressColor(goal.progress)" 
-                    stroke-width="6"
-                    :show-pivot="false"
-                    track-color="var(--bg-tertiary)"
-                    class="goal-progress-bar"
-                  />
-                  <span class="progress-text">{{ goal.progress }}%</span>
-                </div>
-                
-                <div class="goal-footer">
-                  <div class="tags-list">
-                    <span 
-                      v-for="tag in goal.tags" 
-                      :key="tag" 
-                      class="mini-tag"
-                    >#{{ tag }}</span>
-                  </div>
-                  <span class="deadline" v-if="goal.deadline">
-                    截止: {{ formatDate(goal.deadline) }}
-                  </span>
-                </div>
-              </div>
-              
-              <template #right>
-                <van-button square text="编辑" type="primary" class="delete-button" @click="editGoal(goal)" />
-                <van-button square text="完成" type="success" class="delete-button" v-if="goal.status === 'active'" @click="completeGoal(goal)" />
-                <van-button square text="删除" type="danger" class="delete-button" />
-              </template>
-            </van-swipe-cell>
-          </div>
-        </div>
-      </van-tab>
 
-      <!-- 分析 Tab (简化版) -->
-      <van-tab title="分析" name="analytics">
-         <div class="tab-content">
-            <van-empty description="移动端分析报表开发中" image="search" />
-         </div>
-      </van-tab>
-    </van-tabs>
-
-    <!-- 悬浮添加按钮 -->
-    <div class="fab-btn" @click="createNewGoal">
-      <van-icon name="plus" />
-    </div>
     </div>
   </div>
 </template>
@@ -489,13 +384,46 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.mobile-profile {
+.app-container {
+  --bg-primary: #f0f2f5;
+  --bg-secondary: rgba(255, 255, 255, 0.72);
+  --bg-glass: rgba(255, 255, 255, 0.55);
+  --text-primary: #1a1a2e;
+  --text-secondary: #8e8e9a;
+  --text-tertiary: #a0a0a0;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --brand-color: #00c9a7;
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --border-line: rgba(0, 0, 0, 0.06);
+
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  background: linear-gradient(160deg, #f0fdf9 0%, #f0f2f5 30%, #f8f4ff 70%, #f0fdf9 100%);
+  color: var(--text-primary);
+  transition: background 0.5s ease, color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+}
+
+.app-container.dark-mode {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: rgba(30, 30, 35, 0.7);
+  --bg-glass: rgba(30, 30, 35, 0.5);
+  --text-primary: #e8e8f0;
+  --text-secondary: #888;
+  --text-tertiary: #666;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  --glass-bg: rgba(30, 30, 35, 0.75);
+  --border-line: rgba(255, 255, 255, 0.06);
+
+  background: transparent;
+}
+
+.mobile-profile {
   padding-bottom: 80px;
+  position: relative;
+  z-index: 10;
   
   :deep(.van-nav-bar) {
-    background-color: rgba(28, 28, 30, 0.75);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     
@@ -512,7 +440,10 @@ onMounted(async () => {
   
   .profile-header-card {
     padding: 20px 16px;
-    background: var(--bg-primary);
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-bottom: 1px solid var(--border-line);
     border-radius: 0 0 24px 24px;
     box-shadow: var(--card-shadow);
     margin-bottom: 16px;
@@ -527,14 +458,14 @@ onMounted(async () => {
         margin-right: 16px;
         
         .user-avatar {
-          border: 2px solid var(--bg-primary);
+          border: 2px solid var(--border-line);
         }
         
         .edit-badge {
           position: absolute;
           bottom: 0;
           right: 0;
-          background: var(--primary-color);
+          background: var(--brand-color);
           color: white;
           width: 24px;
           height: 24px;
@@ -542,7 +473,7 @@ onMounted(async () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 2px solid var(--bg-secondary);
+          border: 2px solid var(--border-line);
         }
       }
       
@@ -600,9 +531,12 @@ onMounted(async () => {
   .tab-content {
     padding: 0 16px;
   .section-card {
-    background: var(--bg-primary);
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid var(--border-line);
     border-radius: 16px;
-    padding: 16px;
+    padding:2%;
     margin-bottom: 16px;
     box-shadow: var(--card-shadow);
   }
@@ -636,7 +570,7 @@ onMounted(async () => {
           display: block;
           font-size: 16px;
           font-weight: 600;
-          color: var(--primary-color);
+          color: var(--brand-color);
           margin-bottom: 4px;
         }
         .label {
@@ -651,6 +585,10 @@ onMounted(async () => {
       overflow-x: auto;
       gap: 8px;
       padding-bottom: 4px;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
       
       .category-pill {
         flex: 0 0 auto;
@@ -679,6 +617,10 @@ onMounted(async () => {
     &.heatmap-card {
         .heatmap-wrapper {
             overflow-x: auto;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+              display: none;
+            }
         }
     }
   }
@@ -692,6 +634,19 @@ onMounted(async () => {
     .goal-search {
       flex: 1;
       padding: 0;
+      background: transparent;
+      
+      :deep(.van-search__content) {
+        background: var(--bg-glass);
+        backdrop-filter: blur(12px) saturate(150%);
+        -webkit-backdrop-filter: blur(12px) saturate(150%);
+        border: 1px solid var(--border-line);
+        border-radius: 100px;
+      }
+      
+      :deep(.van-field__control) {
+        color: var(--text-primary);
+      }
     }
     
     .goal-filter {
@@ -717,7 +672,10 @@ onMounted(async () => {
     }
     
     .goal-card {
-      background: var(--bg-primary);
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      border: 1px solid var(--border-line);
       padding: 16px;
       
       .goal-card-header {
@@ -780,7 +738,7 @@ onMounted(async () => {
           .mini-tag {
             font-size: 10px;
             padding: 2px 6px;
-            background: var(--bg-primary);
+            background: rgba(125, 125, 125, 0.15);
             color: var(--text-secondary);
             border-radius: 4px;
           }
@@ -805,7 +763,7 @@ onMounted(async () => {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--primary-color);
+    background: var(--brand-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;

@@ -400,9 +400,16 @@ const initTypeChart = () => {
       })
     }
   })
-  const types = Object.keys(typeCount)
-  const counts = Object.values(typeCount)
+  console.log("typeCount",typeCount);
   
+  // 将对象转为数组，按数量降序排列，取前4个
+  const typeArray = Object.entries(typeCount)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6)
+
+  const types = typeArray.map(item => item.name)
+  const counts = typeArray.map(item => item.count)
   const option = {
     ...theme,
     tooltip: { trigger: 'axis' },
@@ -667,7 +674,7 @@ const cleanupCharts = () => {
 .circle { fill: none; stroke: var(--ios-blue); stroke-width: 3.5; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
 .ring-text {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  font-size: 14px; font-weight: 700; color: var(--ios-text-primary);
+  font-size: 28px; font-weight: 700; color: var(--ios-text-primary);
   small { font-size: 9px; }
 }
 

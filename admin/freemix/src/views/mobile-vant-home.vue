@@ -285,7 +285,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, computed,watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showLoadingToast } from 'vant'
 import { postM, getMPaths, isSuccess, baseURL } from '@/utils/request'
@@ -323,6 +323,7 @@ const currentDate = computed(() => {
   const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
   return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${weekDays[now.getDay()]}`
 })
+watch(searchQuery, ()=>computedStatusCount())
 
 const searchFilteredGoals = computed(() => {
   if (!searchQuery.value) return goals.value
@@ -348,10 +349,8 @@ const fetchGoals = async () => {
     goals.value.forEach(g => {
       g.deadlineString = formatDate(g.deadline)
     })
-
-    goalFinishCount.value = goals.value.filter(g => g.status === 'completed' || g.status === 'finished').length
-    goalExpireCount.value = goals.value.filter(g => g.status === 'expired').length
-    goalIngCount.value = goals.value.filter(g => g.status === 'in-progress' || g.status === 'in-progress').length
+   computedStatusCount()
+   
 
     listFinished.value = true
   } catch (error) {
@@ -363,7 +362,11 @@ const fetchGoals = async () => {
     listLoading.value = false
   }
 }
-
+const computedStatusCount=()=>{
+   goalFinishCount.value = searchFilteredGoals.value.filter(g => g.status === 'completed' || g.status === 'finished').length
+    goalExpireCount.value = searchFilteredGoals.value.filter(g => g.status === 'expired').length
+    goalIngCount.value = searchFilteredGoals.value.filter(g => g.status === 'in-progress' || g.status === 'in-progress').length
+}
 const refreshGoals = async () => {
   isRefreshing.value = true
   await fetchGoals()

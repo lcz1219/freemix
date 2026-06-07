@@ -233,14 +233,14 @@
 
           <!-- 场景六：高级技巧 -->
           <div v-else-if="currentSection === 'advanced'" key="advanced" class="content-card advanced-card">
-            <div class="congrats-icon">🚀</div>
+            
             <h2>准备就绪！</h2>
             <p class="final-text">掌握分解技巧与优先级管理，<br>你已经比 90% 的人更高效。</p>
             
             <div class="final-tips">
-              <span>🎯 目标分解</span>
-              <span>⚡️ 优先级</span>
-              <span>📊 可视化</span>
+              <span> 目标分解</span>
+              <span> 优先级</span>
+              <span> 可视化</span>
             </div>
 
             <div class="final-action">
@@ -511,6 +511,8 @@ onMounted(() => {
 /* 步骤条深度定制 */
 .step-container {
   margin: 20px 0;
+  background: transparent;
+  border: none;
 }
 :deep(.van-step--vertical) {
   padding: 10px 10px 10px 0;
