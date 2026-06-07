@@ -22,9 +22,7 @@
           
           <!-- AI目标生成标签页 -->
           <van-tab title="AI生产" class="full-height-tab">
-            <div class="scrollable-content">
-              <MobileAIGoalGenerator :aiAssistantRef="aiChatRef" @goal-created="handleGoalCreated" />
-            </div>
+            <MobileAIGoalGenerator :aiAssistantRef="aiChatRef" @goal-created="handleGoalCreated" />
           </van-tab>
         </van-tabs>
       </div>
@@ -147,13 +145,8 @@ const handleGoalCreated = (goal) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 防止内容溢出到其他 tab */
 }
 
-.scrollable-content {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 16px;
-  padding-bottom: 20px;
-}
+/* 删除 scrollable-content，子组件各自管理滚动 */
 </style>

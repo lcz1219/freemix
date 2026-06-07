@@ -401,7 +401,7 @@ const initQrLogin = async () => {
       const origin = window.location.origin;
       const pathname = window.location.pathname;
       // 构造完整URL，兼容hash路由
-      const confirmUrl = `${origin}${pathname}#/mobile/qr-confirm?data=${encodeURIComponent(JSON.stringify(payload))}`;
+      const confirmUrl = `${origin}${pathname}mobile/qr-confirm?data=${encodeURIComponent(JSON.stringify(payload))}`;
       
       qrCodeDataUrl.value = await QRCode.toDataURL(confirmUrl);
       qrStatus.value = 'pending';

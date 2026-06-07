@@ -7,8 +7,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // 启用 iOS 右滑返回手势（需配合前端 History 路由模式）
+        // 延迟至 bridge 初始化完成后设置
+        DispatchQueue.main.async { [weak self] in
+            self?.enableSwipeBackGesture(retry: 3)
+        }
         return true
+    }
+    
+    /// 递归尝试在 bridge 就绪后开启右滑手势
+    private func enableSwipeBackGesture(retry: Int) {
+        guard let vc = window?.rootViewController as? CAPBridgeViewController,
+              let webView = vc.webView else {
+            if retry > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    self?.enableSwipeBackGesture(retry: retry - 1)
+                }
+            }
+            return
+        }
+        webView.allowsBackForwardNavigationGestures = true
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

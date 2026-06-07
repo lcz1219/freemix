@@ -39,10 +39,10 @@
 
     <!-- AI生成结果展示 -->
     <div v-if="generatedGoal" class="result-section">
-      <div class="result-card">
+      <div class="result-card result-card-glass">
         <div class="card-header">
           <span class="card-title">AI生成的目标</span>
-           <div class="confirmation-buttons">
+          <div class="confirmation-buttons">
             <van-button @click="resetGeneration" plain size="small">重新生成</van-button>
             <van-button @click="saveForLater" :loading="isSaving" size="small">稍后决定</van-button>
             <van-button @click="confirmGoal" type="primary" size="small">确认创建</van-button>
@@ -54,25 +54,19 @@
             <p class="goal-description">{{ generatedGoal.description }}</p>
 
             <div class="sub-goals">
-              <h4 class="sub-goals-title">子目标：</h4>
-              <van-list :border="true" class="sub-goals-list">
-                <van-cell 
-                  v-for="(subGoal, index) in generatedGoal.childGoals" 
+              <h4 class="sub-goals-title">子目标</h4>
+              <div class="sub-goals-list">
+                <div
+                  v-for="(subGoal, index) in generatedGoal.childGoals"
                   :key="index"
-                  :title="`步骤 ${index + 1}`"
-                  :value="subGoal.message"
-                  :bordered="true"
                   class="sub-goal-item"
                 >
-                  <template #right-icon>
-                    <van-icon name="arrow-right" color="#ccc" />
-                  </template>
-                </van-cell>
-              </van-list>
+                  <div class="sub-goal-step">步骤 {{ index + 1 }}</div>
+                  <div class="sub-goal-message">{{ subGoal.message }}</div>
+                </div>
+              </div>
             </div>
           </div>
-
-         
         </div>
       </div>
     </div>
@@ -109,15 +103,22 @@
         <div class="chat-messages">
            <div v-for="(msg, index) in chatMessages" :key="index" class="chat-message" :class="msg.type">
              <div class="message-content">
-               <div v-if="msg.isProcessing" class="ai-thinking-container">
+               <!-- 初始无内容时显示思考中 -->
+               <div v-if="msg.isProcessing && !msg.content && !msg.thinkingContent" class="ai-thinking-container">
                  <van-loading size="24px" vertical color="#00c9a7">AI正在思考中...</van-loading>
                </div>
+               <!-- 有内容时实时展示，包括思考中和生成中 -->
                <div v-else>
                  <div v-if="msg.thinkingContent" class="thinking-content">
-                   <div class="thinking-header">思考过程:</div>
-                   <div v-html="formatContent(msg.thinkingContent)"></div>
+                   <div class="thinking-label">AI思考过程</div>
+                   <div class="thinking-body" v-html="formatContent(msg.thinkingContent)"></div>
                  </div>
-                 <div class="main-content" v-html="formatContent(msg.content)"></div>
+                 <div class="main-content markdown-body" v-html="formatContent(msg.content)"></div>
+                 <!-- 生成中的动态指示器 -->
+                 <div v-if="msg.isProcessing" class="generating-indicator">
+                   <van-loading type="spinner" color="#00c9a7" size="16" />
+                   <span>正在生成中...</span>
+                 </div>
                </div>
              </div>
            </div>
@@ -649,7 +650,7 @@ const shareRecord = async (record) => {
     
     if (isSuccess(response)) {
       const shareToken = response.data.data.shareToken;
-      const shareUrl = `${window.location.origin}/#/share/${shareToken}`;
+      const shareUrl = `${window.location.origin}/share/${shareToken}`;
       
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareUrl);
@@ -718,16 +719,24 @@ const getStatusText = (status) => {
 
 <style scoped lang="scss">
 .ai-goal-generator {
+  /* 毛玻璃 CSS 变量 */
+  --bg-glass: rgba(40, 35, 35, 0.06);
+  --border-line: rgba(0, 0, 0, 0.06);
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+
   padding: 16px;
   background-color: var(--bg-primary);
-  height: 100vh;
+  height: 100%; /* 填充父容器，不再硬编码 100vh */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(100px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   
   .input-section {
-    background-color: var(--bg-secondary);
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid var(--border-line);
     padding: 16px;
     border-radius: 16px;
     box-shadow: var(--card-shadow);
@@ -768,19 +777,41 @@ const getStatusText = (status) => {
   
   .process-button-container {
     margin-bottom: 16px;
+    
+    .van-button {
+      border-radius: 24px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      border: 1px solid var(--border-line);
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 14px;
+      height: 44px;
+      box-shadow: var(--card-shadow);
+    }
   }
 
   .result-section {
     margin-bottom: 16px;
     
     .result-card {
-      background-color: var(--bg-secondary);
       border-radius: 16px;
       box-shadow: var(--card-shadow);
       overflow: hidden;
       
+      &.result-card-glass {
+        background: var(--bg-glass);
+        backdrop-filter: blur(12px) saturate(150%);
+        -webkit-backdrop-filter: blur(12px) saturate(150%);
+        border: 1px solid var(--border-line);
+      }
+      
       .card-header {
-        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
         border-bottom: 1px solid var(--border-line);
         background-color: rgba(255, 255, 255, 0.02);
         
@@ -788,7 +819,20 @@ const getStatusText = (status) => {
           font-size: 16px;
           font-weight: 600;
           color: var(--text-primary);
-          margin-bottom: 8px;
+          flex-shrink: 0;
+        }
+        
+        .confirmation-buttons {
+          display: flex;
+          gap: 6px;
+          flex-shrink: 0;
+          
+          .van-button {
+            font-size: 12px;
+            padding: 0 10px;
+            height: 30px;
+            line-height: 30px;
+          }
         }
       }
 
@@ -807,41 +851,55 @@ const getStatusText = (status) => {
         .goal-description {
           font-size: 14px;
           color: var(--text-secondary);
-          margin: 0 0 16px;
+          margin: 0 0 20px;
           line-height: 1.5;
         }
         
         .sub-goals {
           .sub-goals-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin: 0 0 8px;
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0 0 12px;
             color: var(--text-primary);
+            padding-left: 2px;
           }
           
           .sub-goals-list {
-            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 360px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             
             .sub-goal-item {
-              background-color: transparent;
+              background: var(--bg-primary);
+              border-radius: 10px;
+              padding: 14px 16px;
+              display: flex;
+              align-items: flex-start;
+              gap: 10px;
               
-              :deep(.van-cell__title) {
-                font-weight: 500;
+              .sub-goal-step {
+                flex-shrink: 0;
+                background: #00c9a7;
+                color: #fff;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 2px 8px;
+                border-radius: 6px;
+                line-height: 18px;
+                margin-top: 2px;
               }
               
-              :deep(.van-cell__value) {
-                color: var(--text-secondary);
+              .sub-goal-message {
                 font-size: 14px;
+                color: var(--text-primary);
+                line-height: 1.5;
+                word-break: break-word;
               }
             }
           }
-        }
-        
-        .confirmation-buttons {
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-          margin-top: 16px;
         }
       }
     }
@@ -853,7 +911,10 @@ const getStatusText = (status) => {
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
-    background-color: var(--bg-secondary);
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid var(--border-line);
     border-radius: 16px;
     box-shadow: var(--card-shadow);
     
@@ -895,6 +956,9 @@ const getStatusText = (status) => {
     height: 100%;
     display: flex;
     flex-direction: column;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     
     .modal-title {
       font-size: 18px;
@@ -928,11 +992,14 @@ const getStatusText = (status) => {
     height: 100%;
     display: flex;
     flex-direction: column;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     
     .modal-header {
       padding: 16px;
       border-bottom: 1px solid var(--border-line);
-      h3 { margin: 0; text-align: center; }
+      h3 { margin: 0; text-align: center; color: var(--text-primary); }
     }
     
     .chat-messages {
@@ -943,26 +1010,92 @@ const getStatusText = (status) => {
       .chat-message {
         margin-bottom: 16px;
         padding: 12px;
-        border-radius: 8px;
+        border-radius: 12px;
         background-color: var(--bg-secondary);
         
         .thinking-content {
-          font-size: 12px;
-          color: #999;
-          padding: 8px;
-          background: rgba(0,0,0,0.05);
-          border-radius: 4px;
-          margin-bottom: 8px;
+          background-color: rgba(0, 0, 0, 0.03);
+          border-radius: 8px;
+          padding: 12px;
+          margin-bottom: 12px;
+          font-size: 13px;
+          color: var(--text-secondary);
+          border-left: 3px solid #00c9a7;
           
-          .thinking-header {
+          .thinking-label {
             font-weight: bold;
             margin-bottom: 4px;
+            color: #00c9a7;
+          }
+          
+          .thinking-body {
+            white-space: pre-wrap;
+            line-height: 1.4;
+            p { margin: 4px 0; }
           }
         }
         
         .main-content {
           white-space: pre-wrap;
           line-height: 1.5;
+          color: var(--text-primary);
+          
+          /* 完整的 Markdown 渲染样式 */
+          :deep(p) { margin: 8px 0; &:first-child { margin-top: 0; } &:last-child { margin-bottom: 0; } }
+          :deep(h1), :deep(h2), :deep(h3), :deep(h4), :deep(h5), :deep(h6) { margin: 12px 0 8px; font-weight: bold; color: var(--text-primary); }
+          :deep(h1) { font-size: 1.4em; }
+          :deep(h2) { font-size: 1.3em; }
+          :deep(h3) { font-size: 1.2em; }
+          :deep(ul), :deep(ol) { padding-left: 20px; margin: 8px 0; }
+          :deep(li) { margin: 4px 0; }
+          :deep(code) {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+          }
+          :deep(pre) {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            
+            code {
+              background-color: transparent;
+              padding: 0;
+              color: inherit;
+              font-size: 13px;
+            }
+          }
+          :deep(blockquote) {
+            border-left: 4px solid #dfe2e5;
+            color: #6a737d;
+            padding-left: 12px;
+            margin: 8px 0;
+            font-style: italic;
+          }
+          :deep(a) {
+            color: #00c9a7;
+            text-decoration: none;
+          }
+          :deep(table) {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 8px 0;
+            font-size: 14px;
+            
+            th, td {
+              border: 1px solid var(--border-line);
+              padding: 6px 10px;
+            }
+            th {
+              background-color: rgba(0, 0, 0, 0.02);
+              font-weight: bold;
+            }
+          }
         }
         
         .ai-thinking-container {
@@ -970,6 +1103,15 @@ const getStatusText = (status) => {
           justify-content: center;
           align-items: center;
           padding: 20px 0;
+        }
+        
+        .generating-indicator {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 0 4px;
+          color: #00c9a7;
+          font-size: 13px;
         }
       }
     }
@@ -979,7 +1121,9 @@ const getStatusText = (status) => {
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-primary);
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     
     .history-modal-header {
       display: flex;
@@ -1050,6 +1194,22 @@ const getStatusText = (status) => {
         height: 100%;
       }
     }
+  }
+
+  /* 弹窗毛玻璃覆盖 */
+  :deep(.van-popup) {
+    background: transparent !important;
+  }
+
+  :deep(.van-popup__close-icon) {
+    top: 12px;
+    right: 12px;
+  }
+
+  :deep(.van-overlay) {
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 }
 </style>

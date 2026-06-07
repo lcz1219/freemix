@@ -24,11 +24,18 @@
           <div v-if="currentSection === 'welcome'" key="welcome" class="content-card welcome-card">
             <div class="hero-section">
               <div class="avatar-glow"></div>
-              <van-image
+              <!-- <van-image
                 src="https://api.dicebear.com/7.x/miniavs/svg?seed=welcome"
                 width="120"
                 height="120"
                 round
+                class="hero-image"
+              /> -->
+              <van-image
+                src="/icons/icon.png"
+                width="120"
+                height="120"
+                
                 class="hero-image"
               />
             </div>
@@ -486,8 +493,7 @@ onMounted(() => {
 .hero-image {
   position: relative;
   z-index: 1;
-  border: 4px solid var(--card-bg);
-  background-color: var(--card-bg);
+
 }
 .main-title {
   font-size: 28px;

@@ -109,36 +109,35 @@
         发送
       </van-button>
     </div>
-    <!-- 历史记录侧边栏 -->
-    <van-popup
-      v-model:show="showHistory"
-      position="right"
-      :style="{ width: '70%', height: '100%' }"
-    >
-      <div class="history-sidebar">
-        <div class="sidebar-header">
-          <h3>历史记录</h3>
-          <van-icon name="cross" size="20" @click="showHistory = false" />
-        </div>
-        
-        <div v-if="historyList.length === 0" class="empty-history">
-          <van-icon name="todo-list-o" size="48" color="#ccc" />
-          <span>暂无历史记录</span>
-        </div>
-        
-        <div v-else class="history-list">
-          <div 
-            v-for="(item, index) in historyList" 
-            :key="item.id" 
-            class="history-item"
-            @click="handleHistoryClick(item.messageIndex)"
-          >
-            <div class="history-content">{{ item.title }}</div>
-            <div class="history-time">{{ formatHistoryTime(item.timestamp) }}</div>
+    <!-- 历史记录面板（内嵌滑动，不外泄到其他 tab） -->
+    <transition name="history-slide">
+      <div v-if="showHistory" class="history-overlay">
+        <div class="history-backdrop" @click="showHistory = false"></div>
+        <div class="history-panel">
+          <div class="sidebar-header">
+            <h3>历史记录</h3>
+            <van-icon name="cross" size="22" color="var(--text-primary)" @click="showHistory = false" />
+          </div>
+          
+          <div v-if="historyList.length === 0" class="empty-history">
+            <van-icon name="todo-list-o" size="48" color="#999" />
+            <span>暂无历史记录</span>
+          </div>
+          
+          <div v-else class="history-list">
+            <div 
+              v-for="(item, index) in historyList" 
+              :key="item.id" 
+              class="history-item"
+              @click="handleHistoryClick(item.messageIndex)"
+            >
+              <div class="history-content">{{ item.title }}</div>
+              <div class="history-time">{{ formatHistoryTime(item.timestamp) }}</div>
+            </div>
           </div>
         </div>
       </div>
-    </van-popup>
+    </transition>
   </div>
 </template>
 
@@ -148,8 +147,9 @@ import { useStore } from 'vuex'
 import { showToast } from 'vant'
 import MarkdownIt from 'markdown-it'
 import { postM, getM } from '@/utils/request.js'
-import { chatPromptMobile } from '@/utils/aiPrompts.js'
+import { chatPromptMobile, chatPrompt, mqlSummaryPrompt } from '@/utils/aiPrompts.js'
 import { callCozeAPI } from '@/utils/aiService.js'
+import { handleMQLResponse } from '@/utils/MQLHandler.js'
 
 const md = new MarkdownIt({
   html: true,
@@ -360,19 +360,81 @@ const sendFollowUpQuestion = (question) => {
   sendMessage()
 }
 
-// 调用自定义AI API
+// MQL 脱敏函数：流式输出时隐藏 [MQL_START]...[MQL_END] 之间的真实内容
+const maskMQL = (text) => {
+  let processed = text.replace(/\[MQL_START\][\s\S]*?\[MQL_END\]/g, () => {
+    return '[MQL_START]\n正在查询你的专属数据\n[MQL_END]'
+  })
+  if (processed.includes('[MQL_START]') && !processed.includes('[MQL_END]')) {
+    processed = processed.substring(0, processed.indexOf('[MQL_START]')) + '[MQL_START]\n正在查询你的专属数据'
+  }
+  return processed
+}
+
+// 调用自定义AI API（包含 MQL 截获与自动执行）
 const callCustomAIAPI = async (question, onUpdate) => {
+  // 包装 onUpdate 回调，对流式输出的 content 做 MQL 脱敏
+  const originalOnUpdate = onUpdate
+  onUpdate = (data) => {
+    if (data && data.content) {
+      data.content = maskMQL(data.content)
+    }
+    if (data && data.thinkingContent) {
+      data.thinkingContent = maskMQL(data.thinkingContent)
+    }
+    if (originalOnUpdate) originalOnUpdate(data)
+  }
+
+  // 使用 chatPrompt（带 username 上下文，MQL 需要知道当前用户）
+  const custQuestion = chatPrompt({ question, username: currentUser.value.username })
+
   try {
-    const result = await callCozeAPI(chatPromptMobile(question), onUpdate)
-    
-    if (!result.content.trim() && (!result.followUpQuestions || result.followUpQuestions.length === 0) && !result.thinkingContent.trim()) {
+    const apiResult = await callCozeAPI(custQuestion, onUpdate)
+    const fullResponse = apiResult.content || ''
+    const thinkingContent = apiResult.thinkingContent || ''
+    const followUpQuestions = apiResult.followUpQuestions || []
+
+    // 构建最终响应对象（界面显示脱敏版）
+    const result = {
+      messageType: 'answer',
+      success: true,
+      content: maskMQL(fullResponse),
+      thinkingContent: thinkingContent,
+      followUpQuestions: followUpQuestions
+    }
+
+    // 截获 MQL 并自动执行
+    const MQL_START = '[MQL_START]'
+    const startIndex = fullResponse.indexOf(MQL_START)
+    if (startIndex !== -1) {
+      const mqlResult = await handleMQLResponse(fullResponse, question)
+      if (mqlResult && mqlResult.success) {
+        // 触发二次对话：让 AI 根据查询结果做总结
+        const summaryPrompt = mqlSummaryPrompt({ question, rawData: mqlResult.rawData })
+        const finalResult = await callCustomAIAPI(summaryPrompt, onUpdate)
+        return finalResult
+      } else {
+        // MQL 执行失败，返回友好的降级提示
+        const failResult = {
+          messageType: 'answer',
+          success: false,
+          content: 'AI正在处理您的数据，请重新刷新试试',
+          thinkingContent: thinkingContent,
+          followUpQuestions: followUpQuestions
+        }
+        return failResult
+      }
+    }
+
+    // 如果没有获取到有效响应，返回默认消息
+    if (!fullResponse.trim() && followUpQuestions.length === 0 && !thinkingContent.trim()) {
       result.content = 'AI助手已处理您的问题，但未返回有效回复。'
     }
-    
+
     return result
   } catch (error) {
     console.error('AI API调用失败:', error)
-    throw new Error(`AI调用失败: ${error.message}`)
+    throw new Error(`抱歉，AI助手暂时无法回应，请稍后再试。\n\n错误详情：${error.message}`)
   }
 }
 
@@ -433,7 +495,7 @@ onMounted(async () => {
   scrollToBottom()
 })
 
-// 暴露方法供父组件调用
+// 暴露方法和状态供父组件调用
 defineExpose({
   callCustomAIAPI
 })
@@ -443,7 +505,7 @@ defineExpose({
 .ai-chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 90px); // Adjust for potential bottom nav
+  height: 90vh; // Adjust for potential bottom nav
   background-color: var(--bg-primary);
   position: relative;
   
@@ -471,6 +533,7 @@ defineExpose({
   .chat-messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 16px;
     background-color: var(--bg-primary);
     
@@ -781,22 +844,49 @@ defineExpose({
     100% { box-shadow: 0 0 0 0 rgba(0, 201, 167, 0); }
   }
 
-  .history-sidebar {
+  /* 历史面板（内嵌在 ai-chat-container 内，不外泄到其他 tab） */
+  .history-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: row-reverse; /* 面板靠右 */
+  }
+
+  .history-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 1;
+  }
+
+  .history-panel {
+    position: relative;
+    z-index: 2;
+    width: 72%;
+    height: 100%;
+    background: var(--bg-primary);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
-    height: 100%;
-    background-color: var(--bg-primary);
     
     .sidebar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px;
+      padding: 18px 16px;
       border-bottom: 1px solid var(--border-line);
+      flex-shrink: 0;
       
       h3 {
         margin: 0;
-        font-size: 18px;
+        font-size: 17px;
+        font-weight: 700;
         color: var(--text-primary);
       }
     }
@@ -818,20 +908,19 @@ defineExpose({
     .history-list {
       flex: 1;
       overflow-y: auto;
-      padding: 12px;
+      padding: 12px 16px;
       
       .history-item {
-        padding: 12px;
-        border-radius: 8px;
-        background-color: var(--bg-secondary);
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: rgba(125, 125, 125, 0.06);
         margin-bottom: 10px;
         cursor: pointer;
         transition: all 0.2s ease;
-        box-shadow: var(--card-shadow);
         
         &:active {
-          transform: scale(0.98);
-          background-color: var(--bg-tertiary, #f0f0f0);
+          transform: scale(0.97);
+          background: rgba(0, 201, 167, 0.1);
         }
         
         .history-content {
@@ -851,4 +940,19 @@ defineExpose({
     }
   }
 }
+
+/* 历史面板滑动过渡动画 */
+.history-slide-enter-active {
+  .history-backdrop { animation: fadeIn 0.25s ease both; }
+  .history-panel   { animation: slideInRight 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
+}
+.history-slide-leave-active {
+  .history-backdrop { animation: fadeOut 0.2s ease both; }
+  .history-panel   { animation: slideOutRight 0.25s ease both; }
+}
+
+@keyframes slideInRight  { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 </style>

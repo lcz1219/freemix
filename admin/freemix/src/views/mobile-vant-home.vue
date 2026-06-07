@@ -99,7 +99,7 @@
         <section class="goals-container">
           <van-search v-model="searchQuery" placeholder="搜索目标..." shape="round" background="transparent" />
           <van-pull-refresh v-model="isRefreshing" @refresh="refreshGoals">
-            <van-tabs v-model:active="activeTab" sticky offset-top="46" background="transparent" line-width="20px"
+            <van-tabs v-model:active="activeTab"  offset-top="46" background="transparent" line-width="20px"
               line-height="3px" color="#00c9a7" title-active-color="#00c9a7"
               :title-inactive-color="isDark ? '#888' : '#666'" class="custom-tabs">
               <van-tab title="全部">

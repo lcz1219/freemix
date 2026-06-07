@@ -406,6 +406,18 @@ onMounted(async () => {
         oauthLoading.value = false; // 关闭登录中提示
       }
     });
+
+    // 监听 Capacitor 返回事件（iOS 右滑手势 / Android 硬件返回键）
+    App.addListener('backButton', ({ canGoBack }) => {
+      const path = window.location.pathname;
+      // 首页 / 登录页直接最小化 App
+      if (path === '/' || path === '/login' || path === '/home' || path === '/home.html') {
+        App.minimizeApp();
+      } else {
+        // 其他页面用 Vue Router 返回
+        router.back();
+      }
+    });
   }
 
   getDeskToken();

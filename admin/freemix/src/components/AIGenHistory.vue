@@ -322,7 +322,7 @@ const shareRecord = async (record) => {
     
     if (isSuccess(response)) {
       const shareToken = response.data.data.shareToken;
-      const shareUrl = `${window.location.origin}/#/share/${shareToken}`;
+      const shareUrl = `${window.location.origin}/share/${shareToken}`;
       
       // 复制到剪贴板
       if (navigator.clipboard) {
