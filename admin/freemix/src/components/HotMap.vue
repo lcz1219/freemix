@@ -1,6 +1,6 @@
 <template>
   <n-flex vertical>
-    <n-flex align="center" justify="start">
+    <n-flex align="center" justify="start" v-show="!isMobile">
       <n-divider vertical />
       <span>周开始日：</span>
       <n-select
@@ -10,8 +10,8 @@
       />
       <n-divider vertical />
     </n-flex>
-    <n-flex>
-      <n-radio-group v-model:value="size" name="size">
+    <n-flex >
+      <n-radio-group v-model:value="size" name="size" v-show="!isMobile">
         <n-radio-button
           v-for="option in sizeOptions"
           :key="option.value"
@@ -95,6 +95,7 @@
 <script setup>
 import { computed, ref, toRefs, inject } from "vue";
 import { NFlex, NDivider, NSelect, NRadioGroup, NRadioButton, NAlert, NTag, NTooltip } from "naive-ui";
+import { isMobile } from "@/utils/device";
 
 const props = defineProps({
   goals: {
