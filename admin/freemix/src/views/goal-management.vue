@@ -148,6 +148,14 @@
                             </n-tag>
                           </template>
                         </el-table-column>
+                        <!-- 优先级列 - 简洁标签 -->
+                        <el-table-column label="优先级" width="70" align="center">
+                          <template #default="scope">
+                            <span class="priority-tag" :class="'pri-' + (scope.row.level || 'medium')">
+                              {{ getPriorityText(scope.row.level) }}
+                            </span>
+                          </template>
+                        </el-table-column>
                         <el-table-column label="截止时间" width="120">
                           <template #default="scope">
                             {{ scope.row.deadlineString }}
@@ -206,6 +214,14 @@
                         <div class="info-item-modern">
                           <div class="info-label">截止日期</div>
                           <div class="info-value">{{ currentSelectedGoal.deadlineString }}</div>
+                        </div>
+                        <div class="info-item-modern">
+                          <div class="info-label">优先级</div>
+                          <div class="info-value">
+                            <n-tag :type="getPriorityType(currentSelectedGoal.level)" :bordered="false" round size="small">
+                              {{ getPriorityText(currentSelectedGoal.level) }}
+                            </n-tag>
+                          </div>
                         </div>
                         <div class="info-item-modern full-width">
                           <div class="info-label">总体进度</div>
@@ -889,6 +905,28 @@ const getStatusColor = (status: string) => {
       return '#ff6b6b'; // 红色
     default:
       return '#409eff'; // 蓝色
+  }
+};
+
+// 优先级选项
+const priorityOptions = [
+  { label: '低', value: 'low' },
+  { label: '中', value: 'medium' },
+  { label: '高', value: 'high' }
+];
+
+// 获取优先级文本
+const getPriorityText = (level: string) => {
+  const option = priorityOptions.find(opt => opt.value === level);
+  return option ? option.label : '中';
+};
+
+// 获取优先级标签类型
+const getPriorityType = (level: string) => {
+  switch (level) {
+    case 'low': return 'success';
+    case 'high': return 'error';
+    case 'medium': default: return 'warning';
   }
 };
 
@@ -1937,5 +1975,36 @@ onMounted(() => {
 .detail-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
+}
+
+/* ----------------------------------
+   9. 优先级标签 (简洁嵌入风格)
+   ---------------------------------- */
+.priority-tag {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  line-height: 20px;
+}
+
+/* 低 - 柔和绿 */
+.priority-tag.pri-low {
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+}
+
+/* 中 - 柔和橙 */
+.priority-tag.pri-medium {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+/* 高 - 柔和红 */
+.priority-tag.pri-high {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
 }
 </style>

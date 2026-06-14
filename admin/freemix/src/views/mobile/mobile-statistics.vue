@@ -144,7 +144,7 @@
           <van-collapse-item name="expired" :border="false">
             <template #title>
                <div class="collapse-header">
-                <div class="icon-box red"><van-icon name="clear" /></div>
+                <div class="icon-box danger"><van-icon name="clear" /></div>
                 <span>已过期</span>
               </div>
             </template>
@@ -590,10 +590,10 @@ const cleanupCharts = () => {
   .stat-label { font-size: 13px; color: var(--ios-text-secondary); font-weight: 500; }
   .stat-value { font-size: 24px; font-weight: 700; line-height: 1.1; }
   
-  &.primary { .stat-icon-bg { background: rgba(0,201,167,0.12); color: #00c9a7; } .stat-value { color: #00c9a7; } }
-  &.success { .stat-icon-bg { background: rgba(52,199,89,0.1); color: var(--ios-green); } .stat-value { color: var(--ios-green); } }
-  &.warning { .stat-icon-bg { background: rgba(255,149,0,0.1); color: var(--ios-orange); } .stat-value { color: var(--ios-orange); } }
-  &.danger  { .stat-icon-bg { background: rgba(255,59,48,0.1);  color: var(--ios-red); }  .stat-value { color: var(--ios-red); } }
+  &.primary { .stat-icon-bg { background: rgba(0,201,167,0.12); color: #007AFF; } .stat-value { color: #007AFF; } }
+  &.success { .stat-icon-bg { background: rgba(52,199,89,0.1); color: #00C9A7; } .stat-value { color: #00C9A7; } }
+  &.warning { .stat-icon-bg { background: rgba(255,149,0,0.1); color: #FF9500; } .stat-value { color: #FF9500; } }
+  &.danger  { .stat-icon-bg { background: rgba(255,59,48,0.1);  color: #FF3B30; }  .stat-value { color: #FF3B30; } }
 }
 
 /* --- Group Cards (Inset Grouped Style) --- */
@@ -609,7 +609,8 @@ const cleanupCharts = () => {
   margin: 24px 0 10px 4px;
   font-size: 20px;
   font-weight: 700;
-  color: var(--ios-text-primary);
+  color: white;
+;
 }
 
 .chart-header {
@@ -657,12 +658,12 @@ const cleanupCharts = () => {
 }
 
 .summary-label {
-  margin-top: 8px; font-size: 12px; color: var(--ios-text-secondary); font-weight: 500;
+  margin-top: 8px; font-size: 12px; color: #00C9A7; font-weight: 500;
 }
 
 .summary-big-num {
-  font-size: 28px; font-weight: 700;
-  small { font-size: 14px; font-weight: 500; color: var(--ios-text-secondary); margin-left: 2px; }
+  font-size: 28px; font-weight: 700; color: #00C9A7;
+  small { font-size: 14px; font-weight: 500; color: #00C9A7; margin-left: 2px; }
 }
 
 /* CSS Ring Chart */
@@ -674,7 +675,7 @@ const cleanupCharts = () => {
 .circle { fill: none; stroke: var(--ios-blue); stroke-width: 3.5; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
 .ring-text {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  font-size: 28px; font-weight: 700; color: var(--ios-text-primary);
+  font-size: 28px; font-weight: 700; color: #00C9A7;
   small { font-size: 9px; }
 }
 
@@ -691,9 +692,9 @@ const cleanupCharts = () => {
 
 .icon-box {
   width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white;
-  &.green { background: var(--ios-green); }
-  &.orange { background: var(--ios-orange); }
-  &.red { background: var(--ios-red); }
+  &.green { background: #00C9A7; }
+  &.orange { background: #FF9500; }
+  &.danger { background: #FF3B30; }
 }
 
 .list-content {

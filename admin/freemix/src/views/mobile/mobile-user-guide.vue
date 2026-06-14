@@ -66,8 +66,8 @@
             </div>
             
             <div class="step-container">
-              <!-- active-color 改为适合暗黑模式的亮蓝色 -->
-              <van-steps direction="vertical" :active="createStep" active-color="#0A84FF" inactive-color="#3A3A3C">
+              <!-- active-color 改为系统品牌色 -->
+              <van-steps direction="vertical" :active="createStep" active-color="#00c9a7" inactive-color="#3A3A3C">
                 <van-step>
                   <h3>点击添加</h3>
                   <p>主页右下角「+」悬浮按钮</p>
@@ -119,7 +119,7 @@
               <p>多视图切换，掌控全局</p>
             </div>
             
-            <van-tabs v-model:active="activeTab" animated swipeable background="transparent" color="#0A84FF" title-active-color="#FFFFFF" title-inactive-color="#8E8E93">
+            <van-tabs v-model:active="activeTab" animated swipeable background="transparent" color="#00c9a7" title-active-color="#FFFFFF" title-inactive-color="#8E8E93">
               <van-tab title="仪表板">
                 <div class="tab-inner">
                   <div class="feature-box">
@@ -377,12 +377,12 @@ onMounted(() => {
   --text-primary: #FFFFFF;
   --text-secondary: #98989D;
   
-  /* 强调色 - iOS Dark Mode Blue */
-  --accent-color: #0A84FF;
+  /* 强调色 - 系统品牌绿色 */
+  --accent-color: #00c9a7;
   
   /* 阴影 - 暗色模式下更微妙或使用光晕 */
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-btn: 0 4px 12px rgba(10, 132, 255, 0.4);
+  --shadow-btn: 0 4px 12px rgba(0, 201, 167, 0.4);
   
   /* 线条颜色 */
   --step-line: #38383A;
@@ -484,7 +484,7 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   width: 140px;
   height: 140px;
-  background: linear-gradient(135deg, #0A84FF, #5E5CE6);
+  background: linear-gradient(135deg, #00c9a7, #00a88b);
   filter: blur(40px);
   border-radius: 50%;
   opacity: 0.6; /* 提高不透明度 */
@@ -565,7 +565,7 @@ onMounted(() => {
   font-size: 28px;
   color: var(--accent-color);
   padding: 10px;
-  background: rgba(10, 132, 255, 0.15); /* 更透的蓝色背景 */
+  background: rgba(0, 201, 167, 0.15); /* 主题色背景 */
   border-radius: 12px;
 }
 .feature-box strong {
@@ -640,7 +640,7 @@ onMounted(() => {
   font-size: 24px;
   color: white;
 }
-.bg-blue { background: #5E5CE6; }
+.bg-blue { background: #00c9a7; }
 .bg-green { background: #30D158; }
 .bg-orange { background: #FF9F0A; }
 .list-item .text h4 {
@@ -677,12 +677,12 @@ onMounted(() => {
 }
 .final-tips span {
   padding: 6px 12px;
-  background: rgba(10, 132, 255, 0.15);
-  color: var(--accent-color);
+  background: rgba(0, 201, 167, 0.15);
+  color: #00c9a7;
   border-radius: 100px;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid rgba(10, 132, 255, 0.2);
+  border: 1px solid rgba(0, 201, 167, 0.2);
 }
 
 /* 底部悬浮 Dock */
@@ -711,7 +711,7 @@ onMounted(() => {
   height: 100%;
   background: var(--accent-color);
   transition: width 0.3s ease;
-  box-shadow: 0 0 10px var(--accent-color); /* 进度条发光 */
+  box-shadow: 0 0 10px #00c9a7; /* 进度条发光 */
 }
 .dock-controls {
   display: flex;

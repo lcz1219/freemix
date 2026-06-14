@@ -168,7 +168,12 @@ import { saveToken as saveTokenUtil } from '@/utils/tokenUtils.js';
 import { getLocalStorageDesktopToken } from '@/utils/desktopToken.js'
 import { connect, disconnect } from '@/utils/websocket.js'
 import { genMsg } from '@/utils/genMsg.js'
+import { initNativeBridge, updateGoalsData } from '@/hooks/useNativeBridge'
 const store = useStore()
+
+// 初始化原生桥接（快捷操作 + 通知操作事件监听）
+// 必须在 setup 顶层调用，不能在 onMounted 内
+initNativeBridge()
 
 const showContentByStoreUser = computed(() => {
   return store.state.user && Object.keys(store.state.user).length !== 0
@@ -450,6 +455,9 @@ onMounted(async () => {
   // 获取目标数据
   await getGoals();
   isUpdateNotification()
+
+  // 暴露目标数据到 window，原生端进后台时读取
+  updateGoalsData(goals.value)
 
 });
 const showUpdateNotification = ref(false);

@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './stores'
-import { ConfigProvider } from 'vant';
+import { ConfigProvider, setDialogDefaultOptions } from 'vant';
 import './assets/main.css'
 
 // 引入 Vant 组件库
@@ -20,6 +20,11 @@ const app = createApp(App)
 app.use(ConfigProvider);
 // 使用 Vant
 app.use(Vant)
+
+// 全局设置 Dialog 默认选项：确认按钮颜色统一为系统品牌色
+setDialogDefaultOptions({
+  confirmButtonColor: '#00c9a7'
+})
 
 // 使用 Element Plus
 app.use(ElementPlus)

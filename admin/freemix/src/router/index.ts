@@ -28,6 +28,8 @@ import MobileAIAssistant from '@/views/mobile/mobile-ai-assistant.vue'
 import MobileProfile from '@/views/mobile/mobile-profile.vue'
 import MobileScanConfirm from '@/views/mobile/mobile-scan-confirm.vue'
 import MobileScan from '@/views/mobile/mobile-scan.vue'
+import MobileLoginLog from '@/views/mobile/mobile-login-log.vue'
+import MobileNotifications from '@/views/mobile/mobile-notifications.vue'
 import { isDesktop } from '@/utils/device.js'
 // import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -120,7 +122,7 @@ const routes = [
   { 
     path: '/login-log', 
     name: 'LoginLog', 
-    component: getComponent(LoginLog, LoginLog) 
+    component: getComponent(LoginLog, MobileLoginLog) 
   },
   { 
     path: '/log-management', 
@@ -178,6 +180,12 @@ const routes = [
     path: '/mobile/scan',
     name: 'MobileScan',
     component: MobileScan,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/mobile/notifications',
+    name: 'MobileNotifications',
+    component: MobileNotifications,
     meta: { requiresAuth: true }
   },
   {

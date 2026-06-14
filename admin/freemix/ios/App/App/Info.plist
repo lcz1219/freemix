@@ -54,6 +54,43 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeCompose</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>新建目标</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>create-goal</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeDate</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>今日目标</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>today-goals</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeCompose</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>AI 助手</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>ai-assistant</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconTemplate</key>
+			<string>UIApplicationShortcutIconTemplate</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeSearch</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>扫码登录</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>scan-login</string>
+		</dict>
+	</array>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

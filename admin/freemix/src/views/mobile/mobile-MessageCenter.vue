@@ -1819,9 +1819,9 @@ watch(() => messages.value.length, () => {
   background-color: #1c1c1e !important;
 }
 
-.van-dialog__confirm {
+/* .van-dialog__confirm {
   color: #0a84ff !important;
-}
+} */
 
 .van-dialog__cancel {
   color: #ff3b30 !important;

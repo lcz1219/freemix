@@ -13,6 +13,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "cap:sync": "npx cap sync ios && node patch-capacitor-config.cjs",
+    "cap:build": "npm run build && npm run cap:sync",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder",
     "electron:build:linux": "npm run build && electron-builder --linux",
