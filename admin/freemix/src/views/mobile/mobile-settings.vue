@@ -123,6 +123,18 @@
           /> -->
         </div>
 
+        <!-- 数据管理 -->
+        <div class="section-title">数据管理</div>
+        <div class="glass-group">
+          <van-cell
+            title="导出所有数据"
+            label="将数据备份为 JSON 文件，用于跨设备迁移或存档"
+            is-link
+            class="glass-cell"
+            @click="exportUserData"
+          />
+        </div>
+
         <!-- 关于 -->
         <div class="section-title">关于我们</div>
         <div class="glass-group">
@@ -362,6 +374,39 @@ const goToFeedback = () => {
   router.push('/feedback')
 }
 
+// 导出用户数据为 JSON 文件（下载到本地）
+const exportUserData = async () => {
+  showLoadingToast('正在导出数据...')
+  try {
+    const res = await postM('exportUserData')
+    if (!res.data?.operSucc) {
+      showToast('导出失败')
+      return
+    }
+    closeToast()
+    
+    const data = res.data.data
+    // 构造文件并下载
+    const jsonStr = JSON.stringify(data, null, 2)
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const now = new Date()
+    const ts = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`
+    a.download = `freemix-backup-${user.value.username || 'user'}-${ts}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    showSuccessToast(`导出成功！共 ${data.goals?.length || 0} 个目标、${data.aiMessages?.length || 0} 条AI记录`)
+  } catch (e) {
+    closeToast()
+    showToast('导出失败: ' + (e.message || '未知错误'))
+  }
+}
+
 const logout = async () => {
   try {
     showLoadingToast('退出中...')
@@ -410,18 +455,7 @@ onMounted(() => {
 }
 
 /* 动态背景 - 改为灰黑色系 */
-.animated-bg {
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  /* 黑色与深炭色的渐变 */
-  background: radial-gradient(circle at center, #1a1a1a 0%, #000000 70%);
-  animation: bgRotate 20s linear infinite;
-  z-index: 0;
-  pointer-events: none;
-}
+
 
 .bg-overlay {
   position: fixed;

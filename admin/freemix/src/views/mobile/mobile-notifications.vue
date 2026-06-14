@@ -74,6 +74,35 @@
           <p class="empty-desc">系统通知消息会在这里展示</p>
         </div>
       </div>
+
+      <!-- 通知详情弹窗 (毛玻璃风格，与AI晨报弹窗一致) -->
+      <van-dialog
+        v-model:show="showDetailDialog"
+        class="notification-detail-dialog"
+        :show-confirm-button="false"
+      >
+        <div class="glass-dialog-inner" v-if="selectedNotification">
+          <div class="glass-dialog-header">
+            <div class="header-icon" :class="getTypeClass(selectedNotification.type)">
+              <van-icon :name="getTypeIcon(selectedNotification.type)" size="24" />
+            </div>
+            <div class="header-title">{{ selectedNotification.title }}</div>
+            <div class="header-time">{{ formatFullTime(selectedNotification.createdAt) }}</div>
+          </div>
+          <div class="dialog-body">
+            {{ selectedNotification.body }}
+          </div>
+          <div class="dialog-meta" v-if="selectedNotification.goalTitle">
+            <van-icon name="flag-o" size="14" color="rgba(255,255,255,0.3)" />
+            <span>相关目标：{{ selectedNotification.goalTitle }}</span>
+          </div>
+          <div class="glass-dialog-footer">
+            <van-button class="glass-confirm-btn" round block @click="showDetailDialog = false">
+              我知道了
+            </van-button>
+          </div>
+        </div>
+      </van-dialog>
     </div>
   </van-config-provider>
 </template>
@@ -87,6 +116,10 @@ import { postM, isSuccess } from '@/utils/request'
 const router = useRouter()
 const notifications = ref<any[]>([])
 const unreadCount = ref(0)
+
+// 通知详情弹窗
+const showDetailDialog = ref(false)
+const selectedNotification = ref<any>(null)
 
 const goBack = () => router.back()
 
@@ -139,15 +172,16 @@ const clearAll = () => {
 
 // 点击通知
 const handleClick = async (item: any) => {
-  // 先标记已读
-  await markRead(item)
-  // 根据类型跳转
-  // if (item.type === 'goal_reminder' && item.goalId) {
-  //   // 跳转到目标管理
-  //   router.push('/goal-management')
-  // } else if (item.type === 'ai_morning') {
-  //   router.push('/home')
-  // }
+  // 选中当前通知供弹窗展示
+  selectedNotification.value = item
+  showDetailDialog.value = true
+  
+  // 如果未读，先标记已读
+  if (!item.read) {
+    await postM('markNotificationRead', { id: item.id })
+    item.read = true
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  }
 }
 
 // 通知类型图标
@@ -185,6 +219,18 @@ const formatTime = (timestamp: number) => {
   const day = date.getDate().toString().padStart(2, '0')
   if (date.getFullYear() === now.getFullYear()) return month + '/' + day
   return date.getFullYear() + '/' + month + '/' + day
+}
+
+// 完整时间格式（用于弹窗内展示）
+const formatFullTime = (timestamp: number) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const hour = date.getHours().toString().padStart(2, '0')
+  const min = date.getMinutes().toString().padStart(2, '0')
+  return `${year}年${month}月${day}日 ${hour}:${min}`
 }
 
 onMounted(() => {
@@ -383,5 +429,127 @@ onMounted(() => {
 .empty-desc {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================
+ * 通知详情弹窗 (毛玻璃风格)
+ * ========================================== */
+:deep(.notification-detail-dialog) {
+  background: transparent !important;
+  width: 320px;
+  border-radius: 24px;
+  overflow: hidden;
+
+  .van-dialog__header {
+    display: none;
+  }
+  
+  .van-dialog__content {
+    background: transparent;
+  }
+}
+
+.glass-dialog-inner {
+  background: rgba(25, 25, 30, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.glass-dialog-header {
+  padding: 24px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  .header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .header-icon.type-reminder {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
+  }
+
+  .header-icon.type-morning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
+  }
+
+  .header-icon.type-daily {
+    background: rgba(0, 201, 167, 0.15);
+    color: #00c9a7;
+    box-shadow: 0 0 20px rgba(0, 201, 167, 0.2);
+  }
+
+  .header-icon.type-system {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .header-time {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* 弹窗正文 */
+.dialog-body {
+  padding: 0 20px 16px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: left;
+  word-break: break-word;
+}
+
+/* 关联目标信息 */
+.dialog-meta {
+  padding: 0 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.glass-dialog-footer {
+  padding: 10px 20px 24px;
+
+  .glass-confirm-btn {
+    background: linear-gradient(135deg, #00c9a7 0%, #00a88b 100%);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    height: 44px;
+    box-shadow: 0 4px 15px rgba(0, 201, 167, 0.3);
+    
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+  }
 }
 </style>

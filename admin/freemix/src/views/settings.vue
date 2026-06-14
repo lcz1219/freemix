@@ -16,6 +16,9 @@
               <li class="nav-item" :class="{ active: activeSection === 'system' }">
                 <a href="#" @click.prevent="setActiveSection('system')">下载设置</a>
               </li>
+              <li class="nav-item" :class="{ active: activeSection === 'data' }">
+                <a href="#" @click.prevent="setActiveSection('data')">数据管理</a>
+              </li>
               <!-- <li class="nav-item" :class="{ active: activeSection === 'token' }">
                 <a href="#" @click.prevent="setActiveSection('token')">Token信息</a>
               </li> -->
@@ -134,6 +137,43 @@
               
               <div class="form-actions">
                 <button @click="handleSaveDownloadConfig" class="btn primary">保存系统设置</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 数据管理 -->
+          <div v-show="activeSection === 'data'" class="settings-section">
+            <div class="settings-card">
+              <h2>数据管理</h2>
+              <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
+                导出你的所有数据，用于跨设备迁移或备份。数据包括：目标、AI对话记录、晨报、通知、成就等。
+              </p>
+              <div class="export-info">
+                <div class="export-stat">
+                  <span class="stat-num">{{ exportStats.goals }}</span>
+                  <span class="stat-label">目标</span>
+                </div>
+                <div class="export-stat">
+                  <span class="stat-num">{{ exportStats.aiMsgs }}</span>
+                  <span class="stat-label">AI对话</span>
+                </div>
+                <div class="export-stat">
+                  <span class="stat-num">{{ exportStats.notifications }}</span>
+                  <span class="stat-label">通知</span>
+                </div>
+                <div class="export-stat">
+                  <span class="stat-num">{{ exportStats.achievements }}</span>
+                  <span class="stat-label">成就</span>
+                </div>
+              </div>
+              <div class="form-actions" style="display: flex; gap: 0.75rem;">
+                <button @click="exportAndDownload" class="btn primary" :disabled="exporting">
+                  <span v-if="exporting">正在导出...</span>
+                  <span v-else>导出所有数据</span>
+                </button>
+                <button @click="previewExportData" class="btn" :disabled="exporting">
+                  预览数据
+                </button>
               </div>
             </div>
           </div>
@@ -447,6 +487,65 @@ const saveDownloadConfig = async () => {
 // 侧边栏导航控制
 const activeSection = ref('profile');
 
+// 数据导出
+const exporting = ref(false)
+const exportStats = ref({ goals: 0, aiMsgs: 0, notifications: 0, achievements: 0 })
+
+const doExport = async () => {
+  const res = await postM('exportUserData')
+  if (isSuccess(res)) {
+    const data = res.data.data
+    exportStats.value = {
+      goals: data.goals?.length || 0,
+      aiMsgs: data.aiMessages?.length || 0,
+      notifications: data.notifications?.length || 0,
+      achievements: data.achievements?.length || 0
+    }
+    return data
+  }
+  return null
+}
+
+const exportAndDownload = async () => {
+  exporting.value = true
+  try {
+    const data = await doExport()
+    if (!data) { message.error('导出失败'); return }
+    
+    // 构造下载文件
+    const jsonStr = JSON.stringify(data, null, 2)
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const now = new Date()
+    const ts = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`
+    a.download = `freemix-backup-${user.value.username || 'user'}-${ts}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    message.success('数据导出成功')
+  } catch (e) {
+    message.error('导出失败: ' + (e.message || '未知错误'))
+  } finally {
+    exporting.value = false
+  }
+}
+
+const previewExportData = async () => {
+  exporting.value = true
+  try {
+    await doExport()
+    message.success(`数据概览已更新：${exportStats.value.goals} 个目标，${exportStats.value.aiMsgs} 条AI对话，${exportStats.value.notifications} 条通知，${exportStats.value.achievements} 项成就`)
+  } catch (e) {
+    message.error('获取数据失败')
+  } finally {
+    exporting.value = false
+  }
+}
+
 const setActiveSection = (section) => {
   activeSection.value = section;
   if (section === 'system') {
@@ -689,6 +788,45 @@ onMounted(() => {
 .token-value {
   font-family: monospace;
   word-break: break-all;
+}
+
+/* 导出数据样式 */
+.export-info {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.export-stat {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  min-width: 90px;
+  flex: 1;
+}
+
+.export-stat .stat-num {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00c9a7;
+  line-height: 1.2;
+}
+
+.export-stat .stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-color);
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
