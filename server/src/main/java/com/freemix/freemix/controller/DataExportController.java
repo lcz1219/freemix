@@ -5,7 +5,6 @@ import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.*;
 import com.freemix.freemix.util.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -16,13 +15,10 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-
-
 /**
  * 数据导出控制器
  * 将用户的所有数据导出为 JSON 文件，支持跨设备迁移和备份
  */
-@Slf4j
 @RestController
 public class DataExportController extends BaseController {
 
@@ -182,7 +178,7 @@ public class DataExportController extends BaseController {
             os.flush();
             os.close();
         } catch (Exception e) {
-           log.error(e.getMessage(), e);
+//            log.error("导出数据失败", e);
         }
     }
 }

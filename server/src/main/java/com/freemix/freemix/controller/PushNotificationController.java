@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.enetiy.PushNotification;
 import com.freemix.freemix.util.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -18,6 +19,7 @@ import java.util.List;
  * 推送通知控制器
  * 处理 iOS 原生通知的存储、查询和已读标记
  */
+@Slf4j
 @RestController
 public class PushNotificationController extends BaseController {
 
@@ -27,6 +29,7 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/saveNotification")
     @CheckToken
     public ApiResponse saveNotification(@RequestBody String body) {
+        log.info("PushNotificationController: saveNotification");
         JSONObject json = JSONObject.parseObject(body);
         String username = getCurrentUser().getUsername();
 
@@ -51,6 +54,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/saveNotifications")
     @CheckToken
     public ApiResponse saveNotifications(@RequestBody String body) {
+        log.info("PushNotificationController: saveNotifications");
+
         JSONObject json = JSONObject.parseObject(body);
         String username = getCurrentUser().getUsername();
         List<com.alibaba.fastjson2.JSONArray> list = json.getJSONArray("list").toList(com.alibaba.fastjson2.JSONArray.class);
@@ -79,6 +84,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/getNotifications")
     @CheckToken
     public ApiResponse getNotifications() {
+        log.info("PushNotificationController: getNotifications");
+
         String username = getCurrentUser().getUsername();
 
         Query query = new Query();
@@ -95,6 +102,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/getUnreadNotificationCount")
     @CheckToken
     public ApiResponse getUnreadNotificationCount() {
+        log.info("PushNotificationController: getUnreadNotificationCount");
+
         String username = getCurrentUser().getUsername();
 
         Query query = new Query();
@@ -111,6 +120,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/markNotificationRead")
     @CheckToken
     public ApiResponse markNotificationRead(@RequestBody String body) {
+        log.info("PushNotificationController: markNotificationRead");
+
         JSONObject json = JSONObject.parseObject(body);
         String id = json.getString("id");
 
@@ -130,6 +141,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/markAllNotificationsRead")
     @CheckToken
     public ApiResponse markAllNotificationsRead() {
+        log.info("PushNotificationController: markAllNotificationsRead");
+
         String username = getCurrentUser().getUsername();
 
         Query query = new Query();
@@ -149,6 +162,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/deleteNotification")
     @CheckToken
     public ApiResponse deleteNotification(@RequestBody String body) {
+        log.info("PushNotificationController: deleteNotification");
+
         JSONObject json = JSONObject.parseObject(body);
         String id = json.getString("id");
 
@@ -165,6 +180,8 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/clearNotifications")
     @CheckToken
     public ApiResponse clearNotifications() {
+        log.info("PushNotificationController: clearNotifications");
+
         String username = getCurrentUser().getUsername();
 
         Query query = new Query();

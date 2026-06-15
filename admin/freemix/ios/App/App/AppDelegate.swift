@@ -164,6 +164,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                !goals.isEmpty {
 
                 var count = 0
+                // 收集通知日志，调度完成后批量保存到 MongoDB
+                var notificationLogs: [[String: Any]] = []
+
                 for goal in goals {
                     guard let goalId = goal["_id"] as? String,
                           let title = goal["title"] as? String,
@@ -206,6 +209,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                         if let remindTime1 = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: startDate),
                            remindTime1 > now {
                             scheduleGoalReminder(center: center, goalId: goalId, title: title, at: remindTime1, count: count)
+                            // 记录通知日志，调度完成后批量保存到 MongoDB
+                            notificationLogs.append([
+                                "title": "⏰ 目标即将到期",
+                                "body": "「\(title)」距离截止日期越来越近了，去检查一下完成进度吧",
+                                "type": "goal_reminder",
+                                "goalId": goalId,
+                                "goalTitle": title,
+                                "createdAt": Int64(remindTime1.timeIntervalSince1970 * 1000)
+                            ])
                             count += 1
                         }
                         
@@ -214,12 +226,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                            remindTime2 > now,
                            remindTime2 <= endDate {
                             scheduleGoalReminder(center: center, goalId: goalId, title: title, at: remindTime2, count: count)
+                            // 记录通知日志
+                            notificationLogs.append([
+                                "title": "⏰ 目标即将到期",
+                                "body": "「\(title)」距离截止日期越来越近了，去检查一下完成进度吧",
+                                "type": "goal_reminder",
+                                "goalId": goalId,
+                                "goalTitle": title,
+                                "createdAt": Int64(remindTime2.timeIntervalSince1970 * 1000)
+                            ])
                             count += 1
                         }
                         
                         if count >= 64 { break } // 最多 64 个通知（iOS 限制一个 App 最多 64 个待发通知）
                     }
                     if count >= 64 { break }
+                }
+
+                // 通知调度完成，批量保存到 MongoDB（通过 JS 桥接调用 saveNotificationLogs）
+                if !notificationLogs.isEmpty,
+                   let logData = try? JSONSerialization.data(withJSONObject: notificationLogs),
+                   let logJson = String(data: logData, encoding: .utf8) {
+                    let safeJson = logJson.replacingOccurrences(of: "\\", with: "\\\\")
+                                         .replacingOccurrences(of: "'", with: "\\'")
+                    let saveJs = "if(window.saveNotificationLogs){window.saveNotificationLogs(\(safeJson))}"
+                    webView.evaluateJavaScript(saveJs, completionHandler: nil)
                 }
             } else {
                 // 无目标时，简单每日提醒
@@ -231,6 +262,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 var dc = DateComponents(); dc.hour = 9; dc.minute = 0
                 let req = UNNotificationRequest(identifier: "daily-reminder", content: daily, trigger: UNCalendarNotificationTrigger(dateMatching: dc, repeats: true))
                 center.add(req)
+                
+                // 也将每日提醒保存到 MongoDB
+                let dailyNotification: [[String: Any]] = [[
+                    "title": "FreeMix",
+                    "body": "今天有什么新目标吗？打开 App 记录一下吧",
+                    "type": "daily_summary",
+                    "goalId": "",
+                    "goalTitle": "",
+                    "createdAt": Int64(Date().timeIntervalSince1970 * 1000)
+                ]]
+                if let logData = try? JSONSerialization.data(withJSONObject: dailyNotification),
+                   let logJson = String(data: logData, encoding: .utf8) {
+                    let safeJson = logJson.replacingOccurrences(of: "\\", with: "\\\\")
+                                         .replacingOccurrences(of: "'", with: "\\'")
+                    let saveJs = "if(window.saveNotificationLogs){window.saveNotificationLogs(\(safeJson))}"
+                    webView.evaluateJavaScript(saveJs, completionHandler: nil)
+                }
             }
 
             NSLog("[FreeMix] 通知已调度完成")

@@ -118,7 +118,27 @@ export function updateGoalsData(goals: any[]) {
 // 初始化
 // ============================================================
 
+/**
+ * 注册通知日志保存函数到 window，供原生端（AppDelegate）调用
+ * 原生端在 scheduleAllNotifications 末尾 evaluateJavaScript 调用此函数
+ * 实现：批量保存即将发出的通知到 MongoDB，同步到通知中心
+ */
+function initNotificationSaver() {
+  ;(window as any).saveNotificationLogs = async (notifications: any[]) => {
+    if (!notifications || notifications.length === 0) return
+    try {
+      const res = await postM('saveNotifications', { list: notifications })
+      if (isSuccess(res)) {
+        console.log(`✅ 已保存 ${notifications.length} 条通知记录到 MongoDB`)
+      }
+    } catch (e) {
+      console.error('保存通知记录失败:', e)
+    }
+  }
+}
+
 export function initNativeBridge() {
   useQuickActions()
   useNotificationActions()
+  initNotificationSaver()
 }
