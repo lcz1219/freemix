@@ -29,7 +29,7 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/saveNotification")
     @CheckToken
     public ApiResponse saveNotification(@RequestBody String body) {
-        log.info("PushNotificationController: saveNotification");
+        log.info("PushNotificationController: saveNotification:{}", body);
         JSONObject json = JSONObject.parseObject(body);
         String username = getCurrentUser().getUsername();
 
@@ -54,7 +54,7 @@ public class PushNotificationController extends BaseController {
     @PostMapping("/saveNotifications")
     @CheckToken
     public ApiResponse saveNotifications(@RequestBody String body) {
-        log.info("PushNotificationController: saveNotifications");
+        log.info("PushNotificationController: saveNotifications:{}", body);
 
         JSONObject json = JSONObject.parseObject(body);
         String username = getCurrentUser().getUsername();

@@ -203,21 +203,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     
                     // 结束日期：deadline 当天
                     let endDate = deadlineDate
-
+                         notificationLogs.append([
+                                "title": "⏰ 目标即将到期",
+                                "body": "「\(title)」距离截止日期越来越近了，去检查一下完成进度吧",
+                                "type": "goal_reminder",
+                                "goalId": goalId,
+                                "goalTitle": title,
+                                
+                            ])
                     for (hour, minute) in reminderTimes {
                         // 前一天的时间点
                         if let remindTime1 = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: startDate),
                            remindTime1 > now {
                             scheduleGoalReminder(center: center, goalId: goalId, title: title, at: remindTime1, count: count)
                             // 记录通知日志，调度完成后批量保存到 MongoDB
-                            notificationLogs.append([
-                                "title": "⏰ 目标即将到期",
-                                "body": "「\(title)」距离截止日期越来越近了，去检查一下完成进度吧",
-                                "type": "goal_reminder",
-                                "goalId": goalId,
-                                "goalTitle": title,
-                                "createdAt": Int64(remindTime1.timeIntervalSince1970 * 1000)
-                            ])
+                           
                             count += 1
                         }
                         
@@ -227,14 +227,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                            remindTime2 <= endDate {
                             scheduleGoalReminder(center: center, goalId: goalId, title: title, at: remindTime2, count: count)
                             // 记录通知日志
-                            notificationLogs.append([
-                                "title": "⏰ 目标即将到期",
-                                "body": "「\(title)」距离截止日期越来越近了，去检查一下完成进度吧",
-                                "type": "goal_reminder",
-                                "goalId": goalId,
-                                "goalTitle": title,
-                                "createdAt": Int64(remindTime2.timeIntervalSince1970 * 1000)
-                            ])
+                            // notificationLogs.append([
+                            //     "title": "⏰ 目标即将到期",
+                            //     "body": "「\(title)」距离截止日期越来越近了，去检查一下完成进度吧",
+                            //     "type": "goal_reminder",
+                            //     "goalId": goalId,
+                            //     "goalTitle": title,
+                            //     "createdAt": Int64(remindTime2.timeIntervalSince1970 * 1000)
+                            // ])
                             count += 1
                         }
                         
