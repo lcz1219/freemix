@@ -244,14 +244,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 }
 
                 // 通知调度完成，批量保存到 MongoDB（通过 JS 桥接调用 saveNotificationLogs）
-                if !notificationLogs.isEmpty,
-                   let logData = try? JSONSerialization.data(withJSONObject: notificationLogs),
-                   let logJson = String(data: logData, encoding: .utf8) {
-                    let safeJson = logJson.replacingOccurrences(of: "\\", with: "\\\\")
-                                         .replacingOccurrences(of: "'", with: "\\'")
-                    let saveJs = "if(window.saveNotificationLogs){window.saveNotificationLogs(\(safeJson))}"
-                    webView.evaluateJavaScript(saveJs, completionHandler: nil)
-                }
+                // if !notificationLogs.isEmpty,
+                //    let logData = try? JSONSerialization.data(withJSONObject: notificationLogs),
+                //    let logJson = String(data: logData, encoding: .utf8) {
+                //     let safeJson = logJson.replacingOccurrences(of: "\\", with: "\\\\")
+                //                          .replacingOccurrences(of: "'", with: "\\'")
+                //     let saveJs = "if(window.saveNotificationLogs){window.saveNotificationLogs(\(safeJson))}"
+                //     webView.evaluateJavaScript(saveJs, completionHandler: nil)
+                // }
             } else {
                 // 无目标时，简单每日提醒
                 let daily = UNMutableNotificationContent()

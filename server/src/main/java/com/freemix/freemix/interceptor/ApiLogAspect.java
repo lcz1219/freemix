@@ -3,6 +3,7 @@ package com.freemix.freemix.interceptor;
 import com.freemix.freemix.enetiy.ApiLog;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.UserContextUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,8 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -32,6 +31,8 @@ public class ApiLogAspect {
 
     @Autowired
     private UserContextUtil userContextUtil;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 定义切点：拦截 controller 包下的所有方法
     @Pointcut("execution(* com.freemix.freemix.controller..*.*(..))")
@@ -89,14 +90,24 @@ public class ApiLogAspect {
                 String methodName = point.getSignature().getName();
                 apiLog.setClassMethod(className + "." + methodName);
                 
-                // 请求参数
+                // 请求参数 - 转为JSON字符串避免MongoDB递归映射复杂对象报错
                 Object[] args = point.getArgs();
-                // 简单的参数处理，实际项目中可能需要排除HttpServletRequest等无法序列化的参数
-                // 这里暂不深入处理，MongoDB可以存储复杂对象
-                apiLog.setArgs(args);
+                if (args != null && args.length > 0) {
+                    try {
+                        apiLog.setArgs(objectMapper.writeValueAsString(args));
+                    } catch (Exception e) {
+                        apiLog.setArgs("参数序列化失败");
+                    }
+                }
                 
-                // 返回结果
-                apiLog.setResult(result);
+                // 返回结果 - 转为JSON字符串避免MongoDB递归映射复杂对象报错
+                if (result != null) {
+                    try {
+                        apiLog.setResult(objectMapper.writeValueAsString(result));
+                    } catch (Exception e) {
+                        apiLog.setResult("结果序列化失败");
+                    }
+                }
                 
                 // 保存到 MongoDB
                 mongoTemplate.save(apiLog);

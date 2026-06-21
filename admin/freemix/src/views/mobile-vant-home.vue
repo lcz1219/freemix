@@ -13,10 +13,10 @@
         <template #right>
           <div class="nav-actions">
             <!-- 通知铃铛 - 带未读徽标 -->
-            <div class="icon-btn bell-btn" @click="goToNotifications">
+            <!-- <div class="icon-btn bell-btn" @click="goToNotifications">
               <van-icon name="bell" size="20" />
               <span class="bell-badge" v-if="notificationUnread > 0">{{ notificationUnread > 99 ? '99+' : notificationUnread }}</span>
-            </div>
+            </div> -->
             <div class="icon-btn" @click="openQrScanner">
               <van-icon name="scan" size="20" />
             </div>

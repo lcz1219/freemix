@@ -210,9 +210,42 @@ const store = useStore()
 
 // 路由守卫（示例：登录状态验证）
 router.beforeEach(async (to, from, next) => {
+  // 【兼容处理】后端以 hash 模式重定向的第三方登录回调（如 /#/oauth/callback?token=xxx）
+  // 当 URL 中包含 #/oauth/callback 时，将其解析为 History 模式的路径和参数并跳转
+  const hash = window.location.hash;
+  if (hash.startsWith('#/oauth/callback')) {
+    // 去掉 # 前缀，得到 "/oauth/callback?token=xxx&..."
+    const hashPath = hash.substring(1);
+    const [path, queryString] = hashPath.split('?');
+    // 清除地址栏中的 hash，替换为 History 模式的 URL
+    window.history.replaceState(null, '', path + (queryString ? '?' + queryString : ''));
+    // 解析查询参数
+    const query: Record<string, string> = {};
+    if (queryString) {
+      queryString.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) query[key] = decodeURIComponent(value || '');
+      });
+    }
+    // 用 replace 导航到目标路由，替换当前历史记录
+    next({ path, query, replace: true });
+    return;
+  }
+
   // 使用tokenUtils工具函数获取token（推荐）
   const token = await getToken();
   const isAuthenticated = !!token;
+
+  // 处理桌面端 Electron file:// 协议初始加载路径不匹配的问题
+  // 例如 file:///path/to/dist/index.html 不会匹配任何路由
+  if (to.matched.length === 0) {
+    if (isAuthenticated) {
+      next('/home')
+    } else {
+      next('/login')
+    }
+    return
+  }
   
   if(to.path==='/oauth/callback'){
     next()

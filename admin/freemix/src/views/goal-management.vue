@@ -110,17 +110,40 @@
                         </n-icon>
                         <h2 class="card-title">目标列表</h2>
                         <h2 class="card-title">{{ filteredGoals.length }}个目标</h2>
+                        <h2 v-if="groupCount > 0" class="card-title" style="color:#00c9a7;font-size:13px;">{{ groupCount }}组</h2>
                       </div>
                     </template>
 
                     <div class="stagger-list-container">
-                      <el-table :data="filteredGoals" :class="isDark ? 'el-table-dark' : 'el-table-light'"
+                      <el-table :data="groupedDisplayList" :class="isDark ? 'el-table-dark' : 'el-table-light'"
                         style="width: 100%; cursor: pointer;height: 100%;" @row-click="handleRowClick"
                         :row-class-name="tableRowClassName" highlight-current-row>
                         <!-- ... 列表内容保持不变 ... -->
                         <el-table-column label="目标名称" prop="title" show-overflow-tooltip min-width="180">
                           <template #default="scope">
-                            <div style="display: flex; align-items: center; gap: 6px;" class="stagger-item">
+                            <!-- 组头行（根分组「目标分组」或子分组） -->
+                            <div v-if="scope.row._isGroupHeader" 
+                              style="display: flex; align-items: center; gap: 8px; font-weight: 600;"
+                              @click.stop="toggleGroup(scope.row.title)">
+                              <span style="display:inline-flex;transition:transform .2s;font-size:12px;color:#00c9a7;"
+                                :style="{ transform: isGroupExpanded(scope.row.title) ? 'rotate(90deg)' : 'rotate(0deg)' }">
+                                ▶
+                              </span>
+                              <!-- 根分组：目标分组 -->
+                              <n-tag v-if="scope.row._isRootGroup" size="small" type="success" :bordered="false" round
+                                style="font-size:11px;height:22px;padding:0 8px;font-weight:600;">
+                                {{ scope.row.count }} 个任务组
+                              </n-tag>
+                              <!-- 子分组：具体标题 -->
+                              <template v-else>
+                                <n-tag size="small" :bordered="false" round style="font-size:10px;height:20px;padding:0 6px;background:rgba(0,201,167,0.15);color:#00c9a7;">
+                                  任务 ×{{ scope.row.count }}
+                                </n-tag>
+                              </template>
+                              <span>{{ scope.row.title }}</span>
+                            </div>
+                            <!-- 普通目标行 -->
+                            <div v-else style="display: flex; align-items: center; gap: 6px;" class="stagger-item">
                               <n-tag v-if="isOwner(scope.row)" size="small" type="primary" :bordered="false" round
                                 style="font-size: 10px; height: 20px; padding: 0 6px;">
                                 我的
@@ -136,14 +159,20 @@
                         </el-table-column>
                         <el-table-column label="进度" width="100">
                           <template #default="scope">
-                            <el-progress :percentage="scope.row.progress"
+                            <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
+                              {{ scope.row._isRootGroup ? '共' + scope.row.count + '组' : scope.row.count + '个目标' }}
+                            </div>
+                            <el-progress v-else :percentage="scope.row.progress"
                               :stroke-width="20" text-inside="true"  :color="getStatusColor(scope.row.status)"
                               :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
                           </template>
                         </el-table-column>
                         <el-table-column label="状态" width="80">
                           <template #default="scope">
-                            <n-tag :type="getStatusTagType(scope.row.status)" size="small">
+                            <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
+                              批量
+                            </div>
+                            <n-tag v-else :type="getStatusTagType(scope.row.status)" size="small">
                               {{ getStatusLabel(scope.row.status) }}
                             </n-tag>
                           </template>
@@ -151,14 +180,18 @@
                         <!-- 优先级列 - 简洁标签 -->
                         <el-table-column label="优先级" width="70" align="center">
                           <template #default="scope">
-                            <span class="priority-tag" :class="'pri-' + (scope.row.level || 'medium')">
+                            <span v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;">-</span>
+                            <span v-else class="priority-tag" :class="'pri-' + (scope.row.level || 'medium')">
                               {{ getPriorityText(scope.row.level) }}
                             </span>
                           </template>
                         </el-table-column>
                         <el-table-column label="截止时间" width="120">
                           <template #default="scope">
-                            {{ scope.row.deadlineString }}
+                            <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
+                              多个
+                            </div>
+                            <span v-else>{{ scope.row.deadlineString }}</span>
                           </template>
                         </el-table-column>
                       </el-table>
@@ -527,6 +560,11 @@ const celebrationGoalTitle = ref('');
 
 // 处理行点击
 const handleRowClick = (row: any) => {
+  // 组头行：切换展开/折叠
+  if (row._isGroupHeader) {
+    toggleGroup(row.title)
+    return
+  }
   currentSelectedGoal.value = row;
 };
 
@@ -570,6 +608,9 @@ const handleRowClick = (row: any) => {
 
 // 表格行样式
 const tableRowClassName = ({ row }: { row: any }) => {
+  if (row._isGroupHeader) {
+    return 'group-header-row';
+  }
   if (currentSelectedGoal.value && row._id === currentSelectedGoal.value._id) {
     return 'selected-row';
   }
@@ -912,6 +953,7 @@ const getStatusColor = (status: string) => {
 const priorityOptions = [
   { label: '低', value: 'low' },
   { label: '中', value: 'medium' },
+  { label: '紧', value: 'urgent' },
   { label: '高', value: 'high' }
 ];
 
@@ -925,8 +967,9 @@ const getPriorityText = (level: string) => {
 const getPriorityType = (level: string) => {
   switch (level) {
     case 'low': return 'success';
-    case 'high': return 'error';
-    case 'medium': default: return 'warning';
+    case 'high': return 'warning';
+    case 'urgent': return 'error';
+    case 'medium': default: return 'success';
   }
 };
 
@@ -1076,6 +1119,103 @@ const filteredGoals = computed(() => {
 
   return result;
 });
+
+// 用于控制按标题分组的展开/折叠状态
+const expandedGroups = ref<Set<string>>(new Set())
+
+// 切换分组的展开/折叠
+const toggleGroup = (title: string) => {
+  const set = new Set(expandedGroups.value)
+  if (set.has(title)) {
+    set.delete(title)
+  } else {
+    set.add(title)
+  }
+  expandedGroups.value = set
+}
+
+// 判断当前分组是否展开
+const isGroupExpanded = (title: string) => {
+  return expandedGroups.value.has(title)
+}
+
+/**
+ * 对 filteredGoals 进行同标题分组，生成扁平列表：
+ * - 标题唯一的目标 → 直接作为普通行
+ * - 有多个相同标题的目标 → 插入一个组头行 + 展开后的子行
+ */
+const groupedDisplayList = computed(() => {
+  const list = filteredGoals.value
+
+  // 1. 按 title 分组
+  const groups = new Map<string, any[]>()
+  for (const goal of list) {
+    const key = goal.title
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(goal)
+  }
+
+  // 2. 分开收集：单个目标和子分组信息
+  const singles: any[] = []
+  const subGroups: any[] = []   // 每个具体标题的子分组组头
+
+  for (const [title, goalsInGroup] of groups.entries()) {
+    if (goalsInGroup.length === 1) {
+      singles.push(goalsInGroup[0])
+    } else {
+      subGroups.push({
+        _isGroupHeader: true,       // 子分组组头
+        title,
+        count: goalsInGroup.length,
+        children: goalsInGroup
+      })
+    }
+  }
+
+  // 3. 构建扁平列表：单个目标 → 根分组头 → （展开后子分组组头 → 子目标）
+  const result: any[] = []
+
+  if (subGroups.length > 0) {
+    // 插入根分组头（目标分组）
+    result.push({
+      _isGroupHeader: true,
+      _isRootGroup: true,
+      title: '分组目标',
+      count: subGroups.length,
+      children: subGroups
+    })
+
+    // 根分组展开时，展平子分组组头
+    if (isGroupExpanded('分组目标')) {
+      for (const sg of subGroups) {
+        result.push(sg)
+        // 子分组再展开时，展平其子目标
+        if (isGroupExpanded(sg.title)) {
+          result.push(...sg.children)
+        }
+      }
+    }
+  }
+  result.push(...singles)
+  console.log("result",result);
+  
+
+  return result
+})
+
+// 统计有多少组（即有多少个同标题的目标分组）
+const groupCount = computed(() => {
+  const groups = new Map<string, number>()
+  for (const goal of filteredGoals.value) {
+    const key = goal.title
+    groups.set(key, (groups.get(key) || 0) + 1)
+  }
+  let count = 0
+  for (const [, total] of groups.entries()) {
+    if (total > 1) count++
+  }
+  return count
+})
 
 // 格式化日期
 const formatDate = (dateString: string) => {
@@ -1660,6 +1800,18 @@ onMounted(() => {
   background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.01) 100%) !important;
 }
 
+/* 组头行样式 - 同标题目标折叠 */
+:deep(.el-table .group-header-row) {
+  background: rgba(0, 201, 167, 0.06) !important;
+  cursor: pointer !important;
+}
+:deep(.el-table .group-header-row td) {
+  border-bottom: 1px solid rgba(0, 201, 167, 0.15) !important;
+}
+:deep(.el-table .group-header-row:hover) {
+  background: rgba(0, 201, 167, 0.1) !important;
+}
+
 /* ----------------------------------
    5. 详情页排版 (Detail Layout)
    ---------------------------------- */
@@ -1999,11 +2151,15 @@ onMounted(() => {
 /* 中 - 柔和橙 */
 .priority-tag.pri-medium {
   background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
+  color: #4ade80;
 }
 
 /* 高 - 柔和红 */
 .priority-tag.pri-high {
+  background: rgba(248, 113, 113, 0.1);
+  color: #fbbf24;
+}
+.priority-tag.pri-urgent {
   background: rgba(248, 113, 113, 0.1);
   color: #f87171;
 }
