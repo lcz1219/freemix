@@ -15,6 +15,13 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+// 兼容后端以 hash 模式（/#/）重定向的第三方登录回调
+// 此处仅用于打印 hash 日志以辅助调试，实际重定向逻辑在路由守卫中处理
+const hash = window.location.hash;
+if (hash) {
+  console.log("检测到 URL hash:", hash);
+}
+
 // 创建 Vue 应用
 const app = createApp(App)
 app.use(ConfigProvider);
