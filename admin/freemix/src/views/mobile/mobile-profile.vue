@@ -239,7 +239,7 @@ const monthlyStats = computed(() => ({
 const updateStats = () => {
     if (!goalsStore.goals.value) return;
     const allGoals = goalsStore.goals.value;
-    const active = allGoals.filter(g => g.status === 'active').length;
+    const active = allGoals.filter(g => g.status === 'in-progress').length;
     const completed = allGoals.filter(g => g.status === 'completed').length;
     stats.value = {
         activeGoals: active,
