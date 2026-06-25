@@ -33,6 +33,7 @@
               <van-image
                 :src="userAvatar"
                 round
+                
                 fit="cover"
                 class="avatar-img"
               />
@@ -256,6 +257,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useUser } from '@/hooks/useUser'
+import { useAvatar, AVATAR_CACHE_KEY } from '@/hooks/useAvatar'
 import { 
   showToast, 
   showLoadingToast, 
@@ -300,9 +302,8 @@ const currentLanguage = computed(() => {
   return option ? option.text : '简体中文'
 })
 
-const userAvatar = computed(() => {
-  return  `${baseURL()}${user.value.avatarUrl}` || 'https://api.dicebear.com/7.x/miniavs/svg?seed=user'
-})
+// 使用头像缓存 hook（传入 user.value.avatarUrl 保持响应式）
+const { userAvatar, fetchAndCache: cacheAvatarToLocal, clearAvatarCache } = useAvatar(computed(() => user.value?.avatarUrl))
 
 // 方法
 const goBack = () => {
@@ -431,6 +432,11 @@ onMounted(() => {
   } catch (error) {
     console.error('获取版本信息失败:', error)
     appVersion.value = '1.0.0'
+  }
+
+  // 如果本地没有缓存头像但有 avatarUrl，异步拉取并缓存到 localStorage
+  if (!localStorage.getItem(AVATAR_CACHE_KEY) && user.value.avatarUrl) {
+    cacheAvatarToLocal()
   }
 })
 </script>
