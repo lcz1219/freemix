@@ -8,7 +8,7 @@
             <n-avatar
               round
               :size="260"
-              :src="avatarUrl"
+              :src="userAvatar"
               class="user-avatar"
               @click="uploadAvatar"
             />
@@ -91,7 +91,7 @@
                     </div>
                     <div class="stat-item">
                       <span class="stat-label">本周进度</span>
-                      <span class="stat-value">{{ weeklyStats.weeklyProgress }}%</span>
+                      <span class="stat-value">{{ weeklyStats.weeklyProgress.toFixed(2) }}%</span>
                     </div>
                     <div class="stat-item">
                       <span class="stat-label">本月目标</span>
@@ -103,10 +103,18 @@
                 <div class="sidebar-section">
                   <h3 class="sidebar-title">目标分类</h3>
                   <div class="categories-list">
-                    <div v-for="category in goalCategories" :key="category.id" class="category-item">
+                    <div v-for="category in displayCategories" :key="category.id" class="category-item">
                       <span class="category-dot" :style="{ backgroundColor: category.color }"></span>
                       <span class="category-name">{{ category.name }}</span>
                       <span class="category-count">{{ category.count }}</span>
+                    </div>
+                    <!-- 超过 5 项时显示展开/折叠按钮 -->
+                    <div
+                      v-if="goalCategories.length > 5"
+                      class="category-toggle"
+                      @click="showAllCategories = !showAllCategories"
+                    >
+                      {{ showAllCategories ? '收起' : `展开全部 (${goalCategories.length})` }}
                     </div>
                   </div>
                 </div>
@@ -283,7 +291,7 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { useGoals } from '@/hooks/useGoals';
 import { useSettings } from '@/hooks/useSettings';
 import HotMap from '@/components/HotMap.vue';
-
+import { useAvatar, AVATAR_CACHE_KEY } from '@/hooks/useAvatar'
 // 注入主题变量
 const isDark = inject('isDark', ref(false));
 const goalsStore = useGoals();
@@ -297,7 +305,12 @@ const message = useMessage();
 
 // 使用hooks
 const { userInfo: userProfile, avatarUrl, initUserData, uploadAvatar } = useUser();
-
+const userAvatar=computed(()=>{
+ const url = useAvatar(store.state.user.avatarUrl)
+  console.log("1111userAvatar",url.userAvatar.value);
+  
+  return url.userAvatar.value
+})
 // 初始化用户数据
 // 初始化
 onMounted(async () => {
@@ -500,6 +513,16 @@ const goalCategories = computed(() => {
   // 转换为数组返回
   return Array.from(categoriesMap.values());
 });
+
+// 控制分类列表展开/折叠：超过 5 个时，默认只显示前 5 个
+const showAllCategories = ref(false)
+const displayCategories = computed(() => {
+  const all = goalCategories.value
+  if (all.length > 5 && !showAllCategories.value) {
+    return all.slice(0, 5)
+  }
+  return all
+})
 
 
 // 月份标签
@@ -1018,6 +1041,23 @@ onMounted(async () => {
 .github-profile-container.dark .category-count {
   color: #7d8590;
   background: #21262d;
+}
+
+/* 分类展开/折叠按钮 */
+.category-toggle {
+  padding: 6px 0 2px 16px;
+  font-size: 0.8rem;
+  color: #00c9a7;
+  cursor: pointer;
+  user-select: none;
+}
+
+.github-profile-container.dark .category-toggle {
+  color: #00c9a7;
+}
+
+.category-toggle:hover {
+  text-decoration: underline;
 }
 
 /* 快速操作按钮 */
