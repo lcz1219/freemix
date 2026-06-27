@@ -211,23 +211,25 @@ const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
   emit('update:collapsed', isCollapsed.value);
 };
-
+import { useAvatar, AVATAR_CACHE_KEY } from '@/hooks/useAvatar'
 // 页面加载时检查本地存储的头像
 onMounted(() => {
   const saveAvatarUrl = store.state.user.avatarUrl;
   console.log('saveAvatarUrl', saveAvatarUrl);
-
-  if (saveAvatarUrl) {
-        if (saveAvatarUrl.includes('://')) {
-          avatarUrl.value = saveAvatarUrl;
-        }else{
-          avatarUrl.value = `${baseURL()}${saveAvatarUrl}`;
-        }
-  } else {
-    // 默认头像
-    avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';
-  }
-  // toggleCollapse()
+const { userAvatar } = useAvatar(saveAvatarUrl)
+// console.log('userAvatar', userAvatar)
+  avatarUrl.value = userAvatar.value
+  // if (saveAvatarUrl) {
+  //       if (saveAvatarUrl.includes('://')) {
+  //         avatarUrl.value = saveAvatarUrl;
+  //       }else{
+  //         avatarUrl.value = `${baseURL()}${saveAvatarUrl}`;
+  //       }
+  // } else {
+  //   // 默认头像
+  //   avatarUrl.value = 'https://api.dicebear.com/7.x/miniavs/svg?seed=3';
+  // }
+  toggleCollapse()
 });
 
 
