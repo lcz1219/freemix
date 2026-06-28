@@ -18,7 +18,7 @@
               <!-- 路由视图 - 应用主题类 -->
               <n-layout position="absolute" class="app-layout" has-sider v-if="isShowSidebar">
                 <!-- 侧边栏导航 -->
-                <n-layout-sider v-if="!isMobileDevice && isnAiPage" bordered collapse-mode="transform"
+                <n-layout-sider v-if="!isMobileDevice && isnAiPage"  collapse-mode="transform"
                   :collapsed-width="64" show-collapsed-content :width="isSidebarCollapsed ? 70 : 215"
                   :native-scrollbar="false" class="side-navbar">
                   <NavBar v-if="showContentByStoreUser && !isMobileDevice" :active-tab="activeTab"
@@ -27,12 +27,16 @@
 
                 <!-- 主内容区域 -->
                 <n-layout class="main-layout">
-
+                  <!-- 全局顶栏 -->
+                  <GlobalHeader v-if="!isMobileDevice && isnAiPage" />
                   <TabsView v-if="isnAiPage && !isMobileDevice"></TabsView>
-                  <!-- 页面内容 -->
+                  <!-- 页面内容 — 带 KeepAlive 支持 Tab 缓存 -->
                   <n-layout-content :class="[isnAiPage ? 'content-wrapper' : 'content-wrappe-ai', { 'mobile-content': isMobileDevice }]">
-
-                    <router-view v-if="showContentByStoreUser || route.path == '/oauth/callback'" :class="themeClass" />
+                    <router-view v-if="showContentByStoreUser || route.path == '/oauth/callback'" v-slot="{ Component }">
+                      <KeepAlive :include="[]">
+                        <component :is="Component" :class="themeClass" />
+                      </KeepAlive>
+                    </router-view>
                     <!-- 应用加载页面 -->
                     <AppLoading v-else />
                   </n-layout-content>
@@ -156,6 +160,7 @@ import AIAssistantIcon from '@/components/icons/AIAssistantIcon.vue';
 import { SunnyOutline, MoonOutline } from '@vicons/ionicons5';
 import MobileFloatingNav from '@/components/MobileFloatingNav.vue';
 import NavBar from '@/components/NavBar.vue';
+import GlobalHeader from '@/components/GlobalHeader.vue';
 import MessageCenter from './views/MessageCenter.vue';
 import AppLoading from '@/components/AppLoading.vue';
 import UpdateNotification from '@/components/UpdateNotification.vue';
@@ -265,12 +270,19 @@ const toggleTheme = (value: boolean) => {
   updateBodyTheme();
 };
 
-// 更新body主题类
+// 更新主题类 — 必须同时加到 <html> 和 <body> 上
+// 原理：base.css 中的 --fm-* CSS 变量通过 html.dark-theme/html.light-theme 切换
+//       组件内的 --bg-color/--card-bg 等通过 body 上的 class 继承
 const updateBodyTheme = () => {
+  const root = document.documentElement; // <html>
   if (isDark.value) {
+    root.classList.add('dark-theme');
+    root.classList.remove('light-theme');
     document.body.classList.add('dark-theme');
     document.body.classList.remove('light-theme');
   } else {
+    root.classList.add('light-theme');
+    root.classList.remove('dark-theme');
     document.body.classList.add('light-theme');
     document.body.classList.remove('dark-theme');
   }
@@ -548,7 +560,9 @@ const showAiDrawer = computed({
   set: (val) => store.commit('setAiDrawer', val)
 });
 
-// 主题样式覆盖配置
+// 主题样式覆盖配置 — 参照 fast-soy-admin 的 getNaiveTheme()
+// 原理：Naive UI 的 themeOverrides 覆盖组件默认色值（如弹出层、卡片、表格背景等）
+// 分亮/暗两套，不再依赖 Naive UI 默认的灰色系
 const themeOverrides = computed<GlobalThemeOverrides>(() => {
   const commonOverrides = {
     // 统一字体
@@ -686,27 +700,27 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* 明亮主题样式 */
+/* 明亮主题样式 — 使用 CSS 变量统一管理配色 */
 .light-theme {
-  --bg-color: #f8f9fa;
-  --text-color: #333333;
-  --card-bg: #ffffff;
-  --card-bg-rgb: 255, 255, 255;
-  --border-color: #e0e0e0;
-  --hover-color: #f5f5f5;
+  --bg-color: rgb(var(--fm-layout-bg-rgb));
+  --text-color: rgb(var(--fm-base-text-rgb));
+  --card-bg: rgb(var(--fm-container-bg-rgb));
+  --card-bg-rgb: var(--fm-container-bg-rgb);
+  --border-color: rgba(var(--fm-base-text-rgb), 0.06);
+  --hover-color: rgba(var(--fm-base-text-rgb), 0.04);
 
   background-color: var(--bg-color);
   color: var(--text-color);
 }
 
-/* 暗黑主题样式 */
+/* 暗黑主题样式 — 使用 CSS 变量统一管理配色 */
 .dark-theme {
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
-  --card-bg: #121212;
-  --card-bg-rgb: 18, 18, 18;
-  --border-color: #1f1f1f;
-  --hover-color: #1a1a1a;
+  --bg-color: rgb(var(--fm-layout-bg-rgb));
+  --text-color: rgb(var(--fm-base-text-rgb));
+  --card-bg: rgb(var(--fm-container-bg-rgb));
+  --card-bg-rgb: var(--fm-container-bg-rgb);
+  --border-color: rgba(var(--fm-base-text-rgb), 0.08);
+  --hover-color: rgba(var(--fm-base-text-rgb), 0.04);
 
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -787,8 +801,8 @@ body {
   50% { transform: scale(1.3); opacity: 0.8; }
 }
 
-/* 开关位置样式 */
-.theme-switch {
+/* 开关位置样式 — 已迁移至 GlobalHeader，保留兼容 */
+/* .theme-switch {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -798,22 +812,18 @@ body {
   padding: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-color);
-}
+} */
 
 /* 应用布局样式 */
 .app-layout {
   /* height: 100vh; */
 }
 
-/* 侧边栏样式 */
+/* 侧边栏样式 — 暗色#121212，亮色白色，由 CSS 变量驱动 */
 .side-navbar {
   height: 100vh;
   padding: 20px 0;
-  background-color: var(--card-bg);
-}
-
-.dark-theme .side-navbar {
-  background-color: rgb(18 18 18);
+  background-color: rgb(var(--fm-inverted-bg-rgb));
 }
 
 /* 顶部导航栏样式 */
@@ -825,11 +835,19 @@ body {
   background-color: var(--card-bg);
 }
 
-/* 内容区域样式 */
+/* 主内容区域布局 — flex 列布局让内容区自动填充剩余空间 */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* 内容区域样式 — flex:1 自动填满 Header + Tabs 外所有空间 */
 .content-wrapper {
-  /* padding: 10px; */
-  height: calc(100vh - 64px);
+  flex: 1;
   overflow-y: auto;
+  min-height: 0;
+  border-top: none !important; /* 去掉 n-layout-content 默认顶部白线 */
 }
 
 /* 移动端覆盖：去掉 PC 导航栏 64px 高度，避免双重滚动条 */
@@ -906,20 +924,20 @@ body {
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
-/* 全局滚动条样式 */
+/* 全局滚动条样式 — 品牌色系 */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(164, 160, 170, 0.26);
+  background-color: rgba(var(--fm-primary-rgb), 0.2);
   border-radius: 3px;
   transition: background-color 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(129, 198, 131, 0);
+  background-color: rgba(var(--fm-primary-rgb), 0.35);
 }
 
 ::-webkit-scrollbar-track {
@@ -928,19 +946,6 @@ body {
 }
 
 ::-webkit-scrollbar-corner {
-  background-color: transparent;
-}
-
-/* 亮色模式下的全局滚动条样式 */
-.light-theme ::-webkit-scrollbar-thumb {
-  background-color: rgba(129, 198, 131, 0.3);
-}
-
-.light-theme ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(129, 198, 131, 0.5);
-}
-
-.light-theme ::-webkit-scrollbar-track {
   background-color: transparent;
 }
 

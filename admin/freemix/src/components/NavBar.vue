@@ -21,19 +21,19 @@
     </div>
 
     <nav class="nav-menu">
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'dashboard' }" :title="isCollapsedTitle('仪表盘')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'dashboard' }" :title="isCollapsedTitle('指挥中心')"
         @click="goTo('/home')">
         <NIcon class="icon">
           <Desktop />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">仪表盘</span>
+        <span class="nav-text" v-if="!isCollapsed">指挥中心</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalmanagement' }" :title="isCollapsedTitle('目标管理')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalmanagement' }" :title="isCollapsedTitle('目标舰队')"
         @click="goTo('/goal-management')">
         <NIcon class="icon">
           <ClipboardSharp />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">{{ '目标管理' }}</span>
+        <span class="nav-text" v-if="!isCollapsed">{{ '目标舰队' }}</span>
       </n-button>
       <!-- <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goallibrary' }" :title="isCollapsedTitle('星际航道')"
         @click="goTo('/goal-library')">
@@ -42,54 +42,54 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">星际航道</span>
       </n-button> -->
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'statistics' }" :title="isCollapsedTitle('统计数据')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'statistics' }" :title="isCollapsedTitle('数据星云')"
         @click="goTo('/statistics')">
         <NIcon class="icon">
           <Analytics />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">统计数据</span>
+        <span class="nav-text" v-if="!isCollapsed">数据星云</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalstructure' }" :title="isCollapsedTitle('目标结构')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'goalstructure' }" :title="isCollapsedTitle('目标星系')"
         @click="goTo('/goal-structure')">
         <NIcon class="icon">
           <Podium />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">目标结构</span>
+        <span class="nav-text" v-if="!isCollapsed">目标星系</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'achievements' }" :title="isCollapsedTitle('成就系统')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'achievements' }" :title="isCollapsedTitle('荣誉星章')"
         @click="goTo('/achievements')">
         <NIcon class="icon">
           <TrophyOutline />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">成就系统</span>
+        <span class="nav-text" v-if="!isCollapsed">荣誉星章</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'calendar' }" :title="isCollapsedTitle('日历视图')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'calendar' }" :title="isCollapsedTitle('星历规划')"
         @click="goTo('/calendar')">
         <NIcon class="icon">
           <CalendarOutline />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">日历视图</span>
+        <span class="nav-text" v-if="!isCollapsed">星历规划</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recurring-goals' }" :title="isCollapsedTitle('定时目标')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recurring-goals' }" :title="isCollapsedTitle('定期巡航')"
         @click="goTo('/recurring-goals')">
         <NIcon class="icon">
           <RepeatOutline />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">定时目标</span>
+        <span class="nav-text" v-if="!isCollapsed">定期巡航</span>
       </n-button>
-      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recycle' }" :title="isCollapsedTitle('回收站')"
+      <n-button text type="primary" class="nav-link" :class="{ active: activeTab === 'recycle' }" :title="isCollapsedTitle('黑洞回收')"
         @click="goTo('/recycle')">
         <NIcon class="icon">
           <GitCompareOutline />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">回收站</span>
+        <span class="nav-text" v-if="!isCollapsed">黑洞回收</span>
       </n-button>
-      <n-button v-if="isAdmin" text type="primary" class="nav-link" :class="{ active: activeTab === 'log-management' }" :title="isCollapsedTitle('日志管理')"
+      <n-button v-if="isAdmin" text type="primary" class="nav-link" :class="{ active: activeTab === 'log-management' }" :title="isCollapsedTitle('航线档案')"
         @click="goTo('/log-management')">
         <NIcon class="icon">
           <ReaderOutline />
         </NIcon>
-        <span class="nav-text" v-if="!isCollapsed">日志管理</span>
+        <span class="nav-text" v-if="!isCollapsed">航线档案</span>
       </n-button>
     </nav>
 
@@ -108,14 +108,14 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">消息</span>
       </n-button>
-      <n-dropdown :inverted="isDark" animated  inverted :options="options" placement="right-start" trigger="hover" @select="handleSelect" :loading="logoutLoading">
+      <!-- <n-dropdown :inverted="isDark" animated  inverted :options="options" placement="right-start" trigger="hover" @select="handleSelect" :loading="logoutLoading">
         <n-button class="nav-link footer-button" :title="isCollapsedTitle('用户')">
           <n-icon>
             <PersonCircle />
           </n-icon>
           <span class="nav-text" v-if="!isCollapsed">用户</span>
         </n-button>
-      </n-dropdown>
+      </n-dropdown> -->
        <n-button class="nav-link footer-button" :class="{ active: activeTab === 'user-guide' }" :title="isCollapsedTitle('使用指引')"
         @click="goTo('/user-guide')">
         <NIcon class="icon">
@@ -370,20 +370,18 @@ const goTo = async (path) => {
 </script>
 
 <style scoped>
+/* 侧栏容器 — 暗色#121212，亮色白色，由 CSS 变量驱动 */
 .sidebar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 0.55rem 0;
-  background-color: var(--card-bg);
+  background-color: rgb(var(--fm-inverted-bg-rgb));
+  color: rgb(var(--fm-sider-text-rgb));
   transition: all 0.3s ease;
   width: 220px;
   min-width: 220px;
   max-width: 220px;
-}
-
-:global(.dark-theme) .sidebar-container {
-  background-color: rgb(18 18 18);
 }
 
 .sidebar-container.collapsed {
@@ -394,7 +392,7 @@ const goTo = async (path) => {
 
 .logo-section {
   padding: 0 20px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  /* border-bottom: 1px solid rgba(var(--fm-sider-text-rgb), 0.1); */
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -454,6 +452,7 @@ const goTo = async (path) => {
 .collapse-btn {
   transition: all 0.3s ease;
   margin-left: auto;
+  color: rgba(var(--fm-sider-text-rgb), 0.5);
 }
 
 .sidebar-container.collapsed .collapse-btn {
@@ -468,6 +467,8 @@ const goTo = async (path) => {
   flex: 1;
 }
 
+/* 导航按钮 — 品牌色 active/hover 高亮 */
+/* 默认文字色跟随侧栏文字色，hover/active 时变品牌色 */
 .nav-link {
   display: flex;
   align-items: center;
@@ -481,6 +482,7 @@ const goTo = async (path) => {
   width: calc(100% - 20px);
   justify-content: flex-start;
   overflow: hidden;
+  color: rgba(var(--fm-sider-text-rgb), 0.65);
 }
 
 .sidebar-container.collapsed .nav-link {
@@ -491,12 +493,13 @@ const goTo = async (path) => {
 }
 
 .nav-link:hover {
-  background-color: #00c9a7;
+  background-color: rgba(var(--fm-primary-rgb), 0.15);
+  color: rgb(var(--fm-primary-rgb));
 }
 
 .nav-link.active {
-  background-color: rgba(129, 198, 131, 0.2);
-  color: #00c9a7;
+  background-color: rgba(var(--fm-primary-rgb), 0.2);
+  color: rgb(var(--fm-primary-rgb));
 }
 
 .nav-link.active::after {
@@ -515,9 +518,10 @@ const goTo = async (path) => {
   overflow: hidden;
 }
 
+/* 底部区域 */
 .sidebar-footer {
   padding: 20px 10px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  /* border-top: 1px solid rgba(var(--fm-sider-text-rgb), 0.1); */
   margin-top: 20px;
   transition: all 0.3s ease;
 }
@@ -539,6 +543,7 @@ const goTo = async (path) => {
   width: calc(100% - 20px);
   justify-content: flex-start;
   overflow: hidden;
+  color: rgba(var(--fm-sider-text-rgb), 0.55);
 }
 
 .sidebar-container.collapsed .footer-button {
@@ -562,6 +567,7 @@ const goTo = async (path) => {
   overflow: hidden;
 }
 
+/* 图标区域 */
 .icon {
   margin: 0;
   min-width: 24px;

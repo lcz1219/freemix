@@ -21,6 +21,66 @@
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 }
 
+/* =============================================
+ * Freemix 品牌设计令牌 (Design Tokens)
+ * 参照 fast-soy-admin 的 Token 体系建立
+ * 品牌主色: #00c9a7 (青绿色)
+ * ============================================= */
+
+/* --- 品牌色系调色板 (50-900 级别) --- */
+:root {
+  --fm-primary-rgb: 0, 201, 167;
+  --fm-primary-50: 230, 252, 247;
+  --fm-primary-100: 204, 249, 239;
+  --fm-primary-200: 153, 244, 223;
+  --fm-primary-300: 102, 239, 207;
+  --fm-primary-400: 51, 234, 191;
+  --fm-primary-500: 0, 201, 167;
+  --fm-primary-600: 0, 181, 150;
+  --fm-primary-700: 0, 141, 117;
+  --fm-primary-800: 0, 101, 84;
+  --fm-primary-900: 0, 61, 50;
+
+  /* 功能色 */
+  --fm-info-rgb: 32, 128, 240;
+  --fm-success-rgb: 82, 196, 26;
+  --fm-warning-rgb: 250, 173, 20;
+  --fm-error-rgb: 245, 34, 45;
+
+  /* 亮色主题 token（RGB 格式，配合 rgb() 使用） */
+  --fm-container-bg-rgb: 255, 255, 255;
+  --fm-layout-bg-rgb: 247, 250, 252;
+  --fm-inverted-bg-rgb: 255, 255, 255;      /* 侧栏背景：亮色下为白色 */
+  --fm-sider-text-rgb: 51, 51, 51;          /* 侧栏文字颜色：亮色下为深灰 */
+  --fm-base-text-rgb: 31, 31, 31;
+
+  /* 尺寸 */
+  --fm-header-height: 56px;
+  --fm-sider-width: 220px;
+  --fm-sider-collapsed-width: 64px;
+  --fm-tab-height: 44px;
+  --fm-footer-height: 0px;
+  --fm-radius: 6px;
+}
+
+/* --- 暗色主题 token 覆盖 --- */
+html.dark-theme {
+  --fm-container-bg-rgb: 18,18,18;
+  --fm-layout-bg-rgb: 18,18,18;
+  --fm-inverted-bg-rgb: 18,18,18;
+  --fm-sider-text-rgb: 224, 224, 224;       /* 侧栏文字：暗色下为浅灰 */
+  --fm-base-text-rgb: 224, 224, 224;
+}
+
+/* --- 亮色主题 token 覆盖 --- */
+html.light-theme {
+  --fm-container-bg-rgb: 255, 255, 255;
+  --fm-layout-bg-rgb: 247, 250, 252;
+  --fm-inverted-bg-rgb: 255, 255, 255;
+  --fm-sider-text-rgb: 51, 51, 51;          /* 侧栏文字：亮色下为深灰 */
+  --fm-base-text-rgb: 31, 31, 31;
+}
+
 /* semantic color variables for this project */
 :root {
   --color-background: var(--vt-c-white);

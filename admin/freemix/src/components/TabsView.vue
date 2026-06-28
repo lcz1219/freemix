@@ -19,7 +19,6 @@
         class="tabs-container"
       >
         <n-tab 
-        
           v-for="tab in tabs" 
           :key="tab.path" 
           :name="tab.path"
@@ -28,80 +27,22 @@
           {{ tab.title }}
         </n-tab>
       </n-tabs>
-      
-      <div class="header-actions">
-        <n-tooltip placement="bottom">
-          <template #trigger>
-            <div class="ai-trigger-wrapper" @click="store.commit('setAiDrawer', true)">
-              <div class="ai-trigger-content">
-                <div class="ai-icon-box">
-                  <AIAssistantIcon />
-                </div>
-                <!-- <span class="ai-text">AI 助手</span> -->
-              </div>
-              <div class="ai-glow"></div>
-            </div>
-          </template>
-          <span>唤起 Freemix AI（Alt+K）</span>
-        </n-tooltip>
-      </div>
-
-        <div class="theme-switch-container">
-        <n-tooltip placement="bottom">
-          <template #trigger>
-          
-            <n-switch 
-              v-model:value="isDark" 
-              :rail-style="railStyle" 
-              @update:value="toggleTheme"
-              class="theme-switch"
-            >
-              <template #icon>
-                <n-icon v-if="isDark" :component="MoonIcon" />
-                <n-icon v-else :component="SunIcon" />
-              </template>
-            </n-switch>
-          </template>
-          <span>{{ isDark ? '深色模式' : '浅色模式' }}</span>
-        </n-tooltip>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick, inject,  } from 'vue'
+import { ref, watch, onMounted, nextTick  } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NTabs, NTab, NDropdown, NSwitch, NTooltip, NIcon } from 'naive-ui'
+import { NTabs, NTab, NDropdown } from 'naive-ui'
 import { useMessage } from 'naive-ui'
-import { SunnyOutline, MoonOutline } from '@vicons/ionicons5'
 import { useStore } from 'vuex'
-import AIAssistantIcon from '@/components/icons/AIAssistantIcon.vue'
 
 // 获取路由和路由器实例
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 const store = useStore()
-
-// 主题相关
-const isDark = inject('isDark', ref(false))
-const toggleTheme = inject('toggleTheme', (value) => {})
-const railStyle = inject('railStyle', ({ focused, checked }) => {
-  const style = {}
-  if (checked) {
-    style.background = '#00c9a7'
-    if (focused) style.boxShadow = '0 0 0 2px rgba(129, 198, 131, 0.3)'
-  } else {
-    style.background = '#e0e0e0'
-    if (focused) style.boxShadow = '0 0 0 2px rgba(224, 224, 224, 0.3)'
-  }
-  return style
-})
-
-// 图标组件
-const SunIcon = SunnyOutline
-const MoonIcon = MoonOutline
 
 // 标签页数据
 const tabs = ref<Array<{ path: string; title: string }>>([])
@@ -326,266 +267,56 @@ defineExpose({
 </script>
 
 <style scoped>
+/* 标签页容器 — sticky 吸附在 Header 下方，背景由 CSS 变量驱动 */
 .tabs-view-container {
-  background-color: var(--card-bg);
-  border-bottom: 1px solid var(--border-color);
+  background-color: rgb(var(--fm-inverted-bg-rgb));
+  /* border-bottom: 1px solid rgba(var(--fm-base-text-rgb), 0.06); */
   padding: 0;
   position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-}
-
-:global(.dark-theme) .tabs-view-container {
-  background-color: rgb(18 18 18);
+  top: var(--fm-header-height);
+  z-index: 99;
+  height: var(--fm-tab-height);
 }
 
 .tabs-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  /* margin-top: 0.5%; */
+  padding: 0 12px;
+  height: 100%;
 }
 
 .tabs-container {
   flex: 1;
-  background-color: var(--card-bg);
+  height: 100%;
 }
 
-:global(.dark-theme) .tabs-container {
-  background-color: rgb(18 18 18);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  margin-left: 12px;
-}
-
-/* AI 助手触发器样式优化 */
-.ai-trigger-wrapper {
-  position: relative;
-  cursor: pointer;
-  padding: 4px 12px;
-  border-radius: 20px;
-  /* background: rgba(7, 96, 85, 0.15); */
-  /* border: 1px solid rgba(138, 43, 226, 0.3); */
-  /* transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); */
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  backdrop-filter: blur(8px);
-  margin-right: 29px;
-}
-
-.ai-trigger-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 2;
-}
-
-.ai-icon-box {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: black;
-  transition: transform 0.3s ease;
-}
-
-.ai-text {
-  font-size: 13px;
-  font-weight: 600;
-  /* color: #8a2be2; */
-  letter-spacing: 0.5px;
-}
-
-.ai-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 120%;
-  height: 120%;
-  /* background: radial-gradient(circle, rgba(138, 43, 226, 0.2) 0%, transparent 70%); */
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.5s ease;
-  z-index: 1;
-}
-
-.ai-trigger-wrapper:hover {
-  /* border-color: #8a2be2; */
-  background: rgba(7, 96, 85, 0.25);
-  box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
-  transform: translateY(-1px);
-}
-
-.ai-trigger-wrapper:hover .ai-icon-box {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.ai-trigger-wrapper:hover .ai-glow {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-/* 深色模式适配 */
-/* .dark-theme .ai-trigger-wrapper {
-  background: rgba(138, 43, 226, 0.1);
-  border-color: rgba(138, 43, 226, 0.4);
-}
-
-.dark-theme .ai-trigger-wrapper:hover {
-  background: rgba(138, 43, 226, 0.2);
-  box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
-} */
-
-/* 响应式优化 */
-@media (max-width: 768px) {
-  .ai-text {
-    display: none;
-  }
-  .ai-trigger-wrapper {
-    padding: 6px;
-    border-radius: 50%;
-  }
-}
-
-.theme-switch-container {
-  margin-left: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.theme-switch {
-  width: 40px;
-  height: 20px;
-}
-
+/* 去掉 n-tabs 默认底部边框（那条白线） */
 :deep(.n-tabs-nav) {
-  border-bottom: 1px solid var(--border-color);
-  padding: 8px 0;
-  background-color: var(--card-bg);
-}
-:global(.dark-theme) :deep(.n-tabs-nav) {
-  background-color: rgb(18 18 18);
-}
-:deep(.n-tabs .n-tabs-nav.n-tabs-nav--card-type .n-tabs-tab){
-  background-color: var(--card-bg);
-}
-:global(.dark-theme) :deep(.n-tabs .n-tabs-nav.n-tabs-nav--card-type .n-tabs-tab){
-  background-color: rgb(18 18 18);
-}
-:deep(.n-tabs-tab) {
-  color: var(--text-color);
-  background-color: var(--card-bg);
-  border: none;
-  border-radius: 8px 8px 0 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 10px 20px;
-  font-weight: 500;
-  position: relative;
-  margin-right: 6px;
-  backdrop-filter: blur(10px);
-}
-:global(.dark-theme) :deep(.n-tabs-tab) {
-  background-color: rgb(18 18 18);
+  border-bottom: none !important;
 }
 
+/* card 类型 tab 活跃态 — 品牌色高亮 */
+:deep(.n-tabs-tab--active) {
+  color: rgb(var(--fm-primary-rgb)) !important;
+}
+
+/* tab hover 态 */
 :deep(.n-tabs-tab:hover) {
-  background-color: var(--hover-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  color: rgb(var(--fm-primary-rgb));
 }
 
-:deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: var(--card-bg);
-  color: var(--text-color);
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-}
-
-:deep(.n-tabs-tab.n-tabs-tab--active)::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #00c9a7, #5baa73);
-  border-radius: 3px;
-}
-
-:deep(.n-tabs-tab__close) {
-  margin-left: 8px;
-  border-radius: 6px;
-  padding: 3px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.7;
-  background-color: transparent;
-}
-
+/* 关闭按钮 hover */
 :deep(.n-tabs-tab__close:hover) {
-  background-color: rgba(129, 198, 131, 0.2);
-  color: #00c9a7;
-  opacity: 1;
-  transform: scale(1.1);
+  background-color: rgba(var(--fm-primary-rgb), 0.12);
+  color: rgb(var(--fm-primary-rgb));
 }
 
-:deep(.n-tabs-tab):hover .n-tabs-tab__close {
-  opacity: 1;
-}
-
+/* 右键菜单 */
 :deep(.n-dropdown) {
-  border-radius: 12px;
-  padding: 6px 0;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--border-color);
-  background-color: var(--card-bg);
-  backdrop-filter: blur(20px);
-}
-
-:deep(.n-dropdown-option) {
-  padding: 10px 16px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 0;
-}
-
-:deep(.n-dropdown-option:hover) {
-  background-color: var(--hover-color);
-  color: var(--text-color);
-}
-
-:deep(.n-dropdown-option__label) {
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-/* 添加深色模式下的特殊效果 */
-:global(.dark-theme) :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: rgb(18 18 18);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-/* 添加浅色模式下的特殊效果 */
-:global(.light-theme) :deep(.n-tabs-tab.n-tabs-tab--active) {
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-/* 响应式设计优化 */
-@media (max-width: 768px) {
-  .tabs-container {
-    padding: 0 10px;
-  }
-  
-  :deep(.n-tabs-tab) {
-    padding: 8px 16px;
-    font-size: 14px;
-    margin-right: 4px;
-  }
-  
-  :deep(.n-tabs-tab__close) {
-    margin-left: 6px;
-  }
+  /* border-radius: 8px; */
+  padding: 4px 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 </style>
