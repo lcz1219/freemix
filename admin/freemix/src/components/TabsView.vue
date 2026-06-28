@@ -1,40 +1,51 @@
 <template>
   <div class="tabs-view-container">
-    <n-dropdown 
-      :show="showDropdown" 
-      :x="dropdownX" 
+    <!-- 右键菜单：关闭/关闭其他/关闭所有 -->
+    <n-dropdown
+      :show="showDropdown"
+      :x="dropdownX"
       :y="dropdownY"
       :options="dropdownOptions"
       @select="handleDropdownSelect"
       @clickoutside="showDropdown = false"
-    >
-    </n-dropdown>
+    />
     <div class="tabs-header">
-      <n-tabs 
-        v-model:value="activeTab" 
-        type="card" 
+      <!-- 标签页列表 -->
+      <n-tabs
+        v-model:value="activeTab"
+        type="card"
         closable
         @close="handleClose"
         @update:value="handleTabClick"
         class="tabs-container"
       >
-        <n-tab 
-          v-for="tab in tabs" 
-          :key="tab.path" 
+        <n-tab
+          v-for="tab in tabs"
+          :key="tab.path"
           :name="tab.path"
           @contextmenu="handleContextMenu($event, tab.path)"
         >
           {{ tab.title }}
         </n-tab>
       </n-tabs>
+      <!-- 右侧操作区 -->
+      <div class="tabs-actions">
+        <n-button text :title="'刷新'"class="tabs-action-btn" @click="handleRefreshCurrent" title="刷新当前页面">
+          <n-icon size="15"><RefreshOutline /></n-icon>
+        </n-button>
+        <n-button text :title="'关闭所有页面'" class="tabs-action-btn" @click="closeAllTabs" title="关闭所有标签页">
+          <n-icon size="15"><CloseOutline /></n-icon>
+        </n-button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick  } from 'vue'
+import { ref, watch, onMounted, inject, nextTick  } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NTabs, NTab, NDropdown } from 'naive-ui'
+import { NTabs, NTab, NIcon, NButton } from 'naive-ui'
+import { RefreshOutline, CloseOutline } from '@vicons/ionicons5'
 import { useMessage } from 'naive-ui'
 import { useStore } from 'vuex'
 
@@ -43,6 +54,13 @@ const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 const store = useStore()
+
+// 注入刷新计数器 — 递增后 App.vue 的 :key 变化，组件重新创建
+const refreshKey = inject('refreshKey', ref(0))
+// 刷新当前页面 — 递增计数器，只重新创建当前路由组件，不重载整个页面
+const handleRefreshCurrent = () => {
+  refreshKey.value++
+}
 
 // 标签页数据
 const tabs = ref<Array<{ path: string; title: string }>>([])
@@ -54,10 +72,10 @@ const dropdownY = ref(0)
 const currentTabPath = ref('')
 
 const dropdownOptions = ref([
-  {
-    label: '重新加载',
-    key: 'reload'
-  },
+//   {
+//     label: '重新加载',
+//     key: 'reload'
+//   },
   {
     label: '关闭',
     key: 'close'
@@ -224,6 +242,8 @@ const handleDropdownSelect = (key: string) => {
 const handleTabClick = (name: string) => {
   const tab = tabs.value.find(tab => tab.path === name)
   if (tab) {
+    console.log("tab.path:",tab.path);
+    
     router.push(tab.path)
   }
 }
@@ -267,56 +287,105 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 标签页容器 — sticky 吸附在 Header 下方，背景由 CSS 变量驱动 */
+/* ===== 标签页容器 ===== */
 .tabs-view-container {
   background-color: rgb(var(--fm-inverted-bg-rgb));
-  /* border-bottom: 1px solid rgba(var(--fm-base-text-rgb), 0.06); */
-  padding: 0;
   position: sticky;
   top: var(--fm-header-height);
   z-index: 99;
   height: var(--fm-tab-height);
+  /* 底部细分割线，与内容区自然分隔 */
+  /* box-shadow: inset 0 -1px 0 rgba(var(--fm-base-text-rgb), 0.06); */
 }
 
+/* ===== 标签页头部 ===== */
 .tabs-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  /* margin-top: 0.5%; */
-  padding: 0 12px;
   height: 100%;
+  padding: 0 8px;
+  gap: 4px;
 }
 
+/* ===== 标签页列表 ===== */
 .tabs-container {
   flex: 1;
   height: 100%;
+  min-width: 0;
 }
 
-/* 去掉 n-tabs 默认底部边框（那条白线） */
+/* 去掉 n-tabs 默认的底部边框 */
 :deep(.n-tabs-nav) {
   border-bottom: none !important;
 }
 
-/* card 类型 tab 活跃态 — 品牌色高亮 */
-:deep(.n-tabs-tab--active) {
-  color: rgb(var(--fm-primary-rgb)) !important;
+/* 单个 tab — 紧凑+简约 */
+:deep(.n-tabs-tab) {
+  font-size: 13px;
+  padding: 6px 14px;
+  transition: color 0.2s;
+  color: rgba(var(--fm-base-text-rgb), 0.55);
+  border-radius: 6px 6px 0 0;
 }
 
-/* tab hover 态 */
+/* tab hover */
 :deep(.n-tabs-tab:hover) {
   color: rgb(var(--fm-primary-rgb));
+  background-color: rgba(var(--fm-primary-rgb), 0.05);
 }
 
-/* 关闭按钮 hover */
+/* 活跃 tab — 品牌色加粗 */
+:deep(.n-tabs-tab--active) {
+  color: rgb(var(--fm-primary-rgb)) !important;
+  font-weight: 600;
+  background-color: rgba(var(--fm-primary-rgb), 0.06);
+}
+
+/* 关闭按钮 — hover 时品牌色 */
+:deep(.n-tabs-tab__close) {
+  margin-left: 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  opacity: 0.5;
+}
 :deep(.n-tabs-tab__close:hover) {
-  background-color: rgba(var(--fm-primary-rgb), 0.12);
+  background-color: rgba(var(--fm-primary-rgb), 0.15);
   color: rgb(var(--fm-primary-rgb));
+  opacity: 1;
 }
 
-/* 右键菜单 */
+/* ===== 右侧操作区 ===== */
+.tabs-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding-left: 10px;
+
+}
+
+/* 操作按钮 */
+.tabs-action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: rgba(var(--fm-base-text-rgb), 0.4);
+  transition: color 0.2s, background-color 0.2s, transform 0.2s;
+}
+
+.tabs-action-btn:hover {
+  color: rgb(var(--fm-primary-rgb));
+  background-color: rgba(var(--fm-primary-rgb), 0.1);
+  transform: rotate(30deg);
+}
+
+/* ===== 右键菜单 ===== */
 :deep(.n-dropdown) {
-  /* border-radius: 8px; */
   padding: 4px 0;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
 }
 </style>

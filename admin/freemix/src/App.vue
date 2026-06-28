@@ -34,7 +34,7 @@
                   <n-layout-content :class="[isnAiPage ? 'content-wrapper' : 'content-wrappe-ai', { 'mobile-content': isMobileDevice }]">
                     <router-view v-if="showContentByStoreUser || route.path == '/oauth/callback'" v-slot="{ Component }">
                       <KeepAlive :include="[]">
-                        <component :is="Component" :class="themeClass" />
+                        <component :is="Component" :class="themeClass" :key="refreshKey" />
                       </KeepAlive>
                     </router-view>
                     <!-- 应用加载页面 -->
@@ -617,6 +617,11 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => {
 });
 provide('isDark', isDark);
 provide('toggleTheme', toggleTheme);
+
+// 路由刷新计数器 — 递增后强制 <component :key> 变化，重新创建组件实现刷新
+const refreshKey = ref(0)
+provide('refreshKey', refreshKey)
+
 // 开关轨道样式
 const railStyle = ({
   focused,
