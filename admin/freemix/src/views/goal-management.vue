@@ -90,12 +90,12 @@
             <section class="goals-section">
               <n-grid x-gap="20" cols="24" item-responsive responsive="screen">
                 <!-- 左侧目标列表 -->
-                <n-grid-item span="24 m:10 l:9">
+                <n-grid-item span="24 m:10 l:12">
                   <n-card :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']"
                     content-style="padding: 10px;">
                     <template #header>
                       <div class="card-header-inner">
-                        <n-icon size="24" color="#00c9a7">
+                        <n-icon size="20" color="#00c9a7">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em"
                             fill="currentColor">
                             <path
@@ -109,17 +109,62 @@
                           </svg>
                         </n-icon>
                         <h2 class="card-title">目标列表</h2>
-                        <h2 class="card-title">{{ filteredGoals.length }}个目标</h2>
-                        <h2 v-if="groupCount > 0" class="card-title" style="color:#00c9a7;font-size:13px;">{{ groupCount }}组</h2>
+                        <!-- 统计信息：一行展示 -->
+                        <span class="header-stat">{{ filteredGoals.length }} 个目标</span>
+                        <span v-if="groupCount > 0" class="header-stat-sep">·</span>
+                        <span v-if="groupCount > 0" class="header-stat header-stat-highlight">{{ groupCount }} 组</span>
                       </div>
                     </template>
 
                     <div class="stagger-list-container">
                       <el-table :data="groupedDisplayList" :class="isDark ? 'el-table-dark' : 'el-table-light'"
                         style="width: 100%; cursor: pointer;height: 100%;" @row-click="handleRowClick"
-                        :row-class-name="tableRowClassName" highlight-current-row>
+                        :row-class-name="tableRowClassName" highlight-current-row >
                         <!-- ... 列表内容保持不变 ... -->
-                        <el-table-column label="目标名称" prop="title" show-overflow-tooltip min-width="180">
+                         <el-table-column label="操作" width="110" align="center">
+                          <template #default="scope">
+                            <template v-if="!scope.row._isGroupHeader">
+                              <div class="table-actions">
+                                <!-- 已完成 → 鼓励提示 -->
+                                <n-tooltip v-if="scope.row.status === 'completed'" placement="bottom">
+                                  <template #trigger>
+                                    <span class="status-hint status-hint-done">
+                                      <n-icon size="14"><CheckmarkCircle /></n-icon>
+                                      很棒哦
+                                    </span>
+                                  </template>
+                                  已完成
+                                </n-tooltip>
+                                <!-- 已过期 → 遗憾提示 -->
+                                <n-tooltip v-else-if="scope.row.status === 'expired'" placement="bottom">
+                                  <template #trigger>
+                                    <span class="status-hint status-hint-expired">
+                                      <n-icon size="14"><SadOutline /></n-icon>
+                                      很可惜
+                                    </span>
+                                  </template>
+                                  已过期
+                                </n-tooltip>
+                                <!-- 进行中 → 一键完成按钮 -->
+                                <n-popconfirm
+                                  v-else-if="scope.row.status === 'in-progress'"
+                                  @positive-click="completeAllGoal(scope.row)"
+                                  positive-text="确认完成"
+                                  negative-text="取消"
+                                  placement="left"
+                                >
+                                  <template #trigger>
+                                    <n-button text class="complete-all-btn" title="一键完成所有任务">
+                                      <n-icon size="16"><CheckmarkDoneOutline /></n-icon>
+                                    </n-button>
+                                  </template>
+                                  确认将 "{{ scope.row.title }}" 所有子任务标记为完成？
+                                </n-popconfirm>
+                              </div>
+                            </template>
+                          </template>
+                        </el-table-column>
+                        <el-table-column label="目标名称" prop="title"  show-overflow-tooltip min-width="150">
                           <template #default="scope">
                             <!-- 组头行（根分组「目标分组」或子分组） -->
                             <div v-if="scope.row._isGroupHeader" 
@@ -157,50 +202,48 @@
                             </div>
                           </template>
                         </el-table-column>
-                        <el-table-column label="进度" width="100">
+                        <!-- 进度 + 截止时间（列合并）：进度条下方显示截止日期 -->
+                        <el-table-column label="进度｜截止时间" width="150" align="center">
                           <template #default="scope">
                             <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
                               {{ scope.row._isRootGroup ? '共' + scope.row.count + '组' : scope.row.count + '个目标' }}
                             </div>
-                            <el-progress v-else :percentage="scope.row.progress"
-                              :stroke-width="20" text-inside="true"  :color="getStatusColor(scope.row.status)"
-                              :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
+                            <div v-else>
+                              <el-progress :percentage="scope.row.progress"
+                                :stroke-width="20" text-inside="true"  :color="getStatusColor(scope.row.status)"
+                                :status="scope.row.status === 'completed' ? 'success' : scope.row.status === 'expired' ? 'exception' : ''" />
+                              <!-- 截止日期小字 -->
+                              <div style="font-size:11px;color:#888;text-align:center;margin-top:3px;white-space:nowrap;">{{ scope.row.deadlineString }}</div>
+                            </div>
                           </template>
                         </el-table-column>
-                        <el-table-column label="状态" width="80">
+                        <!-- 状态 + 优先级（列合并）：紧凑色标标签，颜色 + 文字一目了然 -->
+                        <el-table-column label="状态｜优先级"  align="center">
                           <template #default="scope">
                             <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
                               批量
                             </div>
-                            <n-tag v-else :type="getStatusTagType(scope.row.status)" size="small">
-                              {{ getStatusLabel(scope.row.status) }}
-                            </n-tag>
-                          </template>
-                        </el-table-column>
-                        <!-- 优先级列 - 简洁标签 -->
-                        <el-table-column label="优先级" width="70" align="center">
-                          <template #default="scope">
-                            <span v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;">-</span>
-                            <span v-else class="priority-tag" :class="'pri-' + (scope.row.level || 'medium')">
-                              {{ getPriorityText(scope.row.level) }}
-                            </span>
-                          </template>
-                        </el-table-column>
-                        <el-table-column label="截止时间" width="120">
-                          <template #default="scope">
-                            <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
-                              多个
+                            <div v-else style="display:flex;align-items:center;gap:5px;">
+                              <!-- 优先级色标：红底=高/紧, 橙底=中, 绿底=低，内置文字无需图例 -->
+                              
+                              <n-tag :type="getStatusTagType(scope.row.status)" size="small">
+                                {{ getStatusLabel(scope.row.status) }}
+                              </n-tag>｜
+                              <span class="pri-badge" :class="'pri-badge-' + (scope.row.level || 'medium')">
+                                {{ getPriorityText(scope.row.level) }}
+                              </span>
                             </div>
-                            <span v-else>{{ scope.row.deadlineString }}</span>
                           </template>
                         </el-table-column>
+                        <!-- 一键完成列 -->
+                        
                       </el-table>
                     </div>
                   </n-card>
                 </n-grid-item>
 
                 <!-- 右侧详情面板 -->
-                <n-grid-item span="24 m:14 l:15">
+                <n-grid-item span="24 m:14 l:12">
                   <n-card :class="isDark ? 'feature-card' : 'feature-card-light'" v-if="currentSelectedGoal"
                     class="detail-card" content-style="padding: 24px;">
                     <template #header>
@@ -518,7 +561,9 @@ import {
   CheckmarkSharp,
   EllipsisHorizontal,
   CheckmarkCircle,
-  CheckmarkCircleOutline
+  CheckmarkCircleOutline,
+  CheckmarkDoneOutline,
+  SadOutline
 } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
@@ -1063,6 +1108,44 @@ const unfinishChildGoal = async (goal: any, index: number) => {
     }
   } catch (error) {
     message.error('操作失败');
+    console.error(error);
+  }
+};
+
+// 一键完成整个目标（所有子目标完成 + 状态设为完成）
+const completeAllGoal = async (goal: any) => {
+  try {
+    // 深拷贝目标对象
+    const updatedGoal = JSON.parse(JSON.stringify(goal));
+
+    // 将所有未完成的子目标标记为完成
+    updatedGoal.childGoals.forEach((child: any, idx: number) => {
+      if (!child.finish) {
+        child.finish = true;
+        child.finishDate = new Date();
+      }
+    });
+
+    // 进度设为 100%
+    updatedGoal.progress = 100;
+    updatedGoal.status = 'completed';
+    const now = new Date();
+    // 记录完成时间（如果后端支持）
+    if (updatedGoal.completedDate === undefined) {
+      updatedGoal.completedDate = now;
+    }
+
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      celebrationGoalTitle.value = updatedGoal.title;
+      showCelebration.value = true;
+      // message.success(`🎉 "${updatedGoal.title}" 已全部完成！`);
+      getGoals();
+    } else {
+      expiredGoalToast(res);
+    }
+  } catch (error) {
+    message.error('一键完成操作失败');
     console.error(error);
   }
 };
@@ -1728,21 +1811,29 @@ onMounted(() => {
 .card-header-inner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
 }
 
-.card-title:last-child {
-  font-size: 16px;
+/* 头部统计信息（目标数 / 分组数） */
+.header-stat {
+  font-size: 12px;
   font-weight: 400;
-  color: #999;
-  margin-left: auto;
+  color: #888;
+}
+.header-stat-sep {
+  color: #555;
+  font-size: 12px;
+}
+.header-stat-highlight {
+  color: #00c9a7;
+  font-weight: 500;
 }
 
 /* ----------------------------------
@@ -2142,6 +2233,44 @@ onMounted(() => {
   line-height: 20px;
 }
 
+/* 【列合并方案A】优先级色点 — 替代原来的文字标签，融合到状态列中 */
+.pri-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+/* 低优先级 — 柔和绿 */
+.pri-dot.pri-dot-low  { background: #4ade80; }
+/* 中优先级 — 柔和橙 */
+.pri-dot.pri-dot-medium { background: #fbbf24; }
+/* 高优先级 — 柔和红 */
+.pri-dot.pri-dot-high { background: #f87171; }
+/* 紧急优先级 — 深红 */
+.pri-dot.pri-dot-urgent { background: #ef4444; }
+
+/* 【列合并优化】优先级紧凑色标 — 内置文字，无需图例即可辨识 */
+.pri-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+  color: #fff;
+  flex-shrink: 0;
+}
+/* 低 — 绿底白字 */
+.pri-badge.pri-badge-low    { background: #4ade80; }
+/* 中 — 橙底白字 */
+.pri-badge.pri-badge-medium { background: #f59e0b; }
+/* 高 — 红底白字 */
+.pri-badge.pri-badge-high   { background: #f87171; }
+/* 紧急 — 深红底白字 */
+.pri-badge.pri-badge-urgent { background: #ef4444; }
+
 /* 低 - 柔和绿 */
 .priority-tag.pri-low {
   background: rgba(34, 197, 94, 0.1);
@@ -2162,5 +2291,115 @@ onMounted(() => {
 .priority-tag.pri-urgent {
   background: rgba(248, 113, 113, 0.1);
   color: #f87171;
+}
+
+/* ===== 一键完成按钮样式 ===== */
+
+/* 表格操作列容器 */
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 一键完成按钮 — 品牌色图标，hover 放大 + 微光 */
+.complete-all-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: rgba(var(--fm-primary-rgb), 0.55);
+  transition: all 0.25s ease;
+  background-color: rgba(var(--fm-primary-rgb), 0.06);
+}
+
+.complete-all-btn:hover {
+  color: rgb(var(--fm-primary-rgb));
+  background-color: rgba(var(--fm-primary-rgb), 0.15);
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(var(--fm-primary-rgb), 0.25);
+}
+
+/* 已完成状态的徽标 — 绿色对勾 */
+.already-done-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #52c41a;
+  background-color: rgba(82, 196, 26, 0.1);
+  animation: badge-pop 0.3s ease;
+}
+
+@keyframes badge-pop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* 操作列状态提示文字（已完成/已过期） */
+.status-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: default;
+}
+/* 已完成 — 绿色 */
+.status-hint-done {
+  color: #4ade80;
+}
+/* 已过期 — 柔和红色 */
+.status-hint-expired {
+  color: #f87171;
+}
+
+/* ===== Element Plus 固定列修复 ===== */
+
+/* 固定列外层容器 — 设置背景，不透传下层内容 */
+
+
+
+</style>
+
+<!-- 【原理说明】Element Plus 固定列渲染在独立 DOM 层中，Vue scoped 样式的 [data-v-xxx] 属性选择器
+     匹配不到这个分离的 DOM 树，所以 :deep() 规则无法生效。
+     这里使用非 scoped 的 <style> 块直接全局覆盖，确保固定列背景不透明。 -->
+<style>
+/* 固定列整个容器 — 不透明的纯色背景，遮住下方滚动过来的列 */
+.el-table__fixed,
+.el-table__fixed-right {
+  background-color: var(--el-table-bg-color, #fff) !important;
+}
+
+/* 固定列 body 中每一行 — 确保覆盖 row 级别的透明样式 */
+.el-table__fixed-right .el-table__body tr.el-table__row td,
+.el-table__fixed .el-table__body tr.el-table__row td {
+  background-color: var(--el-table-bg-color, #fff) !important;
+}
+
+/* 暗色模式下的固定列背景（与 n-card 暗色背景 #121212 一致） */
+html.dark .el-table__fixed,
+html.dark .el-table__fixed-right {
+  background-color: #121212 !important;
+}
+html.dark .el-table__fixed-right .el-table__body tr.el-table__row td,
+html.dark .el-table__fixed .el-table__body tr.el-table__row td {
+  background-color: #121212 !important;
+}
+
+/* 固定列表头背景 */
+.el-table__fixed-right .el-table__header th,
+.el-table__fixed .el-table__header th {
+  background-color: var(--el-table-header-bg-color, #f5f7fa) !important;
+}
+html.dark .el-table__fixed-right .el-table__header th,
+html.dark .el-table__fixed .el-table__header th {
+  background-color: #121212 !important;
 }
 </style>
