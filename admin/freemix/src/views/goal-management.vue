@@ -340,9 +340,23 @@
                                 </n-icon>
                               </div>
                               <div class="capsule-content">
-                                <span class="capsule-title" :class="{ 'strikethrough': childGoal.finish }">{{
-                                  childGoal.message
-                                }}</span>
+                                <!-- 行内编辑模式：输入框 -->
+                                <template v-if="editingChildIndex === index">
+                                  <input
+                                    v-model="editingChildText"
+                                    class="child-edit-input"
+                                    @keyup.enter="saveEditChild(currentSelectedGoal, index)"
+                                    @keyup.esc="cancelEditChild"
+                                    @blur="saveEditChild(currentSelectedGoal, index)"
+                                  />
+                                </template>
+                                <!-- 展示模式：点击文本进入编辑 -->
+                                <template v-else>
+                                  <span v-if="currentSelectedGoal.status=='in-progress'" class="capsule-title" :class="{ 'strikethrough': childGoal.finish }"
+                                    @click.stop="startEditChild(index, childGoal)">{{ childGoal.message }}</span>
+                                  <span v-else class="capsule-title" :class="{ 'strikethrough': childGoal.finish }"
+                                    >{{ childGoal.message }}</span>
+                                </template>
                                 <span class="finish-time" v-if="childGoal.finishDate">完成于 {{
                                   formatDate(childGoal.finishDate)
                                 }}</span>
@@ -364,6 +378,29 @@
                         </div>
                         <n-empty v-else description="暂无子目标" class="empty-sub-goals" />
                       </div>
+
+                      <!-- 子目标添加栏（详情面板底部浮动） -->
+                      <div class="child-add-bar" v-if="currentSelectedGoal">
+                        <input
+                          v-model="newChildMessage"
+                          class="child-add-input"
+                          placeholder="输入新的子目标，回车添加..."
+                          @keyup.enter="addChildGoal"
+                        />
+                        <n-button
+                          size="tiny"
+                          circle
+                          type="primary"
+                          :disabled="!newChildMessage.trim()"
+                          @click="addChildGoal"
+                          class="add-bar-btn"
+                        >
+                          <template #icon>
+                            <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></n-icon>
+                          </template>
+                        </n-button>
+                      </div>
+
                       <!-- 目标笔记区域 -->
 
                       <div class="info-item-modern full-width rich-text-section">
@@ -504,7 +541,7 @@
 
 <script setup lang="ts">
 import common from '@/views/common.vue';
-import { ref, computed, onMounted, inject, watch } from 'vue';
+import { ref, computed, onMounted, inject, watch, nextTick } from 'vue';
 import {
   NLayout,
   NLayoutHeader,
@@ -668,6 +705,13 @@ const showChildGoalFilesModal = ref(false);
 const currentChildGoal = ref<any>(null);
 const currentChildGoalIndex = ref(-1);
 const currentChildGoalFiles = ref<any[]>([]);
+
+// 子目标行内编辑状态
+const editingChildIndex = ref(-1)
+const editingChildText = ref('')
+
+// 子目标添加栏状态
+const newChildMessage = ref('')
 const viewChildGoalFilesList = ref<any[]>([]);
 const childGoalUploadRef = ref<any>(null);
 const watchfile = (file: any) => {
@@ -1111,6 +1155,81 @@ const unfinishChildGoal = async (goal: any, index: number) => {
     console.error(error);
   }
 };
+
+// 子目标行内编辑：开始编辑
+const startEditChild = (index: number, childGoal: any) => {
+  editingChildIndex.value = index
+  editingChildText.value = childGoal.message || ''
+  nextTick(() => {
+    // 让输入框自动获取焦点
+    const input = document.querySelector('.child-edit-input') as HTMLInputElement
+    if (input) input.focus()
+  })
+}
+
+// 子目标行内编辑：保存
+const saveEditChild = async (goal: any, index: number) => {
+  const newText = editingChildText.value.trim()
+  if (!newText) return
+  // 内容没变，直接退出编辑模式
+  if (newText === goal.childGoals[index].message) {
+    editingChildIndex.value = -1
+    return
+  }
+
+  try {
+    const updatedGoal = JSON.parse(JSON.stringify(goal))
+    updatedGoal.childGoals[index].message = newText
+
+    const res = await postM('editGoal', updatedGoal)
+    if (isSuccess(res)) {
+      getGoals()
+    } else {
+      expiredGoalToast(res)
+    }
+  } catch (error) {
+    message.error('操作失败')
+    console.error(error)
+  } finally {
+    editingChildIndex.value = -1
+  }
+}
+
+// 子目标行内编辑：取消
+const cancelEditChild = () => {
+  editingChildIndex.value = -1
+  editingChildText.value = ''
+}
+
+// 在详情面板底部添加子目标
+const addChildGoal = async () => {
+  const msg = newChildMessage.value.trim()
+  if (!msg || !currentSelectedGoal.value) return
+
+  try {
+    const updatedGoal = JSON.parse(JSON.stringify(currentSelectedGoal.value))
+    if (!updatedGoal.childGoals) updatedGoal.childGoals = []
+
+    // 追加新子目标
+    updatedGoal.childGoals.push({
+      message: msg,
+      finish: false,
+      finishDate: null,
+      fileList: []
+    })
+
+    const res = await postM('editGoal', updatedGoal)
+    if (isSuccess(res)) {
+      newChildMessage.value = ''
+      getGoals()
+    } else {
+      expiredGoalToast(res)
+    }
+  } catch (error) {
+    message.error('添加失败')
+    console.error(error)
+  }
+}
 
 // 一键完成整个目标（所有子目标完成 + 状态设为完成）
 const completeAllGoal = async (goal: any) => {
@@ -2120,11 +2239,43 @@ onMounted(() => {
 .capsule-title {
   font-size: 14px;
   font-weight: 500;
+  cursor: text;
+  transition: color 0.2s;
+}
+.capsule-title:hover {
+  color: #00c9a7;
 }
 
 .capsule-title.strikethrough {
   text-decoration: line-through;
   opacity: 0.7;
+}
+
+/* 子目标行内编辑输入框 */
+.child-edit-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid #00c9a7;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.child-edit-input:focus {
+  border-color: #00c9a7;
+  box-shadow: 0 0 0 2px rgba(0, 201, 167, 0.2);
+}
+.home-container-light .child-edit-input {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: #00c9a7;
+  color: #1f2937;
+}
+.home-container-light .child-edit-input:focus {
+  box-shadow: 0 0 0 2px rgba(0, 201, 167, 0.15);
 }
 
 .finish-time {
@@ -2139,6 +2290,54 @@ onMounted(() => {
 
 .child-goal-capsule:hover .more-btn {
   opacity: 1;
+}
+
+/* 子目标添加栏（详情面板底部浮动） */
+.child-add-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 24px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 50px;
+  transition: all 0.2s;
+}
+.child-add-bar:focus-within {
+  border-color: #00c9a7;
+  background: rgba(0, 201, 167, 0.04);
+}
+.home-container-light .child-add-bar {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.home-container-light .child-add-bar:focus-within {
+  border-color: #00c9a7;
+  background: rgba(0, 201, 167, 0.04);
+}
+
+.child-add-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #fff;
+  padding: 4px 0;
+}
+.child-add-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+.home-container-light .child-add-input {
+  color: #1f2937;
+}
+.home-container-light .child-add-input::placeholder {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.add-bar-btn {
+  flex-shrink: 0;
 }
 
 /* ----------------------------------
