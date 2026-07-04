@@ -27,8 +27,8 @@ public class GitHubOAuth2Config {
                                 .authorizationRequestResolver(customOAuth2AuthorizationRequestResolver))
                         .redirectionEndpoint(redirection -> redirection
                                 .baseUri("/login/oauth2/code/*"))
-                        .defaultSuccessUrl("https://www.gofreemix.com/freemix/loginSuccess", true)
-                        .failureUrl("https://www.gofreemix.com/#/login?error=github_login_failed")
+                        .defaultSuccessUrl("https://gofreemix.com/freemix/loginSuccess", true)
+                        .failureUrl("https://gofreemix.com/#/login?error=github_login_failed")
                 )
                 .csrf().disable();
 

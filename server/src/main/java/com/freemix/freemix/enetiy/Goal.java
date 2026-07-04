@@ -48,5 +48,8 @@ public class Goal {
     String shareToken;
     long sharedAt;
     
+    // 续签次数，每个目标最多可续签3次（每次 deadline 增加30天）
+    int renewCount;
+    
     // Comments will be stored in a separate collection, but we might want a count here or fetch them separately
 }

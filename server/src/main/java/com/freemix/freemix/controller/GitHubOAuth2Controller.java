@@ -96,7 +96,7 @@ public class GitHubOAuth2Controller extends BaseController {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
             // 重定向到前端OAuth回调页面，并传递desktopToken
-            response.sendRedirect("https://www.gofreemix.com/#/oauth/callback?token=" + desktopToken + "&isDesktop=true&githubId=" + githubId);
+            response.sendRedirect("https://gofreemix.com/#/oauth/callback?token=" + desktopToken + "&isDesktop=true&githubId=" + githubId);
         } else {
             // Web端：使用普通token
             user.setToken(token);
@@ -107,7 +107,7 @@ public class GitHubOAuth2Controller extends BaseController {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
             // 重定向到前端OAuth回调页面，并传递token
-            response.sendRedirect("https://www.gofreemix.com/#/oauth/callback?token=" + token+"&githubId=" + githubId);
+            response.sendRedirect("https://gofreemix.com/#/oauth/callback?token=" + token+"&githubId=" + githubId);
         }
 
     }
@@ -119,7 +119,7 @@ public class GitHubOAuth2Controller extends BaseController {
     @GetMapping("/loginFailure")
     public void loginFailure(HttpServletResponse response) throws IOException {
         // 重定向到前端登录页面，并传递错误信息
-        response.sendRedirect("https://www.gofreemix.com/#/login?error=github_login_failed");
+        response.sendRedirect("https://gofreemix.com/#/login?error=github_login_failed");
     }
 
     /**

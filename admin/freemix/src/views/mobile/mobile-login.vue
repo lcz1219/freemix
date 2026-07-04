@@ -507,7 +507,7 @@ const toRegister = () => {
 
 const handleGitHubLogin = () => {
   if (isDesktop()) {
-    window.location.href = 'https://www.gofreemix.com/oauth2/authorization/github';
+    window.location.href = 'https://gofreemix.com/oauth2/authorization/github';
   } else {
     window.location.href = '/oauth2/authorization/github';
   }
@@ -515,7 +515,7 @@ const handleGitHubLogin = () => {
 
 const handleQQLogin = () => {
   const isProd = import.meta.env.PROD;
-  const backendUrl = isProd || isDesktop() ? 'https://www.gofreemix.com' : 'http://localhost:8888';
+  const backendUrl = isProd || isDesktop() ? 'https://gofreemix.com' : 'http://localhost:8888';
   window.location.href = `${backendUrl}/auth/qq/render`;
 };
 </script>

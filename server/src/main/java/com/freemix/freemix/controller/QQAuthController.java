@@ -134,7 +134,7 @@ public class QQAuthController extends BaseController {
                 log.info("移动端 App 唤回跳转: {}", redirectUrl);
             } else {
                 // Web 端或桌面端跳转
-                String baseUrl = environmentChecker.isProd() ? "https://www.gofreemix.com" : "http://localhost:5173";
+                String baseUrl = environmentChecker.isProd() ? "https://gofreemix.com" : "http://localhost:5173";
                 // 统一桌面端 OAuth 回调参数：如果是桌面端，token 传的就是 desktopToken
                 redirectUrl = baseUrl + "/#/oauth/callback?token=" + token + "&qqOpenId=" + qqOpenId;
                 if (isDesktop) {
@@ -145,7 +145,7 @@ public class QQAuthController extends BaseController {
 
             response.sendRedirect(redirectUrl);
         } else {
-            String baseUrl = environmentChecker.isProd() ? "https://www.gofreemix.com" : "http://localhost:5173";
+            String baseUrl = environmentChecker.isProd() ? "https://gofreemix.com" : "http://localhost:5173";
             response.sendRedirect(baseUrl + "/#/login?error=qq_login_failed");
         }
     }

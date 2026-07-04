@@ -73,10 +73,12 @@
     "vue-router": "^4.5.1",
     "vue3-emoji-picker": "^1.1.8",
     "vuedraggable": "^4.1.0",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
+    "@playwright/test": "^1.61.1",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.15.32",
     "@vicons/ionicons5": "^0.13.0",

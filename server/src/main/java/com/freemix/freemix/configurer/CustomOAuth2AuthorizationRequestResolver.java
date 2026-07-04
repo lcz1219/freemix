@@ -37,26 +37,16 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
     public OAuth2AuthorizationRequest customizeAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest) {
         Map<String, Object> additionalParameters = new HashMap<>(authorizationRequest.getAdditionalParameters());
-        // GitHub OAuth2 支持的参数:
-        // login: 提供一个特定的登录账户用于预填充
-        // allow_signup: 控制是否向未认证用户提供注册选项 (true/false)
-        // GitHub 不支持标准的 OpenID Connect prompt 参数
-//        additionalParameters.put("prompt", "login"); // 强制用户在GitHub端重新登录[7](@ref)
-        // 强制重新登录的关键参数
-        additionalParameters.put("login", ""); // 空字符串强制显示登录界面
-        // 对于GitHub，有时也可能需要尝试使用其特定参数，但建议先尝试标准的 `prompt=login`
-        // additionalParameters.put("login", ""); // 可选：尝试使用空值触发账号输入
-
-        // 您之前可能已经添加的参数，比如允许注册
+        // 允许注册（GitHub OAuth2 支持此参数）
         additionalParameters.put("allow_signup", "true");
 
+        // 注：state 会被 Spring Security 的 OAuth2AuthorizationRequestRedirectFilter 自动保存到 session，无需手动处理
         // 生成并设置唯一的state参数，防止CSRF攻击
         String state = generateSecureRandomState();
-        // ... (将state存入session的逻辑)
 
         return OAuth2AuthorizationRequest.from(authorizationRequest)
                 .additionalParameters(additionalParameters)
-                .state(state) // 设置自定义的state
+                .state(state)
                 .build();
     }
     private String generateSecureRandomState() {

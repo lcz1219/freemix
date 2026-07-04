@@ -8,7 +8,7 @@ import { saveToken, getToken } from './tokenUtils.js';
 import { showFailToast } from 'vant'; // 引入Vant Toast
 
 const request = axios.create({
-  baseURL: import.meta.env.PROD ? 'https://www.gofreemix.com' : 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'https://gofreemix.com' : 'http://localhost:5173',
   // baseURL: import.meta.env.PROD ? 'http://192.168.1.36:5173' : 'http://localhost:5173',
   headers: {
     'Content-Type': 'application/json'
@@ -85,12 +85,12 @@ request.interceptors.response.use(
 
 const baseURL =()=> {
   let url = '';
-  url= import.meta.env.PROD ? 'https://www.gofreemix.com/freemix' : 'http://localhost:5173/freemix'
+  url= import.meta.env.PROD ? 'https://gofreemix.com/freemix' : 'http://localhost:5173/freemix'
   return url;
   };
 // 创建一个用于文件上传的axios实例
 const fileRequest = axios.create({
-  baseURL: import.meta.env.PROD ? 'https://www.gofreemix.com' : 'http://localhost:5173',
+  baseURL: import.meta.env.PROD ? 'https://gofreemix.com' : 'http://localhost:5173',
 });
 
 fileRequest.interceptors.request.use(

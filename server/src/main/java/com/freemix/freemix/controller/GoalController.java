@@ -48,6 +48,62 @@ public class GoalController extends BaseController {
         return response;
     }
 
+    /**
+     * 续签目标截止日期：deadline 增加30天，每个目标最多可续签3次
+     */
+    @PostMapping("/renewGoalDeadline")
+    @CheckToken
+    public ApiResponse renewGoalDeadline(@RequestBody String body) {
+        try {
+            JSONObject req = JSONObject.parseObject(body);
+            String goalId = req.getString("goalId");
+            if (goalId == null || goalId.isEmpty()) {
+                return ApiResponse.failure("缺少目标ID");
+            }
+
+            Goal goal = mongoTemplate.findOne(
+                    new Query(Criteria.where("_id").is(goalId)), Goal.class);
+            if (goal == null) {
+                return ApiResponse.failure("目标不存在");
+            }
+
+            // 检查续签次数
+            if (goal.getRenewCount() >= 3) {
+                return ApiResponse.failure("该目标已达到最大续签次数（3次），无法继续续签");
+            }
+
+            // 检查目标状态：已完成或已过期不能续签
+            if ("completed".equals(goal.getStatus())) {
+                return ApiResponse.failure("已完成的目标无法续签");
+            }
+            if ("expired".equals(goal.getStatus())) {
+                return ApiResponse.failure("已过期的目标无法续签");
+            }
+
+            // 计算新 deadline：当前 deadline + 30天
+            Date currentDeadline = goal.getDeadline();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(currentDeadline);
+            cal.add(Calendar.DAY_OF_YEAR, 30);
+            Date newDeadline = cal.getTime();
+
+            // 更新目标
+            goal.setDeadline(newDeadline);
+            goal.setRenewCount(goal.getRenewCount() + 1);
+            mongoTemplate.save(goal);
+
+            JSONObject result = new JSONObject();
+            result.put("_id", goal.get_id());
+            result.put("deadline", newDeadline);
+            result.put("renewCount", goal.getRenewCount());
+
+            return ApiResponse.success(result, "续签成功，截止日期已延长30天");
+        } catch (Exception e) {
+            log.error("续签目标失败:", e);
+            return ApiResponse.failure("续签失败: " + e.getMessage());
+        }
+    }
+
     private ApiResponse<Object> getObjectApiResponse(Goal goal, List<Achievement> unlockedAchievements) {
         Goal one = mongoTemplate.findOne(new Query(Criteria.where("title").is(goal.getTitle())
                 .and("description").is(goal.getDescription()).and("ower").is(goal.getOwner())), Goal.class);

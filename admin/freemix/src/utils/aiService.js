@@ -2,7 +2,7 @@ import { getToken } from './tokenUtils.js';
 import { isDesktop } from './device.js';
 import { getLocalStorageDesktopToken } from './desktopToken.js';
 
-const API_ENDPOINT = `${import.meta.env.PROD ? 'https://www.gofreemix.com' : ''}/freemix/ai-messages/chat-stream`;
+const API_ENDPOINT = `${import.meta.env.PROD ? 'https://gofreemix.com' : ''}/freemix/ai-messages/chat-stream`;
 
 /**
  * 统一走后端 AI 代理，避免在前端暴露第三方模型密钥。

@@ -800,7 +800,7 @@ const toRegister = () => {
 // 处理GitHub登录
 const handleGitHubLogin = () => {
   if (isDesktopEnv) {
-    window.location.href = 'https://www.gofreemix.com/oauth2/authorization/github';
+    window.location.href = 'https://gofreemix.com/oauth2/authorization/github';
   } else {
     window.location.href = '/oauth2/authorization/github';
   }
@@ -808,7 +808,7 @@ const handleGitHubLogin = () => {
 
 const handleQQLogin = async () => {
   const isProd = import.meta.env.PROD;
-  const backendUrl = isProd || isDesktopEnv ? 'https://www.gofreemix.com' : 'http://localhost:8888';
+  const backendUrl = isProd || isDesktopEnv ? 'https://gofreemix.com' : 'http://localhost:8888';
   const qqAuthUrl = `${backendUrl}/auth/qq/render`;
 
   // 使用 Capacitor 官方推荐的判断方式

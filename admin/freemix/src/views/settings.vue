@@ -146,34 +146,35 @@
             <div class="settings-card">
               <h2>数据管理</h2>
               <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
-                导出你的所有数据，用于跨设备迁移或备份。数据包括：目标、AI对话记录、晨报、通知、成就等。
+                导出你的目标数据，用于跨设备迁移或备份。支持 CSV、Excel、JSON、XML、SQL、DMP 等多种格式。
               </p>
               <div class="export-info">
                 <div class="export-stat">
                   <span class="stat-num">{{ exportStats.goals }}</span>
                   <span class="stat-label">目标</span>
                 </div>
-                <div class="export-stat">
-                  <span class="stat-num">{{ exportStats.aiMsgs }}</span>
-                  <span class="stat-label">AI对话</span>
-                </div>
-                <div class="export-stat">
-                  <span class="stat-num">{{ exportStats.notifications }}</span>
-                  <span class="stat-label">通知</span>
-                </div>
-                <div class="export-stat">
-                  <span class="stat-num">{{ exportStats.achievements }}</span>
-                  <span class="stat-label">成就</span>
-                </div>
               </div>
-              <div class="form-actions" style="display: flex; gap: 0.75rem;">
-                <button @click="exportAndDownload" class="btn primary" :disabled="exporting">
-                  <span v-if="exporting">正在导出...</span>
-                  <span v-else>导出所有数据</span>
-                </button>
-                <button @click="previewExportData" class="btn" :disabled="exporting">
-                  预览数据
-                </button>
+              <div class="form-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <!-- 导出格式下拉框 -->
+                <div class="export-format-selector">
+                  <span class="format-label">导出格式：</span>
+                  <select v-model="exportFormat" class="format-select">
+                    <option
+                      v-for="fmt in exportFormats"
+                      :key="fmt.value"
+                      :value="fmt.value"
+                    >{{ fmt.label }}</option>
+                  </select>
+                </div>
+                <div style="display: flex; gap: 0.75rem; width: 100%;">
+                  <button @click="exportAndDownload" class="btn primary" :disabled="exporting">
+                    <span v-if="exporting">正在导出...</span>
+                    <span v-else>导出所有数据</span>
+                  </button>
+                  <button @click="previewExportData" class="btn" :disabled="exporting">
+                    预览数据
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -489,47 +490,91 @@ const activeSection = ref('profile');
 
 // 数据导出
 const exporting = ref(false)
-const exportStats = ref({ goals: 0, aiMsgs: 0, notifications: 0, achievements: 0 })
+const exportStats = ref({ goals: 0 })
 
+// 导出格式选项列表（所有格式生成在后端完成）
+const exportFormats = [
+  { value: 'csv',   label: 'CSV  (.csv)' },
+  { value: 'excel',  label: 'Excel (.xlsx)' },
+  { value: 'json',   label: 'JSON  (.json)' },
+  { value: 'xml',    label: 'XML   (.xml)' },
+  { value: 'sql',    label: 'SQL   (.sql)' },
+  { value: 'dmp',    label: 'DMP   (.dmp)' }
+]
+const exportFormat = ref('json')
+
+// 从后端获取数据预览（只取目标统计数据）
 const doExport = async () => {
   const res = await postM('exportUserData')
   if (isSuccess(res)) {
     const data = res.data.data
     exportStats.value = {
-      goals: data.goals?.length || 0,
-      aiMsgs: data.aiMessages?.length || 0,
-      notifications: data.notifications?.length || 0,
-      achievements: data.achievements?.length || 0
+      goals: data.goals?.length || 0
     }
     return data
   }
   return null
 }
 
+/**
+ * 导出并下载：所有格式生成逻辑在后端完成
+ * 通过 POST /downloadUserData/{format} 获取文件流
+ * 使用 XMLHttpRequest 以 blob 方式接收响应，避免 axios 干扰二进制数据
+ */
 const exportAndDownload = async () => {
   exporting.value = true
   try {
+    // 先预览获取统计数据
     const data = await doExport()
     if (!data) { message.error('导出失败'); return }
-    
-    // 构造下载文件
-    const jsonStr = JSON.stringify(data, null, 2)
-    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const now = new Date()
-    const ts = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`
-    a.download = `freemix-backup-${user.value.username || 'user'}-${ts}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    message.success('数据导出成功')
+
+    const format = exportFormat.value
+    const token = await getToken()
+
+    // 使用 XMLHttpRequest 下载二进制流（避免 axios 对 blob 的干扰）
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `/freemix/downloadUserData/${format}`, true)
+    xhr.setRequestHeader('Content-Type', 'application/json')
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.responseType = 'blob'
+
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        const blob = xhr.response
+        // 从 Content-Disposition 中提取文件名
+        const disposition = xhr.getResponseHeader('Content-Disposition') || ''
+        const filenameMatch = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/)
+        const extMap: Record<string, string> = { csv: 'csv', excel: 'xlsx', json: 'json', xml: 'xml', sql: 'sql', dmp: 'dmp' }
+        const ext = extMap[format] || 'json'
+        const usernameVal = (JSON.parse(localStorage.getItem('user') || '{}')).username || 'user'
+        const now = new Date()
+        const ts = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`
+        const filename = decodeURIComponent(filenameMatch?.[1] || filenameMatch?.[2] || `freemix-backup-${usernameVal}-${ts}.${ext}`)
+
+        const blobUrl = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(blobUrl)
+
+        message.success(`数据导出成功 (${format.toUpperCase()})`)
+      } else {
+        message.error('导出失败: 服务器返回 ' + xhr.status)
+      }
+      exporting.value = false
+    }
+
+    xhr.onerror = function () {
+      message.error('导出失败: 网络错误')
+      exporting.value = false
+    }
+
+    xhr.send('{}')
   } catch (e) {
     message.error('导出失败: ' + (e.message || '未知错误'))
-  } finally {
     exporting.value = false
   }
 }
@@ -538,7 +583,7 @@ const previewExportData = async () => {
   exporting.value = true
   try {
     await doExport()
-    message.success(`数据概览已更新：${exportStats.value.goals} 个目标，${exportStats.value.aiMsgs} 条AI对话，${exportStats.value.notifications} 条通知，${exportStats.value.achievements} 项成就`)
+    message.success(`数据概览已更新：${exportStats.value.goals} 个目标`)
   } catch (e) {
     message.error('获取数据失败')
   } finally {
@@ -827,6 +872,50 @@ onMounted(() => {
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* 导出格式下拉框样式 */
+.export-format-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.format-label {
+  font-size: 0.85rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.format-select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  background: var(--card-bg);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+  min-width: 140px;
+}
+
+.format-select:hover,
+.format-select:focus {
+  border-color: #00c9a7;
+}
+
+.format-select option {
+  background: var(--card-bg);
+  color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+  .export-format-selector {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 768px) {

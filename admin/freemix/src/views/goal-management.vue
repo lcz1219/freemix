@@ -6,12 +6,12 @@
         <n-layout-content class="main-content-wrapper">
           <div class="main-content">
             <!-- 页面标题 -->
-            <section class="page-header">
+            <!-- <section class="page-header">
               <h1 :class="isDark ? 'hero-title' : 'hero-title-light'">目标管理</h1>
               <p :class="isDark ? 'hero-subtitle' : 'hero-subtitle-light'">
                 管理您的所有目标，查看进度并进行编辑
               </p>
-            </section>
+            </section> -->
 
             <!-- 控制面板 (方案一：重构指挥部) -->
             <section class="command-deck-section">
@@ -90,7 +90,7 @@
             <section class="goals-section">
               <n-grid x-gap="20" cols="24" item-responsive responsive="screen">
                 <!-- 左侧目标列表 -->
-                <n-grid-item span="24 m:10 l:12">
+                <n-grid-item span="24 m:10 l:9">
                   <n-card :class="[isDark ? 'feature-card' : 'feature-card-light', 'list-card']"
                     content-style="padding: 10px;">
                     <template #header>
@@ -145,9 +145,9 @@
                                   </template>
                                   已过期
                                 </n-tooltip>
-                                <!-- 进行中 → 一键完成按钮 -->
+                                <!-- 进行中 → 一键完成按钮 + 续签按钮 -->
                                 <n-popconfirm
-                                  v-else-if="scope.row.status === 'in-progress'"
+                                  v-if="scope.row.status === 'in-progress'"
                                   @positive-click="completeAllGoal(scope.row)"
                                   positive-text="确认完成"
                                   negative-text="取消"
@@ -159,6 +159,28 @@
                                     </n-button>
                                   </template>
                                   确认将 "{{ scope.row.title }}" 所有子任务标记为完成？
+                                </n-popconfirm>
+                                <!-- 续签按钮：deadline +30天，最多续签3次 -->
+                                <n-popconfirm
+                                  v-if="scope.row.status === 'in-progress' && (scope.row.renewCount || 0) < 3"
+                                  @positive-click="renewGoalDeadline(scope.row)"
+                                  positive-text="确认续签"
+                                  negative-text="取消"
+                                  placement="right"
+                                  
+                                >
+                                  <template #trigger>
+                                    <n-button text class="renew-btn" :title="'续签截止日期（剩余' + (3 - (scope.row.renewCount || 0)) + '次）'">
+                                      <!-- 自定义 SVG：时钟 + 加号，表示延长/续签时间 -->
+                                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <polyline points="12,7 12,12 15,12"/>
+                                        <line x1="16" y1="3" x2="16" y2="8"/>
+                                        <line x1="13.5" y1="5.5" x2="18.5" y2="5.5"/>
+                                      </svg>
+                                    </n-button>
+                                  </template>
+                                  确认将 "{{ scope.row.title }}" 的截止日期延长30天？<br/>（剩余{{ 3 - (scope.row.renewCount || 0) }}次）
                                 </n-popconfirm>
                               </div>
                             </template>
@@ -218,7 +240,7 @@
                           </template>
                         </el-table-column>
                         <!-- 状态 + 优先级（列合并）：紧凑色标标签，颜色 + 文字一目了然 -->
-                        <el-table-column label="状态｜优先级"  align="center">
+                        <el-table-column label="状态｜优先级" width="120"  align="center">
                           <template #default="scope">
                             <div v-if="scope.row._isGroupHeader" style="color:#888;font-size:12px;text-align:center;">
                               批量
@@ -243,7 +265,7 @@
                 </n-grid-item>
 
                 <!-- 右侧详情面板 -->
-                <n-grid-item span="24 m:14 l:12">
+                <n-grid-item span="24 m:14 l:15">
                   <n-card :class="isDark ? 'feature-card' : 'feature-card-light'" v-if="currentSelectedGoal"
                     class="detail-card" content-style="padding: 24px;">
                     <template #header>
@@ -326,7 +348,26 @@
                           <n-tag size="tiny" round type="primary">{{ currentSelectedGoal.childGoals ?
                             currentSelectedGoal.childGoals.length : 0 }}</n-tag>
                         </div>
-
+ <div class="child-add-bar" v-if="currentSelectedGoal">
+                        <input
+                          v-model="newChildMessage"
+                          class="child-add-input"
+                          placeholder="输入新的子目标，回车添加..."
+                          @keyup.enter="addChildGoal"
+                        />
+                        <n-button
+                          size="tiny"
+                          circle
+                          type="primary"
+                          :disabled="!newChildMessage.trim()"
+                          @click="addChildGoal"
+                          class="add-bar-btn"
+                        >
+                          <template #icon>
+                            <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></n-icon>
+                          </template>
+                        </n-button>
+                      </div>
                         <div v-if="currentSelectedGoal.childGoals && currentSelectedGoal.childGoals.length > 0"
                           class="sub-goals-container">
                           <div v-for="(childGoal, index) in currentSelectedGoal.childGoals" :key="index"
@@ -380,26 +421,7 @@
                       </div>
 
                       <!-- 子目标添加栏（详情面板底部浮动） -->
-                      <div class="child-add-bar" v-if="currentSelectedGoal">
-                        <input
-                          v-model="newChildMessage"
-                          class="child-add-input"
-                          placeholder="输入新的子目标，回车添加..."
-                          @keyup.enter="addChildGoal"
-                        />
-                        <n-button
-                          size="tiny"
-                          circle
-                          type="primary"
-                          :disabled="!newChildMessage.trim()"
-                          @click="addChildGoal"
-                          class="add-bar-btn"
-                        >
-                          <template #icon>
-                            <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></n-icon>
-                          </template>
-                        </n-button>
-                      </div>
+                     
 
                       <!-- 目标笔记区域 -->
 
@@ -1211,7 +1233,7 @@ const addChildGoal = async () => {
     if (!updatedGoal.childGoals) updatedGoal.childGoals = []
 
     // 追加新子目标
-    updatedGoal.childGoals.push({
+    updatedGoal.childGoals.unshift({
       message: msg,
       finish: false,
       finishDate: null,
@@ -1268,6 +1290,25 @@ const completeAllGoal = async (goal: any) => {
     console.error(error);
   }
 };
+
+/**
+ * 续签目标截止日期：调用后端接口，deadline +30天，每个目标最多续签3次
+ * 续签成功后刷新列表，更新 deadlineString 显示
+ */
+const renewGoalDeadline = async (goal: any) => {
+  try {
+    const res = await postM('renewGoalDeadline', { goalId: goal._id })
+    if (isSuccess(res)) {
+      message.success(`续签成功！截止日期已延长30天（剩余${3 - (res.data.data?.renewCount || 0)}次）`)
+      getGoals()
+    } else {
+      expiredGoalToast(res)
+    }
+  } catch (error) {
+    message.error('续签失败')
+    console.error(error)
+  }
+}
 
 // 筛选后的目标列表
 const filteredGoals = computed(() => {
@@ -1699,7 +1740,7 @@ onMounted(() => {
 .home-container {
   background-color: #0f0f13;
   color: #ffffff;
-  min-height: 100vh;
+  max-height: 120vh;
   position: relative;
   overflow-x: hidden;
 }
@@ -1707,7 +1748,7 @@ onMounted(() => {
 .home-container-light {
   background-color: #f0f2f5;
   color: #1f2937;
-  min-height: 100vh;
+  max-height: 90%;
   position: relative;
   overflow-x: hidden;
 }
@@ -1746,7 +1787,7 @@ onMounted(() => {
 .stagger-list-container :deep(.el-table__row:nth-child(10)) { animation-delay: 0.5s; }
 
 .main-content {
-  padding: 24px 40px;
+  padding: 8px 15px;
   max-width: 1600px;
   margin: 0 auto;
 }
@@ -1883,6 +1924,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   margin-bottom: 5px;
+  /* max-height: 20vh; */
 
 }
 
@@ -1894,13 +1936,14 @@ onMounted(() => {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05);
   border-radius: 16px;
   margin-bottom: 5px;
+  /* max-height: 70%; */
 }
 
 /* 统一左右卡片高度 */
 .list-card,
 .detail-card,
 .empty-selection {
-  height: 100%;
+  max-height: 75vh;
 }
 
 .list-card :deep(.n-card__content),
@@ -1909,7 +1952,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   /* 防止内容溢出撑破圆角 */
   padding: 0;
   /* 接管 padding */
@@ -2511,7 +2554,7 @@ onMounted(() => {
   border-radius: 50%;
   color: rgba(var(--fm-primary-rgb), 0.55);
   transition: all 0.25s ease;
-  background-color: rgba(var(--fm-primary-rgb), 0.06);
+  background-color: rgb(0 201 167 / 73%);;
 }
 
 .complete-all-btn:hover {
@@ -2519,6 +2562,27 @@ onMounted(() => {
   background-color: rgba(var(--fm-primary-rgb), 0.15);
   transform: scale(1.15);
   box-shadow: 0 0 12px rgba(var(--fm-primary-rgb), 0.25);
+}
+
+/* 续签按钮 — 日历图标，橘色系视觉区分 */
+.renew-btn {
+  width: 30px;
+  height: 30px;
+  margin-left: 4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: rgba(255, 152, 0, 0.55);
+  transition: all 0.25s ease;
+  background-color: rgb(255 152 0 / 64%);
+}
+
+.renew-btn:hover {
+  color: rgb(255, 152, 0);
+  background-color: rgba(255, 152, 0, 0.15);
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(255, 152, 0, 0.25);
 }
 
 /* 已完成状态的徽标 — 绿色对勾 */
