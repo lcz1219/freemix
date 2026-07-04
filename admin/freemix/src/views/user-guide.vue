@@ -23,7 +23,7 @@
                 <div class="dot red"></div>
                 <div class="dot yellow"></div>
                 <div class="dot green"></div>
-                <div class="address-bar">https://freemix.bond/#/home</div>
+                <div class="address-bar">https://www.gofreemix.com/#/home</div>
               </div>
               <DashboardViewGuride />
           </div>
@@ -42,7 +42,7 @@
                 <div class="dot red"></div>
                 <div class="dot yellow"></div>
                 <div class="dot green"></div>
-                <div class="address-bar">https://freemix.bond/#/login</div>
+                <div class="address-bar">https://www.gofreemix.com/#/login</div>
               </div>
             <LoginViewGudie />
           </div>
@@ -58,7 +58,7 @@
                 <div class="dot red"></div>
                 <div class="dot yellow"></div>
                 <div class="dot green"></div>
-                <div class="address-bar">https://freemix.bond/#/goal-management</div>
+                <div class="address-bar">https://www.gofreemix.com/#/goal-management</div>
               </div>
 
             <HomeViewGuride />
@@ -78,7 +78,7 @@
                 <div class="dot red"></div>
                 <div class="dot yellow"></div>
                 <div class="dot green"></div>
-                <div class="address-bar">https://freemix.bond/#/AIAssistantWindow</div>
+                <div class="address-bar">https://www.gofreemix.com/#/AIAssistantWindow</div>
               </div>
               <div class="mac-content chat-layout">
                 <div class="chat-messages" ref="chatScrollRef">

@@ -83,12 +83,10 @@
                 <!-- 备案信息 -->
                 <div class="">
                   <a href="https://beian.miit.gov.cn/" style="margin-top: 5px;" class="beian-link"
-                    target="_blank">粤ICP备2025487297号-1</a>
+                    target="_blank">粤ICP备2025487297号-2</a>
                 </div>｜
                 <div class="">
-                  <!-- <img src="/icons/beian.png" alt="粤公网安备" class="beian-icon" /> -->
-                  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44010602014148" rel="noreferrer"
-                    target="_blank" class="beian-link">粤公网安备44010602014148号</a>
+                  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44010602016344" rel="noreferrer"  target="_blank"  class="beian-link">粤公网安备44010602016344号</a>
                 </div>
               </div>
 

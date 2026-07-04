@@ -435,7 +435,7 @@ const handleShare = async (goal) => {
     if (res && res.data && res.data.code === 200) {
       const token = res.data.data.shareToken;
       let shareUrl = import.meta.env.PROD 
-        ? `https://freemix.bond/share/goal/${token}`
+        ? `https://www.gofreemix.com/share/goal/${token}`
         : `${window.location.origin}/share/goal/${token}`;
 
       if (navigator.clipboard) {

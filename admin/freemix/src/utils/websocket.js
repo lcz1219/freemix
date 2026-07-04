@@ -21,7 +21,7 @@ export async function connect() {
     isConnecting = true;
     // 动态构建WebSocket连接URL，确保协议与当前页面一致
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    const host = import.meta.env.PROD ? 'freemix.bond' : 'localhost:5173';
+    const host = import.meta.env.PROD ? 'www.gofreemix.com' : 'localhost:5173';
     const baseUrl = `${protocol}//${host}`;
     
     // 获取token用于WebSocket连接认证
