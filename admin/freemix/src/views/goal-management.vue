@@ -113,6 +113,25 @@
                         <span class="header-stat">{{ filteredGoals.length }} 个目标</span>
                         <span v-if="groupCount > 0" class="header-stat-sep">·</span>
                         <span v-if="groupCount > 0" class="header-stat header-stat-highlight">{{ groupCount }} 组</span>
+                        <!-- 分组模式切换：按标题 / 按优先级 -->
+                        <div class="group-toggle-wrapper">
+                          <n-button-group size="tiny">
+                            <n-button
+                              :type="viewMode === 'title' ? 'primary' : 'default'"
+                              size="tiny"
+                              @click="viewMode = 'title'"
+                            >
+                              按标题
+                            </n-button>
+                            <n-button
+                              :type="viewMode === 'priority' ? 'primary' : 'default'"
+                              size="tiny"
+                              @click="viewMode = 'priority'"
+                            >
+                              按优先级
+                            </n-button>
+                          </n-button-group>
+                        </div>
                       </div>
                     </template>
 
@@ -188,8 +207,24 @@
                         </el-table-column>
                         <el-table-column label="目标名称" prop="title"  show-overflow-tooltip min-width="150">
                           <template #default="scope">
+                            <!-- 优先级组头 -->
+                            <div v-if="scope.row._isPriorityGroup"
+                              style="display: flex; align-items: center; gap: 10px; font-weight: 600;"
+                              @click.stop="toggleGroup(scope.row.title)">
+                              <!-- 折叠箭头 -->
+                              <span style="display:inline-flex;transition:transform .2s;font-size:10px;color:#999;width:10px;"
+                                :style="{ transform: isGroupExpanded(scope.row.title) ? 'rotate(90deg)' : 'rotate(0deg)' }">
+                                ▶
+                              </span>
+                              <!-- 优先级色点 -->
+                              <span :style="{ display:'inline-block', width:'8px', height:'8px', borderRadius:'50%', background: getPriorityColor(scope.row.priority) }"></span>
+                              <!-- 优先级名称 -->
+                              <span>{{ scope.row.title }}</span>
+                              <!-- 计数 -->
+                              <span style="font-size:12px;color:#999;font-weight:400;">{{ scope.row.count }} 个</span>
+                            </div>
                             <!-- 组头行（根分组「目标分组」或子分组） -->
-                            <div v-if="scope.row._isGroupHeader" 
+                            <div v-else-if="scope.row._isGroupHeader" 
                               style="display: flex; align-items: center; gap: 8px; font-weight: 600;"
                               @click.stop="toggleGroup(scope.row.title)">
                               <span style="display:inline-flex;transition:transform .2s;font-size:12px;color:#00c9a7;"
@@ -658,6 +693,20 @@ const currentSelectedGoal = ref<any>(null);
 // 高级筛选折叠状态
 const showAdvancedFilters = ref(false);
 
+// 分组模式：'title' = 按标题分组（默认），'priority' = 按优先级分组
+const viewMode = ref<'title' | 'priority'>('title');
+
+// 切换到优先级模式时自动展开所有优先级组
+watch(viewMode, (mode) => {
+  // if (mode === 'priority') {
+  //   const set = new Set(expandedGroups.value)
+  //   for (const opt of priorityOptions) {
+  //     set.add(opt.label)
+  //   }
+  //   expandedGroups.value = set
+  // }
+})
+
 // 庆祝动画状态
 const showCelebration = ref(false);
 const celebrationGoalTitle = ref('');
@@ -713,6 +762,17 @@ const handleRowClick = (row: any) => {
 // 表格行样式
 const tableRowClassName = ({ row }: { row: any }) => {
   if (row._isGroupHeader) {
+    // 优先级组头：按优先级返回不同的行样式，方便 CSS 加颜色区分
+    if (row.priority === 'urgent') {
+      return 'urgent-group-header-row';
+    } else if (row.priority === 'high') {
+      return 'high-group-header-row';
+    } else if (row.priority === 'medium') {
+      return 'medium-group-header-row';
+    } else if (row.priority === 'low') {
+      return 'low-group-header-row';
+    }
+    // 默认的标题分组组头
     return 'group-header-row';
   }
   if (currentSelectedGoal.value && row._id === currentSelectedGoal.value._id) {
@@ -1084,6 +1144,17 @@ const getPriorityType = (level: string) => {
   }
 };
 
+// 获取优先级对应的颜色值，用于组头色点
+const getPriorityColor = (level: string): string => {
+  const colorMap: Record<string, string> = {
+    urgent: '#ef4444',
+    high: '#f87171',
+    medium: '#f59e0b',
+    low: '#4ade80'
+  };
+  return colorMap[level] || '#999';
+};
+
 // 获取进度条颜色
 const getProgressColor = (goal: any) => {
   if (!goal.childGoals || goal.childGoals.length === 0) return '#00c9a7';
@@ -1383,13 +1454,50 @@ const isGroupExpanded = (title: string) => {
 }
 
 /**
- * 对 filteredGoals 进行同标题分组，生成扁平列表：
- * - 标题唯一的目标 → 直接作为普通行
- * - 有多个相同标题的目标 → 插入一个组头行 + 展开后的子行
+ * 对 filteredGoals 进行分组，生成扁平列表：
+ * - 按标题模式：同标题合并为组（现有逻辑）
+ * - 按优先级模式：按 urgent/high/medium/low 分成 4 组
  */
 const groupedDisplayList = computed(() => {
   const list = filteredGoals.value
 
+  // ======== 按优先级分组模式 ========
+  if (viewMode.value === 'priority') {
+    // 优先级显示顺序（高优先级在前）
+    const priorityOrder = ['urgent', 'high', 'medium', 'low']
+
+    // 按 level 字段分组
+    const groups = new Map<string, any[]>()
+    for (const goal of list) {
+      const key = goal.level || 'medium'
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key)!.push(goal)
+    }
+
+    // 按优先级顺序构建扁平列表：组头行 → 子目标行
+    const result: any[] = []
+    for (const pri of priorityOrder) {
+      const goalsInGroup = groups.get(pri) || []
+      if (goalsInGroup.length === 0) continue
+
+      const label = priorityOptions.find(o => o.value === pri)?.label || pri
+      result.push({
+        _isGroupHeader: true,       // 复用组头行样式
+        _isPriorityGroup: true,     // 标记为优先级组头，用于样式区分
+        priority: pri,
+        title: label,
+        count: goalsInGroup.length,
+        children: goalsInGroup
+      })
+      // 根据折叠状态决定是否显示子目标
+      if (isGroupExpanded(label)) {
+        result.push(...goalsInGroup)
+      }
+    }
+    return result
+  }
+
+  // ======== 原有按标题分组逻辑 ========
   // 1. 按 title 分组
   const groups = new Map<string, any[]>()
   for (const goal of list) {
@@ -1448,6 +1556,15 @@ const groupedDisplayList = computed(() => {
 
 // 统计有多少组（即有多少个同标题的目标分组）
 const groupCount = computed(() => {
+  // 优先级模式：统计有目标的优先级组数
+  if (viewMode.value === 'priority') {
+    const levels = new Set<string>()
+    for (const goal of filteredGoals.value) {
+      levels.add(goal.level || 'medium')
+    }
+    return levels.size
+  }
+  // 标题模式：统计有多于一个目标的标题组数
   const groups = new Map<string, number>()
   for (const goal of filteredGoals.value) {
     const key = goal.title
@@ -1998,6 +2115,16 @@ onMounted(() => {
   font-weight: 500;
 }
 
+/* 分组模式切换按钮 */
+.group-toggle-wrapper {
+  margin-left: auto;
+}
+.group-toggle-wrapper .n-button-group .n-button {
+  font-size: 11px;
+  height: 24px;
+  padding: 0 8px;
+}
+
 /* ----------------------------------
    4. 表格样式优化 (Element Table)
    ---------------------------------- */
@@ -2064,6 +2191,66 @@ onMounted(() => {
 :deep(.el-table .group-header-row:hover) {
   background: rgba(0, 201, 167, 0.1) !important;
 }
+
+/* 优先级组头行 - 左边框颜色区分 */
+/* :deep(.el-table .urgent-group-header-row) {
+  background: rgba(239, 68, 68, 0.06) !important;
+  cursor: pointer !important;
+}
+:deep(.el-table .urgent-group-header-row td) {
+  border-bottom: 1px solid rgba(239, 68, 68, 0.15) !important;
+  border-left: 3px solid #ef4444 !important;
+}
+:deep(.el-table .urgent-group-header-row:hover) {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+:deep(.el-table .high-group-header-row) {
+  background: rgba(248, 113, 113, 0.06) !important;
+  cursor: pointer !important;
+}
+:deep(.el-table .high-group-header-row td) {
+  border-bottom: 1px solid rgba(248, 113, 113, 0.15) !important;
+  border-left: 3px solid #f87171 !important;
+}
+:deep(.el-table .high-group-header-row:hover) {
+  background: rgba(248, 113, 113, 0.1) !important;
+}
+
+:deep(.el-table .medium-group-header-row) {
+  background: rgba(245, 158, 11, 0.06) !important;
+  cursor: pointer !important;
+}
+:deep(.el-table .medium-group-header-row td) {
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15) !important;
+  border-left: 3px solid #f59e0b !important;
+}
+:deep(.el-table .medium-group-header-row:hover) {
+  background: rgba(245, 158, 11, 0.1) !important;
+}
+
+:deep(.el-table .low-group-header-row) {
+  background: rgba(74, 222, 128, 0.06) !important;
+  cursor: pointer !important;
+}
+:deep(.el-table .low-group-header-row td) {
+  border-bottom: 1px solid rgba(74, 222, 128, 0.15) !important;
+  border-left: 3px solid #4ade80 !important;
+}
+:deep(.el-table .low-group-header-row:hover) {
+  background: rgba(74, 222, 128, 0.1) !important;
+}
+
+:deep(.el-table .low-group-header-row) {
+  background: rgba(0, 201, 7, 0.06) !important;
+  cursor: pointer !important;
+}
+:deep(.el-table .low-group-header-row td) {
+  border-bottom: 1px solid rgba(0, 201, 167, 0.15) !important;
+}
+:deep(.el-table .low-group-header-row:hover) {
+  background: rgba(0, 201, 167, 0.1) !important;
+} */
 
 /* ----------------------------------
    5. 详情页排版 (Detail Layout)

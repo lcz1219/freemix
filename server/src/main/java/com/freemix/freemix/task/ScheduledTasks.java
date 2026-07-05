@@ -32,74 +32,82 @@ public class ScheduledTasks {
     // 每 1 分钟执行一次，处理过期目标
     @Scheduled(fixedDelay = 60000)
     public void fixedRateTask() {
-        List<Goal> goals = mongoTemplate.find(new Query(Criteria.where("del").ne(1)), Goal.class);
+        try {
+            List<Goal> goals = mongoTemplate.find(new Query(Criteria.where("del").ne(1)), Goal.class);
 
-        goals.stream().forEach(goal -> {
+            goals.stream().forEach(goal -> {
 
-            if(System.currentTimeMillis()>goal.getDeadline().getTime()&&"in-progress".equals(goal.getStatus())) {
-                goal.setStatus("expired");
-                mongoTemplate.save(goal);
-                log.info("[ScheduledTasks] goal expired:{}", goal);
+                if(System.currentTimeMillis()>goal.getDeadline().getTime()&&"in-progress".equals(goal.getStatus())) {
+                    goal.setStatus("expired");
+                    mongoTemplate.save(goal);
+                    log.info("[ScheduledTasks] goal expired:{}", goal);
 
 
 
 //           editGoal(goal.toString());
-            }else{
+                }else{
 //                log.info("[ScheduledTasks] goal noexpired");
-            }
+                }
 
-        });
+            });
+        } catch (Exception e) {
+            log.error("[ScheduledTasks] MongoDB连接异常，无法处理过期目标检查", e);
+        }
     }
 
     // 处理循环目标自动生成
     @Scheduled(fixedDelay = 60000)
     public void generateRecurringGoals() {
-        Date now = new Date();
-        // 查找活跃且未被逻辑删除，且下次执行时间小于等于现在的循环规则
-        Query query = new Query(Criteria.where("isActive").is(true)
-                .and("del").ne(1)
-                .and("nextExecutionTime").lte(now));
-        
-        List<RecurringGoal> recurringGoals = mongoTemplate.find(query, RecurringGoal.class);
-        
-        for (RecurringGoal rule : recurringGoals) {
-            try {
-                // 生成新目标
-                Goal newGoal = new Goal();
-                newGoal.set_id(UUID.randomUUID().toString());
-                newGoal.setTitle(rule.getTitle());
-                newGoal.setDescription(rule.getDescription());
-                newGoal.setOwner(rule.getOwner());
-                newGoal.setTags(rule.getTags());
-                newGoal.setLevel(rule.getLevel());
-                newGoal.setIsPublic(rule.getIsPublic());
-                newGoal.setRichText(rule.getRichText());
-                newGoal.setChildGoals(rule.getChildGoals());
-                newGoal.setCreateTime(new Date());
-                newGoal.setStatus("in-progress");
-                newGoal.setProgress(0);
-                
-                // 设置截止日期 (默认该周期的结束时间)
-                newGoal.setDeadline(calculateDeadline(rule, rule.getNextExecutionTime()));
-                
-                mongoTemplate.insert(newGoal);
-                log.info("[ScheduledTasks] Generated new goal from recurring rule: {} for user: {}", rule.getTitle(), rule.getOwner());
-                
-                // 触发成就检查
+        try {
+            Date now = new Date();
+            // 查找活跃且未被逻辑删除，且下次执行时间小于等于现在的循环规则
+            Query query = new Query(Criteria.where("isActive").is(true)
+                    .and("del").ne(1)
+                    .and("nextExecutionTime").lte(now));
+
+            List<RecurringGoal> recurringGoals = mongoTemplate.find(query, RecurringGoal.class);
+
+            for (RecurringGoal rule : recurringGoals) {
                 try {
-                    achievementService.checkAndUnlock(newGoal.getOwner(), "GOAL_CREATE", newGoal);
+                    // 生成新目标
+                    Goal newGoal = new Goal();
+                    newGoal.set_id(UUID.randomUUID().toString());
+                    newGoal.setTitle(rule.getTitle());
+                    newGoal.setDescription(rule.getDescription());
+                    newGoal.setOwner(rule.getOwner());
+                    newGoal.setTags(rule.getTags());
+                    newGoal.setLevel(rule.getLevel());
+                    newGoal.setIsPublic(rule.getIsPublic());
+                    newGoal.setRichText(rule.getRichText());
+                    newGoal.setChildGoals(rule.getChildGoals());
+                    newGoal.setCreateTime(new Date());
+                    newGoal.setStatus("in-progress");
+                    newGoal.setProgress(0);
+
+                    // 设置截止日期 (默认该周期的结束时间)
+                    newGoal.setDeadline(calculateDeadline(rule, rule.getNextExecutionTime()));
+
+                    mongoTemplate.insert(newGoal);
+                    log.info("[ScheduledTasks] Generated new goal from recurring rule: {} for user: {}", rule.getTitle(), rule.getOwner());
+
+                    // 触发成就检查
+                    try {
+                        achievementService.checkAndUnlock(newGoal.getOwner(), "GOAL_CREATE", newGoal);
+                    } catch (Exception e) {
+                        log.error("[ScheduledTasks] Failed to check achievements for generated goal", e);
+                    }
+
+                    // 更新规则状态
+                    rule.setLastGeneratedTime(now);
+                    rule.setNextExecutionTime(calculateNextExecutionTime(rule, rule.getNextExecutionTime()));
+                    mongoTemplate.save(rule);
+
                 } catch (Exception e) {
-                    log.error("[ScheduledTasks] Failed to check achievements for generated goal", e);
+                    log.error("[ScheduledTasks] Failed to generate goal for rule: " + rule.get_id(), e);
                 }
-                
-                // 更新规则状态
-                rule.setLastGeneratedTime(now);
-                rule.setNextExecutionTime(calculateNextExecutionTime(rule, rule.getNextExecutionTime()));
-                mongoTemplate.save(rule);
-                
-            } catch (Exception e) {
-                log.error("[ScheduledTasks] Failed to generate goal for rule: " + rule.get_id(), e);
             }
+        } catch (Exception e) {
+            log.error("[ScheduledTasks] MongoDB连接异常，无法查询循环目标规则", e);
         }
     }
 

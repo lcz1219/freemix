@@ -4,6 +4,7 @@ import com.freemix.freemix.enetiy.AgentModel;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.UserContextUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -85,6 +87,16 @@ public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor 
                 attributes.put("user", user);
                 attributes.put("PRINCIPAL", principal);
                 return true;
+            }
+            
+            // 认证失败时先用 sendError 提交 401 响应
+            // 这样 SockJS 后续的 sendError(503) 会因为响应已提交而失败
+            // 客户端收到 401 后识别为认证失败，不会像收到 503 那样持续重试
+            if (response instanceof ServletServerHttpResponse) {
+                HttpServletResponse rawResponse = ((ServletServerHttpResponse) response).getServletResponse();
+                if (!rawResponse.isCommitted()) {
+                    rawResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "未授权，请提供有效的token");
+                }
             }
         }
         // 如果没有认证信息，拒绝连接
