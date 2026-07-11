@@ -113,7 +113,7 @@
                         <span class="header-stat">{{ filteredGoals.length }} 个目标</span>
                         <span v-if="groupCount > 0" class="header-stat-sep">·</span>
                         <span v-if="groupCount > 0" class="header-stat header-stat-highlight">{{ groupCount }} 组</span>
-                        <!-- 分组模式切换：按标题 / 按优先级 -->
+                        <!-- 分组模式切换：按标题 / 按优先级 / 按时间 -->
                         <div class="group-toggle-wrapper">
                           <n-button-group size="tiny">
                             <n-button
@@ -129,6 +129,30 @@
                               @click="viewMode = 'priority'"
                             >
                               按优先级
+                            </n-button>
+                            <n-button
+                              :type="viewMode === 'time' ? 'primary' : 'default'"
+                              size="tiny"
+                              @click="viewMode = 'time'"
+                            >
+                              按时间
+                            </n-button>
+                          </n-button-group>
+                          <!-- 时间排序切换 -->
+                          <n-button-group v-if="viewMode === 'time'" size="tiny" style="margin-left:6px;">
+                            <n-button
+                              :type="sortAsc ? 'primary' : 'default'"
+                              size="tiny"
+                              @click="sortAsc = true"
+                            >
+                              ↑ 升序
+                            </n-button>
+                            <n-button
+                              :type="!sortAsc ? 'primary' : 'default'"
+                              size="tiny"
+                              @click="sortAsc = false"
+                            >
+                              ↓ 降序
                             </n-button>
                           </n-button-group>
                         </div>
@@ -207,8 +231,22 @@
                         </el-table-column>
                         <el-table-column label="目标名称" prop="title"  show-overflow-tooltip min-width="150">
                           <template #default="scope">
+                            <!-- 时间组头（按截止月份分组） -->
+                            <div v-if="scope.row._isTimeGroup"
+                              style="display: flex; align-items: center; gap: 10px; font-weight: 600;"
+                              @click.stop="toggleGroup(scope.row.title)">
+                              <!-- 折叠箭头 -->
+                              <span style="display:inline-flex;transition:transform .2s;font-size:10px;color:#999;width:10px;"
+                                :style="{ transform: isGroupExpanded(scope.row.title) ? 'rotate(90deg)' : 'rotate(0deg)' }">
+                                ▶
+                              </span>
+                              <!-- 月份文字 -->
+                              <span style="font-size:13px;">{{ scope.row.title }}</span>
+                              <!-- 计数 -->
+                              <span style="font-size:12px;color:#999;font-weight:400;">·  {{ scope.row.count }} 个</span>
+                            </div>
                             <!-- 优先级组头 -->
-                            <div v-if="scope.row._isPriorityGroup"
+                            <div v-else-if="scope.row._isPriorityGroup"
                               style="display: flex; align-items: center; gap: 10px; font-weight: 600;"
                               @click.stop="toggleGroup(scope.row.title)">
                               <!-- 折叠箭头 -->
@@ -693,10 +731,13 @@ const currentSelectedGoal = ref<any>(null);
 // 高级筛选折叠状态
 const showAdvancedFilters = ref(false);
 
-// 分组模式：'title' = 按标题分组（默认），'priority' = 按优先级分组
-const viewMode = ref<'title' | 'priority'>('title');
+// 分组模式：'title' = 按标题分组（默认），'priority' = 按优先级分组，'time' = 按截止月份分组
+const viewMode = ref<'title' | 'priority' | 'time'>('title');
 
-// 切换到优先级模式时自动展开所有优先级组
+// 时间分组排序方向：true = 升序（从远到近），false = 降序（从近到远）
+const sortAsc = ref(false);
+
+// 切换到优先级/时间模式时自动展开所有组
 watch(viewMode, (mode) => {
   // if (mode === 'priority') {
   //   const set = new Set(expandedGroups.value)
@@ -762,7 +803,11 @@ const handleRowClick = (row: any) => {
 // 表格行样式
 const tableRowClassName = ({ row }: { row: any }) => {
   if (row._isGroupHeader) {
-    // 优先级组头：按优先级返回不同的行样式，方便 CSS 加颜色区分
+    // 时间组头
+    if (row._isTimeGroup) {
+      return 'time-group-header-row';
+    }
+    // 优先级组头：按优先级返回不同的行样式
     if (row.priority === 'urgent') {
       return 'urgent-group-header-row';
     } else if (row.priority === 'high') {
@@ -1497,6 +1542,42 @@ const groupedDisplayList = computed(() => {
     return result
   }
 
+  // ======== 按截止月份分组模式 ========
+  if (viewMode.value === 'time') {
+    // 按 deadline 的年月分组
+    const groups = new Map<string, any[]>()
+    for (const goal of list) {
+      if (!goal.deadline) continue
+      const date = new Date(goal.deadline)
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key)!.push(goal)
+    }
+
+    // 按年月排序（升序 = 从远到近，降序 = 从近到远）
+    const sortedKeys = Array.from(groups.keys()).sort()
+    if (!sortAsc.value) sortedKeys.reverse()
+
+    const result: any[] = []
+    for (const key of sortedKeys) {
+      const [year, month] = key.split('-')
+      const label = `${year}年${parseInt(month)}月`
+      const goalsInGroup = groups.get(key)!
+      result.push({
+        _isGroupHeader: true,
+        _isTimeGroup: true,
+        title: label,
+        count: goalsInGroup.length,
+        children: goalsInGroup
+      })
+      // 根据折叠状态决定是否显示子目标
+      if (isGroupExpanded(label)) {
+        result.push(...goalsInGroup)
+      }
+    }
+    return result
+  }
+
   // ======== 原有按标题分组逻辑 ========
   // 1. 按 title 分组
   const groups = new Map<string, any[]>()
@@ -1563,6 +1644,17 @@ const groupCount = computed(() => {
       levels.add(goal.level || 'medium')
     }
     return levels.size
+  }
+  // 时间模式：统计有目标的月份组数
+  if (viewMode.value === 'time') {
+    const months = new Set<string>()
+    for (const goal of filteredGoals.value) {
+      if (!goal.deadline) continue
+      const date = new Date(goal.deadline)
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      months.add(key)
+    }
+    return months.size
   }
   // 标题模式：统计有多于一个目标的标题组数
   const groups = new Map<string, number>()
@@ -2190,6 +2282,20 @@ onMounted(() => {
 }
 :deep(.el-table .group-header-row:hover) {
   background: rgba(0, 201, 167, 0.1) !important;
+}
+
+/* 时间组头行 - 按截止月份分组 */
+:deep(.el-table .time-group-header-row) {
+  /* background: rgba(79, 255, 193, 0.06) !important; */
+  cursor: pointer !important;
+}
+:deep(.el-table .time-group-header-row td) {
+  /* border-bottom: 1px solid rgba(79, 137, 255, 0.15) !important; */
+  /* border-left: 3px solid #4fffd0 !important; */
+  color: #00c9a7;
+}
+:deep(.el-table .time-group-header-row:hover) {
+  background: rgba(79, 137, 255, 0.1) !important;
 }
 
 /* 优先级组头行 - 左边框颜色区分 */

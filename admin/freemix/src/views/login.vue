@@ -1,7 +1,30 @@
 <template>
-  <div>
-    <!-- 背景光效 (可选，增加高级感) -->
-    <!-- <div class="ambient-light" v-if="isDesktopEnv"></div> -->
+  <div class="login-page">
+    <!-- 波浪装饰背景，模仿 fast-soy-admin 的风格 -->
+    <div class="wave-bg">
+      <div class="wave-top">
+        <svg height="600" width="600" viewBox="0 0 600 600">
+          <defs>
+            <linearGradient id="wave-grad-1" x1="0.79" y1="0.62" x2="0.21" y2="0.86">
+              <stop offset="0" stop-color="#00c9a7" stop-opacity="0.15" />
+              <stop offset="1" stop-color="#00c9a7" stop-opacity="0.05" />
+            </linearGradient>
+          </defs>
+          <path d="M600,300 C600,480 450,600 300,600 C150,600 0,480 0,300 C0,120 150,0 300,0 C450,0 600,120 600,300Z" fill="url(#wave-grad-1)" />
+        </svg>
+      </div>
+      <div class="wave-bottom">
+        <svg height="400" width="400" viewBox="0 0 400 400">
+          <defs>
+            <linearGradient id="wave-grad-2" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0" stop-color="#00c9a7" stop-opacity="0.08" />
+              <stop offset="1" stop-color="#00c9a7" stop-opacity="0.15" />
+            </linearGradient>
+          </defs>
+          <path d="M400,200 C400,320 300,400 200,400 C100,400 0,310 0,200 C0,90 100,0 200,0 C300,0 400,80 400,200Z" fill="url(#wave-grad-2)" />
+        </svg>
+      </div>
+    </div>
 
     <n-card :style="cardStyle" class="login-card">
       <!-- 系统图标 -->
@@ -178,7 +201,7 @@
       <!-- 2. 点选验证 (Click Sequence Captcha) - 替换了原来的滑块 -->
       <div v-else-if="loginStep === 'human-verify'" class="verify-section fade-in-scale">
         <div class="verify-header">
-          <n-icon size="36" color="#409eff" style="margin-bottom: 8px;">
+          <n-icon size="36" color="#00c9a7" style="margin-bottom: 8px;">
             <finger-print-outline />
           </n-icon>
           <h3>安全验证</h3>
@@ -221,7 +244,7 @@
 
           <!-- 成功覆盖层 -->
           <div class="success-overlay" v-if="clickStatus === 'success'">
-            <n-icon size="48" color="#10b981"><checkmark-circle /></n-icon>
+            <n-icon size="48" color="#00c9a7"><checkmark-circle /></n-icon>
           </div>
         </div>
 
@@ -322,13 +345,10 @@ const qrCountdown = ref(0);
 const qrStatus = ref<'idle' | 'pending' | 'approved' | 'expired' | 'error'>('idle');
 let qrCountdownTimer: number | null = null;
 let qrStatusTimer: number | null = null;
-// 计算卡片样式
+// 计算卡片样式（flex 居中由 login-page 容器负责，这里只设宽度）
 const cardStyle = computed(() => {
   return {
-    width: '480px',
-    marginTop: '10vh',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+    width: '480px'
   };
 });
 
@@ -1023,6 +1043,52 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* --- 登录页全屏背景（浅色主题色 + 白色混合，模仿 fast-soy-admin） --- */
+.login-page {
+  /* 黑+绿配色：深色背景下的 CSS 变量 */
+  --bg-color: #0d1117;
+  --text-color: #e6edf3;
+  --card-bg: #161b22;
+  --border-color: #30363d;
+  --hover-color: #1c2128;
+
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 黑色背景，配合 #00c9a7 绿色点缀 */
+  background-color: #0d1117 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 波浪 SVG 装饰容器 */
+.wave-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 右上角波浪 */
+.wave-top {
+  position: absolute;
+  right: -150px;
+  top: -200px;
+}
+
+/* 左下角波浪 */
+.wave-bottom {
+  position: absolute;
+  left: -100px;
+  bottom: -150px;
+}
+
 /* --- 邮箱登录区域样式 --- */
 .mail-login-container {
   width: 100%;
@@ -1073,16 +1139,21 @@ onUnmounted(() => {
   padding-left: 4px;
 }
 
-.login-card {
-  background-color: transparent !important;
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+/* 登录卡片样式 — 黑+绿配色：深色卡片 + 绿色光晕阴影 */
+.login-card.n-card {
+  background-color: #161b22 !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 24px rgba(0, 201, 167, 0.08),
+    0 8px 40px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* 增加边框发光感 */
-  border: 1px solid rgba(255, 255, 255, 0.1); 
+  border: 1px solid #30363d !important;
+  position: relative;
+  z-index: 4;
 }
 
 .login-card.desktop-fullscreen {
@@ -1125,7 +1196,7 @@ onUnmounted(() => {
 .logo-glow {
   position: absolute; top: 50%; left: 50%; width: 70px; height: 70px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(64, 158, 255, 0.5) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 201, 167, 0.4) 0%, transparent 70%);
   filter: blur(10px); z-index: 0;
 }
 
@@ -1134,21 +1205,21 @@ onUnmounted(() => {
   height: 60px;
   object-fit: contain;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 201, 167, 0.15);
   transition: all 0.3s ease;
   z-index: 1;
 }
 
 .system-logo:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 16px rgba(0, 201, 167, 0.25);
 }
 
 .app-title {
   margin: 0;
   font-size: 28px;
   font-weight: 600;
-  color: #d6d2d2;
+  color: #e6edf3;
   letter-spacing: 1px;
 }
 
@@ -1164,20 +1235,20 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
+  background-color: #1c2128;
   border-radius: 4px;
   cursor: pointer;
-  border: 1px solid #d9d9d9;
+  border: 1px solid #30363d;
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: #e6edf3;
 }
 
 /* 登录按钮渐变 */
 .login-btn-gradient {
-  background: linear-gradient(92deg, #03c9a7, #03c9a7);
+  background: linear-gradient(92deg, #00c9a7, #00c9a7);
   border: none;
-  box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+  box-shadow: 0 4px 10px rgba(0, 201, 167, 0.3);
 }
 
 .github-login-btn {
@@ -1276,7 +1347,7 @@ onUnmounted(() => {
   width: 200px;
   height: 200px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.4);
+  background: #1c2128;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1288,7 +1359,7 @@ onUnmounted(() => {
 }
 
 .qr-placeholder {
-  color: #999;
+  color: #8b949e;
   font-size: 14px;
 }
 
@@ -1307,7 +1378,7 @@ onUnmounted(() => {
 .qr-tips {
   margin-top: 12px;
   font-size: 13px;
-  color: #b3b3b3;
+  color: #8b949e;
   text-align: center;
 }
 
@@ -1321,13 +1392,13 @@ onUnmounted(() => {
 .qr-steps {
   margin: 0 0 12px;
   padding-left: 20px;
-  color: #b3b3b3;
+  color: #8b949e;
   font-size: 13px;
 }
 
 .qr-status-text {
   font-size: 13px;
-  color: #999;
+  color: #8b949e;
 }
 
 /* --- 2FA 区域 --- */
@@ -1336,7 +1407,7 @@ onUnmounted(() => {
 }
 .auth-icon-circle {
   width: 60px; height: 60px; border-radius: 50%;
-  background: rgba(16, 185, 129, 0.1); color: #10b981;
+  background: rgba(0, 201, 167, 0.1); color: #00c9a7;
   display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
 }
 .otp-wrapper { margin: 20px auto; max-width: 300px; display: flex; justify-content: center; }
@@ -1348,17 +1419,17 @@ onUnmounted(() => {
 }
 
 .verify-header { margin-bottom: 20px; }
-.verify-header h3 { margin: 0 0 10px; color: #d6d2d2; font-size: 20px; }
-.verify-header p { color: #999; font-size: 14px; margin-top: 5px; }
+.verify-header h3 { margin: 0 0 10px; color: #e6edf3; font-size: 20px; }
+.verify-header p { color: #8b949e; font-size: 14px; margin-top: 5px; }
 
-.highlight-text { color: #409eff; font-weight: bold; }
+.highlight-text { color: #00c9a7; font-weight: bold; }
 .target-chars {
-  display: inline-flex; gap: 5px; background: rgba(255,255,255,0.1);
+  display: inline-flex; gap: 5px; background: rgba(0, 201, 167, 0.08);
   padding: 2px 8px; border-radius: 4px; margin-left: 5px;
   vertical-align: middle;
 }
-.target-char { color: #fff; font-weight: bold; font-size: 16px; }
-.success-text { color: #10b981; font-weight: bold; font-size: 16px; }
+.target-char { color: #00c9a7; font-weight: bold; font-size: 16px; }
+.success-text { color: #00c9a7; font-weight: bold; font-size: 16px; }
 
 /* 验证码容器 */
 .click-captcha-container {
@@ -1368,8 +1439,8 @@ onUnmounted(() => {
   margin: 0 auto 20px;
   border-radius: 8px; 
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  border: 2px solid rgba(255,255,255,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid #30363d;
   user-select: none;
 }
 .captcha-canvas { display: block; cursor: crosshair; width: 100%; height: 100%; }
@@ -1377,7 +1448,7 @@ onUnmounted(() => {
 /* 点击标记点 */
 .click-marker {
   position: absolute; width: 24px; height: 24px;
-  background: #409eff; color: #fff; border-radius: 50%;
+  background: #00c9a7; color: #fff; border-radius: 50%;
   border: 2px solid #fff;
   transform: translate(-50%, -50%) scale(0);
   display: flex; align-items: center; justify-content: center;
@@ -1391,16 +1462,16 @@ onUnmounted(() => {
 /* 刷新按钮 */
 .refresh-btn {
   position: absolute; top: 10px; right: 10px;
-  width: 30px; height: 30px; background: rgba(0,0,0,0.6);
+  width: 30px; height: 30px; background: rgba(255, 255, 255, 0.1);
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: #fff; transition: all 0.3s;
 }
-.refresh-btn:hover { background: #409eff; transform: rotate(180deg); }
+.refresh-btn:hover { background: #00c9a7; transform: rotate(180deg); }
 
 /* 成功动画层 */
 .success-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(255,255,255,0.9);
+  background: rgba(22, 27, 34, 0.9);
   display: flex; align-items: center; justify-content: center;
   animation: fadeIn 0.3s;
 }
@@ -1423,6 +1494,6 @@ onUnmounted(() => {
 @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-.back-btn { color: #999; }
-.back-btn:hover { color: #fff; }
+.back-btn { color: #8b949e; }
+.back-btn:hover { color: #00c9a7; }
 </style>
