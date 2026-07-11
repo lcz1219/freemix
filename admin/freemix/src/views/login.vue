@@ -1,32 +1,163 @@
 <template>
   <div class="login-page">
-    <!-- 波浪装饰背景，模仿 fast-soy-admin 的风格 -->
-    <div class="wave-bg">
-      <div class="wave-top">
-        <svg height="600" width="600" viewBox="0 0 600 600">
+    <!-- 左：图片展示区 -->
+    <div class="login-left">
+      <div class="left-image-wrapper">
+        <!-- 目标管理主题 SVG 插画（扁平化，#00c9a7 主题色） -->
+        <svg class="login-bg-image" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="wave-grad-1" x1="0.79" y1="0.62" x2="0.21" y2="0.86">
-              <stop offset="0" stop-color="#00c9a7" stop-opacity="0.15" />
-              <stop offset="1" stop-color="#00c9a7" stop-opacity="0.05" />
+            <!-- 主题绿色渐变 -->
+            <linearGradient id="grad-green" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00c9a7" />
+              <stop offset="100%" stop-color="#00b394" />
             </linearGradient>
-          </defs>
-          <path d="M600,300 C600,480 450,600 300,600 C150,600 0,480 0,300 C0,120 150,0 300,0 C450,0 600,120 600,300Z" fill="url(#wave-grad-1)" />
-        </svg>
-      </div>
-      <div class="wave-bottom">
-        <svg height="400" width="400" viewBox="0 0 400 400">
-          <defs>
-            <linearGradient id="wave-grad-2" x1="0.5" y1="0" x2="0.5" y2="1">
-              <stop offset="0" stop-color="#00c9a7" stop-opacity="0.08" />
-              <stop offset="1" stop-color="#00c9a7" stop-opacity="0.15" />
+            <linearGradient id="grad-green-light" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.6" />
+              <stop offset="100%" stop-color="#00c9a7" stop-opacity="0.15" />
             </linearGradient>
+            <linearGradient id="grad-green-fade" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.05" />
+              <stop offset="100%" stop-color="#00c9a7" stop-opacity="0.25" />
+            </linearGradient>
+            <!-- 柔和光晕 -->
+            <radialGradient id="glow-center" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.2" />
+              <stop offset="100%" stop-color="#00c9a7" stop-opacity="0" />
+            </radialGradient>
+            <radialGradient id="glow-small" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#00c9a7" stop-opacity="0" />
+            </radialGradient>
           </defs>
-          <path d="M400,200 C400,320 300,400 200,400 C100,400 0,310 0,200 C0,90 100,0 200,0 C300,0 400,80 400,200Z" fill="url(#wave-grad-2)" />
+
+          <!-- 背景底色 -->
+          <rect width="800" height="600" fill="#0d1117" />
+
+          <!-- 网格装饰（微妙的科技感） -->
+          <g opacity="0.04" stroke="#00c9a7" stroke-width="0.5">
+            <line x1="0" y1="100" x2="800" y2="100" />
+            <line x1="0" y1="200" x2="800" y2="200" />
+            <line x1="0" y1="300" x2="800" y2="300" />
+            <line x1="0" y1="400" x2="800" y2="400" />
+            <line x1="0" y1="500" x2="800" y2="500" />
+            <line x1="100" y1="0" x2="100" y2="600" />
+            <line x1="200" y1="0" x2="200" y2="600" />
+            <line x1="300" y1="0" x2="300" y2="600" />
+            <line x1="400" y1="0" x2="400" y2="600" />
+            <line x1="500" y1="0" x2="500" y2="600" />
+            <line x1="600" y1="0" x2="600" y2="600" />
+            <line x1="700" y1="0" x2="700" y2="600" />
+          </g>
+
+          <!-- ===== 中央区域：目标靶心（核心元素） ===== -->
+          <circle cx="400" cy="230" r="180" fill="url(#glow-center)" />
+          
+          <!-- 靶心外环 -->
+          <circle cx="400" cy="230" r="140" fill="none" stroke="#00c9a7" stroke-opacity="0.12" stroke-width="2" />
+          <circle cx="400" cy="230" r="115" fill="none" stroke="#00c9a7" stroke-opacity="0.15" stroke-width="2" />
+          <circle cx="400" cy="230" r="90" fill="none" stroke="#00c9a7" stroke-opacity="0.2" stroke-width="2.5" />
+          <circle cx="400" cy="230" r="65" fill="none" stroke="#00c9a7" stroke-opacity="0.3" stroke-width="3" />
+          <circle cx="400" cy="230" r="40" fill="none" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="3" />
+          <circle cx="400" cy="230" r="16" fill="url(#grad-green)" />
+
+          <!-- 靶心十字标线 -->
+          <line x1="400" y1="70" x2="400" y2="390" stroke="#00c9a7" stroke-opacity="0.08" stroke-width="1" stroke-dasharray="6,8" />
+          <line x1="220" y1="230" x2="580" y2="230" stroke="#00c9a7" stroke-opacity="0.08" stroke-width="1" stroke-dasharray="6,8" />
+
+          <!-- ===== 左上：进度柱状图（象征目标追踪） ===== -->
+          <g opacity="0.7">
+            <!-- 柱1 已填充 -->
+            <rect x="120" y="300" width="22" height="80" rx="4" fill="#1c2128" />
+            <rect x="120" y="340" width="22" height="40" rx="4" fill="url(#grad-green)" />
+            <!-- 柱2 -->
+            <rect x="155" y="320" width="22" height="60" rx="4" fill="#1c2128" />
+            <rect x="155" y="335" width="22" height="45" rx="4" fill="url(#grad-green)" />
+            <!-- 柱3 -->
+            <rect x="190" y="280" width="22" height="100" rx="4" fill="#1c2128" />
+            <rect x="190" y="310" width="22" height="70" rx="4" fill="url(#grad-green)" />
+            <!-- 柱4 最高 -->
+            <rect x="225" y="260" width="22" height="120" rx="4" fill="#1c2128" />
+            <rect x="225" y="280" width="22" height="100" rx="4" fill="url(#grad-green)" />
+          </g>
+
+          <!-- ===== 右上：圆环进度（象征完成率） ===== -->
+          <g transform="translate(640, 160)">
+            <circle cx="0" cy="0" r="55" fill="url(#glow-small)" />
+            <!-- 底环 -->
+            <circle cx="0" cy="0" r="48" fill="none" stroke="#1c2128" stroke-width="8" />
+            <!-- 进度弧 75% -->
+            <circle cx="0" cy="0" r="48" fill="none" stroke="url(#grad-green)" stroke-width="8"
+              stroke-dasharray="301.6" stroke-dashoffset="75.4" stroke-linecap="round"
+              transform="rotate(-90)" />
+            <!-- 中心数字 -->
+            <text x="0" y="6" text-anchor="middle" fill="#00c9a7" font-size="22" font-weight="700" font-family="system-ui, sans-serif">75%</text>
+            <text x="0" y="28" text-anchor="middle" fill="#8b949e" font-size="10" font-family="system-ui, sans-serif">完成率</text>
+          </g>
+
+          <!-- ===== 左下：目标节点连线图（象征目标分解） ===== -->
+          <g opacity="0.55">
+            <!-- 连接线 -->
+            <line x1="130" y1="480" x2="180" y2="440" stroke="#00c9a7" stroke-opacity="0.2" stroke-width="1.5" />
+            <line x1="130" y1="480" x2="180" y2="520" stroke="#00c9a7" stroke-opacity="0.2" stroke-width="1.5" />
+            <line x1="130" y1="480" x2="100" y2="440" stroke="#00c9a7" stroke-opacity="0.2" stroke-width="1.5" />
+            <!-- 中心大节点 -->
+            <circle cx="130" cy="480" r="16" fill="url(#grad-green)" />
+            <circle cx="130" cy="480" r="16" fill="none" stroke="#00c9a7" stroke-opacity="0.3" stroke-width="1" />
+            <text x="130" y="484" text-anchor="middle" fill="#fff" font-size="10" font-weight="700" font-family="system-ui, sans-serif">OKR</text>
+            <!-- 子节点 -->
+            <circle cx="180" cy="440" r="9" fill="#1c2128" stroke="#00c9a7" stroke-opacity="0.4" stroke-width="1.5" />
+            <circle cx="180" cy="520" r="9" fill="#1c2128" stroke="#00c9a7" stroke-opacity="0.4" stroke-width="1.5" />
+            <circle cx="100" cy="440" r="9" fill="#1c2128" stroke="#00c9a7" stroke-opacity="0.4" stroke-width="1.5" />
+          </g>
+
+          <!-- ===== 右下：趋势折线图（象征增长追踪） ===== -->
+          <g opacity="0.6">
+            <polyline points="560,500 600,470 640,480 680,450 720,420"
+              fill="none" stroke="#00c9a7" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- 数据点 -->
+            <circle cx="560" cy="500" r="4" fill="#0d1117" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="2" />
+            <circle cx="600" cy="470" r="4" fill="#0d1117" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="2" />
+            <circle cx="640" cy="480" r="4" fill="#0d1117" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="2" />
+            <circle cx="680" cy="450" r="5" fill="url(#grad-green)" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="1" />
+            <circle cx="720" cy="420" r="6" fill="url(#grad-green)" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="1" />
+            <!-- 趋势箭头 -->
+            <polygon points="740,410 732,418 728,414" fill="#00c9a7" fill-opacity="0.4" />
+          </g>
+
+          <!-- ===== 左下角：装饰性步骤指示器 ===== -->
+          <g transform="translate(300, 480)" opacity="0.5">
+            <line x1="60" y1="12" x2="160" y2="12" stroke="#00c9a7" stroke-opacity="0.15" stroke-width="1" stroke-dasharray="4,4" />
+            <line x1="60" y1="12" x2="100" y2="12" stroke="#00c9a7" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round" />
+            <circle cx="60" cy="12" r="8" fill="url(#grad-green)" />
+            <circle cx="60" cy="12" r="8" fill="none" stroke="#00c9a7" stroke-opacity="0.3" stroke-width="1" />
+            <circle cx="120" cy="12" r="6" fill="#1c2128" stroke="#00c9a7" stroke-opacity="0.3" stroke-width="1.5" />
+            <circle cx="160" cy="12" r="5" fill="#1c2128" stroke="#00c9a7" stroke-opacity="0.2" stroke-width="1.5" />
+            <text x="60" y="36" text-anchor="middle" fill="#8b949e" font-size="9" font-family="system-ui, sans-serif">设定</text>
+            <text x="120" y="36" text-anchor="middle" fill="#8b949e" font-size="9" font-family="system-ui, sans-serif">执行</text>
+            <text x="160" y="36" text-anchor="middle" fill="#8b949e" font-size="9" font-family="system-ui, sans-serif">达成</text>
+          </g>
+
+          <!-- ===== 顶部浮动装饰圆点 ===== -->
+          <circle cx="550" cy="100" r="3" fill="#00c9a7" opacity="0.3" />
+          <circle cx="620" cy="80" r="2" fill="#00c9a7" opacity="0.2" />
+          <circle cx="500" cy="120" r="4" fill="#00c9a7" opacity="0.15" />
+          <circle cx="180" cy="140" r="2.5" fill="#00c9a7" opacity="0.25" />
+          <circle cx="230" cy="110" r="1.5" fill="#00c9a7" opacity="0.2" />
         </svg>
+        <!-- 图片上半透明暗色遮罩，提升文字可读性 -->
+        <!-- <div class="left-overlay">
+          <div class="left-content">
+            <h1 class="slogan-title">FreeMix</h1>
+            <p class="slogan-sub">目标管理系统</p>
+            <p class="slogan-desc">高效管理你的目标与成果</p>
+          </div>
+        </div> -->
       </div>
     </div>
 
-    <n-card :style="cardStyle" class="login-card">
+    <!-- 右：登录表单区 -->
+    <div class="login-right">
+      <n-card :style="cardStyle" class="login-card">
       <!-- 系统图标 -->
       <div class="logo-container">
         <div class="logo-wrapper">
@@ -290,6 +421,7 @@
         </div>
       </div>
     </n-card>
+  </div>
   </div>
 </template>
 
@@ -1043,7 +1175,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* --- 登录页全屏背景（浅色主题色 + 白色混合，模仿 fast-soy-admin） --- */
+/* --- 左右布局：左图右登录 --- */
 .login-page {
   /* 黑+绿配色：深色背景下的 CSS 变量 */
   --bg-color: #0d1117;
@@ -1055,38 +1187,85 @@ onUnmounted(() => {
   height: 100vh;
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 黑色背景，配合 #00c9a7 绿色点缀 */
+  flex-direction: row;
   background-color: #0d1117 !important;
   position: relative;
   overflow: hidden;
 }
 
-/* 波浪 SVG 装饰容器 */
-.wave-bg {
-  position: absolute;
-  left: 0;
-  top: 0;
+/* 左侧图片展示区（60% 宽度） */
+.login-left {
+  flex: 0 0 60%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.left-image-wrapper {
+  position: relative;
   width: 100%;
   height: 100%;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
 }
 
-/* 右上角波浪 */
-.wave-top {
-  position: absolute;
-  right: -150px;
-  top: -200px;
+.login-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-/* 左下角波浪 */
-.wave-bottom {
+/* 图片上半透明暗色遮罩 */
+.left-overlay {
   position: absolute;
-  left: -100px;
-  bottom: -150px;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 左侧标语内容 */
+.left-content {
+  text-align: center;
+  color: #fff;
+}
+
+.slogan-title {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  letter-spacing: 4px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.slogan-sub {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0 0 12px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.slogan-desc {
+  font-size: 16px;
+  opacity: 0.75;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* 右侧登录表单区（40% 宽度） */
+.login-right {
+  flex: 0 0 40%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 /* --- 邮箱登录区域样式 --- */
