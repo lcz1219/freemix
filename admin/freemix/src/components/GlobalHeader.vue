@@ -151,7 +151,7 @@ import {
   ChevronDown
 } from '@vicons/ionicons5'
 import { useUser } from '@/hooks/useUser'
-import { useAvatar } from '@/hooks/useAvatar'
+
 
 const router = useRouter()
 const route = useRoute()
@@ -192,11 +192,7 @@ const currentUser = computed(() => store.state.user)
 
 // 加载头像
 onMounted(() => {
-  const saveAvatarUrl = store.state.user?.avatarUrl
-  if (saveAvatarUrl) {
-    const { userAvatar } = useAvatar(saveAvatarUrl)
-    avatarUrl.value = userAvatar.value
-  }
+  
 })
 
 // 当前页面标题 — 根据路由路径计算，与 TabsView 的 routeTitleMap 保持一致

@@ -362,8 +362,14 @@ const onFriendAdded = async () => {
 }
 
 const showAvatar=(item)=>{
+  if(!item) return 'https://api.dicebear.com/7.x/miniavs/svg?seed=3'
+  if(item.includes('/file/')){
+return `${baseURL()}${item}` 
+  }else{
+    return item
+  }
   // if(!item) return `${baseURL()}${'/file/WechatIMG105.jpg'}`
-  return `${baseURL()}${item}` 
+  
 }
 // 响应式数据
 

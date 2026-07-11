@@ -8,6 +8,7 @@ import upload from '@/components/upload.vue';
 import { h } from 'vue';
 import { NAvatar, NText, NInput } from 'naive-ui';
 import { baseURL } from '@/utils/request.js';
+import { useAvatar } from '@/hooks/useAvatar'
 
 // 用户信息类型定义
 export interface UserInfo {
@@ -50,7 +51,9 @@ export function useUser() {
         if (user.avatarUrl.includes('://')) {
           avatarUrl.value = user.avatarUrl;
         }else{
-          avatarUrl.value = `${baseURL()}${user.avatarUrl}`;
+          avatarUrl.value = `${user.avatarUrl}`;
+          const { userAvatar } = useAvatar(avatarUrl.value)
+           avatarUrl.value = userAvatar.value
         }
       } else {
         // 默认头像

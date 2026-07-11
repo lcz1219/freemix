@@ -8,7 +8,7 @@
             <n-avatar
               round
               :size="260"
-              :src="userAvatar"
+              :src="avatarUrl"
               class="user-avatar"
               @click="uploadAvatar"
             />
@@ -305,12 +305,7 @@ const message = useMessage();
 
 // 使用hooks
 const { userInfo: userProfile, avatarUrl, initUserData, uploadAvatar } = useUser();
-const userAvatar=computed(()=>{
- const url = useAvatar(store.state.user.avatarUrl)
-  console.log("1111userAvatar",url.userAvatar.value);
-  
-  return url.userAvatar.value
-})
+
 // 初始化用户数据
 // 初始化
 onMounted(async () => {
