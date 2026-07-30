@@ -200,6 +200,12 @@ const routes = [
     component: () => import('@/views/UpdateLogManager.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/location-map',
+    name: 'LocationMap',
+    component: () => import('@/views/location-map.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({

@@ -214,6 +214,7 @@ const pageTitle = computed(() => {
   if (path.includes('/login-log')) return '星际航行日志'
   if (path.includes('/user-guide')) return '新手启航指南'
   if (path.includes('/add-goal')) return '发射新目标'
+  if (path.includes('/location-map')) return '星际地图'
   if (path.includes('/share')) return '分享视图'
   return ''
 })
@@ -295,6 +296,7 @@ const searchableRoutes = [
   { title: '黑洞回收', path: '/recycle', icon: GitCompareOutline },
   { title: '信号收发站', path: '/messages', icon: ChatboxEllipses },
   { title: '星舰配置', path: '/settings', icon: Settings },
+  { title: '星际地图', path: '/location-map', icon: Podium },
   { title: '新手启航指南', path: '/user-guide', icon: HelpCircleOutline },
 ]
 

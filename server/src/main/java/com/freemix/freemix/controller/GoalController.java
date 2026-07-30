@@ -1064,4 +1064,61 @@ AchievementService achievementService;
         }
     }
 
+    /**
+     * 获取用户所有已完成目标的打卡地点记录
+     * 返回包含地点坐标、目标名称、完成时间等信息的列表
+     */
+    @GetMapping("/getLocationRecords/{ower}")
+    @CheckToken
+    public ApiResponse getLocationRecords(@PathVariable("ower") String ower) {
+        try {
+            // 获取用户所有目标（含协作目标）
+            List<String> goalIds = mongoTemplate.find(
+                new Query(Criteria.where("username").is(ower).and("del").ne(1)), Relation.class)
+                .stream().map(Relation::getGoalId).collect(Collectors.toList());
+
+            List<Goal> goals = mongoTemplate.find(
+                new Query(new Criteria().orOperator(
+                    Criteria.where("owner").is(ower).and("del").ne(1),
+                    Criteria.where("_id").in(goalIds).and("del").ne(1)
+                )), Goal.class);
+
+            // 收集所有已完成的、包含地点信息的子目标记录
+            JSONArray records = new JSONArray();
+            for (Goal goal : goals) {
+                if (goal.getChildGoals() == null) continue;
+                collectLocationRecords(goal, goal.getChildGoals(), records);
+            }
+
+            return ApiResponse.success(records);
+        } catch (Exception e) {
+            log.error("获取地点记录失败:", e);
+            return ApiResponse.failure("获取地点记录失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 递归收集子目标中已完成且有地点信息的记录
+     */
+    private void collectLocationRecords(Goal goal, List<childGoals> children, JSONArray records) {
+        if (children == null) return;
+        for (childGoals child : children) {
+            if (child.isFinish() && child.getLocationName() != null && child.getLocationCoord() != null) {
+                JSONObject record = new JSONObject();
+                record.put("goalId", goal.get_id());
+                record.put("goalTitle", goal.getTitle());
+                record.put("childGoalId", child.get_id());
+                record.put("childGoalMessage", child.getMessage());
+                record.put("locationName", child.getLocationName());
+                record.put("locationCoord", child.getLocationCoord());
+                record.put("finishDate", child.getFinishDate());
+                records.add(record);
+            }
+            // 递归处理嵌套子目标
+            if (child.getChildGoals() != null) {
+                collectLocationRecords(goal, child.getChildGoals(), records);
+            }
+        }
+    }
+
 }

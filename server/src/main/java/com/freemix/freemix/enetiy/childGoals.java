@@ -25,6 +25,10 @@ public class childGoals {
     @JsonIgnore
     String excelParentTitle;
 
+    // 完成地点信息（地图功能）
+    String locationName;     // 地点名称，如"北京市朝阳区望京SOHO"
+    List<Double> locationCoord; // [经度, 纬度]
+
 
 
 }

@@ -108,6 +108,13 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">消息</span>
       </n-button>
+      <n-button class="nav-link footer-button" :class="{ active: activeTab === 'location-map' }" :title="isCollapsedTitle('完成地图')"
+        @click="goTo('/location-map')">
+        <NIcon class="icon">
+          <LocationOutline />
+        </NIcon>
+        <span class="nav-text" v-if="!isCollapsed">完成地图</span>
+      </n-button>
       <!-- <n-dropdown :inverted="isDark" animated  inverted :options="options" placement="right-start" trigger="hover" @select="handleSelect" :loading="logoutLoading">
         <n-button class="nav-link footer-button" :title="isCollapsedTitle('用户')">
           <n-icon>
@@ -155,7 +162,8 @@ import {
   PlanetOutline,
   RepeatOutline,
   ReaderOutline,
-  PeopleOutline
+  PeopleOutline,
+  LocationOutline
 } from '@vicons/ionicons5';
 import { isMobile } from '@/utils/device.js';
 import { useStore } from 'vuex';

@@ -630,6 +630,58 @@
       </div>
     </n-modal>
 
+    <!-- 完成确认弹窗（自动定位 + 偏好设置） -->
+    <n-modal v-model:show="showFinishConfirm" preset="card" title="完成子目标" style="max-width: 460px" :mask-closable="false">
+      <div class="finish-confirm-body">
+        <!-- 自动定位区域 -->
+        <div class="location-section">
+          <div class="location-header">
+            <n-icon size="18" color="#00c9a7"><MapOutline /></n-icon>
+            <span>是否记录完成地点？</span>
+          </div>
+          <div class="location-status">
+            <template v-if="locatingStatus === 'locating'">
+              <n-spin size="small" />
+              <span class="locating-text">正在定位...</span>
+            </template>
+            <template v-else-if="locatingStatus === 'success'">
+              <div class="located-result">
+                <svg class="located-dot" viewBox="0 0 16 16" width="14" height="14">
+                  <circle cx="8" cy="6" r="2.5" fill="none" stroke="#00c9a7" stroke-width="1.5"/>
+                  <path d="M8 15C8 15 13 10 13 6A5 5 0 1 0 3 6C3 10 8 15 8 15Z" fill="none" stroke="#00c9a7" stroke-width="1.2"/>
+                </svg>
+                <span class="located-addr">{{ autoLocationAddr }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <span class="locating-fail">定位失败或拒绝访问</span>
+            </template>
+          </div>
+        </div>
+
+        <!-- 偏好设置 -->
+        <div class="pref-section">
+          <n-checkbox v-model:checked="prefSubGoals">
+            记录此目标的所有子目标完成位置
+          </n-checkbox>
+          <n-checkbox v-model:checked="prefAllGoals">
+            记录此用户的所有目标完成位置
+          </n-checkbox>
+        </div>
+
+        <!-- 提示 -->
+        <div class="finish-hint">
+          勾选后后续完成子目标将自动记录位置，不再弹窗确认
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="finish-footer">
+          <n-button @click="cancelFinishConfirm">取消</n-button>
+          <n-button type="primary" @click="confirmFinishWithLocation">确认完成</n-button>
+        </div>
+      </template>
+    </n-modal>
 
   </n-layout>
 </template>
@@ -664,7 +716,9 @@ import {
   NGrid,
   NGridItem,
   NDivider,
-  NDatePicker
+  NDatePicker,
+  NCheckbox,
+  NSpin
 } from 'naive-ui';
 import { ElTable, ElTableColumn, ElButton, ElTag, ElProgress } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -674,7 +728,7 @@ import RichTextEditor from '@/components/RichTextEditor.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
-import request, { postM, getMPaths, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
+import request, { postM, getMPaths,getM, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -695,7 +749,8 @@ import {
   CheckmarkCircle,
   CheckmarkCircleOutline,
   CheckmarkDoneOutline,
-  SadOutline
+  SadOutline,
+  MapOutline
 } from '@vicons/ionicons5';
 import type { DataTableColumns } from 'naive-ui';
 import { useStore } from 'vuex';
@@ -1212,38 +1267,156 @@ const getProgressColor = (goal: any) => {
   return '#409eff';
 };
 
-// 标记子目标为完成
+// 完成确认弹窗状态
+const showFinishConfirm = ref(false);
+const pendingFinishGoal = ref<{ goal: any; index: number } | null>(null);
+const isCompleteAllMode = ref(false);  // 是否为"一键全部完成"模式
+
+// 自动定位状态
+const locatingStatus = ref<'idle' | 'locating' | 'success' | 'fail'>('idle');
+const autoLocationAddr = ref('');
+const autoLocationCoord = ref<{ lng: number; lat: number } | null>(null);
+
+// 偏好设置
+const prefSubGoals = ref(false);
+const prefAllGoals = ref(false);
+
+// 偏好前缀（localStorage）
+const LOC_PREF_ALL = 'fm_auto_loc_all';
+const LOC_PREF_GOAL_PREFIX = 'fm_auto_loc_goal_';
+
+// 弹窗关闭时没有任何完成操作
+const cancelFinishConfirm = () => {
+  showFinishConfirm.value = false;
+  pendingFinishGoal.value = null;
+  isCompleteAllMode.value = false;
+  locatingStatus.value = 'idle';
+  autoLocationAddr.value = '';
+  autoLocationCoord.value = null;
+};
+
+// 自动定位（浏览器 Geolocation API）
+const startGeolocation = () => {
+  if (!navigator.geolocation) {
+    locatingStatus.value = 'fail';
+    return;
+  }
+  locatingStatus.value = 'locating';
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      autoLocationCoord.value = { lng: longitude, lat: latitude };
+      // 通过后端逆地理编码获取地址名
+      try {
+        const res = await getM('amap/regeo', { location: `${longitude},${latitude}` });
+        if (isSuccess(res)) {
+          const data = res.data.data || res.data || res;
+          autoLocationAddr.value = data?.formatted_address || '已定位';
+        } else {
+          autoLocationAddr.value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        }
+      } catch (error) {
+        console.log(error);
+        
+        // autoLocationAddr.value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+      }
+      locatingStatus.value = 'success';
+    },
+    () => {
+      locatingStatus.value = 'fail';
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+  );
+};
+
+// 标记子目标为完成（主入口：先判断是否需要弹窗）
 const finishChildGoal = async (goal: any, index: number) => {
+  const currentGoalId = goal?._id || goal?.id;
+
+  // 检查是否已开启全局自动记录或当前目标的自动记录
+  const autoAll = localStorage.getItem(LOC_PREF_ALL) === 'true';
+  const autoGoal = currentGoalId ? localStorage.getItem(LOC_PREF_GOAL_PREFIX + currentGoalId) === 'true' : false;
+
+  if (autoAll || autoGoal) {
+    // 自动模式：直接定位并完成，不弹窗
+    await doFinishWithLocation(goal, index);
+    return;
+  }
+
+  // 非自动模式：弹出确认框
+  pendingFinishGoal.value = { goal, index };
+  prefSubGoals.value = false;
+  prefAllGoals.value = false;
+  locatingStatus.value = 'idle';
+  autoLocationAddr.value = '';
+  autoLocationCoord.value = null;
+  showFinishConfirm.value = true;
+
+  // 弹窗渲染后自动开始定位
+  await nextTick();
+  startGeolocation();
+};
+
+// 弹窗确认：记录（或不记录）地点并完成
+const confirmFinishWithLocation = async () => {
+  if (!pendingFinishGoal.value) return;
+  const { goal, index } = pendingFinishGoal.value;
+
+  // 保存偏好设置
+  const currentGoalId = goal?._id || goal?.id;
+  if (prefSubGoals.value && currentGoalId) {
+    localStorage.setItem(LOC_PREF_GOAL_PREFIX + currentGoalId, 'true');
+  }
+  if (prefAllGoals.value) {
+    localStorage.setItem(LOC_PREF_ALL, 'true');
+  }
+
+  showFinishConfirm.value = false;
+  const isAll = isCompleteAllMode.value;
+  pendingFinishGoal.value = null;
+  isCompleteAllMode.value = false;
+
+  if (locatingStatus.value === 'success' && autoLocationCoord.value) {
+    if (isAll) {
+      await doFinishAllWithLocation(goal);
+    } else {
+      await doFinishWithLocation(goal, index);
+    }
+  } else {
+    if (isAll) {
+      await doFinishAllSimple(goal);
+    } else {
+      await doFinishSimple(goal, index);
+    }
+  }
+};
+
+// 带地点的完成逻辑
+const doFinishWithLocation = async (goal: any, index: number) => {
   try {
-    const updatedGoal = { ...goal };
+    const updatedGoal = JSON.parse(JSON.stringify(goal));
+    const coord = autoLocationCoord.value || { lng: 0, lat: 0 };
+
+    updatedGoal.childGoals[index].locationName = autoLocationAddr.value || '已定位';
+    updatedGoal.childGoals[index].locationCoord = [coord.lng, coord.lat];
     updatedGoal.childGoals[index].finish = true;
     updatedGoal.childGoals[index].finishDate = new Date();
-    // 更新进度
+
     const finishedCount = updatedGoal.childGoals.filter((c: any) => c.finish).length;
     updatedGoal.progress = Math.round(finishedCount / updatedGoal.childGoals.length * 100);
 
-    // 如果所有子目标都完成了，更新目标状态
     if (finishedCount === updatedGoal.childGoals.length) {
       updatedGoal.status = 'completed';
-      // 触发庆祝动画
       celebrationGoalTitle.value = updatedGoal.title;
     }
 
     const res = await postM('editGoal', updatedGoal);
     if (isSuccess(res)) {
-      if(updatedGoal.status === 'completed'){
-
+      if (updatedGoal.status === 'completed') {
         showCelebration.value = true;
       }
-
-      message.success('子目标已完成');
-      // 更新本地数据
-      // const goalIndex = goals.value.findIndex((g: any) => g.id === goal.id);
-      // if (goalIndex !== -1) {
-      //   goals.value[goalIndex] = updatedGoal;
-      // }
-      getGoals()
-
+      message.success('子目标已完成，地点已记录');
+      getGoals();
     } else {
       expiredGoalToast(res);
     }
@@ -1252,6 +1425,38 @@ const finishChildGoal = async (goal: any, index: number) => {
     console.error(error);
   }
 };
+
+// 不带地点，只完成子目标
+const doFinishSimple = async (goal: any, index: number) => {
+  try {
+    const updatedGoal = JSON.parse(JSON.stringify(goal));
+    updatedGoal.childGoals[index].finish = true;
+    updatedGoal.childGoals[index].finishDate = new Date();
+
+    const finishedCount = updatedGoal.childGoals.filter((c: any) => c.finish).length;
+    updatedGoal.progress = Math.round(finishedCount / updatedGoal.childGoals.length * 100);
+
+    if (finishedCount === updatedGoal.childGoals.length) {
+      updatedGoal.status = 'completed';
+      celebrationGoalTitle.value = updatedGoal.title;
+    }
+
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      if (updatedGoal.status === 'completed') {
+        showCelebration.value = true;
+      }
+      message.success('子目标已完成');
+      getGoals();
+    } else {
+      expiredGoalToast(res);
+    }
+  } catch (error) {
+    message.error('操作失败');
+    console.error(error);
+  }
+};
+
 const expiredGoalToast = (res) => {
   if (res.data.msg) {
     message.error(res.data.msg);
@@ -1260,6 +1465,73 @@ const expiredGoalToast = (res) => {
   }
   getGoals()
 }
+
+// 一键全部完成 + 统一记录地点（全部子目标使用同一个定位地址）
+const doFinishAllWithLocation = async (goal: any) => {
+  try {
+    const updatedGoal = JSON.parse(JSON.stringify(goal));
+    const coord = autoLocationCoord.value || { lng: 0, lat: 0 };
+
+    updatedGoal.childGoals.forEach((child: any) => {
+      if (!child.finish) {
+        child.locationName = autoLocationAddr.value || '已定位';
+        child.locationCoord = [coord.lng, coord.lat];
+        child.finish = true;
+        child.finishDate = new Date();
+      }
+    });
+
+    updatedGoal.progress = 100;
+    updatedGoal.status = 'completed';
+    if (updatedGoal.completedDate === undefined) {
+      updatedGoal.completedDate = new Date();
+    }
+
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      celebrationGoalTitle.value = updatedGoal.title;
+      showCelebration.value = true;
+      getGoals();
+    } else {
+      expiredGoalToast(res);
+    }
+  } catch (error) {
+    message.error('一键完成操作失败');
+    console.error(error);
+  }
+};
+
+// 一键全部完成 + 不记录地点
+const doFinishAllSimple = async (goal: any) => {
+  try {
+    const updatedGoal = JSON.parse(JSON.stringify(goal));
+
+    updatedGoal.childGoals.forEach((child: any, idx: number) => {
+      if (!child.finish) {
+        child.finish = true;
+        child.finishDate = new Date();
+      }
+    });
+
+    updatedGoal.progress = 100;
+    updatedGoal.status = 'completed';
+    if (updatedGoal.completedDate === undefined) {
+      updatedGoal.completedDate = new Date();
+    }
+
+    const res = await postM('editGoal', updatedGoal);
+    if (isSuccess(res)) {
+      celebrationGoalTitle.value = updatedGoal.title;
+      showCelebration.value = true;
+      getGoals();
+    } else {
+      expiredGoalToast(res);
+    }
+  } catch (error) {
+    message.error('一键完成操作失败');
+    console.error(error);
+  }
+};
 
 // 取消子目标完成状态
 const unfinishChildGoal = async (goal: any, index: number) => {
@@ -1369,42 +1641,54 @@ const addChildGoal = async () => {
   }
 }
 
-// 一键完成整个目标（所有子目标完成 + 状态设为完成）
+// 一键完成整个目标（弹出确认弹窗，可选记录地点）
 const completeAllGoal = async (goal: any) => {
-  try {
-    // 深拷贝目标对象
-    const updatedGoal = JSON.parse(JSON.stringify(goal));
+  const currentGoalId = goal?._id || goal?.id;
 
-    // 将所有未完成的子目标标记为完成
-    updatedGoal.childGoals.forEach((child: any, idx: number) => {
-      if (!child.finish) {
-        child.finish = true;
-        child.finishDate = new Date();
-      }
-    });
+  // 检查是否已开启全局自动记录或当前目标的自动记录
+  const autoAll = localStorage.getItem(LOC_PREF_ALL) === 'true';
+  const autoGoal = currentGoalId ? localStorage.getItem(LOC_PREF_GOAL_PREFIX + currentGoalId) === 'true' : false;
 
-    // 进度设为 100%
-    updatedGoal.progress = 100;
-    updatedGoal.status = 'completed';
-    const now = new Date();
-    // 记录完成时间（如果后端支持）
-    if (updatedGoal.completedDate === undefined) {
-      updatedGoal.completedDate = now;
+  if (autoAll || autoGoal) {
+    // 自动模式：直接定位并全部完成，不弹窗
+    // 先在自动模式下获取位置
+    if (!navigator.geolocation) {
+      await doFinishAllSimple(goal);
+      return;
     }
-
-    const res = await postM('editGoal', updatedGoal);
-    if (isSuccess(res)) {
-      celebrationGoalTitle.value = updatedGoal.title;
-      showCelebration.value = true;
-      // message.success(`🎉 "${updatedGoal.title}" 已全部完成！`);
-      getGoals();
-    } else {
-      expiredGoalToast(res);
-    }
-  } catch (error) {
-    message.error('一键完成操作失败');
-    console.error(error);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        autoLocationCoord.value = { lng: longitude, lat: latitude };
+        try {
+          const res = await getM('amap/regeo', { location: `${longitude},${latitude}` });
+          if (isSuccess(res)) {
+            const data = res.data.data || res.data || res;
+            autoLocationAddr.value = data?.formatted_address || '已定位';
+          }
+        } catch {}
+        await doFinishAllWithLocation(goal);
+      },
+      async () => {
+        await doFinishAllSimple(goal);
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+    return;
   }
+
+  // 非自动模式：弹出确认框
+  isCompleteAllMode.value = true;
+  pendingFinishGoal.value = { goal, index: -1 };
+  prefSubGoals.value = false;
+  prefAllGoals.value = false;
+  locatingStatus.value = 'idle';
+  autoLocationAddr.value = '';
+  autoLocationCoord.value = null;
+  showFinishConfirm.value = true;
+
+  await nextTick();
+  startGeolocation();
 };
 
 /**
@@ -2913,6 +3197,80 @@ onMounted(() => {
 /* 已过期 — 柔和红色 */
 .status-hint-expired {
   color: #f87171;
+}
+
+/* ===== 完成确认弹窗 ===== */
+.finish-confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.location-section {
+  background: rgba(0, 201, 167, 0.06);
+  border: 1px solid rgba(0, 201, 167, 0.15);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.location-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fm-base-text, #e6edf3);
+  margin-bottom: 10px;
+}
+
+.location-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.locating-text {
+  font-size: 13px;
+  color: var(--fm-secondary-text, #8b949e);
+}
+
+.located-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.located-dot {
+  flex-shrink: 0;
+}
+
+.located-addr {
+  font-size: 13px;
+  color: #00c9a7;
+}
+
+.locating-fail {
+  font-size: 12px;
+  color: var(--fm-secondary-text, #8b949e);
+}
+
+.pref-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.finish-hint {
+  font-size: 11px;
+  color: var(--fm-secondary-text, #8b949e);
+  line-height: 1.4;
+}
+
+.finish-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 /* ===== Element Plus 固定列修复 ===== */

@@ -121,7 +121,8 @@ const routeTitleMap: Record<string, string> = {
   "Calendar":"星历规划",
   "GoalLibrary":"星际航道",
   "RecurringGoals":"定期巡航",
-  "LogManagement":"航线档案"
+  "LogManagement":"航线档案",
+  "LocationMap":"星际地图"
 }
 
 // 获取路由标题

@@ -1,5 +1,5 @@
 // electron/main.js
-import { app, BrowserWindow, ipcMain, Notification, Menu, Tray, nativeImage, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, Notification, Menu, Tray, nativeImage, screen, session, dialog } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -7,6 +7,9 @@ import WindowManager from './WindowManager.js';
 // 获取 __dirname 的 ES 模块替代方案
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 禁用 Chromium 同源策略（file:// 协议加载高德地图瓦片必须）
+app.commandLine.appendSwitch('disable-web-security');
 
 // 获取应用数据目录
 const userDataPath = app.getPath('userData');
@@ -76,6 +79,7 @@ function createWindow() {
       // nodeIntegration: true,
       contextIsolation: true, // 启用上下文隔离（安全）
       nodeIntegration: false, // 禁用Node集成（安全）
+      webSecurity: false, // 关闭同源策略，允许高德地图加载跨域瓦片资源
     },
   });
 
@@ -853,6 +857,52 @@ ipcMain.handle('get-window-size', async (event) => {
 
 // 应用准备就绪后创建窗口
 app.whenReady().then(() => {
+  // 处理权限请求：地理位置弹出询问对话框，高德地图 SDK 初始化需要
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'geolocation') {
+      // 弹出原生对话框询问用户是否允许定位
+      dialog.showMessageBox({
+        type: 'question',
+        title: '位置权限',
+        message: 'FreeMix 想使用您的位置信息',
+        detail: '高德地图需要获取您的位置以显示地图和打卡地点。',
+        buttons: ['允许', '拒绝'],
+        defaultId: 0,
+        cancelId: 1,
+      }).then((result) => {
+        callback(result.response === 0);
+      });
+    } else {
+      callback(true);
+    }
+  });
+
+  // 修复 file:// 协议无 Referer/Origin 导致高德 CDN 拒接瓦片请求
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    const { requestHeaders } = details;
+    if (details.url.includes('amap.com') || details.url.includes('is.autonavi.com')) {
+      // file:// 下 Referer 为空，PBF 矢量瓦片 CDN 会拒绝
+      requestHeaders['Referer'] = 'https://freemix.app/';
+      // file:// 下 Origin 为 null，高德 auth_key 验签会失败
+      requestHeaders['Origin'] = 'https://freemix.app';
+    }
+    callback({ requestHeaders });
+  });
+
+  // 注入 CSP 头：允许高德地图所有子资源加载（file:// 协议下 CSP 可能过于严格）
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = details.responseHeaders || {};
+    responseHeaders['Content-Security-Policy'] = [
+      "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+      "script-src * 'unsafe-inline' 'unsafe-eval'; " +
+      "connect-src * data: blob:; " +
+      "img-src * data: blob:; " +
+      "style-src * 'unsafe-inline'; " +
+      "worker-src * blob:;"
+    ];
+    callback({ responseHeaders });
+  });
+
   // 创建系统托盘图标
   createTrayIcon();
   // 创建主窗口
