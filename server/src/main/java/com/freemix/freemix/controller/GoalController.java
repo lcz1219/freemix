@@ -1107,7 +1107,7 @@ AchievementService achievementService;
                 JSONObject record = new JSONObject();
                 record.put("goalId", goal.get_id());
                 record.put("goalTitle", goal.getTitle());
-                record.put("childGoalId", child.get_id());
+                record.put("childGoalId", goal.get_id()+"-"+child.get_id());
                 record.put("childGoalMessage", child.getMessage());
                 record.put("locationName", child.getLocationName());
                 record.put("locationCoord", child.getLocationCoord());
