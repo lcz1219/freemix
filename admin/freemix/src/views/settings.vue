@@ -134,6 +134,26 @@
                   :disabled="isnAdmin"
                 />
               </div>
+              <div class="form-group">
+                <label>ios 下载链接</label>
+                <input 
+                  v-model="downloadConfig.iosDownloadUrl" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="https://..."
+                  :disabled="isnAdmin"
+                />
+              </div>
+              <div class="form-group">
+                <label>android 下载链接</label>
+                <input 
+                  v-model="downloadConfig.androidDownloadUrl" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="https://..."
+                  :disabled="isnAdmin"
+                />
+              </div>
               
               <div class="form-actions">
                 <button @click="handleSaveDownloadConfig" class="btn primary">保存系统设置</button>
@@ -404,7 +424,9 @@ const {
 
 const downloadConfig = ref({
   macDownloadUrl: '',
-  winDownloadUrl: ''
+  winDownloadUrl: '',
+  iosDownloadUrl: '',
+  androidDownloadUrl: ''
 });
 
 const fetchDownloadConfig = async () => {

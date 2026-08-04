@@ -800,11 +800,17 @@
                     <h1>统一管理<br><span class="gradient-text">掌控全局未来</span></h1>
                     <p>FreeMix 是一个设计优雅的全栈目标管理系统。结合现代化 Web 技术与原生桌面体验，让目标管理不再受限于平台。</p>
                     <div class="hero-btns">
-                        <a id="download-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
+                        <a id="hero-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
                             <i class="fab fa-apple"></i> Mac 版下载
                         </a>
-                        <a id="download-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-primary">
+                        <a id="hero-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-primary">
                             <i class="fab fa-windows"></i> Win 版下载
+                        </a>
+                        <a id="hero-btn-android" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix-release.apk" class="btn btn-primary">
+                            <i class="fab fa-android"></i> Android 版下载
+                        </a>
+                        <a id="hero-btn-ios" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix.ipa" class="btn btn-primary">
+                            <i class="fab fa-apple"></i> iOS 版下载
                         </a>
                         <a href="https://github.com/lcz1219/freemix" class="btn btn-glass">
                             <i class="fas fa-code"></i> 查看源码
@@ -991,6 +997,22 @@
                         <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .zip 文件
                     </a>
                 </div>
+                <div class="platform-box hidden-el" style="transition-delay: 0.2s;">
+                    <i class="fab fa-android platform-icon"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Android</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Android 8.0 及以上</p>
+                    <a id="download-btn-android" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix-release.apk" class="btn btn-glass">
+                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .apk 文件
+                    </a>
+                </div>
+                <div class="platform-box hidden-el" style="transition-delay: 0.3s;">
+                    <i class="fab fa-apple platform-icon"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">iOS</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 iOS 15.0 及以上</p>
+                    <a id="download-btn-ios" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix.ipa" class="btn btn-glass">
+                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .ipa 文件
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -1129,14 +1151,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             // 优先尝试生产环境API，如果失败且在本地，可以回退（这里简化直接请求生产环境）
             // 注意：需要后端开启 CORS 支持
-            const API_URL = 'https://info.gofreemix.com/freemix/api/config/downloads';
-            // const API_URL = 'http://localhost:5173/freemix/api/config/downloads';
+            //const API_URL = 'https://info.gofreemix.com/freemix/api/config/downloads';
+             const API_URL = 'http://localhost:5173/freemix/api/config/downloads';
             
             fetch(API_URL)
                 .then(response => response.json())
                 .then(res => {
                     if (res.code === 200 && res.data) {
-                        const { macDownloadUrl, winDownloadUrl } = res.data;
+                        const { macDownloadUrl, winDownloadUrl, androidDownloadUrl, iosDownloadUrl } = res.data;
                         
                         // 更新 Mac 链接
                         if (macDownloadUrl) {
@@ -1152,6 +1174,22 @@
                             const dlWin = document.getElementById('download-btn-win');
                             if (heroWin) heroWin.href = winDownloadUrl;
                             if (dlWin) dlWin.href = winDownloadUrl;
+                        }
+
+                        // 更新 Android 链接
+                        if (androidDownloadUrl) {
+                            const heroAndroid = document.getElementById('hero-btn-android');
+                            const dlAndroid = document.getElementById('download-btn-android');
+                            if (heroAndroid) heroAndroid.href = androidDownloadUrl;
+                            if (dlAndroid) dlAndroid.href = androidDownloadUrl;
+                        }
+
+                        // 更新 iOS 链接
+                        if (iosDownloadUrl) {
+                            const heroIos = document.getElementById('hero-btn-ios');
+                            const dlIos = document.getElementById('download-btn-ios');
+                            if (heroIos) heroIos.href = iosDownloadUrl;
+                            if (dlIos) dlIos.href = iosDownloadUrl;
                         }
                     }
                 })

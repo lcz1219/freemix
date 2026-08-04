@@ -9,6 +9,8 @@ public class SystemConfig {
     private String id;
     private String macDownloadUrl;
     private String winDownloadUrl;
+    private String iosDownloadUrl;
+    private String androidDownloadUrl;
     // 单例配置，可以用一个固定的ID或者type来标识
     private String type; // 例如 "DOWNLOAD_CONFIG"
 }

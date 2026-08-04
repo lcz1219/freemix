@@ -76,6 +76,8 @@ public class SystemConfigController {
         // 更新字段
         existingConfig.setMacDownloadUrl(newConfig.getMacDownloadUrl());
         existingConfig.setWinDownloadUrl(newConfig.getWinDownloadUrl());
+        existingConfig.setAndroidDownloadUrl(newConfig.getAndroidDownloadUrl());
+        existingConfig.setIosDownloadUrl(newConfig.getIosDownloadUrl());
 
         mongoTemplate.save(existingConfig);
 
