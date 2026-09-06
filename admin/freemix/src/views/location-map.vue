@@ -54,6 +54,7 @@
               <!-- 父级：目标名 + 数量 + 折叠箭头 -->
               <div class="group-header" @click="toggleGroup(group.goalId)">
                 <span class="group-title">{{ group.goalTitle }}</span>
+                <span class="group-time">{{ formatDate(group.finishDate) }}</span>
                 <span class="group-badge">{{ group.records.length }}</span>
                 <svg
                   :class="['group-arrow', { expanded: expandedGoalIds.has(group.goalId) }]"
@@ -72,11 +73,12 @@
                   @click="onCardClick(record)"
                 >
                   <div class="card-top">
-                    <span class="card-title">{{ record.goalTitle }}</span>
-                    <span class="card-time">{{ formatDate(record.finishDate) }}</span>
+                    <span class="card-sub">{{ record.childGoalMessage }}</span>
+
+                    <!-- <span class="card-title">{{ record.goalTitle }}</span> -->
+                    <!-- <span class="card-time">{{ formatDate(record.finishDate) }}</span> -->
                   </div>
                   <div class="card-mid">
-                    <span class="card-sub">{{ record.childGoalMessage }}</span>
                   </div>
                   <div class="card-addr">
                     <svg viewBox="0 0 16 16" width="12" height="12">
@@ -135,7 +137,7 @@ const sidebarCollapsed = ref(false);
 
 // 按目标 ID 分组
 const goalGroups = computed(() => {
-  const groups = new Map<string, { goalId: string; goalTitle: string; records: LocationRecord[] }>();
+  const groups = new Map<string, { goalId: string; goalTitle: string; finishDate: string; records: LocationRecord[] }>();
   locationRecords.value.forEach((record) => {
     const g = groups.get(record.goalId);
     if (g) {
@@ -144,6 +146,7 @@ const goalGroups = computed(() => {
       groups.set(record.goalId, {
         goalId: record.goalId,
         goalTitle: record.goalTitle,
+        finishDate: record.finishDate,
         records: [record],
       });
     }
@@ -557,6 +560,16 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.group-time {
+      flex: 1;
+    font-size: 12px;
+    text-align: right;
+    font-weight: 600;
+    color: #03c9a7d9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .group-badge {
   font-size: 11px;
@@ -643,8 +656,8 @@ onUnmounted(() => {
   align-items: center;
 }
 .card-sub {
-  font-size: 12px;
-  color: #8b949e;
+  font-size: 13px;
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

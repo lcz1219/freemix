@@ -25,7 +25,7 @@ public class EnvironmentChecker {
         } else {
             // 判断是否包含特定环境
             boolean isDev = env.acceptsProfiles("dev");
-            boolean isProd = env.acceptsProfiles("prod")||env.acceptsProfiles("prod_al");
+            boolean isProd = env.acceptsProfiles("prod")||env.acceptsProfiles("prod_al")||env.acceptsProfiles("proddocker");
             // 或者遍历 activeProfiles 数组进行判断
 
             if (isDev) {
@@ -42,6 +42,6 @@ public class EnvironmentChecker {
     }
 
     public boolean isProd() {
-        return env.acceptsProfiles("prod")||env.acceptsProfiles("prod_al");
+        return env.acceptsProfiles("prod")||env.acceptsProfiles("prod_al")||env.acceptsProfiles("proddocker");
     }
 }

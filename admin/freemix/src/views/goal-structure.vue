@@ -74,7 +74,7 @@ import { Menu, Snapshot, DndPanel, Control, MiniMap } from '@logicflow/extension
 // 修复样式导入路径
 import '@logicflow/core/dist/style/index.css';
 import '@logicflow/extension/lib/style/index.css';
-import { baseURL, isSuccess, postM, getMPaths, isGoalOwner } from '@/utils/request.js'
+import { baseURL, isSuccess, postM, getMPaths, getM, isGoalOwner } from '@/utils/request.js'
 
 import {
   NLayout,
@@ -380,22 +380,32 @@ const renderLabel = (goal) => {
 }
 
 const currGoal = ref({})
+const recurringGoals = ref([])
 // 获取目标列表
 const getGoals = async () => {
   console.log("getGoals");
 
   try {
     const res = await getMPaths("getGoals", store.state.user.username, "正在获取目标数据...");
-    console.log("res", res);
+    const res1 = await getM('/getRecurringGoals');
     if (isSuccess(res)) {
-      console.log("res", res);
       goals.value = res.data.data;
-      menuOptions.value = res.data.data.map(goal => ({
+      recurringGoals.value = res1.data.data;
+      const tmpGoals=ref([])
+      recurringGoals.value.forEach(goal => {
+        if(tmpGoals.value.length==0){
+       tmpGoals.value = goals.value.filter(g=>!(g.title==goal.title&&g.owner==goal.owner&&g.description==goal.description))
+          
+        }else{
+       tmpGoals.value = tmpGoals.value.filter(g=>!(g.title==goal.title&&g.owner==goal.owner&&g.description==goal.description))
+
+        }
+      })
+      menuOptions.value = tmpGoals.value.map(goal => ({
         key: goal._id,
         label: () => renderLabel(goal),
         onClick: () => loadGoalStructure(goal)
       }));
-      console.log("menuOptions", menuOptions.value);
 
     }
   } catch (error) {
@@ -423,7 +433,7 @@ const loadGoalStructure = (goal) => {
   circleloadGoalStructure(goal)
 
   renderData();
-  if(goal.status=='expired'){
+  if(goal.status=='expired'||goal.status=='completed'){
     isShow.value=false
   }else{
       isShow.value=true

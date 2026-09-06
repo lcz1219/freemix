@@ -280,7 +280,22 @@
                                   任务 ×{{ scope.row.count }}
                                 </n-tag>
                               </template>
+                              <n-tooltip v-if="!scope.row._isRootGroup && (scope.row.children || []).length > 0" trigger="hover">
+                              <!-- <n-tooltip  trigger="hover"> -->
+                                <template #trigger>
+                                  <span class="series-chart-trigger" @click.stop="openSeriesChart(scope.row)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                                      <path d="M5 20V10" />
+                                      <path d="M12 20V4" />
+                                      <path d="M19 20v-7" />
+                                    </svg>
+                                  </span>
+                                </template>
+                                查看该任务从建立到现在整个周期的完成情况
+                              </n-tooltip>
                               <span>{{ scope.row.title }}</span>
+                              <!-- 周期可视化入口：子分组（定时任务系列）可一键查看整个周期的完成情况 -->
+                              
                             </div>
                             <!-- 普通目标行 -->
                             <div v-else style="display: flex; align-items: center; gap: 6px;" class="stagger-item">
@@ -563,6 +578,14 @@
     <!-- 庆祝动画全屏覆盖 -->
     <CelebrationOverlay :show="showCelebration" :title="celebrationGoalTitle" @close="showCelebration = false" />
 
+    <!-- 定时任务周期完成情况可视化弹窗 -->
+    <GoalSeriesChart
+      v-model:show="showSeriesModal"
+      :title="(activeSeries && activeSeries.title) || ''"
+      :instances="(activeSeries && activeSeries.children) || []"
+      :rule="(activeSeries && activeSeries.rule) || null"
+    />
+
     <!-- 子目标文件上传模态框 -->
     <n-modal v-model:show="showChildGoalUploadModal" preset="card" style="max-width: 600px" title="上传文件"
       :mask-closable="false">
@@ -728,7 +751,8 @@ import RichTextEditor from '@/components/RichTextEditor.vue';
 import GeneralUpload from '@/components/GeneralUpload.vue';
 import ExcelImport from '@/components/ExcelImport.vue';
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
-import request, { postM, getMPaths,getM, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
+import GoalSeriesChart from '@/components/GoalSeriesChart.vue';
+import request, { postM, getMPaths, getM, isSuccess, baseURL, isGoalOwner } from '@/utils/request';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -1966,6 +1990,35 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day}`;
 };
 
+// ================= 定时任务周期完成可视化 =================
+// 弹窗开关 + 当前选中的“系列”（同一标题的所有目标实例 + 命中的定时规则）
+const showSeriesModal = ref(false);
+const activeSeries = ref<any>(null);
+// 当前用户的定时任务规则列表，用于把同标题折叠分组与定时规则关联起来
+const recurringRules = ref<any[]>([]);
+
+// 拉取定时任务规则（供周期可视化关联规则元信息）
+const fetchRecurringRules = async () => {
+  try {
+    const res = await getM('/getRecurringGoals');
+    if (res.data?.operSucc) {
+      recurringRules.value = res.data.data || [];
+    }
+  } catch (error) {
+    console.error('获取定时任务规则失败', error);
+  }
+};
+
+// 点击折叠组头的图表小按钮：为该系列打开周期完成可视化弹窗
+const openSeriesChart = (row: any) => {
+  if (!row || !row.children || row.children.length === 0) return;
+  // 尝试按标题匹配当前用户的定时任务规则（匹配不上也允许查看，只少展示规则元信息）
+  const rule = recurringRules.value.find((r: any) => r.title === row.title);
+  activeSeries.value = { title: row.title, children: row.children, rule: rule || null };
+  showSeriesModal.value = true;
+};
+// ================= 定时任务周期完成可视化 END =================
+
 // 获取目标列表
 const getGoals = async () => {
   loading.value = true;
@@ -2223,6 +2276,7 @@ const removeChildGoalFile = async (file: any): Promise<void> => {
 // 初始化
 onMounted(() => {
   getGoals();
+  fetchRecurringRules();
 });
 </script>
 
@@ -2506,11 +2560,36 @@ onMounted(() => {
    ---------------------------------- */
 :deep(.el-table) {
   background-color: transparent !important;
+  overflow: visible; /* 方案B：放通内部 overflow，见下方说明 */
   --el-table-border-color: transparent;
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
   --el-table-header-bg-color: rgba(0, 0, 0, 0.2);
   --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.03);
+}
+
+/* ==========================================================
+   方案B：让 x 轴横向滚动条"贴底常驻"，无需纵向滚到最后一行才出现
+   原理：横向滚动条默认 absolute 定位在表格内容最底部（随最后一行被外层
+   纵向滚动带出可视区）。把它改成 position:sticky，即可在纵向滚动时
+   吸附在滚动容器的可视底部。
+   注意：sticky 只对"最近的滚动容器"生效，而 .el-table、.el-table__body-wrapper、
+   .el-scrollbar 默认都是 overflow:hidden（自身不滚动），会把 sticky 截获在内部；
+   因此必须把这三层放通为 visible，让 sticky 一路上溯到真正发生纵向滚动的
+   卡片内容区（.n-card__content）。
+   ========================================================== */
+:deep(.el-table__body-wrapper) {
+  overflow: visible;
+}
+:deep(.el-table .el-scrollbar) {
+  overflow: visible;
+}
+:deep(.el-table .el-scrollbar__bar.is-horizontal) {
+  position: sticky !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 3;
 }
 
 .home-container-light :deep(.el-table) {
@@ -3271,6 +3350,22 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 周期可视化入口小按钮（折叠组头上的一键图表） */
+.series-chart-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  margin-left: 6px;
+  border-radius: 4px;
+  color: #00c9a7;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.series-chart-trigger:hover {
+  background: rgba(0, 201, 167, 0.15);
 }
 
 /* ===== Element Plus 固定列修复 ===== */

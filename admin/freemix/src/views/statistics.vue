@@ -541,43 +541,91 @@ const initTypeChart = () => {
     }
   });
   
-  const tagData = Object.entries(tagCount).map(([name, value]) => ({ name, value }));
+  // 按数量降序排列，数量最多的标签显示在最上方，更直观
+  const tagData = Object.entries(tagCount)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+  
+  // 根据分类数量动态调整容器高度，保证每个 y 轴名称都能完整显示，不被隐藏或挤压
+  typeChart.value.style.height = Math.max(300, tagData.length * 28 + 70) + 'px';
   
   const option = {
+    backgroundColor: 'transparent',
     title: {
       text: '目标类型分布',
       left: 'center',
       textStyle: {
-        color: isDark.value ? '#ffffff' : '#000000'
+        color: isDark.value ? '#ffffff' : '#2c3e50',
+        fontWeight: 600,
+        fontSize: 16
       }
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'item',
+      backgroundColor: isDark.value ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(10px)',
+      borderColor: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      textStyle: { color: isDark.value ? '#fff' : '#2c3e50' }
     },
-    legend: {
-      top: 'bottom',
-      textStyle: {
-        color: isDark.value ? '#cccccc' : '#333333'
+    grid: {
+      left: '3%',
+      right: '12%',
+      bottom: '8%',
+      top: '15%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: isDark.value ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } },
+      axisLabel: {
+        color: isDark.value ? '#888' : '#999'
+      }
+    },
+    yAxis: {
+      type: 'category',
+      // 反转坐标轴，让数量最多的标签排在最上方
+      inverse: true,
+      data: tagData.map(item => item.name),
+      axisLine: { lineStyle: { color: isDark.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' } },
+      axisLabel: {
+        // 强制显示所有分类名称，避免分类过多时被 ECharts 自动隐藏
+        interval: 0,
+        color: isDark.value ? '#888' : '#999'
       }
     },
     series: [
       {
         name: '目标类型',
-        type: 'pie',
-        radius: '50%',
-        data: tagData,
+        type: 'bar',
+        barMaxWidth: 28,
+        itemStyle: {
+          borderRadius: [0, 6, 6, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+            { offset: 0, color: '#00c9a7' },
+            { offset: 1, color: '#00897b' }
+          ])
+        },
+        label: {
+          show: true,
+          position: 'right',
+          color: isDark.value ? '#ffffff' : '#2c3e50'
+        },
+        data: tagData.map(item => item.value),
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
+            shadowColor: 'rgba(0, 201, 167, 0.5)'
           }
         }
       }
-    ]
+    ],
+    animationDuration: 1500,
+    animationEasing: 'cubicOut'
   };
   
   chart.setOption(option);
+  // 容器高度已动态调整，刷新画布尺寸
+  chart.resize();
   
   // 监听主题变化
   watch(isDark, () => {

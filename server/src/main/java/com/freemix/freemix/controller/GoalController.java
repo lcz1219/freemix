@@ -15,6 +15,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.bson.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -1076,12 +1077,12 @@ AchievementService achievementService;
             List<String> goalIds = mongoTemplate.find(
                 new Query(Criteria.where("username").is(ower).and("del").ne(1)), Relation.class)
                 .stream().map(Relation::getGoalId).collect(Collectors.toList());
-
-            List<Goal> goals = mongoTemplate.find(
-                new Query(new Criteria().orOperator(
+           Query query= new Query(new Criteria().orOperator(
                     Criteria.where("owner").is(ower).and("del").ne(1),
                     Criteria.where("_id").in(goalIds).and("del").ne(1)
-                )), Goal.class);
+            ));
+            List<Goal> goals = mongoTemplate.find(query
+                , Goal.class);
 
             // 收集所有已完成的、包含地点信息的子目标记录
             JSONArray records = new JSONArray();
@@ -1089,8 +1090,11 @@ AchievementService achievementService;
                 if (goal.getChildGoals() == null) continue;
                 collectLocationRecords(goal, goal.getChildGoals(), records);
             }
+            List<JSONObject> javaList = records.toJavaList(JSONObject.class);
+            javaList.sort(Comparator.comparing((JSONObject obj) -> obj.getString("finishDate"),
+                    Comparator.nullsLast(Comparator.reverseOrder())));
 
-            return ApiResponse.success(records);
+            return ApiResponse.success(javaList);
         } catch (Exception e) {
             log.error("获取地点记录失败:", e);
             return ApiResponse.failure("获取地点记录失败: " + e.getMessage());
