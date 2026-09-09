@@ -63,9 +63,11 @@ public class DeepSeekService {
         }
 
         String model = deepSeekConfig.getModel();
-        if (model == null || model.isBlank()) {
-            model = "deepseek-reasoner";
-        }
+//        if (model == null || model.isBlank()) {
+//            model = "deepseek-reasoner";
+//        }
+            model = "deepseek-v4-flash";
+
 
         JSONObject requestBody = new JSONObject();
         requestBody.put("model", model);
@@ -78,8 +80,8 @@ public class DeepSeekService {
 
         HttpURLConnection connection = (HttpURLConnection) URI.create(baseUrl + "/chat/completions").toURL().openConnection();
         connection.setRequestMethod("POST");
-        connection.setConnectTimeout(30000);
-        connection.setReadTimeout(0);
+//        connection.setConnectTimeout(90000);
+//        connection.setReadTimeout(0);
         connection.setDoOutput(true);
         connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setRequestProperty("Content-Type", "application/json");
