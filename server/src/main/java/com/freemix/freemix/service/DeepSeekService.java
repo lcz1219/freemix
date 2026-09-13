@@ -3,6 +3,9 @@ package com.freemix.freemix.service;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.freemix.freemix.configurer.DeepSeekConfig;
+import com.mongodb.client.AggregateIterable;
+import org.bson.BsonArray;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -22,6 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class DeepSeekService {
@@ -55,6 +61,16 @@ public class DeepSeekService {
      * 建立到 DeepSeek 的流式连接，后续由控制器把结果转发给前端。
      */
     public HttpURLConnection createChatStreamConnection(String question, String currentUsername) throws IOException {
+        JSONArray messages = new JSONArray();
+        messages.add(createMessage("system", buildSystemPrompt(currentUsername)));
+        messages.add(createMessage("user", question));
+        return openStreamConnection(messages);
+    }
+
+    /**
+     * 用给定的 messages 建立 DeepSeek 流式连接（第二轮总结复用同一套连接配置）
+     */
+    private HttpURLConnection openStreamConnection(JSONArray messages) throws IOException {
         String apiKey = getApiKey();
 
         String baseUrl = deepSeekConfig.getBaseUrl();
@@ -72,10 +88,6 @@ public class DeepSeekService {
         JSONObject requestBody = new JSONObject();
         requestBody.put("model", model);
         requestBody.put("stream", true);
-
-        JSONArray messages = new JSONArray();
-        messages.add(createMessage("system", buildSystemPrompt(currentUsername)));
-        messages.add(createMessage("user", question));
         requestBody.put("messages", messages);
 
         HttpURLConnection connection = (HttpURLConnection) URI.create(baseUrl + "/chat/completions").toURL().openConnection();
@@ -96,17 +108,26 @@ public class DeepSeekService {
 
     /**
      * 把 DeepSeek 的 OpenAI 兼容流式结果转换成前端消息结构。
-     * 使用极短回看窗口防止 [推荐问题] 标记泄漏，同时保证逐字即时推送。
+     * 正文即时推送，但把可能是 [推荐问题] / [MQL_START] 标记前缀的尾部扣在缓冲里，确认后再发，
+     * 避免标记被切成多个分片时泄漏到正文。
+     * MQL 段不会下发给前端，只在服务端解析出管道语句用于后续查询。
+     *
+     * @return 本轮回答中截获到的 MQL 管道语句；没有则返回 null
      */
-    public void forwardDeepSeekStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+    public String forwardDeepSeekStream(InputStream inputStream, OutputStream outputStream) throws IOException {
         StringBuilder fullContent = new StringBuilder();
+        // 扣留缓冲：暂存可能是标记前缀的尾部，未确认前不发送
         StringBuilder lookbehind = new StringBuilder();
         boolean followUpStarted = false;
+        boolean mqlStarted = false;
         final String MARKER = "[推荐问题]";
-        final int LOOK_BEHIND = MARKER.length() - 1;
+        final String MQL_START = "[MQL_START]";
+        final String MQL_END = "[MQL_END]";
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
+        // writer 不能放进 try-with-resources：close 会连带关闭调用方的输出流，
+        // 导致编排时无法继续写第二轮内容和统一的 [DONE]
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("data:")) continue;
@@ -134,7 +155,7 @@ public class DeepSeekService {
                     boolean hasReasoning = reasoningContent != null && !reasoningContent.isEmpty();
                     if (!hasContent && !hasReasoning) continue;
 
-                    if (followUpStarted) continue;
+                    if (followUpStarted || mqlStarted) continue;
 
                     // 思考过程即时转发
                     if (hasReasoning) {
@@ -147,28 +168,53 @@ public class DeepSeekService {
                         writer.flush();
                     }
 
-                    // 正文：即时推送 + 短回看窗口检测 [推荐问题]
+                    // 正文：即时推送，但把可能是标记前缀的尾部扣在缓冲里
                     if (hasContent) {
-                        String inspect = lookbehind + content;
-                        int markerIdx = inspect.indexOf(MARKER);
+                        // combined = 上一轮扣留的内容 + 当前分片
+                        String combined = lookbehind + content;
+                        int followIdx = combined.indexOf(MARKER);
+                        int mqlIdx = combined.indexOf(MQL_START);
 
-                        if (markerIdx >= 0) {
-                            int safeFromContent = markerIdx - lookbehind.length();
-                            if (safeFromContent > 0) {
-                                writeImmediate(content.substring(0, safeFromContent), writer);
+                        if (followIdx >= 0 || mqlIdx >= 0) {
+                            // 命中标记：只发标记之前的内容，标记及其之后的内容不下发前端
+                            int cut = followIdx < 0 ? mqlIdx : (mqlIdx < 0 ? followIdx : Math.min(followIdx, mqlIdx));
+                            if (cut > 0) {
+                                writeImmediate(combined.substring(0, cut), writer);
                             }
-                            followUpStarted = true;
+                            if (followIdx >= 0) {
+                                followUpStarted = true;
+                            }
+                            if (mqlIdx >= 0) {
+                                mqlStarted = true;
+                            }
                             lookbehind.setLength(0);
                         } else {
-                            writeImmediate(content, writer);
-                            lookbehind.append(content);
-                            if (lookbehind.length() > LOOK_BEHIND) {
-                                lookbehind.delete(0, lookbehind.length() - LOOK_BEHIND);
+                            // 找出末尾可能是标记前缀的长度（如 "[推荐问题" / "[MQL_START"）
+                            int partialLen = 0;
+                            for (String marker : new String[]{MARKER, MQL_START}) {
+                                for (int i = marker.length() - 1; i >= 1; i--) {
+                                    if (combined.endsWith(marker.substring(0, i))) {
+                                        partialLen = Math.max(partialLen, i);
+                                        break;
+                                    }
+                                }
                             }
+                            int safeLen = combined.length() - partialLen;
+                            if (safeLen > 0) {
+                                writeImmediate(combined.substring(0, safeLen), writer);
+                            }
+                            // 扣住可能是标记开头的尾部，等下一分片一起判断
+                            lookbehind.setLength(0);
+                            lookbehind.append(combined.substring(safeLen));
                         }
                     }
                 } catch (Exception ignored) {
                 }
+            }
+
+            // 流结束仍未出现标记，把缓冲里扣住的尾部补发，避免正文丢字
+            if (!followUpStarted && !mqlStarted && lookbehind.length() > 0) {
+                writeImmediate(lookbehind.toString(), writer);
             }
 
             // 从累积内容中解析 [推荐问题] 并单独推送
@@ -186,9 +232,137 @@ public class DeepSeekService {
                 }
             }
 
-            writer.write("data: [DONE]\n\n");
+            // 截获 MQL 管道语句（仅服务端使用，不下发前端）
+            String pipeline = null;
+            int mqlStart = contentText.indexOf(MQL_START);
+            if (mqlStart >= 0) {
+                int mqlEnd = contentText.indexOf(MQL_END, mqlStart + MQL_START.length());
+                if (mqlEnd > mqlStart) {
+                    pipeline = contentText.substring(mqlStart + MQL_START.length(), mqlEnd).trim();
+                }
+            }
+
             writer.flush();
+            return pipeline;
         }
+    }
+
+    /**
+     * 写 SSE 结束标记；由编排方在所有轮次结束后统一调用一次
+     */
+    public void writeDone(OutputStream outputStream) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+        writer.write("data: [DONE]\n\n");
+        writer.flush();
+    }
+
+    /**
+     * 第二阶段编排：服务端执行 MQL 拿数据，再让 DeepSeek 基于真实数据做总结。
+     * 原始数据全程只在服务端流转，浏览器只能拿到最终的自然语言结论。
+     */
+    public void streamMqlSummary(String pipeline, String question, String currentUsername, OutputStream outputStream) throws IOException {
+        HttpURLConnection connection = null;
+        try {
+            List<Document> rawData = executeMqlPipeline(pipeline, "goal");
+            JSONArray messages = new JSONArray();
+            messages.add(createMessage("system", buildSystemPrompt(currentUsername)));
+            messages.add(createMessage("user", buildMqlSummaryPrompt(question, rawData)));
+            connection = openStreamConnection(messages);
+
+            int statusCode = connection.getResponseCode();
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new IOException("总结阶段调用 DeepSeek 失败，状态码：" + statusCode);
+            }
+            try (InputStream stream = connection.getInputStream()) {
+                // 第二轮不再使用截获结果，避免再次触发查询造成死循环
+                forwardDeepSeekStream(stream, outputStream);
+            }
+        } catch (Exception e) {
+            // 降级提示：避免前端一直等待
+            writeAnswerChunk("AI正在处理您的数据，请重新刷新试试", outputStream);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    /**
+     * 执行 AI 生成的 MQL（MongoDB 聚合管道），返回查询结果
+     */
+    public List<Document> executeMqlPipeline(String pipelineJson, String collectionName) {
+        if (collectionName == null || collectionName.isEmpty()) {
+            collectionName = "goal";
+        }
+        String cleanedMql = pipelineJson
+                .replaceAll("ISODate\\(\"([^\"]+)\"\\)", "{\"\\$date\": \"$1\"}")
+                .replaceAll("new Date\\(\"([^\"]+)\"\\)", "{\"\\$date\": \"$1\"}");
+        // 处理算术表达式 (例如 1000 * 60 * 60 * 24)
+        cleanedMql = evaluateArithmetic(cleanedMql);
+
+        List<Document> pipeline = BsonArray.parse(cleanedMql).stream()
+                .map(v -> Document.parse(v.asDocument().toJson()))
+                .collect(Collectors.toList());
+        AggregateIterable<Document> results = mongoTemplate.getCollection(collectionName).aggregate(pipeline);
+        List<Document> output = new ArrayList<>();
+        results.forEach(output::add);
+        return output;
+    }
+
+    /**
+     * 与前端 mqlSummaryPrompt 保持一致的第二阶段提问模板
+     */
+    private String buildMqlSummaryPrompt(String question, List<Document> rawData) {
+        StringBuilder dataJson = new StringBuilder("[");
+        for (int i = 0; i < rawData.size(); i++) {
+            if (i > 0) {
+                dataJson.append(",");
+            }
+            // 用 MongoDB 扩展 JSON 输出，日期格式与系统提示词里的要求保持一致
+            dataJson.append(rawData.get(i).toJson());
+        }
+        dataJson.append("]");
+
+        return "\n      用户问题：" + question
+                + "\n      数据库执行结果（原始数据）：" + dataJson
+                + "\n      请结合上述数据，用专业、自然的口吻回答用户，并给出分析结论。不要再次输出 [MQL_START] 标签。\n      ";
+    }
+
+    /**
+     * 简单的算术表达式评估器，专门用于处理 JSON 中的数字乘法 (如 1000 * 60 * 60)
+     */
+    private String evaluateArithmetic(String input) {
+        if (input == null || !input.contains("*")) return input;
+
+        // 匹配数字之间的乘号，支持多级乘法
+        Pattern pattern = Pattern.compile("(\\d+(?:\\s*\\*\\s*\\d+)+)");
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer sb = new StringBuffer();
+
+        while (matcher.find()) {
+            String expression = matcher.group(1);
+            try {
+                long result = 1;
+                String[] parts = expression.split("\\*");
+                for (String part : parts) {
+                    result *= Long.parseLong(part.trim());
+                }
+                matcher.appendReplacement(sb, String.valueOf(result));
+            } catch (Exception e) {
+                // 如果解析失败，保留原样
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(expression));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    /**
+     * 直接向下发流写一条 answer 消息（用于失败降级提示）
+     */
+    private void writeAnswerChunk(String content, OutputStream outputStream) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+        writeImmediate(content, writer);
     }
 
     private void writeImmediate(String content, BufferedWriter writer) throws IOException {

@@ -50,19 +50,15 @@
           </div>
           <div class="message-main">
             <div v-if="message.isProcessing && !message.content && !message.thinkingContent" class="processing-message">
-              <van-loading type="spinner" color="#00c9a7" size="16" vertical />
-              <span>AI正在思考中...</span>
+              <span class="loading-text">Freemix AI思考中</span>
+              <span class="loading-dots"><i></i><i></i><i></i></span>
             </div>
             <div v-else>
-              <div v-if="message.thinkingContent" class="thinking-content">
-                <div class="thinking-label">AI思考过程</div>
-                <div class="thinking-body" v-html="formatContent(message.thinkingContent)"></div>
-              </div>
-              
               <div class="message-content" v-html="formatContent(message.content)"></div>
               
               <div v-if="message.isProcessing" class="generating-indicator">
-                <van-loading type="spinner" color="#00c9a7" size="16" />
+                <span class="pulse-ring"></span>
+                <span class="loading-text">Freemix AI正在处理中...</span>
               </div>
               
               <div class="message-time">{{ formatTime(message.timestamp) }}</div>
@@ -147,9 +143,8 @@ import { useStore } from 'vuex'
 import { showToast } from 'vant'
 import MarkdownIt from 'markdown-it'
 import { postM, getM } from '@/utils/request.js'
-import { chatPromptMobile, chatPrompt, mqlSummaryPrompt } from '@/utils/aiPrompts.js'
+import { chatPromptMobile, chatPrompt } from '@/utils/aiPrompts.js'
 import { callCozeAPI } from '@/utils/aiService.js'
-import { handleMQLResponse } from '@/utils/MQLHandler.js'
 
 const md = new MarkdownIt({
   html: true,
@@ -403,28 +398,8 @@ const callCustomAIAPI = async (question, onUpdate) => {
       followUpQuestions: followUpQuestions
     }
 
-    // 截获 MQL 并自动执行
-    const MQL_START = '[MQL_START]'
-    const startIndex = fullResponse.indexOf(MQL_START)
-    if (startIndex !== -1) {
-      const mqlResult = await handleMQLResponse(fullResponse, question)
-      if (mqlResult && mqlResult.success) {
-        // 触发二次对话：让 AI 根据查询结果做总结
-        const summaryPrompt = mqlSummaryPrompt({ question, rawData: mqlResult.rawData })
-        const finalResult = await callCustomAIAPI(summaryPrompt, onUpdate)
-        return finalResult
-      } else {
-        // MQL 执行失败，返回友好的降级提示
-        const failResult = {
-          messageType: 'answer',
-          success: false,
-          content: 'AI正在处理您的数据，请重新刷新试试',
-          thinkingContent: thinkingContent,
-          followUpQuestions: followUpQuestions
-        }
-        return failResult
-      }
-    }
+    // MQL 的截获、执行与二次总结已全部由后端编排完成，
+    // 这里拿到的 content 就是最终总结，前端不再需要二次请求
 
     // 如果没有获取到有效响应，返回默认消息
     if (!fullResponse.trim() && followUpQuestions.length === 0 && !thinkingContent.trim()) {
@@ -642,7 +617,7 @@ defineExpose({
         }
         
         .message-main {
-          max-width: 75%;
+          max-width: 100%;
           
           .processing-message {
             display: flex;
@@ -656,27 +631,74 @@ defineExpose({
             box-shadow: var(--card-shadow);
           }
           
-          :deep(.thinking-content) {
-            background-color: rgba(0, 0, 0, 0.03);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            border-left: 3px solid #00c9a7;
-            
-            .thinking-label {
-              font-weight: bold;
-              margin-bottom: 4px;
-              color: #00c9a7;
-            }
-            
-            .thinking-body {
-              white-space: pre-wrap;
-              line-height: 1.4;
-              
-              p { margin: 4px 0; }
-            }
+          /* AI思考/处理中的动态加载效果（与PC端保持一致） */
+          .loading-text {
+            font-weight: 500;
+            background: linear-gradient(90deg, #00c9a7 0%, #7ff5e0 50%, #00c9a7 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 1.8s linear infinite;
+          }
+
+          /* 流光高光从左到右扫过 */
+          @keyframes textShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+
+          /* 三点跳动：依次上浮，形成波浪 */
+          .loading-dots {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 14px;
+          }
+
+          .loading-dots i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00c9a7;
+            animation: dotBounce 1.2s ease-in-out infinite;
+          }
+
+          .loading-dots i:nth-child(2) { animation-delay: 0.15s; }
+          .loading-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+          @keyframes dotBounce {
+            0%, 80%, 100% { transform: translateY(0) scale(0.85); opacity: 0.5; }
+            40% { transform: translateY(-6px) scale(1.15); opacity: 1; }
+          }
+
+          /* 脉冲光圈：中心实心点 + 向外扩散的波纹 */
+          .pulse-ring {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00c9a7;
+            flex-shrink: 0;
+          }
+
+          .pulse-ring::before,
+          .pulse-ring::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: #00c9a7;
+            animation: ringPulse 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+          }
+
+          .pulse-ring::after {
+            animation-delay: 0.9s;
+          }
+
+          @keyframes ringPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(3.2); opacity: 0; }
           }
 
           .message-content {
@@ -751,7 +773,10 @@ defineExpose({
           .generating-indicator {
             padding: 4px 0 8px;
             display: flex;
+            align-items: center;
             justify-content: center;
+            gap: 8px;
+            font-size: 14px;
           }
           
           .message-time {

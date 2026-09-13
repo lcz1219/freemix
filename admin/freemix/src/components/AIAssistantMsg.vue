@@ -327,7 +327,7 @@ const scrollToBottom = () => {
   nextTick(() => {
     // 方法1: 使用模板ref
     if (chatContainerRef.value) {
-      console.log("滚动到底部",chatContainerRef.value);
+      // console.log("滚动到底部",chatContainerRef.value);
       
       chatContainerRef.value.scrollToBottom()
       return;
@@ -337,8 +337,7 @@ const scrollToBottom = () => {
   })
 };
 
-import { handleMQLResponse } from '../utils/MQLHandler';
-import { chatPrompt, mqlSummaryPrompt } from '@/utils/aiPrompts.js';
+import { chatPrompt } from '@/utils/aiPrompts.js';
 import { callCozeAPI } from '@/utils/aiService.js';
 
 // 处理历史记录导航
@@ -409,35 +408,10 @@ const callCustomAIAPI = async (question, onUpdate) => {
       thinkingContent: thinkingContent,
       followUpQuestions: followUpQuestions
     };
-    
-    // 方案二：截获 MQL 并自动执行
-    const MQL_START = '[MQL_START]';
-    const startIndex = fullResponse.indexOf(MQL_START);
-    if(startIndex != -1){
-      
-    
-    const mqlResult = await handleMQLResponse(fullResponse,question);
-    if (mqlResult && mqlResult.success) {
-      // 触发二次对话：让 AI 总结结果
-      const summaryPrompt = mqlSummaryPrompt({ question, rawData: mqlResult.rawData })
-      
-      // 递归调用 callCustomAIAPI 获取最终总结
-      const finalResult = await callCustomAIAPI(summaryPrompt, onUpdate);
-      return finalResult;
-    }else{
-      const failResult = {
-        messageType: 'answer',
-        success: false,
-        content: "AI正在打瞌睡，请重新刷新",
-        thinkingContent: thinkingContent,
-        followUpQuestions: followUpQuestions
-      }
-      console.log("fail qlResult",failResult);
 
-     return failResult;
-    }
-    }
-    
+    // MQL 的截获、执行与二次总结已全部由后端编排完成，
+    // 这里拿到的 content 就是最终总结，前端不再需要二次请求
+
     // 如果没有获取到有效响应，返回默认消息
     if (!fullResponse.trim() && followUpQuestions.length === 0 && !thinkingContent.trim()) {
       result.content = 'AI助手已处理您的问题，但未返回有效回复。';

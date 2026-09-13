@@ -5,13 +5,12 @@
         <!-- 显示不同类型的消息内容 -->
         <div v-if="message.messageType === 'answer'">
           <!-- 显示AI的回答内容 -->
-          <div v-if="message.thinkingContent" class="thinking-content">
+          <!-- <div v-if="message.thinkingContent" class="thinking-content">
             <strong>AI思考过程：</strong>
             <div v-html="parseMarkdown(message.thinkingContent)"></div>
-          </div>
+          </div> -->
           <div class="answer-content" v-html="parseMarkdown(message.content)"></div>
-        </div>
-        <div v-if="message.followUpQuestions">
+          <div v-if="message.followUpQuestions">
           <!-- 显示推荐问题 -->
           <div><strong>推荐问题：</strong></div>
           <div class="follow-up-buttons">
@@ -28,16 +27,21 @@
             </n-button>
           </div>
         </div>
+        </div>
+        
         <div v-else-if="message.messageType === 'verbose'">
-            <!-- 显示AI思考过程 -->
-            <div><strong>AI思考中...</strong></div>
-            <div class="thinking-process" v-html="parseMarkdown(message.content)"></div>
+            <!-- 显示AI思考过程（动态加载效果） -->
+            <div class="processing-indicator">
+              <span class="loading-text">Freemix AI思考中</span>
+              <span class="loading-dots"><i></i><i></i><i></i></span>
+            </div>
+            <!-- <div class="thinking-process" v-html="parseMarkdown(message.content)"></div> -->
           </div>
         <div v-else-if="message.messageType === 'processing' || message.isProcessing">
-          <!-- 显示AI正在处理的提示 -->
+          <!-- 显示AI正在处理的提示（脉冲光圈 + 流光文字） -->
           <div class="processing-indicator">
-            <n-spin size="small" />
-            <span>AI正在处理中...</span>
+            <span class="pulse-ring"></span>
+            <span class="loading-text">Freemix AI正在处理中...</span>
           </div>
         </div>
         <div v-else>
@@ -52,7 +56,7 @@
 
 <script setup>
 import { defineProps, defineEmits, ref, onMounted, nextTick, computed } from 'vue';
-import { NButton, NSpin } from 'naive-ui';
+import { NButton } from 'naive-ui';
 import MarkdownIt from 'markdown-it';
 
 const md = new MarkdownIt({
@@ -449,6 +453,7 @@ defineExpose({
   margin-bottom: 8px;
 }
 
+/* AI 思考 / 处理中的动态加载效果 */
 .processing-indicator {
   display: flex;
   align-items: center;
@@ -457,9 +462,73 @@ defineExpose({
   padding: 16px;
 }
 
-.processing-indicator span {
+/* 流光文字：高光从左到右扫过，营造“正在思考”的感觉 */
+.loading-text {
   font-weight: 500;
-  color: #00c9a7;
+  background: linear-gradient(90deg, #00c9a7 0%, #7ff5e0 50%, #00c9a7 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 1.8s linear infinite;
+}
+
+@keyframes textShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 三点跳动：依次上浮，形成波浪 */
+.loading-dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 14px;
+}
+
+.loading-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00c9a7;
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+
+.loading-dots i:nth-child(2) { animation-delay: 0.15s; }
+.loading-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0) scale(0.85); opacity: 0.5; }
+  40% { transform: translateY(-6px) scale(1.15); opacity: 1; }
+}
+
+/* 脉冲光圈：中心实心点 + 向外扩散的波纹 */
+.pulse-ring {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00c9a7;
+  flex-shrink: 0;
+}
+
+.pulse-ring::before,
+.pulse-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #00c9a7;
+  animation: ringPulse 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.pulse-ring::after {
+  animation-delay: 0.9s;
+}
+
+@keyframes ringPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(3.2); opacity: 0; }
 }
 
 .follow-up-buttons {

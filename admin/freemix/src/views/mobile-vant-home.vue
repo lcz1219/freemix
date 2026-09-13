@@ -868,7 +868,15 @@ onUnmounted(() => {
   background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  position: relative;
+  // position: fixed ;
+    z-index: 1000 !important;
+  /* 固定在视口顶部：此前这里的 position: relative 优先级高于 Vant 的 .van-nav-bar--fixed，
+     覆盖了 fixed 定位，导致导航栏随页面滚动被带走 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin-bottom: 10px;
+  width: 100%;
 
   &::after {
     content: '';
@@ -889,6 +897,7 @@ onUnmounted(() => {
 
   ::v-deep(.van-nav-bar__content) {
     height: 50px;
+    background-color: var(--glass-bg);
   }
 }
 
@@ -957,7 +966,7 @@ onUnmounted(() => {
    Hero 区域（沉浸式大卡片，占屏 1/3）
    ============================================ */
 .hero-section {
-  margin-top: 8px;
+  margin-top: 31%;
   margin-bottom: 11px;
   padding: 0 4px;
 }
@@ -965,6 +974,7 @@ onUnmounted(() => {
 .hero-card {
   position: relative;
   padding: 32px 28px 28px;
+  margin-top: 12%;
   border-radius: 28px;
   /* 动态渐变背景：品牌绿到深邃绿 */
   background: linear-gradient(145deg, #00c9a7 0%, #00a38a 25%, #008b78 55%, #00c9a7 100%);

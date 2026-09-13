@@ -54,7 +54,16 @@ public class AIChatController extends BaseController {
 
             StreamingResponseBody responseBody = outputStream -> {
                 try (InputStream stream = inputStream) {
-                    deepSeekService.forwardDeepSeekStream(stream, outputStream);
+                    // 第一轮：生成回答或 MQL；MQL 段不下发前端，只在服务端保留管道语句
+                    String mqlPipeline = deepSeekService.forwardDeepSeekStream(stream, outputStream);
+
+                    // 命中数据查询：服务端执行聚合 + 第二轮总结，原始数据全程不经过浏览器
+                    if (mqlPipeline != null && !mqlPipeline.isBlank()) {
+                        deepSeekService.streamMqlSummary(mqlPipeline, question, currentUsername, outputStream);
+                    }
+
+                    // 整个编排只写一次结束标记，避免第二轮流被前端提前中断
+                    deepSeekService.writeDone(outputStream);
                 } finally {
                     connection.disconnect();
                 }
