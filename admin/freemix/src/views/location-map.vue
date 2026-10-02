@@ -1,5 +1,6 @@
 <template>
-  <div class="location-map-page">
+  <!-- 根节点根据主题挂 dark-theme / light-theme 类，页面内颜色统一走主题变量 -->
+  <div class="location-map-page" :class="isDark ? 'dark-theme' : 'light-theme'">
     <n-layout has-sider style="height:100%">
       <!-- 左侧：可折叠菜单侧栏 -->
       <n-layout-sider
@@ -11,10 +12,10 @@
         :native-scrollbar="false"
         
         show-trigger="bar"
-        style="background:rgb(18,18,18);height:100%;"
+        style="background:var(--bg-color);height:100%;"
       >
         <!-- 无数据占位 -->
-        <div v-if="locationRecords.length === 0" style="padding:20px;text-align:center;color:#8b949e;font-size:13px;">
+        <div v-if="locationRecords.length === 0" class="empty-tip">
           暂无打卡记录
         </div>
 
@@ -109,13 +110,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, inject } from 'vue';
 import { useStore } from 'vuex';
 import AMapLoader from '@amap/amap-jsapi-loader';
 import { getM, isSuccess } from '@/utils/request';
-import { NLayout, NLayoutSider } from 'naive-ui';
+import { NLayout, NLayoutSider, useMessage } from 'naive-ui';
 
 const store = useStore();
+const message = useMessage();
+
+// 当前主题（由 App.vue provide），用于切换地图底图风格与信息窗配色
+const isDark = inject('isDark', ref(true));
 
 // 地点记录数据
 interface LocationRecord {
@@ -186,6 +191,13 @@ watch(locationRecords, (records) => {
   }
 }, { immediate: true });
 
+// 主题切换时同步切换地图底图风格（信息窗用的是 CSS 变量，会自动跟随，无需处理）
+watch(isDark, (dark) => {
+  if (amapInstance) {
+    amapInstance.setMapStyle(dark ? 'amap://styles/dark' : 'amap://styles/normal');
+  }
+});
+
 // 卡片 DOM 引用映射（用于标记点点击后自动滚动卡片到可见区域）
 const cardRefMap = new Map<string, HTMLElement>();
 const cardStripRef = ref<HTMLElement | null>(null);
@@ -208,15 +220,26 @@ let infoWindow: any = null;
 // 标记 ↔ 记录映射（用于更新选中态）
 const markerRecordMap = new Map<any, LocationRecord>();
 
+// 判断坐标是否有效
+// 说明：未真正定位成功时后端/前端会写入兜底值 [0,0]（大西洋几内亚湾），
+// 而高德只在国内有详细瓦片，飞到那里就会整张地图空白
+const isValidCoord = (coord: any): boolean => {
+  return Array.isArray(coord)
+    && coord.length === 2
+    && coord.every((n) => typeof n === 'number' && isFinite(n))
+    && !(coord[0] === 0 && coord[1] === 0);
+};
+
 // 构建信息窗 HTML（供多处使用）
+// 信息窗会被插入到地图容器内，属于页面 DOM 子树，所以直接使用主题变量即可跟随明暗主题
 const buildInfoContent = (record: LocationRecord) => {
   return `<div style="min-width:200px;padding:6px 0;font-family:system-ui,sans-serif;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-weight:700;font-size:14px;color:#e6edf3;">${escapeHtml(record.goalTitle)}</div>
-      <div style="font-size:11px;color:#6e7681;padding:2px 8px;background:rgb(18,18,18);border-radius:4px;">${formatDate(record.finishDate)}</div>
+      <div style="font-weight:700;font-size:14px;color:var(--text-color);">${escapeHtml(record.goalTitle)}</div>
+      <div style="font-size:11px;color:var(--text-sub);padding:2px 8px;background:var(--hover-color);border-radius:4px;">${formatDate(record.finishDate)}</div>
     </div>
-    <div style="font-size:13px;color:#8b949e;margin-bottom:8px;padding-left:2px;">${escapeHtml(record.childGoalMessage)}</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:13px;color:#00c9a7;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px;padding-left:2px;">${escapeHtml(record.childGoalMessage)}</div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:13px;color:#00c9a7;padding-top:8px;border-top:1px solid var(--border-color);">
       <svg viewBox="0 0 16 16" width="12" height="12" style="flexShrink:0">
         <circle cx="8" cy="6" r="2.5" fill="none" stroke="#00c9a7" stroke-width="1.5"/>
         <path d="M8 15C8 15 13 10 13 6A5 5 0 1 0 3 6C3 10 8 15 8 15Z" fill="none" stroke="#00c9a7" stroke-width="1.2"/>
@@ -291,11 +314,11 @@ const initMap = async () => {
       amapInstance.destroy();
     }
 
-    // 4. 创建地图
+    // 4. 创建地图（底图风格跟随当前主题：暗色用 dark，亮色用 normal）
     amapInstance = new AMap.Map('location-map', {
       zoom: 5,
       center: [105, 35],
-      mapStyle: 'amap://styles/dark',
+      mapStyle: isDark.value ? 'amap://styles/dark' : 'amap://styles/normal',
       resizeEnable: true,
     });
 
@@ -339,6 +362,9 @@ const renderMarkers = (AMap: any) => {
   };
 
   locationRecords.value.forEach((record) => {
+    // 坐标无效（如定位失败留下的 [0,0]）不生成标记，避免它把 setFitView 的视野拉到无地图数据的区域
+    if (!isValidCoord(record.locationCoord)) return;
+
     const [lng, lat] = record.locationCoord;
     const marker = new AMap.Marker({
       position: [lng, lat],
@@ -369,11 +395,12 @@ const renderMarkers = (AMap: any) => {
     amapMarkers.push(marker);
   });
 
-  // 自适应缩放
-  if (locationRecords.value.length > 1) {
+  // 自适应缩放（依据有效标记数量，无效坐标已被过滤掉）
+  if (amapMarkers.length > 1) {
     amapInstance.setFitView(amapMarkers, false, [60, 60, 60, 60]);
-  } else if (locationRecords.value.length === 1) {
-    const [lng, lat] = locationRecords.value[0].locationCoord;
+  } else if (amapMarkers.length === 1) {
+    const onlyRecord = markerRecordMap.get(amapMarkers[0]);
+    const [lng, lat] = onlyRecord.locationCoord;
     amapInstance.setZoomAndCenter(14, [lng, lat]);
   }
 };
@@ -389,6 +416,11 @@ const scrollToCard = (id: string) => {
 // 菜单项点击 → 飞到地点 + 弹信息窗 + 同步标记选中态
 const onCardClick = (record: LocationRecord) => {
   if (!amapInstance) return;
+  // 坐标无效时不要移动地图：飞过去只会得到一片空白，直接提示用户
+  if (!isValidCoord(record.locationCoord)) {
+    message.warning('该子目标没有记录到有效位置');
+    return;
+  }
   activeRecordId.value = record.childGoalId;
   const [lng, lat] = record.locationCoord;
   amapInstance.setZoomAndCenter(15, [lng, lat]);
@@ -432,9 +464,30 @@ onUnmounted(() => {
 <style scoped>
 /* 全屏布局 */
 .location-map-page {
+  /* 全局主题变量（App.vue 的 .light-theme/.dark-theme 定义，作用在 html/body 上）：
+     --bg-color 页面底色  --card-bg 卡片底色  --text-color 主文字
+     --border-color 边框  --hover-color 悬停底色，下面直接复用 */
+  /* 本页额外需要的两个变量：次级文字、加载遮罩底色（亮色主题下的值） */
+  --text-sub: #6b7280;
+  --overlay-bg: rgba(255, 255, 255, 0.8);
+
   height: 88vh;
   width: 100%;
   overflow: hidden;
+}
+
+/* 暗色主题下覆盖本页局部变量 */
+.location-map-page.dark-theme {
+  --text-sub: #8b949e;
+  --overlay-bg: rgba(13, 17, 23, 0.8);
+}
+
+/* 侧栏无数据提示 */
+.empty-tip {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 13px;
 }
 
 /* ===== 侧栏统计头部 ===== */
@@ -461,14 +514,14 @@ onUnmounted(() => {
 
 .sidebar-stat-label {
   font-size: 14px;
-  color: var(--fm-base-text, #e6edf3);
+  color: var(--text-color);
 }
 
 .sidebar-stat-badge {
   margin-left: auto;
   font-size: 10px;
   color: #00c9a7;
-  background: rgba(0,201,167,0.12);
+  background: var(--hover-color);
   padding: 0 8px;
   border-radius: 4px;
   line-height: 20px;
@@ -477,7 +530,7 @@ onUnmounted(() => {
 
 .sidebar-stat-sub {
   font-size: 12px;
-  color: var(--fm-secondary-text, #8b949e);
+  color: var(--text-sub);
   padding-left: 2px;
 }
 
@@ -511,7 +564,7 @@ onUnmounted(() => {
   transition: background 0.15s;
 }
 .collapsed-icon-wrapper:hover {
-  background: rgba(255,255,255,0.06);
+  background: var(--hover-color);
 }
 .collapsed-icon-wrapper.icon-active svg circle {
   fill: #00c9a7;
@@ -548,14 +601,14 @@ onUnmounted(() => {
   user-select: none;
 }
 .group-header:hover {
-  background: rgba(255,255,255,0.04);
+  background: var(--hover-color);
 }
 
 .group-title {
   flex: 1;
   font-size: 14px;
   font-weight: 600;
-  color: #e6edf3;
+  color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -599,10 +652,10 @@ onUnmounted(() => {
 
 /* ===== 单张打卡卡片 ===== */
 .location-card {
-  background: rgb(26,26,26);
+  background: var(--card-bg);
   border-radius: 10px;
   padding: 12px;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -657,7 +710,7 @@ onUnmounted(() => {
 }
 .card-sub {
   font-size: 13px;
-  color: white;
+  color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -697,8 +750,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(13, 17, 23, 0.8);
-  color: var(--fm-secondary-text, #8b949e);
+  background: var(--overlay-bg);
+  color: var(--text-sub);
   font-size: 14px;
   z-index: 10;
 }
@@ -709,33 +762,34 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--fm-secondary-text, #8b949e);
+  color: var(--text-sub);
   font-size: 14px;
   pointer-events: none;
 }
 </style>
 
-<!-- 覆盖高德地图信息窗默认白色背景为暗色 -->
+<!-- 高德地图信息窗：颜色跟随明暗主题 -->
 <style>
+/* 信息窗样式跟随主题：颜色全部使用主题变量（变量定义在 html/body 上，信息窗在页面 DOM 内可继承） */
 .amap-info-content {
-  background: rgb(18,18,18) !important;
+  background: var(--card-bg) !important;
   padding: 12px 18px 12px 12px;
   line-height: 1.5;
   overflow: auto;
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--border-color);
 }
 
 /* 信息窗箭头/尖角 */
 .amap-info-sharp {
-  border-top-color: rgb(18,18,18) !important;
+  border-top-color: var(--card-bg) !important;
   border-top-width: 10px !important;
 }
 
 /* 信息窗关闭按钮 */
 .amap-info-close {
-  color: #8b949e !important;
+  color: var(--text-sub) !important;
   font-size: 14px !important;
   top: 6px !important;
   right: 4px !important;

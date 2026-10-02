@@ -184,12 +184,12 @@ const formatDate = (dateString) => {
 
 /* Dark mode support */
 .achievement-card.dark {
-  background: #161b22;
+  background: var(--bg-color);;
   border-color: #30363d;
 }
 
 .achievement-card.dark.unlocked {
-  background: #0d1117;
+  /* background: #0d1117; */
   border-color: #3fb950;
 }
 

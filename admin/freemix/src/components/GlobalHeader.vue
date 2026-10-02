@@ -248,8 +248,8 @@ const userMenuOptions = computed(() => {
     makeItem('login-log', '登录日志', IdCardSharp),
     ...(isAdminUser ? [makeItem('log-management', '航线档案', ClipboardSharp)] : []),
     { type: 'divider', key: 'd1' },
-    makeItem('recycle', '黑洞回收', GitCompareOutline),
-    makeItem('user-guide', '使用指引', HelpCircleOutline),
+    // makeItem('recycle', '黑洞回收', GitCompareOutline),
+    // makeItem('user-guide', '使用指引', HelpCircleOutline),
     { type: 'divider', key: 'd2' },
     {
       key: 'logout',

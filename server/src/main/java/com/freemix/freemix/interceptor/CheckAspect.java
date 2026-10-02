@@ -3,6 +3,7 @@ package com.freemix.freemix.interceptor;
 import com.freemix.freemix.CheckToken;
 import com.freemix.freemix.controller.BaseController;
 import com.freemix.freemix.enetiy.AgentModel;
+import com.freemix.freemix.enetiy.LoginLog;
 import com.freemix.freemix.enetiy.User;
 import com.freemix.freemix.util.ApiResponse;
 import com.freemix.freemix.util.EnvironmentChecker;
@@ -14,6 +15,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -23,6 +25,9 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -55,8 +60,11 @@ public class CheckAspect extends BaseController  {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         String userAgent = request.getHeader("User-Agent");
+        String token = getTokenFromRequest(request);
+        User user = getUserByToken(token);
         if ("dev".equals(environmentChecker.checkEnvironment())){
             log.info("不用检测token，本地测试环境");
+            insterLoginLog(user);
             return joinPoint.proceed();
         }
         log.info("用检测token，线上环境");
@@ -71,13 +79,15 @@ public class CheckAspect extends BaseController  {
         }
 
         // 获取Token（支持多种方式）
-        String token = getTokenFromRequest(request);
+
+
         log.info("token: {}", token);
         log.info("isMobileDevice(request): {}", isMobileDevice(request));
 
         // 增强的移动端请求检测
         if (token != null && isMobileDevice(request)) {
             log.info("移动端请求校验通过");
+            insterLoginLog(user);
             return joinPoint.proceed();
 
         }
@@ -87,7 +97,6 @@ public class CheckAspect extends BaseController  {
         }
 
         // 根据token从数据库获取用户信息
-        User user = getUserByToken(token);
         if(user == null){
             log.info("token无效");
             return ApiResponse.failure("token无效");
@@ -105,10 +114,45 @@ public class CheckAspect extends BaseController  {
             log.info("token不正确");
             return ApiResponse.failure("token不正确");
         }
+        insterLoginLog(user);
+
 
         // Token有效，继续执行业务逻辑
         return joinPoint.proceed();
 
+    }
+
+    private void insterLoginLog(User user) {
+        LoginLog one = mongoTemplate.findOne(
+                new Query(Criteria.where("username").is(user.getUsername()))
+                        .with(Sort.by(Sort.Direction.DESC, "loginTime")),
+                LoginLog.class
+        );
+
+        LocalDate today = LocalDate.now();
+        boolean needInsert = false;
+
+        if (one == null) {
+            needInsert = true;
+        } else {
+            LocalDate lastLoginDate = one.getLoginTime()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            if (!lastLoginDate.equals(today)) {
+                needInsert = true;
+            }
+        }
+
+        if (needInsert) {
+            LoginLog loginLog = new LoginLog();
+            loginLog.setUsername(user.getUsername());
+            loginLog.setUserId(user.getId());
+            loginLog.setLoginSuccess(true);
+            loginLog.setLoginTime(new Date());
+            log.info("插入: {}的登陆日志信息", loginLog.getUsername());
+            mongoTemplate.insert(loginLog);
+        }
     }
 
 

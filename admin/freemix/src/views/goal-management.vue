@@ -2901,6 +2901,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   flex: 1;
+  justify-content: space-between;
 }
 
 .checkbox-circle {
@@ -2930,6 +2931,7 @@ onMounted(() => {
 }
 
 .capsule-content {
+  width: 95%;
   display: flex;
   flex-direction: column;
   gap: 2px;

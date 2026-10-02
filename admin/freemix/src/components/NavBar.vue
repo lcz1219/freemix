@@ -101,13 +101,13 @@
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">好友</span>
       </n-button> -->
-      <n-button class="nav-link footer-button" :class="{ active: activeTab === 'messages' }" :title="isCollapsedTitle('消息')"
+      <!-- <n-button class="nav-link footer-button" :class="{ active: activeTab === 'messages' }" :title="isCollapsedTitle('消息')"
         @click="goTo('/messages')">
         <NIcon class="icon">
           <ChatboxEllipses />
         </NIcon>
         <span class="nav-text" v-if="!isCollapsed">消息</span>
-      </n-button>
+      </n-button> -->
       <n-button class="nav-link footer-button" :class="{ active: activeTab === 'location-map' }" :title="isCollapsedTitle('完成地图')"
         @click="goTo('/location-map')">
         <NIcon class="icon">

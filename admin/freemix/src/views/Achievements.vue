@@ -96,7 +96,6 @@ onMounted(() => {
   --accent: #0969da;
   
   min-height: 100vh;
-  background-color: var(--bg-body);
   color: var(--text-main);
   padding: 48px 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -116,7 +115,6 @@ onMounted(() => {
   right: -100px;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(9, 105, 218, 0.08) 0%, transparent 70%);
   filter: blur(60px);
   z-index: 0;
   pointer-events: none;
@@ -167,7 +165,7 @@ onMounted(() => {
 }
 
 .achievements-page.dark .stats-capsule {
-  background: rgba(22, 27, 34, 0.8);
+  background: var(--bg-color);
   border-color: #30363d;
 }
 

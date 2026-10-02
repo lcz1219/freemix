@@ -57,7 +57,7 @@
 
       <!-- 这是一个占位符，用于演示Tab切换 -->
       <div class="content-area account-login" v-else>
-        <p style="color: #888;">这里是账号密码登录表单区域</p>
+        <p style="color: var(--lg-text-sub);">这里是账号密码登录表单区域</p>
       </div>
     </div>
 
@@ -97,8 +97,20 @@ onUnmounted(() => {
 <style scoped>
 /* 容器设置：占据全屏，Flex居中 */
 .login-container {
-  background-color: #0f0f0f;
-  color: #ffffff;
+  /* 登录模拟界面局部配色变量：默认值为亮色主题，
+     暗色主题由下方 :global(html.dark-theme) 整体覆盖 */
+  --lg-bg: #f7f9fa;          /* 页面底色 */
+  --lg-surface: #ffffff;     /* 卡片底色 */
+  --lg-border: rgba(0, 0, 0, 0.09); /* 描边/分割线 */
+  --lg-text: #1f1f1f;        /* 主文字 */
+  --lg-text-sub: #8b939c;    /* 次要文字 */
+  --lg-text-muted: #a8b0b8;  /* 更弱的说明文字 */
+  --lg-hover: rgba(0, 0, 0, 0.05); /* 悬停底色 */
+  --lg-logo-from: #f2f5f7;   /* Logo 方块渐变起点 */
+  --lg-logo-to: #dde3e8;     /* Logo 方块渐变终点 */
+
+  background-color: var(--lg-bg);
+  color: var(--lg-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
   width: 100%;
@@ -109,17 +121,30 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+/* 暗色主题：覆盖局部配色变量（主题类由 App.vue 挂在 html 上） */
+:global(html.dark-theme) .login-container {
+  --lg-bg: #0f0f0f;
+  --lg-surface: #141414;
+  --lg-border: #333333;
+  --lg-text: #ffffff;
+  --lg-text-sub: #888888;
+  --lg-text-muted: #666666;
+  --lg-hover: #2c2c2c;
+  --lg-logo-from: #ffffff;
+  --lg-logo-to: #e0e0e0;
+}
+
 /* 主登录卡片 */
 .login-card {
-  background-color: #141414;
+  background-color: var(--lg-surface);
   width: 600px;
-  border: 1px solid #333;
+  border: 1px solid var(--lg-border);
   border-radius: 12px;
   padding: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 10;
 }
 
@@ -133,16 +158,16 @@ onUnmounted(() => {
 
 .logo-icon-wrapper {
   padding: 4px;
-  border: 1px solid #00bfa5;
+  border: 1px solid #00c9a7;
   border-radius: 14px;
-  box-shadow: 0 0 10px rgba(0, 191, 165, 0.3);
+  box-shadow: 0 0 10px rgba(0, 201, 167, 0.3);
   margin-bottom: 15px;
 }
 
 .logo-icon {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  background: linear-gradient(135deg, var(--lg-logo-from) 0%, var(--lg-logo-to) 100%);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -155,7 +180,7 @@ onUnmounted(() => {
   content: '';
   width: 24px;
   height: 24px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300bfa5' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300c9a7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
@@ -164,7 +189,7 @@ h1 {
   font-size: 24px;
   font-weight: 500;
   letter-spacing: 1px;
-  color: #eee;
+  color: var(--lg-text);
 }
 
 /* 标签页 */
@@ -173,7 +198,7 @@ h1 {
   gap: 30px;
   margin-bottom: 30px;
   width: 100%;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--lg-border);
   justify-content: flex-start;
   padding-left: 20px;
 }
@@ -182,17 +207,17 @@ h1 {
   padding-bottom: 10px;
   cursor: pointer;
   font-size: 16px;
-  color: #888;
+  color: var(--lg-text-sub);
   transition: color 0.3s;
   position: relative;
 }
 
 .tab-item:hover {
-  color: #ccc;
+  color: var(--lg-text);
 }
 
 .tab-item.active {
-  color: #fff;
+  color: var(--lg-text);
 }
 
 .tab-item.active::after {
@@ -202,7 +227,7 @@ h1 {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #00bfa5;
+  background-color: #00c9a7;
 }
 
 /* 内容布局 */
@@ -244,14 +269,14 @@ h1 {
 
 .qr-hint {
   font-size: 12px;
-  color: #888;
+  color: var(--lg-text-sub);
   line-height: 1.6;
   margin-top: 5px;
 }
 
 .qr-timer {
   font-size: 12px;
-  color: #888;
+  color: var(--lg-text-sub);
   margin-top: 5px;
 }
 .qr-timer.expired {
@@ -264,7 +289,7 @@ h1 {
   flex-direction: column;
   justify-content: center;
   font-size: 13px;
-  color: #aaa;
+  color: var(--lg-text-sub);
 }
 
 .text-section p {
@@ -274,7 +299,7 @@ h1 {
 
 .status-text {
   margin-top: 20px;
-  color: #666;
+  color: var(--lg-text-muted);
 }
 
 /* 浮动按钮 */
@@ -293,18 +318,18 @@ h1 {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #2c2c2c;
+  background-color: var(--lg-hover);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background 0.3s;
-  color: #888;
+  color: var(--lg-text-sub);
 }
 
 .tool-btn:hover {
-  background-color: #3c3c3c;
-  color: #fff;
+  background-color: var(--lg-border);
+  color: var(--lg-text);
 }
 
 .tool-btn.pink {
@@ -320,7 +345,7 @@ h1 {
   bottom: 20px;
   right: 30px;
   font-size: 12px;
-  color: #444;
+  color: var(--lg-text-muted);
   z-index: 10;
 }
 </style>

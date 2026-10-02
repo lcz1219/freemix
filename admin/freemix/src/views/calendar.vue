@@ -28,7 +28,7 @@
       v-if="selectedGoal"
       v-model:show="showDetailModal"
       :goal="selectedGoal"
-      @update="handleGoalUpdate"
+      @updateGoal="handleGoalUpdate"
     />
   </div>
 </template>
@@ -102,11 +102,13 @@ const handleGoalClick = (goal) => {
 
 const handleGoalUpdate = (updatedGoal) => {
   // 更新本地数据
-  const index = goals.value.findIndex(g => g.id === updatedGoal.id);
-  if (index !== -1) {
-    goals.value[index] = { ...updatedGoal };
-  }
-  showDetailModal.value = false;
+  // console.log("updatedGoal", updatedGoal);
+  // const index = goals.value.findIndex(g => g.id === updatedGoal.id);
+  // if (index !== -1) {
+  //   goals.value[index] = { ...updatedGoal };
+  // }
+  getGoals();
+  // showDetailModal.value = false;
 };
 
 </script>

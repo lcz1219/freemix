@@ -117,63 +117,63 @@ import { ref } from 'vue';
 const goals = ref([
   {
     name: "测试项目",
-    owner: "linchengzhong",
+    owner: "user",
     date: "2026-01-26",
     progress: 100,
     status: "completed"
   },
   {
-    name: "0000",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-10-23",
     progress: 70,
     status: "overdue"
   },
   {
-    name: "健身计划",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-11-15",
     progress: 70,
     status: "overdue"
   },
   {
-    name: "web开发",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-11-15",
     progress: 65,
     status: "overdue"
   },
   {
-    name: "学习Excel的有效方法",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-11-15",
     progress: 60,
     status: "overdue"
   },
   {
-    name: "2",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-12-03",
     progress: 55,
     status: "overdue"
   },
   {
-    name: "web",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-12-10",
     progress: 55,
     status: "overdue"
   },
   {
-    name: "222",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-12-15",
     progress: 50,
     status: "overdue"
   },
   {
-    name: "000",
-    owner: "linchengzhong",
+    name: "测试项目",
+    owner: "user",
     date: "2025-12-15",
     progress: 40,
     status: "overdue"
@@ -190,19 +190,48 @@ const goals = ref([
 }
 
 .dashboard-container {
+  /* 目标管理模拟界面局部配色变量：默认值为亮色主题，
+     暗色主题由下方 :global(html.dark-theme) 整体覆盖 */
+  --hv-bg: #f7f9fa;            /* 页面底色 */
+  --hv-surface: #ffffff;       /* 卡片底色 */
+  --hv-surface-2: #f2f5f7;     /* 工具栏/输入框等次级底色 */
+  --hv-border: rgba(0, 0, 0, 0.08);        /* 常规描边 */
+  --hv-border-strong: rgba(0, 0, 0, 0.14); /* 强调描边 */
+  --hv-text: #1f1f1f;          /* 主文字 */
+  --hv-text-sub: #8b939c;      /* 次要文字 */
+  --hv-hover: rgba(0, 0, 0, 0.045); /* 悬停底色 */
+  --hv-input-bg: #ffffff;      /* 输入框底色 */
+  --hv-logo-from: #f2f5f7;     /* 侧栏 Logo 渐变起点 */
+  --hv-logo-to: #dde3e8;       /* 侧栏 Logo 渐变终点 */
+
   display: flex;
-  background-color: #0f0f0f;
-  color: #ffffff;
+  background-color: var(--hv-bg);
+  color: var(--hv-text);
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
 }
 
+/* 暗色主题：覆盖局部配色变量（主题类由 App.vue 挂在 html 上） */
+:global(html.dark-theme) .dashboard-container {
+  --hv-bg: #0f0f0f;
+  --hv-surface: #141414;
+  --hv-surface-2: #1a1a1a;
+  --hv-border: #222222;
+  --hv-border-strong: #333333;
+  --hv-text: #ffffff;
+  --hv-text-sub: #888888;
+  --hv-hover: #1a1a1a;
+  --hv-input-bg: #1f1f1f;
+  --hv-logo-from: #ffffff;
+  --hv-logo-to: #dddddd;
+}
+
 /* -------------------- 侧边栏 -------------------- */
 .sidebar {
   width: 60px;
-  background-color: #1a1a1a;
-  border-right: 1px solid #333;
+  background-color: var(--hv-surface-2);
+  border-right: 1px solid var(--hv-border-strong);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -217,14 +246,14 @@ const goals = ref([
 .logo-box {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #fff 0%, #ddd 100%);
+  background: linear-gradient(135deg, var(--hv-logo-from) 0%, var(--hv-logo-to) 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 30px;
-  border: 1px solid #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+  border: 1px solid #00c9a7;
+  box-shadow: 0 0 8px rgba(0, 201, 167, 0.3);
 }
 
 .nav-icons {
@@ -241,7 +270,7 @@ const goals = ref([
 }
 
 .nav-item {
-  color: #666;
+  color: var(--hv-text-sub);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -249,8 +278,8 @@ const goals = ref([
 }
 
 .nav-item:hover, .nav-item.active {
-  background-color: #2c2c2c;
-  color: #10b981;
+  background-color: var(--hv-hover);
+  color: #00c9a7;
 }
 
 /* -------------------- 主内容区 -------------------- */
@@ -258,19 +287,19 @@ const goals = ref([
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #0f0f0f;
+  background-color: var(--hv-bg);
   overflow-x: hidden;
 }
 
 /* 顶部标签栏 */
 .top-bar {
   height: 50px;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--hv-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background-color: #141414;
+  background-color: var(--hv-surface);
 }
 
 .tabs-scroll {
@@ -283,8 +312,8 @@ const goals = ref([
 .tab-item {
   padding: 8px 15px;
   font-size: 13px;
-  color: #888;
-  background-color: #1a1a1a;
+  color: var(--hv-text-sub);
+  background-color: var(--hv-surface-2);
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
@@ -295,13 +324,13 @@ const goals = ref([
 }
 
 .tab-item:hover {
-  background-color: #252525;
+  background-color: var(--hv-hover);
 }
 
 .tab-item.active {
-  color: #fff;
-  border-bottom: 2px solid #10b981;
-  background-color: #252525;
+  color: var(--hv-text);
+  border-bottom: 2px solid #00c9a7;
+  background-color: var(--hv-hover);
 }
 
 .close-x {
@@ -313,7 +342,7 @@ const goals = ref([
 .switch-track {
   width: 44px;
   height: 24px;
-  background-color: #10b981;
+  background-color: #00c9a7;
   border-radius: 12px;
   position: relative;
   cursor: pointer;
@@ -348,20 +377,20 @@ const goals = ref([
 }
 
 .subtitle {
-  color: #666;
+  color: var(--hv-text-sub);
   font-size: 14px;
 }
 
 /* 工具栏 */
 .toolbar-section {
-  background-color: #141414;
+  background-color: var(--hv-surface);
   padding: 15px 20px;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border: 1px solid #222;
+  border: 1px solid var(--hv-border);
 }
 
 .left-tools {
@@ -390,17 +419,18 @@ const goals = ref([
 .btn:hover { opacity: 0.9; }
 
 .btn-primary {
-  background-color: #4ade80; /* 绿色 */
-  color: #000;
+  background-color: #00c9a7; /* 品牌主色 */
+  color: #04211d;
 }
 .btn-success {
-  background-color: #86efac; /* 浅绿 */
-  color: #000;
+  background-color: rgba(0, 201, 167, 0.14); /* 品牌色浅底 */
+  color: #00c9a7;
+  border: 1px solid rgba(0, 201, 167, 0.35);
 }
 .btn-dark {
-  background-color: #2c2c2c;
-  color: #fff;
-  border: 1px solid #444;
+  background-color: var(--hv-hover);
+  color: var(--hv-text);
+  border: 1px solid var(--hv-border-strong);
 }
 
 .search-box {
@@ -411,25 +441,25 @@ const goals = ref([
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: var(--hv-text-sub);
   font-size: 12px;
 }
 .search-box input {
-  background-color: #1f1f1f;
-  border: 1px solid #333;
+  background-color: var(--hv-input-bg);
+  border: 1px solid var(--hv-border-strong);
   padding: 8px 10px 8px 30px;
   border-radius: 4px;
-  color: #fff;
+  color: var(--hv-text);
   outline: none;
   width: 200px;
 }
 
 .filter-box {
-  background-color: #2c2c2c;
+  background-color: var(--hv-hover);
   padding: 8px 15px;
   border-radius: 4px;
   font-size: 13px;
-  color: #aaa;
+  color: var(--hv-text-sub);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -438,9 +468,9 @@ const goals = ref([
 
 /* 表格卡片 */
 .table-card {
-  background-color: #141414;
+  background-color: var(--hv-surface);
   border-radius: 12px;
-  border: 1px solid #222;
+  border: 1px solid var(--hv-border);
   padding: 20px;
 }
 
@@ -451,7 +481,7 @@ const goals = ref([
   margin-bottom: 20px;
 }
 .green-dot-icon {
-  color: #10b981;
+  color: #00c9a7;
   font-weight: bold;
   letter-spacing: 2px;
   font-family: monospace;
@@ -474,26 +504,26 @@ table {
 
 th {
   text-align: left;
-  color: #888;
+  color: var(--hv-text-sub);
   font-weight: 400;
   padding: 15px;
-  border-bottom: 1px solid #2c2c2c;
+  border-bottom: 1px solid var(--hv-border-strong);
 }
 
 td {
   padding: 15px;
-  color: #ddd;
-  border-bottom: 1px solid #1f1f1f;
+  color: var(--hv-text);
+  border-bottom: 1px solid var(--hv-border);
   vertical-align: middle;
 }
 
 /* 斑马纹/悬停 */
 tr:hover td {
-  background-color: #1a1a1a;
+  background-color: var(--hv-hover);
 }
 
 .expand-col {
-  color: #666;
+  color: var(--hv-text-sub);
   cursor: pointer;
 }
 
@@ -508,7 +538,7 @@ tr:hover td {
 .progress-bar-bg {
   width: 120px;
   height: 8px;
-  background-color: #2c2c2c;
+  background-color: var(--hv-hover);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -517,14 +547,14 @@ tr:hover td {
   height: 100%;
   border-radius: 4px;
 }
-.progress-bar-fill.green { background-color: #10b981; }
+.progress-bar-fill.green { background-color: #00c9a7; }
 .progress-bar-fill.red { background-color: #f87171; }
 
 .progress-icon svg {
   width: 16px;
   height: 16px;
 }
-.icon-check { color: #10b981; }
+.icon-check { color: #00c9a7; }
 .icon-x { color: #f87171; }
 
 /* 状态徽标 */
@@ -536,14 +566,14 @@ tr:hover td {
 }
 
 .badge-green {
-  color: #10b981;
-  border-color: #064e3b;
-  background-color: rgba(16, 185, 129, 0.1);
+  color: #00c9a7;
+  border-color: rgba(0, 201, 167, 0.4);
+  background-color: rgba(0, 201, 167, 0.1);
 }
 
 .badge-red {
   color: #f87171;
-  border-color: #450a0a;
+  border-color: rgba(248, 113, 113, 0.4);
   background-color: rgba(248, 113, 113, 0.1);
 }
 
@@ -558,8 +588,8 @@ tr:hover td {
   height: 30px;
   border-radius: 50%;
   border: none;
-  background-color: #2c2c2c;
-  color: #aaa;
+  background-color: var(--hv-hover);
+  color: var(--hv-text-sub);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -568,8 +598,8 @@ tr:hover td {
 }
 
 .action-btn:hover {
-  background-color: #3c3c3c;
-  color: #fff;
+  background-color: var(--hv-border-strong);
+  color: var(--hv-text);
 }
 
 /* 右侧浮动 */
@@ -587,19 +617,19 @@ tr:hover td {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #2c2c2c;
+  background-color: var(--hv-hover);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background 0.3s;
-  color: #888;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  color: var(--hv-text-sub);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .tool-btn:hover {
-  background-color: #3c3c3c;
-  color: #fff;
+  background-color: var(--hv-border-strong);
+  color: var(--hv-text);
 }
 
 .tool-btn.pink {

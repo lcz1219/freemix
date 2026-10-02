@@ -58,7 +58,8 @@
                         </n-empty>
 
                         <n-data-table v-else ref="dataTableInst" :columns="columns" :data="data"
-                            :pagination="pagination" :row-key="row => row._id"
+                        max-height="500"
+                            :pagination="pagination" :row-key="row => row._id" style="overflow-y: auto;"
                             v-model:checked-row-keys="selectedRowKeys" :scroll-x="800" />
                     </n-card>
                 </section>
@@ -150,16 +151,19 @@ const handleBatchDelete = () => {
 const handleBatchRestore = () => {
     selectedRowKeys.value.forEach(e => {
 
-        data.value.forEach(e1 => {
+        data.value.forEach(async e1 => {
             if (e1._id == e) {
-                recoverGoal(e1)
+            const res = await recoverGoal(e1)
+            if(isSuccess(res)){
+                message.success('目标恢复成功:'+e1.title);
+            }
             }
         })
 
     })
 
     // 这里应该调用恢复API
-    message.success(`成功恢复 ${selectedRowKeys.value.length} 个项目`);
+    // message.success(`成功恢复 ${selectedRowKeys.value.length} 个项目`);
     // 重新加载数据
     recycle();
     selectedRowKeys.value = [];
@@ -171,9 +175,11 @@ const recoverGoal = async (row) => {
         // message.success('目标创建成功')
         // router.push('/home');
         recycle();
+    }else{
+        message.error('目标恢复失败:'+row.title+res.data.msg);
     }
     // 提交后跳转到主页
-
+ return res;
 
 }
 
@@ -222,7 +228,7 @@ const columns = [
     title: '操作',
     key: 'option',
     fixed: 'right',
-    width: 150,
+    width: 120,
     render(row) {
         return h('div', { style: 'display: flex; gap: 8px;' }, [
             // 恢复按钮（带 Tooltip）
@@ -243,22 +249,22 @@ const columns = [
                 })
             }),
             // 删除按钮（带 Tooltip）
-            h(NTooltip, { trigger: 'hover' }, {
-                default: () => h('span', row.disRecover?'超过30天无法删除':'永久删除此目标'),
-                trigger: () => h(NButton, {
-                    type: 'error',
-                    size: 'small',
-                    secondary: true,
-                    disabled: row.disRecover,
-                    onClick: () => {
-                        message.success(`已删除目标: ${row.title}`);
-                        recycle();
-                    }
-                }, {
-                    icon: () => h(NIcon, null, () => h(TrashIcon)),
-                    default: () => '删除'
-                })
-            })
+            // h(NTooltip, { trigger: 'hover' }, {
+            //     default: () => h('span', row.disRecover?'超过30天无法删除':'永久删除此目标'),
+            //     trigger: () => h(NButton, {
+            //         type: 'error',
+            //         size: 'small',
+            //         secondary: true,
+            //         disabled: row.disRecover,
+            //         onClick: () => {
+            //             message.success(`已删除目标: ${row.title}`);
+            //             recycle();
+            //         }
+            //     }, {
+            //         icon: () => h(NIcon, null, () => h(TrashIcon)),
+            //         default: () => '删除'
+            //     })
+            // })
         ]);
     }
 }

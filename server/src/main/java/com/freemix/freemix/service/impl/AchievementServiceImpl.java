@@ -122,6 +122,9 @@ public class AchievementServiceImpl implements AchievementService {
                 case "consistency": // LOGIN
                     // Check last 3 days logins
                     progress = checkConsecutiveLogins(userId, 3);; // Simplified progress
+                    if(progress ==3){
+                        unlocked = true;
+                    }
                     break;
                 case "perfectionist": // GOAL_FINISH
                     if (context instanceof Goal) {
@@ -180,6 +183,7 @@ public class AchievementServiceImpl implements AchievementService {
                 // If user logs in today, this function runs. So today should be present.
                 break;
             }
+            //日期往前减一天
             cal.add(Calendar.DAY_OF_MONTH, -1);
         }
         

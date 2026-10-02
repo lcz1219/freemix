@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -37,6 +39,10 @@ public class GoalController extends BaseController {
         Goal goal = JSONObject.parseObject(body, Goal.class);
         if(GoalStauts.expired.equals(goal.getStatus())||System.currentTimeMillis()>goal.getDeadline().getTime()) {
             return ApiResponse.failure("该目标已经过期，无法操作");
+        }
+        if(GoalStauts.completed.equals(goal.getStatus())) {
+            return ApiResponse.failure("该目标已经完成，无法操作");
+
         }
         List<Achievement> unlockedAchievements = new ArrayList<>();
         ApiResponse<Object> res = getObjectApiResponse(goal, unlockedAchievements);
@@ -598,67 +604,139 @@ AchievementService achievementService;
         if (rootNodeId == null) {
             throw new IllegalArgumentException("无法识别根节点");
         }
+        //环形链接
+        int source1 = connections.toJavaList(JSONObject.class)
+                .stream()
+                .filter(e -> !e.getString("source").equals(rootNodeId))
+                .collect(Collectors.toList())
+                .size();
+        //单个自己连自己
+        int source2 =connections.toJavaList(JSONObject.class)
+                .stream()
+                .filter(e -> e.getString("source").equals(e.getString("target")))
+                .collect(Collectors.toList())
+                .size();
+        int source3 =connections.toJavaList(JSONObject.class)
+                .stream()
+                .map(e->{
+                    String source = e.getString("source");
+                    String target = e.getString("target");
+                    String id = source+"-"+target;
+                    return id;
+                }).collect(Collectors.toSet())
+                .size();
+
+        //还有其他没限制到的地方 例如单个自己连自己
+        if(source1>0){
+            return ApiResponse.failure("不能有两个根结点");
+        }else if(source2>0){
+            return ApiResponse.failure("根子节点不能是同一个");
+        }else if(source3<connections.size()){
+            return ApiResponse.failure("一个子节点不能连接父节点多次");
+        }
 
         // 3. 查找目标对象（基于根节点ID）
         Goal goal = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(rootNodeId)), Goal.class);
+if(goal == null) {
+    // 3.1 数据库中没有这个根节点对应的目标，说明是全新目标：构建完整目标后直接插入
+    Goal newGoal = new Goal();
+    // 用根节点ID作为目标ID，保证以后前端再次保存时能查到同一条记录（否则每次保存都会新增一条）
+    newGoal.set_id(rootNodeId);
 
-        // 4. 构建节点映射
-        Map<String, JSONObject> nodeMap = new HashMap<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            JSONObject node = nodes.getJSONObject(i);
-            nodeMap.put(node.getString("id"), node);
-        }
+    // 根节点数据写入目标基本信息
+    JSONObject rootNode = findNodeById(nodes, rootNodeId);
+    if (rootNode != null) {
+        newGoal.setTitle(rootNode.getString("title"));
+        newGoal.setDescription(rootNode.getString("description"));
+    }
 
-        // 5. 构建连接关系映射
-        Map<String, List<String>> connectionMap = new HashMap<>();
-        Map<String, String> parentMap = new HashMap<>(); // 记录每个节点的父节点
+    // 按连线关系递归构建子目标结构
+    newGoal.setChildGoals(buildChildGoals(rootNodeId, nodes, connections));
 
-        for (int i = 0; i < connections.size(); i++) {
-            JSONObject conn = connections.getJSONObject(i);
-            String source = conn.getString("source");
-            String target = conn.getString("target");
+    // 初始化基础字段（集合字段给空集合，避免前端遍历时为 null）
+    newGoal.setFileList(new ArrayList<>());
+    newGoal.setCollaborators(new ArrayList<>());
+    newGoal.setTags(new ArrayList<>());
+    User currentUser = getCurrentUser();
+    newGoal.setOwner(currentUser != null ? currentUser.getUsername() : null);
+    newGoal.setCreateTime(new Date());
+    newGoal.setIsPublic(false);
+    newGoal.setPlanTime(0);
+    newGoal.setProgress(0); // 新建的子目标都是未完成，进度必然是0
+    newGoal.setStatus("in-progress");
+    newGoal.setDel(0);
+    newGoal.setFinish(false);
+    newGoal.setDeadline(Date.from(
+            LocalDateTime.now()
+                    .plusMonths(1)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+    ));
 
-            connectionMap.computeIfAbsent(source, k -> new ArrayList<>()).add(target);
-            parentMap.put(target, source); // 记录父节点
-        }
+    // 3.2 新增目标
+    mongoTemplate.insert(newGoal);
 
-        // 6. 更新目标基本信息
-        JSONObject rootNode = nodeMap.get(rootNodeId);
-        if (rootNode != null) {
-            goal.setTitle(rootNode.getString("title"));
-            goal.setDescription(rootNode.getString("description"));
-        }
+    return ApiResponse.success("目标结构保存成功");
+}else {
+    // 4. 构建节点映射
+    Map<String, JSONObject> nodeMap = new HashMap<>();
+    for (int i = 0; i < nodes.size(); i++) {
+        JSONObject node = nodes.getJSONObject(i);
+        nodeMap.put(node.getString("id"), node);
+    }
 
-        // 7. 构建新的子目标结构
-        List<childGoals> newChildGoals = new ArrayList<>();
+    // 5. 构建连接关系映射
+    Map<String, List<String>> connectionMap = new HashMap<>();
+    Map<String, String> parentMap = new HashMap<>(); // 记录每个节点的父节点
 
-        // 8. 处理直接连接到根节点的子目标（一级子目标）
-        if (connectionMap.containsKey(rootNodeId)) {
-            for (String childId : connectionMap.get(rootNodeId)) {
-                JSONObject childNode = nodeMap.get(childId);
-                if (childNode != null) {
-                    childGoals childGoal = createOrUpdateChildGoal(childNode, goal);
-                    newChildGoals.add(childGoal);
+    for (int i = 0; i < connections.size(); i++) {
+        JSONObject conn = connections.getJSONObject(i);
+        String source = conn.getString("source");
+        String target = conn.getString("target");
 
-                    // 9. 处理二级子目标
-                    processNestedChildren(childGoal, childId, connectionMap, nodeMap);
-                }
+        connectionMap.computeIfAbsent(source, k -> new ArrayList<>()).add(target);
+        parentMap.put(target, source); // 记录父节点
+    }
+
+    // 6. 更新目标基本信息
+    JSONObject rootNode = nodeMap.get(rootNodeId);
+    if (rootNode != null) {
+        goal.setTitle(rootNode.getString("title"));
+        goal.setDescription(rootNode.getString("description"));
+    }
+
+    // 7. 构建新的子目标结构
+    List<childGoals> newChildGoals = new ArrayList<>();
+
+    // 8. 处理直接连接到根节点的子目标（一级子目标）
+    if (connectionMap.containsKey(rootNodeId)) {
+        for (String childId : connectionMap.get(rootNodeId)) {
+            JSONObject childNode = nodeMap.get(childId);
+            if (childNode != null) {
+                childGoals childGoal = createOrUpdateChildGoal(childNode, goal);
+                newChildGoals.add(childGoal);
+
+                // 9. 处理二级子目标
+                processNestedChildren(childGoal, childId, connectionMap, nodeMap);
             }
         }
+    }
 
-        // 10. 更新目标结构
-        goal.setChildGoals(newChildGoals);
-        Integer newProgress = computedProgress(goal);
-        goal.setProgress(newProgress);
-        if (goal.getProgress() == 100) {
-            goal.setStatus("completed");
-        } else {
-            goal.setStatus("in-progress");
-        }
+    // 10. 更新目标结构
+    goal.setChildGoals(newChildGoals);
+    Integer newProgress = computedProgress(goal);
+    goal.setProgress(newProgress);
+    if (goal.getProgress() == 100) {
+        goal.setStatus("completed");
+    } else {
+        goal.setStatus("in-progress");
+    }
 
 
-        // 11. 保存更新
-        mongoTemplate.save(goal);
+    // 11. 保存更新
+    mongoTemplate.save(goal);
+}
+
         return ApiResponse.success("目标结构保存成功");
     }
 
@@ -695,6 +773,43 @@ AchievementService achievementService;
 
             parentGoal.setChildGoals(nestedChildren);
         }
+    }
+
+    // 在节点数组里按 id 查找节点
+    private JSONObject findNodeById(JSONArray nodes, String nodeId) {
+        for (int i = 0; i < nodes.size(); i++) {
+            JSONObject node = nodes.getJSONObject(i);
+            if (nodeId.equals(node.getString("id"))) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    // 根据连线递归构建子目标：遍历 connections，source 等于 parentId 的连线，其 target 即为子节点
+    private List<childGoals> buildChildGoals(String parentId, JSONArray nodes, JSONArray connections) {
+        List<childGoals> children = new ArrayList<>();
+        for (int i = 0; i < connections.size(); i++) {
+            JSONObject conn = connections.getJSONObject(i);
+            if (!parentId.equals(conn.getString("source"))) {
+                continue;
+            }
+
+            String childId = conn.getString("target");
+            JSONObject childNode = findNodeById(nodes, childId);
+            if (childNode == null) {
+                continue; // 连线指向的节点不存在，跳过
+            }
+
+            childGoals child = new childGoals();
+            child.set_id(childId);
+            child.setMessage(childNode.getString("title"));
+            child.setFinish(false); // 新建的子目标默认未完成
+            child.setChildGoals(buildChildGoals(childId, nodes, connections)); // 递归处理更深层次
+
+            children.add(child);
+        }
+        return children;
     }
 
     // 递归查找子目标

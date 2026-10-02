@@ -4,7 +4,7 @@
     :mask-closable="false"
     preset="card"
     title="确认创建目标"
-    style="width: 800px; max-width: 95vw; height: 80vh;"
+    style="width: 800px; max-width: 95vw; height: 99vh;overflow: auto;"
     :bordered="false"
     class="ai-goal-confirmation-modal"
   >
@@ -270,7 +270,7 @@ const confirm = async () => {
 
 .confirmation-content {
   padding: 16px 0;
-  max-height: 60vh;
+  max-height: 100%;
 }
 
 .confirmation-content :deep(.n-form-item) {

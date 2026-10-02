@@ -57,8 +57,8 @@
 
         <!-- 快捷入口（胶囊风格，浮动在统计区上方） -->
         <section class="quick-capsules">
-          <div class="capsule-item" @click="goToMessageCenter">
-            <van-icon name="chat-o" size="16" /><span>消息</span>
+         <div class="capsule-item" @click="goToSchedule">
+            <van-icon name="smile-o" size="16" /><span>定时任务</span>
           </div>
           <div class="capsule-item" @click="goToAIAssistant">
             <van-icon name="smile-o" size="16" /><span>AI助手</span>
@@ -589,6 +589,7 @@ const goToStatistics = () => router.push('/statistics')
 const goToMessageCenter = () => router.push('/messages')
 const goToGuide = () => router.push('/user-guide')
 const goToAIAssistant = () => router.push('/AIAssistantWindow')
+const goToSchedule = () => router.push('/recurring-goals')
 
 // Logic
 const onTabClick = () => {

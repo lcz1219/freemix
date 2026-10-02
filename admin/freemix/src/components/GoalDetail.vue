@@ -270,9 +270,9 @@
  </div>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="closeModal">
+        <!-- <n-button @click="closeModal">
           关闭
-        </n-button>
+        </n-button> -->
         <n-button v-if="isEditing" type="primary" @click="saveGoal">
           保存
         </n-button>
@@ -1221,7 +1221,7 @@ const saveGoal = async (val) => {
       if (val != 'no') {
         closeModal()
       }
-      emit('updateGoal');
+      emit('updateGoal',saveData);
     }else{
       message.error(res.data.msg)
       initFormData()
@@ -1489,7 +1489,7 @@ watch(() => props.goal, (newGoal) => {
 }
 
 .edit-mode-container {
-  background-color: #0000003d; /* 比查看模式稍暗的背景 */
+  background-color: var(--bg-color); /* 比查看模式稍暗的背景 */
   padding: 16px;
 }
 </style>

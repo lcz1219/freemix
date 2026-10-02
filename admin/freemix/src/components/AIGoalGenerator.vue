@@ -37,7 +37,7 @@
     </n-popover>
 
 
-    <n-modal v-model:show="showChatContainer" title="创建目标" style="width: 50%;height: 65vh;">
+    <n-modal v-model:show="showChatContainer" title="创建目标" style="width: 50%;height: 85vh;overflow: auto;">
       <div>
         <AIChatContainer v-if="chatMessages.length > 0" :chat-messages="chatMessages" :format-time="formatTime"
           :isShowThinking="false" />
@@ -67,7 +67,7 @@
         </div>
 
         <n-space justify="end" class="confirmation-buttons">
-          <n-button @click="resetGeneration">重新生成</n-button>
+          <n-button @click="resetGeneration(true)">重新生成</n-button>
           <n-button @click="saveForLater" :loading="isSaving">稍后决定</n-button>
           <n-button @click="confirmGoal" type="primary">确认创建</n-button>
         </n-space>
@@ -270,11 +270,14 @@ const generateGoal = async () => {
 };
 
 // 重置生成状态
-const resetGeneration = () => {
-  userInput.value = '';
+const resetGeneration = (flag) => {
+  // userInput.value = '';
   generatedGoal.value = null;
   aiResponse.value = '';
   errorMessage.value = '';
+  if(flag){
+    generateGoal();
+  }
 };
 
 // 稍后决定：保存生成记录

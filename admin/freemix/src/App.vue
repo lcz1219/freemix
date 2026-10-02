@@ -111,6 +111,8 @@
           </n-notification-provider>
         </n-loading-bar-provider>
       </n-dialog-provider>
+      <!-- 全局自定义跟随光标（鼠标设备才启用，触摸屏自动跳过） -->
+      <CustomCursor />
       <!-- 全局成就庆祝动画 -->
       <CelebrationOverlay :show="showCelebration" :title="celebrationData.title" :heading="celebrationData.heading"
         :sub-heading="celebrationData.subHeading" @close="showCelebration = false" />
@@ -121,6 +123,7 @@
 
 <script setup lang="ts">
 import CelebrationOverlay from '@/components/CelebrationOverlay.vue';
+import CustomCursor from '@/components/CustomCursor.vue';
 import { isMobile } from '@/utils/device.js'
 import { ref, computed, onMounted, watch, type CSSProperties, provide, onUnmounted, nextTick } from 'vue';
 import { useStore } from 'vuex'
@@ -1022,7 +1025,7 @@ body {
   gap: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: white;
+  color: var(--text-color);
 }
 
 .ai-sidebar-drawer :deep(.n-drawer-content) {

@@ -4,151 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FreeMix - 全栈目标管理系统 | 下一代生产力工具</title>
-    
+
     <!-- 字体与图标 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
+        /* ============================================================
+           设计令牌（Design Tokens）
+           统一收敛为：单主色 #00c9a7 + 冷调中性灰阶，避免多色混用显廉价
+           ============================================================ */
         :root {
-            --bg-color: #030712;
-            --surface-color: rgba(17, 24, 39, 0.7);
-            --surface-hover: rgba(31, 41, 55, 0.8);
-            --primary: #10b981;
-            --primary-glow: #34d399;
-            --secondary: #3b82f6;
-            --accent: #8b5cf6;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-            --blur: blur(20px);
+            /* 背景层次：偏冷的中性黑，纯黑会显廉价 */
+            --bg: #06080b;
+            --bg-soft: #0a0d12;
+            --surface: rgba(255, 255, 255, 0.024);
+            --surface-hover: rgba(255, 255, 255, 0.05);
+
+            /* 描边：高级感的关键在于「极细的 1px 线」而不是粗边框 */
+            --border: rgba(255, 255, 255, 0.07);
+            --border-strong: rgba(255, 255, 255, 0.13);
+
+            /* 品牌主色 */
+            --primary: #00c9a7;
+            --primary-bright: #2ee6c4;
+            --primary-soft: rgba(0, 201, 167, 0.1);
+            --primary-line: rgba(0, 201, 167, 0.28);
+            --primary-glow: rgba(0, 201, 167, 0.35);
+
+            /* 文字层级：主 / 次 / 弱，拉开对比才有层次感 */
+            --text: #eef2f5;
+            --text-muted: #8a94a3;
+            --text-faint: #5a6371;
+
+            /* 圆角：适度收敛，过大圆角会显得卡通 */
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 20px;
+
+            /* 统一的缓动曲线，让所有动效节奏一致 */
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
             scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             line-height: 1.6;
             overflow-x: hidden;
             position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* 动态背景光斑 */
-        .background-glows {
+        /* ---------------- 背景层次 ----------------
+           原来用绿/蓝/紫三个光斑互相打架，现在改为：
+           ① 顶部单一主色氛围光；② 极细工程网格（带径向遮罩淡出）
+        */
+        body::before {
+            content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            background:
+                radial-gradient(1000px 520px at 50% -12%, rgba(0, 201, 167, 0.16), transparent 70%),
+                radial-gradient(760px 420px at 88% 6%, rgba(0, 201, 167, 0.06), transparent 70%);
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
             z-index: -1;
-            overflow: hidden;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+            background-size: 64px 64px;
+            /* 径向遮罩：网格只在顶部可见，向下自然淡出 */
+            -webkit-mask-image: radial-gradient(ellipse 85% 55% at 50% 0%, #000 30%, transparent 100%);
+            mask-image: radial-gradient(ellipse 85% 55% at 50% 0%, #000 30%, transparent 100%);
         }
 
-        .glow-blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: floatBlob 20s infinite alternate;
+        /* 滚动条与选中态也统一成品牌色系 */
+        ::selection {
+            background: rgba(0, 201, 167, 0.28);
+            color: #fff;
         }
 
-        .blob-1 {
-            width: 500px;
-            height: 500px;
-            background: var(--primary);
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 2px solid var(--bg);
         }
-
-        .blob-2 {
-            width: 600px;
-            height: 600px;
-            background: var(--secondary);
-            bottom: -150px;
-            right: -100px;
-            animation-delay: -5s;
-        }
-
-        .blob-3 {
-            width: 300px;
-            height: 300px;
-            background: var(--accent);
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -10s;
-            opacity: 0.2;
-        }
-
-        @keyframes floatBlob {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 50px) scale(1.1); }
-        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
 
         /* 容器通用样式 */
         .container {
-            width: 90%;
-            max-width: 1200px;
+            width: min(1200px, 92%);
             margin: 0 auto;
-            padding: 0 15px;
             position: relative;
             z-index: 1;
         }
 
-        /* 导航栏 */
+        /* ============================================================
+           导航栏
+           ============================================================ */
         header {
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
-            padding: 1.5rem 0;
-            transition: all 0.4s ease;
+            padding: 1.25rem 0;
+            transition: padding 0.35s var(--ease), background 0.35s var(--ease);
+            border-bottom: 1px solid transparent;
         }
 
         header.scrolled {
-            padding: 1rem 0;
-            background: rgba(3, 7, 18, 0.6);
-            backdrop-filter: blur(12px);
-            border-bottom: var(--glass-border);
+            padding: 0.75rem 0;
+            background: rgba(6, 8, 11, 0.72);
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+            border-bottom-color: var(--border);
         }
 
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 10px;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.01em;
         }
 
+        .logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: block;
+        }
+
+        /* 品牌字做「白 → 主色」的轻微渐变，克制但有质感 */
         .logo span {
-            background: linear-gradient(135deg, var(--primary), #fff);
+            background: linear-gradient(120deg, #fff 25%, var(--primary-bright) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .nav-links {
             display: flex;
-            gap: 2.5rem;
+            gap: 2rem;
             list-style: none;
         }
 
@@ -156,622 +187,1391 @@
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 500;
-            font-size: 0.95rem;
-            transition: 0.3s;
+            font-size: 0.9rem;
+            transition: color 0.25s var(--ease);
             position: relative;
+            padding-bottom: 4px;
         }
 
-        .nav-links a:hover, .nav-links a.active {
-            color: #fff;
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text);
         }
 
+        /* 下划线用 1px 细线，比 2px 更精致 */
         .nav-links a::after {
             content: '';
             position: absolute;
             width: 0;
-            height: 2px;
-            bottom: -5px;
+            height: 1px;
+            bottom: 0;
             left: 0;
             background: var(--primary);
-            transition: width 0.3s ease;
+            transition: width 0.3s var(--ease);
         }
 
         .nav-links a:hover::after {
             width: 100%;
         }
 
-        /* 按钮样式 */
+        .nav-actions {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        /* ============================================================
+           按钮
+           ============================================================ */
         .btn {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
+            justify-content: center;
+            gap: 0.55rem;
+            padding: 0.85rem 1.6rem;
+            border-radius: var(--radius-sm);
             font-weight: 600;
+            font-size: 0.92rem;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease),
+                        background 0.25s var(--ease), border-color 0.25s var(--ease);
             position: relative;
-            overflow: hidden;
-            z-index: 1;
+            border: 1px solid transparent;
+            white-space: nowrap;
         }
 
+        .btn i { font-size: 0.95em; }
+
+        /* 主按钮：实心主色 + 内描边 + 外发光，模拟"发光按钮"的高级质感 */
         .btn-primary {
-            background: linear-gradient(90deg, var(--primary), var(--primary-glow));
-            color: #000;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            background: var(--primary);
+            color: #032019;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+                        0 10px 26px -10px var(--primary-glow);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);
+            background: var(--primary-bright);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+                        0 16px 34px -12px var(--primary-glow);
         }
 
+        /* 次级按钮：毛玻璃 + 极细描边 */
         .btn-glass {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            backdrop-filter: blur(5px);
+            background: var(--surface);
+            border-color: var(--border-strong);
+            color: var(--text);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
         .btn-glass:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--surface-hover);
+            border-color: var(--primary-line);
             transform: translateY(-2px);
         }
 
-        /* Hero 区域 */
+        /* 导航栏里的小号按钮 */
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 9px;
+        }
+
+        /* ============================================================
+           Hero 区域
+           ============================================================ */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding-top: 80px;
+            padding: 10rem 0 6rem;
             position: relative;
         }
 
         .hero-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 4rem;
+            grid-template-columns: 1.02fr 1fr;
+            gap: 4.5rem;
             align-items: center;
         }
 
         .hero-text h1 {
-            font-size: 4.5rem;
-            line-height: 1.1;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1.06;
             font-weight: 800;
             margin-bottom: 1.5rem;
-            letter-spacing: -2px;
+            /* 大字必须收紧字距，否则会显得松散不高级 */
+            letter-spacing: -0.035em;
         }
 
         .hero-text h1 .gradient-text {
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            background: linear-gradient(120deg, var(--primary-bright) 0%, var(--primary) 70%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .hero-text p {
-            font-size: 1.25rem;
+        /* 只作用于 Hero 的直接子 p：避免样式穿透到下方下载卡片内的 p */
+        .hero-text > p {
+            font-size: 1.075rem;
             color: var(--text-muted);
-            margin-bottom: 2.5rem;
-            max-width: 500px;
+            margin-bottom: 2.25rem;
+            max-width: 34rem;
+            line-height: 1.75;
         }
 
         .hero-btns {
             display: flex;
-            gap: 1.5rem;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
-        /* 3D 视觉展示区 */
+        /* Hero 下方的信任条：开源 / 跨平台 / 本地优先 */
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2.25rem;
+            padding-top: 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-size: 0.85rem;
+            color: var(--text-faint);
+        }
+
+        .hero-meta-item i {
+            color: var(--primary);
+            font-size: 0.85rem;
+        }
+
+        /* ---------------- 界面模型（Hero 右侧） ----------------
+           原来是「0 数据 + 空图表」的假面板，显得凑数；
+           现在填入了真实感的统计数据、柱状图和列表行
+        */
         .hero-visual {
             position: relative;
-            height: 500px;
-            perspective: 1000px;
+            perspective: 1400px;
         }
 
-       /* --- 新增：高保真界面模拟样式 --- */
         .app-window {
             width: 100%;
-            height: 600px; /* 增加高度以容纳更多内容 */
-            background: #09090b; /* 对应截图的深黑背景 */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
+            background: #0a0c11;
+            border: 1px solid var(--border-strong);
+            border-radius: 14px;
+            box-shadow: 0 50px 90px -35px rgba(0, 0, 0, 0.9),
+                        0 0 0 1px rgba(255, 255, 255, 0.02) inset;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            font-family: 'Plus Jakarta Sans', sans-serif;
             position: relative;
-            /* 保持原有的3D旋转效果 */
-            transform: rotateY(-10deg) rotateX(5deg);
-            transition: transform 0.5s ease;
+            transform: rotateY(-8deg) rotateX(4deg);
+            transition: transform 0.6s var(--ease);
+        }
+
+        /* 窗口顶部一道主色高光，暗示"正在运行" */
+        .app-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 12%;
+            right: 12%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.7;
+            z-index: 2;
         }
 
         .app-window:hover {
             transform: rotateY(0deg) rotateX(0deg);
         }
 
-        /* 窗口顶部栏 */
         .window-header {
-            height: 40px;
-            background: #0c0c0e;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            height: 38px;
+            background: rgba(255, 255, 255, 0.018);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            padding: 0 16px;
-            gap: 8px;
+            padding: 0 14px;
+            gap: 7px;
             flex-shrink: 0;
         }
 
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; }
         .dot.red { background: #ff5f57; }
         .dot.yellow { background: #febc2e; }
         .dot.green { background: #28c840; }
 
-        /* 界面布局主体 */
+        .window-title {
+            margin-left: 10px;
+            font-size: 11px;
+            color: var(--text-faint);
+            letter-spacing: 0.02em;
+        }
+
         .app-body {
             display: flex;
-            flex: 1;
+            height: 500px;
             overflow: hidden;
         }
 
         /* 侧边栏 */
         .app-sidebar {
-            width: 200px;
-            background: #0c0c0e;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 20px 10px;
+            width: 172px;
+            background: rgba(255, 255, 255, 0.012);
+            border-right: 1px solid var(--border);
+            padding: 16px 10px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        /* 侧边栏分组小标题 */
+        .sidebar-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-faint);
+            padding: 8px 12px 4px;
+            opacity: 0.65;
         }
 
         .sidebar-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            color: #a1a1aa;
-            font-size: 0.9rem;
-            border-radius: 6px;
+            gap: 10px;
+            padding: 8px 12px;
+            color: var(--text-faint);
+            font-size: 0.82rem;
+            border-radius: 8px;
+            transition: 0.2s var(--ease);
+            /* 作为 <button> 使用时抹掉浏览器默认样式，保证与 div 表现一致 */
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            text-align: left;
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        .sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .sidebar-item.active { 
-            background: rgba(16, 185, 129, 0.1); 
-            color: #10b981; 
-            border-left: 3px solid #10b981;
+        .sidebar-item i { font-size: 0.85rem; }
+
+        /* 可切换的页面项：hover 给出反馈，暗示"可点击" */
+        .sidebar-item:not(.static):hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
         }
 
-        /* 右侧主内容区 */
-        .app-main {
+        .sidebar-item.active {
+            background: var(--primary-soft);
+            color: var(--primary-bright);
+        }
+
+        /* 纯展示项（消息 / 设置）不参与切换 */
+        .sidebar-item.static { cursor: default; }
+
+        .sidebar-spacer { flex: 1; }
+
+        /* ---------------- 页面舞台 ----------------
+           四个页面绝对定位叠放在同一块区域，切换时做淡入 + 轻微上浮
+        */
+        .app-stage {
             flex: 1;
-            padding: 30px;
-            background: #09090b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-page {
+            position: absolute;
+            inset: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
-            overflow-y: auto; /* 允许内容滚动 */
+            gap: 14px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
         }
 
-        /* 标题区 */
-        .dashboard-header {
+        .app-page.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .app-heading {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            align-items: flex-start;
+            gap: 12px;
         }
-        .dashboard-title h2 { font-size: 1.5rem; color: #fff; margin-bottom: 5px; }
-        .dashboard-title p { color: #71717a; font-size: 0.9rem; }
-        .header-actions { display: flex; gap: 10px; }
-        .btn-sm { padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; }
-        .btn-dark { background: #27272a; color: #fff; }
-        .btn-accent { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+
+        .app-heading h2 {
+            font-size: 1.05rem;
+            color: #fff;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .app-heading p {
+            color: var(--text-faint);
+            font-size: 0.78rem;
+            max-width: 320px;
+        }
+
+        .app-heading-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+
+        .chip {
+            padding: 5px 9px;
+            border-radius: 8px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid var(--border-strong);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+        }
+
+        .chip-accent {
+            background: var(--primary-soft);
+            border-color: var(--primary-line);
+            color: var(--primary-bright);
+        }
 
         /* 统计卡片网格 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
+            gap: 10px;
         }
 
         .stat-box {
-            background: #18181b;
-            border: 1px solid #27272a;
-            border-radius: 12px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.022);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 11px;
             display: flex;
-            align-items: center;
-            gap: 16px;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 0.78rem;
         }
 
-        /* 卡片颜色变体 */
-        .stat-box.gray .stat-icon { background: rgba(113, 113, 122, 0.2); color: #a1a1aa; }
-        .stat-box.green .stat-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .stat-box.yellow .stat-icon { background: rgba(234, 179, 8, 0.2); color: #eab308; }
-        .stat-box.red .stat-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        /* 卡片配色也只保留主色 + 中性色，其余用品牌色不同透明度区分 */
+        .stat-box.neutral .stat-icon { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+        .stat-box.green .stat-icon { background: var(--primary-soft); color: var(--primary-bright); }
+        .stat-box.dim .stat-icon { background: rgba(255, 255, 255, 0.05); color: var(--text-faint); }
 
-        .stat-info h4 { font-size: 1.5rem; color: #fff; line-height: 1; margin-bottom: 4px; }
-        .stat-info span { font-size: 0.8rem; color: #71717a; }
+        .stat-info h4 {
+            font-size: 1.05rem;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 3px;
+            letter-spacing: -0.02em;
+        }
 
-        /* 底部两栏布局 */
+        .stat-info span { font-size: 0.7rem; color: var(--text-faint); }
+
+        /* 底部两栏 */
         .bottom-section {
             display: grid;
-            grid-template-columns: 1fr 1.8fr; /* 左侧趋势图窄一点，右侧表格宽一点 */
-            gap: 16px;
+            grid-template-columns: 1fr 1.55fr;
+            gap: 10px;
             flex: 1;
+            min-height: 0;
         }
 
         .panel {
-            background: #18181b;
-            border: 1px solid #27272a;
-            border-radius: 12px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.022);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            color: #e4e4e7;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
             font-weight: 600;
         }
 
-        /* 模拟空状态图表 */
-        .empty-chart {
+        .panel-header i { color: var(--text-faint); font-size: 0.75rem; }
+
+        /* 柱状图 */
+        .chart {
             flex: 1;
+            width: 100%;
+            min-height: 70px;
+        }
+
+        /* 模拟表格 */
+        .mock-table-header,
+        .mock-table-row {
+            display: grid;
+            grid-template-columns: 1.8fr 0.8fr 1fr 1.1fr 0.7fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .mock-table-header {
+            padding: 0 2px 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 4px;
+        }
+
+        .th { color: var(--text-faint); font-size: 0.68rem; font-weight: 600; }
+
+        .mock-table-row {
+            padding: 9px 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .mock-table-row:last-child { border-bottom: none; }
+
+        .mock-table-row .name { color: #d8dee5; font-weight: 500; }
+
+        /* 进度条 */
+        .progress {
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.07);
+            overflow: hidden;
+        }
+
+        .progress span {
+            display: block;
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+        }
+
+        /* 状态标签 */
+        .tag {
+            font-size: 0.66rem;
+            padding: 2px 7px;
+            border-radius: 5px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .tag.ok { background: var(--primary-soft); color: var(--primary-bright); }
+        .tag.ing { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); }
+
+        /* ============================================================
+           界面模型内的扩展组件（AI 输入栏 / 图表 / 列表 / 树图）
+           ============================================================ */
+
+        /* AI 指令输入栏：胶囊形，右侧带快捷键提示 */
+        .ai-prompt {
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: #52525b;
-            font-size: 0.9rem;
-            border: 1px dashed #27272a;
-            border-radius: 8px;
-            min-height: 150px;
+            gap: 9px;
+            padding: 9px 13px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-faint);
+            font-size: 0.72rem;
+            flex-shrink: 0;
         }
 
-        /* 模拟表格头 */
-        .mock-table-header {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-            background: #27272a;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-        .th { color: #a1a1aa; font-size: 0.8rem; font-weight: 500; }
+        .ai-prompt > i { color: var(--primary); font-size: 0.75rem; }
 
-        .empty-state {
+        .ai-prompt span {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ai-prompt kbd {
+            font-family: inherit;
+            font-size: 0.6rem;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-faint);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* AI 智能洞察卡（空态） */
+        .insight-body {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #52525b;
+            gap: 7px;
+            text-align: center;
+            border: 1px dashed var(--border-strong);
+            border-radius: 10px;
+            padding: 12px 8px;
+            min-height: 0;
+        }
+
+        .insight-body .icon-wrap {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-soft);
+            color: var(--primary-bright);
+            font-size: 0.85rem;
+        }
+
+        .insight-body h5 { font-size: 0.74rem; color: #dfe5ec; font-weight: 600; }
+        .insight-body p { font-size: 0.62rem; color: var(--text-faint); line-height: 1.55; }
+
+        .ghost-btn {
+            margin-top: 3px;
+            font-size: 0.62rem;
+            padding: 5px 11px;
+            border-radius: 999px;
+            border: 1px solid var(--border-strong);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        /* 折线图容器：左侧留出 Y 轴刻度 */
+        .chart-wrap {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .y-axis {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.55rem;
+            color: var(--text-faint);
+            padding-bottom: 1px;
+            flex-shrink: 0;
+        }
+
+        .line-chart {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            display: block;
+        }
+
+        /* 需要 X 轴文字时，用纵向堆叠包一层 */
+        .chart-stack {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .x-axis {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.52rem;
+            color: var(--text-faint);
+            padding-top: 6px;
+            flex-shrink: 0;
+        }
+
+        /* ---------------- 目标舰队：列表页 ---------------- */
+        .list-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+        }
+
+        .tool-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-faint);
+            font-size: 0.66rem;
+            flex-shrink: 0;
+        }
+
+        .search-pill {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 11px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.025);
+            color: var(--text-faint);
+            font-size: 0.66rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .list-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .list-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #dfe5ec;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .list-title i { color: var(--primary); font-size: 0.7rem; }
+        .list-count { font-size: 0.64rem; color: var(--text-faint); white-space: nowrap; }
+
+        .list-filters {
+            margin-left: auto;
+            display: flex;
+            gap: 6px;
+        }
+
+        .list-filter {
+            font-size: 0.62rem;
+            color: var(--text-faint);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 3px 9px;
+            white-space: nowrap;
+        }
+
+        .goal-table {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .goal-head,
+        .goal-row {
+            display: grid;
+            /* minmax(0, ...) 保证长文本能收缩并省略，而不是把网格撑破 */
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) auto auto;
+            gap: 9px;
+            align-items: center;
+        }
+
+        .goal-head {
+            padding: 0 2px 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .goal-row {
+            padding: 8px 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .goal-row:last-child { border-bottom: none; }
+
+        .g-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #d8dee5;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .g-ico { font-size: 0.62rem; flex-shrink: 0; }
+        .g-ico.done { color: var(--primary); }
+        .g-ico.ing { color: #e6b455; }
+
+        .g-date {
+            font-size: 0.62rem;
+            color: var(--text-faint);
+            white-space: nowrap;
+        }
+
+        .progress-cell { display: flex; align-items: center; gap: 6px; }
+        .progress-cell .progress { flex: 1; }
+        .pct { font-size: 0.58rem; color: var(--text-faint); flex-shrink: 0; }
+
+        /* ---------------- 数据星云：环形图 + 图例 ---------------- */
+        .donut-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .donut { width: 104px; height: 104px; flex-shrink: 0; }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.64rem;
+            color: var(--text-faint);
+        }
+
+        .legend-item b { margin-left: auto; color: #cfd6de; font-weight: 600; }
+
+        .lg-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+        .lg-dot.teal { background: #00c9a7; }
+        .lg-dot.amber { background: #e6b455; }
+        .lg-dot.coral { background: #e0645f; }
+
+        /* ---------------- 目标星系：CSS 画的思维导图树 ----------------
+           连线方案：父节点下方一根竖线 → 子节点互相对接的横杠 → 每个子节点再垂一根竖线
+           横杠向左右各外扩 gap/2，正好与相邻子节点的横杠在中缝处接上
+        */
+        /* 思维导图画布：点状网格背景，模拟真实产品的无限画布 */
+        .canvas {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.012);
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+            background-size: 16px 16px;
+            overflow: hidden;
+        }
+
+        /* 画布右上角的缩放工具组 */
+        .tree-zoom { margin-left: auto; display: flex; gap: 6px; }
+
+        .tree {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tree-root {
+            display: flex;
+            align-items: center;
             gap: 10px;
-        }
-        .empty-state i { font-size: 2rem; opacity: 0.5; }
-
-        /* 移动端适配 Hero Visual */
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .bottom-section { grid-template-columns: 1fr; }
-            .app-sidebar { display: none; } /* 移动端隐藏侧边栏以节省空间 */
+            padding: 11px 16px;
+            border-radius: 10px;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary-line);
+            box-shadow: 0 0 26px -12px var(--primary-glow);
         }
 
-        /* 特性区域 */
-        .features {
-            padding: 8rem 0;
+        .tree-root-ico {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 201, 167, 0.16);
+            color: var(--primary-bright);
+            font-size: 0.74rem;
+            flex-shrink: 0;
         }
 
+        .tree-root h5 { font-size: 0.88rem; color: #fff; font-weight: 600; line-height: 1.2; }
+        .tree-root p { font-size: 0.64rem; color: var(--text-faint); }
+
+        /* padding-top 给「父节点 → 横杠」的那截竖线留出高度 */
+        .tree-children {
+            display: flex;
+            gap: 10px;
+            position: relative;
+            padding-top: 12px;
+            width: 100%;
+        }
+
+        .tree-children::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 1px;
+            height: 12px;
+            background: var(--border-strong);
+        }
+
+        .tree-child {
+            flex: 1;
+            position: relative;
+            padding-top: 12px;
+            min-width: 0;
+            display: flex;
+        }
+
+        /* 横杠 */
+        .tree-child::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -5px;
+            right: -5px;
+            height: 1px;
+            background: var(--border-strong);
+        }
+
+        /* 首尾节点只画半截，横杠不会超出树冠范围 */
+        .tree-child:first-child::before { left: 50%; }
+        .tree-child:last-child::before { right: 50%; }
+
+        /* 竖线：从横杠垂到卡片顶部 */
+        .tree-child::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 1px;
+            height: 12px;
+            background: var(--border-strong);
+        }
+
+        .tree-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.022);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            transition: 0.25s var(--ease);
+        }
+
+        .tree-card:hover {
+            border-color: var(--primary-line);
+            background: var(--primary-soft);
+        }
+
+        .tree-idx {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            border: 1px solid var(--primary-line);
+            border-radius: 5px;
+            padding: 1px 5px;
+            margin-bottom: 6px;
+        }
+
+        .tree-card h6 { font-size: 0.78rem; color: #e3e8ee; font-weight: 600; margin-bottom: 3px; }
+        .tree-card p { font-size: 0.64rem; color: var(--text-faint); line-height: 1.5; }
+
+        /* ============================================================
+           区块通用标题
+           ============================================================ */
         .section-header {
             text-align: center;
-            margin-bottom: 5rem;
+            margin-bottom: 4rem;
         }
 
+        /* 小标签：全大写 + 加宽字距，是最廉价的"高级感"手段里最有效的 */
         .section-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--primary);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 20px;
-            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.4rem 0.9rem;
+            background: var(--primary-soft);
+            color: var(--primary-bright);
+            border: 1px solid var(--primary-line);
+            border-radius: 999px;
+            font-size: 0.72rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
         }
 
         .section-header h2 {
-            font-size: 3rem;
+            font-size: clamp(1.9rem, 3.4vw, 2.6rem);
             font-weight: 700;
-            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.9rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.02rem;
+            max-width: 40rem;
+            margin: 0 auto;
+        }
+
+        /* ============================================================
+           功能特性（Bento 网格）
+           ============================================================ */
+        .features {
+            padding: 7rem 0;
         }
 
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .feature-card {
-            background: var(--surface-color);
-            border: var(--glass-border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            transition: all 0.4s ease;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            transition: transform 0.4s var(--ease), border-color 0.4s var(--ease),
+                        box-shadow 0.4s var(--ease);
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
-        /* 卡片光效 */
+        /* 鼠标跟随光斑：保留原有交互，但亮度调低，避免"廉价霓虹"感 */
         .feature-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);
-            z-index: 1;
+            inset: 0;
+            background: radial-gradient(420px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                        rgba(0, 201, 167, 0.09), transparent 45%);
             opacity: 0;
-            transition: opacity 0.5s;
+            transition: opacity 0.5s var(--ease);
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .feature-card:hover::before {
-            opacity: 1;
-        }
+        .feature-card:hover::before { opacity: 1; }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(16, 185, 129, 0.3);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: translateY(-4px);
+            border-color: var(--primary-line);
+            box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.85);
         }
 
+        /* 宽卡：横跨两列，用于重点功能 */
         .feature-card.wide {
             grid-column: span 2;
         }
 
+        .feature-card > * { position: relative; z-index: 2; }
+
+        /* 图标改成扁平小方块：去掉大圆角与渐变，统一 44px */
         .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 16px;
+            width: 44px;
+            height: 44px;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary-line);
+            border-radius: 11px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            font-size: 1.02rem;
+            color: var(--primary-bright);
+            margin-bottom: 1.35rem;
         }
 
         .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.8rem;
+            font-size: 1.15rem;
+            letter-spacing: -0.015em;
+            margin-bottom: 0.6rem;
             color: #fff;
         }
 
         .feature-card p {
             color: var(--text-muted);
+            font-size: 0.94rem;
+            line-height: 1.7;
+        }
+
+        /* ============================================================
+           下载区域（已从独立区块上移进 Hero，替换原「查看源代码」按钮的位置）
+           ============================================================ */
+        .hero-downloads {
+            margin-top: 2rem;
+        }
+
+        /* 区块小标题：比全局 .section-header 更紧凑，避免与 Hero 主标题抢戏 */
+        .downloads-head {
+            margin-bottom: 1.25rem;
+        }
+
+        .downloads-head h3 {
+            font-size: 1.12rem;
+            color: #fff;
+            letter-spacing: -0.02em;
+            margin: 0.7rem 0 0.3rem;
+        }
+
+        .downloads-head p {
+            color: var(--text-faint);
+            font-size: 0.85rem;
+        }
+
+        /* Hero 左栏较窄：四张平台卡片由横排改为 2×2 紧凑排列 */
+        .hero-downloads .platform-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* 卡片内边距 / 图标 / 字号整体收敛，避免把 Hero 撑得过高 */
+        .hero-downloads .platform-box {
+            padding: 1.35rem 1.1rem;
+        }
+
+        .hero-downloads .platform-icon {
+            font-size: 1.7rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .hero-downloads .platform-box h3 {
             font-size: 1rem;
         }
 
-        /* 下载区域 */
-        .downloads {
-            padding: 6rem 0;
-            background: rgba(255,255,255,0.02);
-            border-top: var(--glass-border);
-            border-bottom: var(--glass-border);
+        .hero-downloads .platform-box p {
+            font-size: 0.76rem;
+            margin-bottom: 1.1rem;
         }
 
+        /* 用 grid 替代 flex，四张卡片宽度绝对一致，视觉更整齐 */
         .platform-grid {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            flex-wrap: wrap;
-            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
         }
 
         .platform-box {
-            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-            border: var(--glass-border);
-            padding: 3rem 4rem;
-            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.008));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
             text-align: center;
-            transition: 0.3s;
-            position: relative;
+            transition: transform 0.4s var(--ease), border-color 0.4s var(--ease),
+                        box-shadow 0.4s var(--ease);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .platform-box:hover {
-            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
+            transform: translateY(-4px);
+            border-color: var(--primary-line);
+            box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.85);
         }
 
+        /* 图标扁平化：去掉 4rem 的巨型图标，收敛到 2.2rem */
         .platform-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+            margin-bottom: 1.15rem;
+            color: var(--text);
+        }
+
+        .platform-box h3 {
+            font-size: 1.1rem;
+            letter-spacing: -0.015em;
+            margin-bottom: 0.4rem;
             color: #fff;
         }
 
-        /* 使用指南 */
+        .platform-box p {
+            color: var(--text-faint);
+            font-size: 0.82rem;
+            margin-bottom: 1.6rem;
+            flex: 1;
+        }
+
+        .platform-box .btn {
+            width: 100%;
+        }
+
+        /* ============================================================
+           使用指南
+           ============================================================ */
         .guide {
-            padding: 8rem 0;
-            background: var(--bg-color);
+            padding: 7rem 0;
         }
 
         .guide-steps {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
+            gap: 1rem;
         }
 
         .step-card {
-            background: var(--surface-color);
-            border: var(--glass-border);
-            border-radius: 20px;
-            padding: 2.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
             position: relative;
-            transition: 0.3s;
-            backdrop-filter: blur(10px);
+            transition: transform 0.4s var(--ease), border-color 0.4s var(--ease);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         .step-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
+            transform: translateY(-4px);
+            border-color: var(--primary-line);
         }
 
+        /* 步骤编号：从巨大的水印数字改成小号描边标签，更克制 */
         .step-number {
-            font-size: 3rem;
-            font-weight: 800;
-            color: rgba(255, 255, 255, 0.05);
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 26px;
+            padding: 0 8px;
+            border-radius: 7px;
+            border: 1px solid var(--primary-line);
+            background: var(--primary-soft);
+            color: var(--primary-bright);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.25rem;
         }
 
         .step-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            font-size: 1.15rem;
+            letter-spacing: -0.015em;
+            margin-bottom: 0.6rem;
             color: #fff;
         }
 
         .step-card p {
             color: var(--text-muted);
-            line-height: 1.6;
+            font-size: 0.94rem;
+            line-height: 1.7;
         }
 
-        @media (max-width: 768px) {
-            .guide-steps {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* 页脚 */
+        /* ============================================================
+           页脚
+           ============================================================ */
         footer {
-            padding: 5rem 0 2rem;
-            border-top: var(--glass-border);
-            background: rgba(3, 7, 18, 0.8);
+            padding: 4.5rem 0 2rem;
+            border-top: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.25);
         }
 
         .footer-content {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 4rem;
+            grid-template-columns: 1.7fr 1fr 1fr;
+            gap: 3rem;
             margin-bottom: 3rem;
         }
 
-        .footer-brand h3 {
-            font-size: 1.8rem;
-            color: #fff;
+        .footer-brand .logo {
             margin-bottom: 1rem;
+            font-size: 1.25rem;
         }
 
         .footer-brand p {
             color: var(--text-muted);
+            font-size: 0.92rem;
             max-width: 300px;
+            line-height: 1.7;
+        }
+
+        .footer-social {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        /* 社交图标做成圆形描边按钮，比裸图标更整齐 */
+        .footer-social a {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: 0.25s var(--ease);
+        }
+
+        .footer-social a:hover {
+            color: var(--primary-bright);
+            border-color: var(--primary-line);
+            background: var(--primary-soft);
         }
 
         .footer-col h4 {
-            color: #fff;
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 1.25rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
         }
 
-        .footer-col ul {
-            list-style: none;
-        }
+        .footer-col ul { list-style: none; }
 
-        .footer-col ul li {
-            margin-bottom: 0.8rem;
-        }
+        .footer-col ul li { margin-bottom: 0.75rem; }
 
         .footer-col ul a {
             color: var(--text-muted);
             text-decoration: none;
-            transition: 0.3s;
+            font-size: 0.92rem;
+            transition: color 0.25s var(--ease);
         }
 
-        .footer-col ul a:hover {
-            color: var(--primary);
-            padding-left: 5px;
-        }
+        .footer-col ul a:hover { color: var(--primary-bright); }
 
         .copyright {
             text-align: center;
             padding-top: 2rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.4);
-            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-faint);
+            font-size: 0.85rem;
         }
 
-        /* 响应式适配 */
-        @media (max-width: 1024px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: 3rem;
-            }
-
-            .hero-text h1 { font-size: 3.5rem; }
-            .hero-text p { margin: 0 auto 2.5rem; }
-            .hero-btns { justify-content: center; }
-
-            .bento-grid {
-                grid-template-columns: 1fr;
-            }
-            .feature-card.wide { grid-column: span 1; }
-        }
-
-        @media (max-width: 768px) {
-            .navbar .nav-links { display: none; } /* 简化处理：移动端隐藏菜单 */
-            .hero-text h1 { font-size: 2.8rem; }
-            .platform-grid { gap: 1.5rem; }
-            .footer-content { grid-template-columns: 1fr; gap: 2rem; }
-        }
-
-        /* 动画类 */
+        /* ============================================================
+           进场动画：与滚动监听配合（.hidden-el → .show-el）
+           ============================================================ */
         .hidden-el {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+            transform: translateY(24px);
+            transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+            will-change: opacity, transform;
         }
 
         .show-el {
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* 尊重系统「减弱动态效果」设置 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .hidden-el {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* ============================================================
+           响应式适配
+           ============================================================ */
+        @media (max-width: 1080px) {
+            .hero {
+                padding: 8.5rem 0 5rem;
+            }
+
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 3.5rem;
+            }
+
+            .hero-text h1 { font-size: clamp(2.25rem, 7vw, 3rem); }
+            .hero-text > p { max-width: none; }
+
+            .bento-grid { grid-template-columns: repeat(2, 1fr); }
+            .feature-card.wide { grid-column: span 2; }
+
+            .platform-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 720px) {
+            .nav-links { display: none; } /* 移动端先隐藏菜单，保留品牌与操作按钮 */
+
+            .hero { padding: 7.5rem 0 4rem; }
+            .hero-btns .btn { flex: 1; }
+
+            .hero-meta { gap: 1rem; }
+
+            /* 移动端隐藏模拟侧边栏，并加高窗口，避免页面内容被裁切 */
+            .app-sidebar { display: none; }
+            .app-body { height: 540px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .bottom-section { grid-template-columns: 1fr; }
+            /* 手机上空间有限：保留图表，隐藏洞察卡 */
+            .panel-insight { display: none; }
+
+            .bento-grid { grid-template-columns: 1fr; }
+            .feature-card.wide { grid-column: span 1; }
+
+            .guide-steps { grid-template-columns: 1fr; }
+
+            .footer-content { grid-template-columns: 1fr; gap: 2.25rem; }
+        }
+
+        @media (max-width: 480px) {
+            .platform-grid { grid-template-columns: 1fr; }
+            .section-header { margin-bottom: 2.75rem; }
+        }
     </style>
 </head>
 <body>
-
-    <!-- 动态背景 -->
-    <div class="background-glows">
-        <div class="glow-blob blob-1"></div>
-        <div class="glow-blob blob-2"></div>
-        <div class="glow-blob blob-3"></div>
-    </div>
 
     <!-- 头部导航 -->
     <header>
         <div class="container navbar">
             <a href="#" class="logo">
-              <img src="/favicon.ico" alt="Logo" style="width: 40px; height: 40px; margin-right: 10px;" />
+                <img src="/favicon.ico" alt="FreeMix Logo" />
                 <span>FreeMix</span>
             </a>
             <ul class="nav-links">
@@ -780,11 +1580,11 @@
                 <li><a href="#guide">使用指南</a></li>
                 <li><a href="#support">支持</a></li>
             </ul>
-            <div style="display: flex; gap: 10px;">
-                <a href="https://gofreemix.com/#/login" target="_blank" class="btn btn-glass" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">
-                    <i class="fas fa-globe"></i> Web版
+            <div class="nav-actions">
+                <a href="https://gofreemix.com/#/login" target="_blank" rel="noopener" class="btn btn-glass btn-sm">
+                    <i class="fas fa-globe"></i> Web 版
                 </a>
-                <a href="https://github.com/lcz1219/freemix" target="_blank" class="btn btn-glass" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">
+                <a href="https://github.com/lcz1219/freemix" target="_blank" rel="noopener" class="btn btn-glass btn-sm">
                     <i class="fab fa-github"></i> GitHub
                 </a>
             </div>
@@ -799,132 +1599,412 @@
                     <span class="section-badge"><i class="fas fa-star"></i> V0.0.3 新版本发布</span>
                     <h1>统一管理<br><span class="gradient-text">掌控全局未来</span></h1>
                     <p>FreeMix 是一个设计优雅的全栈目标管理系统。结合现代化 Web 技术与原生桌面体验，让目标管理不再受限于平台。</p>
-                    <div class="hero-btns">
-                        <a id="hero-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
-                            <i class="fab fa-apple"></i> Mac 版下载
-                        </a>
-                        <a id="hero-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-primary">
-                            <i class="fab fa-windows"></i> Win 版下载
-                        </a>
-                        <a id="hero-btn-android" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix-release.apk" class="btn btn-primary">
-                            <i class="fab fa-android"></i> Android 版下载
-                        </a>
-                        <a id="hero-btn-ios" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix.ipa" class="btn btn-primary">
-                            <i class="fab fa-apple"></i> iOS 版下载
-                        </a>
-                        <a href="https://github.com/lcz1219/freemix" class="btn btn-glass">
-                            <i class="fas fa-code"></i> 查看源码
-                        </a>
+                    <!-- 下载模块：整块从下方上移进 Hero，替换原「查看源代码」按钮的位置 -->
+                    <div id="downloads" class="hero-downloads hidden-el" style="transition-delay: 0.1s;">
+                        <div class="downloads-head">
+                            <span class="section-badge">Download</span>
+                            <h3>立即开始使用</h3>
+                            <p>选择您的平台，开启高效之旅</p>
+                        </div>
+
+                        <div class="platform-grid">
+                            <div class="platform-box hidden-el">
+                                <i class="fab fa-apple platform-icon"></i>
+                                <h3>macOS</h3>
+                                <p>支持 Apple Silicon (M1/M2/M3)</p>
+                                <a id="download-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
+                                    <i class="fas fa-download"></i> 下载 .dmg
+                                </a>
+                            </div>
+                            <div class="platform-box hidden-el" style="transition-delay: 0.08s;">
+                                <i class="fab fa-windows platform-icon"></i>
+                                <h3>Windows</h3>
+                                <p>支持 Windows 10/11 x64</p>
+                                <a id="download-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-glass">
+                                    <i class="fas fa-download"></i> 下载 .zip
+                                </a>
+                            </div>
+                            <div class="platform-box hidden-el" style="transition-delay: 0.16s;">
+                                <i class="fab fa-android platform-icon"></i>
+                                <h3>Android</h3>
+                                <p>支持 Android 8.0 及以上</p>
+                                <a id="download-btn-android" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix-release.apk" class="btn btn-glass">
+                                    <i class="fas fa-download"></i> 下载 .apk
+                                </a>
+                            </div>
+                            <div class="platform-box hidden-el" style="transition-delay: 0.24s;">
+                                <i class="fab fa-apple platform-icon"></i>
+                                <h3>iOS</h3>
+                                <p>支持 iOS 15.0 及以上</p>
+                                <a id="download-btn-ios" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix.ipa" class="btn btn-glass">
+                                    <i class="fas fa-download"></i> 下载 .ipa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 信任条：用极简信息替代堆砌的下载按钮 -->
+                    <div class="hero-meta">
+                        <div class="hero-meta-item"><i class="fas fa-code-branch"></i> 完全开源</div>
+                        <div class="hero-meta-item"><i class="fas fa-laptop-mobile"></i> 全平台覆盖</div>
+                        <div class="hero-meta-item"><i class="fas fa-shield-halved"></i> 数据本地优先</div>
                     </div>
                 </div>
 
-                <!-- CSS 绘制的高保真界面模型 -->
-                <div class="hero-visual hidden-el" style="transition-delay: 0.2s;">
+                <!-- CSS 绘制的界面模型：还原系统真实的四个核心页面
+                     数据取自真实产品：总目标 213 = 已完成 102 + 进行中 4 + 已过期 107 -->
+                <div class="hero-visual hidden-el" style="transition-delay: 0.15s;">
                     <div class="app-window">
                         <!-- 窗口控制按钮 -->
                         <div class="window-header">
                             <div class="dot red"></div>
                             <div class="dot yellow"></div>
                             <div class="dot green"></div>
-                            <div style="margin-left: 10px; font-size: 12px; color: #555;">FreeMix - Goal Tracker</div>
+                            <div class="window-title">FreeMix — 全栈目标管理</div>
                         </div>
 
                         <div class="app-body">
-                            <!-- 侧边栏 -->
+                            <!-- 侧边栏：同时充当四个页面的切换器 -->
                             <div class="app-sidebar">
-                                <div class="sidebar-item active">
-                                    <i class="fas fa-chart-pie"></i> 仪表盘
-                                </div>
-                                <div class="sidebar-item">
-                                    <i class="fas fa-clipboard-list"></i> 目标管理
-                                </div>
-                                <div class="sidebar-item">
-                                    <i class="fas fa-chart-line"></i> 统计数据
-                                </div>
-                                <div class="sidebar-item">
-                                    <i class="fas fa-sitemap"></i> 目标结构
-                                </div>
-                                <div style="flex: 1"></div>
-                                <div class="sidebar-item">
-                                    <i class="fas fa-comment-dots"></i> 消息
-                                </div>
-                                <div class="sidebar-item">
-                                    <i class="fas fa-user-circle"></i> 用户
-                                </div>
+                                <div class="sidebar-label">导航</div>
+                                <button type="button" class="sidebar-item active" data-page="command">
+                                    <i class="fas fa-house"></i> 指挥中心
+                                </button>
+                                <button type="button" class="sidebar-item" data-page="fleet">
+                                    <i class="fas fa-list-check"></i> 目标舰队
+                                </button>
+                                <button type="button" class="sidebar-item" data-page="nebula">
+                                    <i class="fas fa-chart-pie"></i> 数据星云
+                                </button>
+                                <button type="button" class="sidebar-item" data-page="galaxy">
+                                    <i class="fas fa-diagram-project"></i> 目标星系
+                                </button>
+
+                                <div class="sidebar-spacer"></div>
+
+                                <div class="sidebar-label">其他</div>
+                                <div class="sidebar-item static"><i class="fas fa-comment-dots"></i> 消息</div>
+                                <div class="sidebar-item static"><i class="fas fa-gear"></i> 设置</div>
                             </div>
 
-                            <!-- 主内容区 -->
-                            <div class="app-main">
-                                <div style="text-align: center; margin-bottom: 20px;">
-                                    <h2 style="color: #fff; margin-bottom: 8px;">掌控你的目标，衡量你的成功</h2>
-                                    <p style="color: #71717a; font-size: 0.9rem; max-width: 600px; margin: 0 auto 20px;">
-                                        目标追踪者是一款强大的目标管理系统，帮助您设定、跟踪并完成个人和职业目标。
-                                    </p>
-                                    <div style="display: flex; justify-content: center; gap: 10px;">
-                                        <button class="btn-sm btn-dark"><i class="fas fa-plus"></i> 添加新目标</button>
-                                        <button class="btn-sm btn-accent"><i class="fas fa-robot"></i> AI 助手</button>
-                                    </div>
-                                </div>
+                            <!-- 页面舞台：四个页面叠放，切换时淡入上浮 -->
+                            <div class="app-stage">
 
-                                <div class="stats-grid">
-                                    <div class="stat-box gray">
-                                        <div class="stat-icon"><i class="far fa-clock"></i></div>
-                                        <div class="stat-info">
-                                            <h4>0</h4>
-                                            <span>总目标数</span>
+                                <!-- ① 指挥中心 -->
+                                <div class="app-page active" data-page="command">
+                                    <div class="app-heading">
+                                        <div>
+                                            <h2>你好，欢迎回来</h2>
+                                            <p>掌控你的目标，衡量你的成功</p>
                                         </div>
-                                    </div>
-                                    <div class="stat-box green">
-                                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                                        <div class="stat-info">
-                                            <h4>0</h4>
-                                            <span>已完成</span>
-                                        </div>
-                                    </div>
-                                    <div class="stat-box yellow">
-                                        <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
-                                        <div class="stat-info">
-                                            <h4>0</h4>
-                                            <span>进行中</span>
-                                        </div>
-                                    </div>
-                                    <div class="stat-box red">
-                                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
-                                        <div class="stat-info">
-                                            <h4>0</h4>
-                                            <span>已过期</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="bottom-section">
-                                    <div class="panel">
-                                        <div class="panel-header">
-                                            <span>完成趋势</span>
-                                        </div>
-                                        <div class="empty-chart">
-                                            暂无趋势数据
+                                        <div class="app-heading-actions">
+                                            <span class="chip chip-accent"><i class="fas fa-plus"></i> 添加新目标</span>
+                                            <span class="chip"><i class="fas fa-robot"></i> AI 助手</span>
                                         </div>
                                     </div>
 
-                                    <div class="panel">
-                                        <div class="panel-header">
-                                            <span><i class="fas fa-table" style="color: #ef4444; margin-right: 8px;"></i> 详细统计数据</span>
-                                            <i class="fas fa-share" style="color: #71717a; cursor: pointer;"></i>
+                                    <!-- AI 指令输入栏 -->
+                                    <div class="ai-prompt">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                        <span>直接问 AI 帮你寻找目标或制定计划…</span>
+                                        <kbd>Alt + Enter</kbd>
+                                    </div>
+
+                                    <!-- 统计卡片 -->
+                                    <div class="stats-grid">
+                                        <div class="stat-box neutral">
+                                            <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+                                            <div class="stat-info"><h4>213</h4><span>总目标数</span></div>
                                         </div>
-                                        <div class="mock-table-header">
-                                            <div class="th">目标名称 <i class="fas fa-chevron-down" style="font-size: 10px;"></i></div>
-                                            <div class="th">负责人</div>
-                                            <div class="th">截止日期</div>
-                                            <div class="th">进度</div>
-                                            <div class="th">状态</div>
+                                        <div class="stat-box green">
+                                            <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+                                            <div class="stat-info"><h4>102</h4><span>已完成</span></div>
                                         </div>
-                                        <div class="empty-state">
-                                            <i class="fas fa-file-excel"></i>
-                                            <span>无数据</span>
+                                        <div class="stat-box neutral">
+                                            <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+                                            <div class="stat-info"><h4>4</h4><span>进行中</span></div>
+                                        </div>
+                                        <div class="stat-box dim">
+                                            <div class="stat-icon"><i class="fas fa-circle-xmark"></i></div>
+                                            <div class="stat-info"><h4>107</h4><span>已过期</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bottom-section">
+                                        <!-- AI 智能洞察（空态） -->
+                                        <div class="panel panel-insight">
+                                            <div class="panel-header">
+                                                <span><i class="fas fa-lightbulb"></i> AI 智能洞察</span>
+                                                <i class="fas fa-rotate-right"></i>
+                                            </div>
+                                            <div class="insight-body">
+                                                <div class="icon-wrap"><i class="fas fa-cloud-arrow-up"></i></div>
+                                                <h5>暂无智能洞察</h5>
+                                                <p>点击下方按钮，让 AI 分析<br>你的目标数据</p>
+                                                <span class="ghost-btn"><i class="fas fa-rotate"></i> 生成洞察</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- 完成趋势：平滑折线 + 渐变面积 -->
+                                        <div class="panel panel-chart">
+                                            <div class="panel-header">
+                                                <span><i class="fas fa-arrow-trend-up"></i> 完成趋势</span>
+                                                <i class="fas fa-ellipsis"></i>
+                                            </div>
+                                            <div class="chart-wrap">
+                                                <div class="y-axis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+                                                <svg class="line-chart" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true">
+                                                    <defs>
+                                                        <linearGradient id="cmdArea" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.30" />
+                                                            <stop offset="100%" stop-color="#00c9a7" stop-opacity="0" />
+                                                        </linearGradient>
+                                                        <linearGradient id="cmdLine" x1="0" y1="0" x2="1" y2="0">
+                                                            <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.45" />
+                                                            <stop offset="55%" stop-color="#2ee6c4" />
+                                                            <stop offset="100%" stop-color="#00c9a7" stop-opacity="0.65" />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <!-- 网格线 -->
+                                                    <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+                                                        <line x1="0" y1="30" x2="320" y2="30" />
+                                                        <line x1="0" y1="60" x2="320" y2="60" />
+                                                        <line x1="0" y1="90" x2="320" y2="90" />
+                                                    </g>
+                                                    <path d="M0,96 C22,96 28,50 50,50 C72,50 74,14 96,10 C118,6 122,52 144,68 C166,84 170,100 194,96 C218,92 220,56 242,54 C264,52 272,72 320,82 L320,120 L0,120 Z"
+                                                          fill="url(#cmdArea)" />
+                                                    <path d="M0,96 C22,96 28,50 50,50 C72,50 74,14 96,10 C118,6 122,52 144,68 C166,84 170,100 194,96 C218,92 220,56 242,54 C264,52 272,72 320,82"
+                                                          fill="none" stroke="url(#cmdLine)" stroke-width="2"
+                                                          stroke-linecap="round" vector-effect="non-scaling-stroke" />
+                                                </svg>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- ② 目标舰队 -->
+                                <div class="app-page" data-page="fleet">
+                                    <div class="list-toolbar">
+                                        <span class="chip chip-accent"><i class="fas fa-plus"></i> 添加新目标</span>
+                                        <span class="chip"><i class="fas fa-file-import"></i> 导入 Excel</span>
+                                        <span class="tool-icon"><i class="fas fa-rotate"></i></span>
+                                        <div class="search-pill"><i class="fas fa-magnifying-glass"></i> 搜索目标</div>
+                                    </div>
+
+                                    <div class="list-meta">
+                                        <span class="list-title"><i class="fas fa-bullseye"></i> 目标列表</span>
+                                        <span class="list-count">213 个目标 · 3 组</span>
+                                        <div class="list-filters">
+                                            <span class="list-filter">按优先</span>
+                                            <span class="list-filter">标签筛选</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="goal-table">
+                                        <div class="goal-head">
+                                            <div>目标名称</div>
+                                            <div>进度</div>
+                                            <div>截止时间</div>
+                                            <div>状态</div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico done"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 92%"></span></div><span class="pct">92%</span></div>
+                                            <div class="g-date">2026-09-26</div>
+                                            <div><span class="tag ing">进行中</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico ing"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 95%"></span></div><span class="pct">95%</span></div>
+                                            <div class="g-date">2027-01-01</div>
+                                            <div><span class="tag ing">进行中</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico ing"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 100%"></span></div><span class="pct">100%</span></div>
+                                            <div class="g-date">2027-03-18</div>
+                                            <div><span class="tag ing">进行中</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico done"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 100%"></span></div><span class="pct">100%</span></div>
+                                            <div class="g-date">2026-11-02</div>
+                                            <div><span class="tag ok">已完成</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico done"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 100%"></span></div><span class="pct">100%</span></div>
+                                            <div class="g-date">2026-12-19</div>
+                                            <div><span class="tag ok">已完成</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico done"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 100%"></span></div><span class="pct">100%</span></div>
+                                            <div class="g-date">2025-12-19</div>
+                                            <div><span class="tag ok">已完成</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico done"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 100%"></span></div><span class="pct">100%</span></div>
+                                            <div class="g-date">2026-01-08</div>
+                                            <div><span class="tag ok">已完成</span></div>
+                                        </div>
+                                        <div class="goal-row">
+                                            <div class="g-name"><i class="fas fa-circle-check g-ico ing"></i> 目标A</div>
+                                            <div class="progress-cell"><div class="progress"><span style="width: 30%"></span></div><span class="pct">30%</span></div>
+                                            <div class="g-date">2026-08-30</div>
+                                            <div><span class="tag ing">进行中</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ③ 数据星云 -->
+                                <div class="app-page" data-page="nebula">
+                                    <div class="app-heading">
+                                        <div>
+                                            <h2>统计数据</h2>
+                                            <p>查看目标完成情况的统计分析，更好地了解完成趋势</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="stats-grid">
+                                        <div class="stat-box neutral">
+                                            <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+                                            <div class="stat-info"><h4>213</h4><span>总目标数</span></div>
+                                        </div>
+                                        <div class="stat-box green">
+                                            <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+                                            <div class="stat-info"><h4>102</h4><span>已完成</span></div>
+                                        </div>
+                                        <div class="stat-box neutral">
+                                            <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+                                            <div class="stat-info"><h4>4</h4><span>进行中</span></div>
+                                        </div>
+                                        <div class="stat-box dim">
+                                            <div class="stat-icon"><i class="fas fa-circle-xmark"></i></div>
+                                            <div class="stat-info"><h4>107</h4><span>已过期</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bottom-section">
+                                        <!-- 目标状态分布：纯 SVG 环形图（周长 2πr = 263.9） -->
+                                        <div class="panel panel-donut">
+                                            <div class="panel-header">
+                                                <span><i class="fas fa-chart-pie"></i> 目标状态分布</span>
+                                            </div>
+                                            <div class="donut-wrap">
+                                                <svg class="donut" viewBox="0 0 100 100" aria-hidden="true">
+                                                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="13" />
+                                                    <!-- 已完成 102/213 ≈ 47.9% → 弧长 126.4 -->
+                                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#00c9a7" stroke-width="13"
+                                                            stroke-dasharray="126.4 263.9" stroke-dashoffset="0" transform="rotate(-90 50 50)" />
+                                                    <!-- 进行中 4/213 ≈ 1.9% → 弧长 5.0 -->
+                                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e6b455" stroke-width="13"
+                                                            stroke-dasharray="5 263.9" stroke-dashoffset="-126.4" transform="rotate(-90 50 50)" />
+                                                    <!-- 已过期 107/213 ≈ 50.2% → 弧长 132.5 -->
+                                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e0645f" stroke-width="13"
+                                                            stroke-dasharray="132.5 263.9" stroke-dashoffset="-131.4" transform="rotate(-90 50 50)" />
+                                                </svg>
+                                                <div class="legend">
+                                                    <span class="legend-item"><i class="lg-dot teal"></i> 已完成 <b>102</b></span>
+                                                    <span class="legend-item"><i class="lg-dot amber"></i> 进行中 <b>4</b></span>
+                                                    <span class="legend-item"><i class="lg-dot coral"></i> 已过期 <b>107</b></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 月度目标完成趋势 -->
+                                        <div class="panel panel-chart">
+                                            <div class="panel-header">
+                                                <span><i class="fas fa-chart-line"></i> 月度目标完成趋势</span>
+                                                <i class="fas fa-ellipsis"></i>
+                                            </div>
+                                            <div class="chart-wrap">
+                                                <div class="y-axis"><span>40</span><span>30</span><span>20</span><span>10</span><span>0</span></div>
+                                                <div class="chart-stack">
+                                                    <svg class="line-chart" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true">
+                                                        <defs>
+                                                            <linearGradient id="nebArea" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.26" />
+                                                                <stop offset="100%" stop-color="#00c9a7" stop-opacity="0" />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+                                                            <line x1="0" y1="30" x2="320" y2="30" />
+                                                            <line x1="0" y1="60" x2="320" y2="60" />
+                                                            <line x1="0" y1="90" x2="320" y2="90" />
+                                                        </g>
+                                                        <!-- 已完成（主色面积） -->
+                                                        <path d="M0,112 C28,112 38,102 66,98 C94,94 104,70 134,62 C164,54 174,28 204,22 C234,16 246,20 276,18 C294,17 300,16 320,15 L320,120 L0,120 Z"
+                                                              fill="url(#nebArea)" />
+                                                        <path d="M0,112 C28,112 38,102 66,98 C94,94 104,70 134,62 C164,54 174,28 204,22 C234,16 246,20 276,18 C294,17 300,16 320,15"
+                                                              fill="none" stroke="#00c9a7" stroke-width="2"
+                                                              stroke-linecap="round" vector-effect="non-scaling-stroke" />
+                                                        <!-- 已过期（暖色对比线） -->
+                                                        <path d="M0,118 C40,118 60,114 100,110 C140,106 160,92 200,84 C240,76 270,66 320,58"
+                                                              fill="none" stroke="#e0645f" stroke-width="1.5" stroke-opacity="0.7"
+                                                              stroke-linecap="round" vector-effect="non-scaling-stroke" />
+                                                    </svg>
+                                                    <div class="x-axis">
+                                                        <span>2025-10</span><span>2025-12</span><span>2026-02</span>
+                                                        <span>2026-04</span><span>2026-06</span><span>2026-08</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ④ 目标星系：CSS 画的思维导图 -->
+                                <div class="app-page" data-page="galaxy">
+                                    <div class="list-toolbar">
+                                        <span class="chip chip-accent"><i class="fas fa-plus"></i> 添加目标</span>
+                                        <span class="chip"><i class="fas fa-floppy-disk"></i> 保存结构</span>
+                                        <!-- 画布缩放工具组 -->
+                                        <div class="tree-zoom">
+                                            <span class="tool-icon"><i class="fas fa-minus"></i></span>
+                                            <span class="tool-icon"><i class="fas fa-plus"></i></span>
+                                            <span class="tool-icon"><i class="fas fa-expand"></i></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 点状网格画布，模拟真实产品的无限画布 -->
+                                    <div class="canvas">
+                                        <div class="tree">
+                                            <div class="tree-root">
+                                                <span class="tree-root-ico"><i class="fas fa-bullseye"></i></span>
+                                                <div>
+                                                    <h5>改变体态</h5>
+                                                    <p>主目标 · 3 个子任务</p>
+                                                </div>
+                                            </div>
+                                            <div class="tree-children">
+                                                <div class="tree-child">
+                                                    <div class="tree-card">
+                                                        <span class="tree-idx">01</span>
+                                                        <h6>拉伸放松</h6>
+                                                        <p>每天 3 次 · 每侧 30 秒</p>
+                                                    </div>
+                                                </div>
+                                                <div class="tree-child">
+                                                    <div class="tree-card">
+                                                        <span class="tree-idx">02</span>
+                                                        <h6>靠墙站立</h6>
+                                                        <p>15 次 × 3 组</p>
+                                                    </div>
+                                                </div>
+                                                <div class="tree-child">
+                                                    <div class="tree-card">
+                                                        <span class="tree-idx">03</span>
+                                                        <h6>垂直拉伸</h6>
+                                                        <p>保持 5 秒 · 10 分钟</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -939,31 +2019,31 @@
             <div class="section-header hidden-el">
                 <span class="section-badge">Features</span>
                 <h2>构建高效工作流</h2>
-                <p style="color: var(--text-muted);">不仅是管理工具，更是您的生产力中心</p>
+                <p>不仅是管理工具，更是您的生产力中心</p>
             </div>
-            
+
             <div class="bento-grid">
                 <div class="feature-card wide hidden-el">
                     <div class="feature-icon"><i class="fas fa-desktop"></i></div>
                     <h3>多端统一架构</h3>
-                    <p>采用跨平台架构设计，核心逻辑统一。无论是在 Web 浏览器中，还是在 macOS 原生应用中，都能获得一致且流畅的操作体验。</p>
+                    <p>采用跨平台架构设计，核心逻辑统一。无论是在 Web 浏览器中，还是在 macOS、Windows 原生应用中，都能获得一致且流畅的操作体验。</p>
                 </div>
-                <div class="feature-card hidden-el" style="transition-delay: 0.1s;">
+                <div class="feature-card hidden-el" style="transition-delay: 0.08s;">
                     <div class="feature-icon"><i class="fas fa-bolt"></i></div>
                     <h3>实时监控</h3>
                     <p>毫秒级状态同步，即时查看所有设备运行状况，快速响应异常。</p>
                 </div>
-                <div class="feature-card hidden-el" style="transition-delay: 0.2s;">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="feature-card hidden-el" style="transition-delay: 0.16s;">
+                    <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
                     <h3>企业级安全</h3>
                     <p>端到端加密传输，多重身份验证机制，守护您的核心数据。</p>
                 </div>
-                <div class="feature-card hidden-el" style="transition-delay: 0.3s;">
-                    <div class="feature-icon"><i class="fas fa-magic"></i></div>
-                    <h3>自动化任务</h3>
-                    <p>支持自定义脚本与批量操作，让繁琐的重复性工作自动化运行。</p>
+                <div class="feature-card hidden-el" style="transition-delay: 0.24s;">
+                    <div class="feature-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <h3>AI 智能助手</h3>
+                    <p>用自然语言下达指令，AI 自动拆解目标、生成洞察并完成数据分析。</p>
                 </div>
-                <div class="feature-card hidden-el" style="transition-delay: 0.4s;">
+                <div class="feature-card hidden-el" style="transition-delay: 0.32s;">
                     <div class="feature-icon"><i class="fas fa-moon"></i></div>
                     <h3>深色模式</h3>
                     <p>精心调教的暗色主题，保护视力，让夜间工作更加专注沉浸。</p>
@@ -972,71 +2052,27 @@
         </div>
     </section>
 
-    <!-- 下载区域 -->
-    <section id="downloads" class="downloads">
-        <div class="container">
-            <div class="section-header hidden-el">
-                <h2>立即开始使用</h2>
-                <p style="color: var(--text-muted);">选择您的平台，开启高效之旅</p>
-            </div>
-            
-            <div class="platform-grid">
-                <div class="platform-box hidden-el">
-                    <i class="fab fa-apple platform-icon"></i>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">macOS</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Apple Silicon (M1/M2/M3)</p>
-                    <a id="download-btn-mac" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-arm64.dmg" class="btn btn-primary">
-                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .dmg 文件
-                    </a>
-                </div>
-                <div class="platform-box hidden-el" style="transition-delay: 0.1s;">
-                    <i class="fab fa-windows platform-icon"></i>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Windows</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Windows 10/11 x64</p>
-                    <a id="download-btn-win" href="https://github.com/lcz1219/freemix/releases/download/freemix-v0.0.3/FreeMix-0.0.0-win.zip" class="btn btn-glass">
-                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .zip 文件
-                    </a>
-                </div>
-                <div class="platform-box hidden-el" style="transition-delay: 0.2s;">
-                    <i class="fab fa-android platform-icon"></i>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Android</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 Android 8.0 及以上</p>
-                    <a id="download-btn-android" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix-release.apk" class="btn btn-glass">
-                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .apk 文件
-                    </a>
-                </div>
-                <div class="platform-box hidden-el" style="transition-delay: 0.3s;">
-                    <i class="fab fa-apple platform-icon"></i>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">iOS</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">支持 iOS 15.0 及以上</p>
-                    <a id="download-btn-ios" href="https://github.com/lcz1219/freemix/releases/download/freemix-0.0.3/Freemix.ipa" class="btn btn-glass">
-                        <i class="fas fa-download" style="margin-right: 8px;"></i> 下载 .ipa 文件
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 使用指南区域 (替换了原截图区域) -->
+    <!-- 使用指南区域 -->
     <section id="guide" class="guide">
         <div class="container">
             <div class="section-header hidden-el">
+                <span class="section-badge">Guide</span>
                 <h2>快速上手指南</h2>
-                <p style="color: var(--text-muted);">简单三步，开启您的目标管理之旅</p>
+                <p>简单三步，开启您的目标管理之旅</p>
             </div>
-            
+
             <div class="guide-steps">
                 <div class="step-card hidden-el">
                     <div class="step-number">01</div>
                     <h3>下载安装</h3>
                     <p>根据您的操作系统下载对应的安装包，按照提示完成安装。FreeMix 支持 macOS 和 Windows 系统，安装过程简单快捷。</p>
                 </div>
-                <div class="step-card hidden-el" style="transition-delay: 0.1s;">
+                <div class="step-card hidden-el" style="transition-delay: 0.08s;">
                     <div class="step-number">02</div>
                     <h3>创建目标</h3>
                     <p>打开应用，点击"+"号创建您的第一个目标。您可以设置截止日期、优先级，并添加详细描述，让目标清晰可见。</p>
                 </div>
-                <div class="step-card hidden-el" style="transition-delay: 0.2s;">
+                <div class="step-card hidden-el" style="transition-delay: 0.16s;">
                     <div class="step-number">03</div>
                     <h3>多端同步</h3>
                     <p>在任意设备上登录您的账户，您的数据将自动实时同步。无论在办公室还是在路上，随时随地掌控全局。</p>
@@ -1050,15 +2086,13 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <div class="logo" style="margin-bottom: 1rem; font-size: 1.5rem;">
-                        <i class="fas fa-layer-group" style="color: var(--primary);"></i>
+                    <div class="logo">
+                        <img src="/favicon.ico" alt="FreeMix Logo" />
                         <span>FreeMix</span>
                     </div>
                     <p>打造极致的跨平台目标管理体验。开源、安全、高效。</p>
-                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-                        <a href="#" style="color: #fff; font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
-                        <a href="#" style="color: #fff; font-size: 1.2rem;"><i class="fab fa-github"></i></a>
-                        <a href="#" style="color: #fff; font-size: 1.2rem;"><i class="fab fa-discord"></i></a>
+                    <div class="footer-social">
+                        <a href="https://github.com/lcz1219/freemix" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
                     </div>
                 </div>
                 <div class="footer-col">
@@ -1067,21 +2101,21 @@
                         <li><a href="#features">功能特性</a></li>
                         <li><a href="#downloads">下载客户端</a></li>
                         <li><a href="#guide">使用指南</a></li>
-                        <li><a href="#">更新日志</a></li>
+                        <li><a href="https://github.com/lcz1219/freemix/releases" target="_blank" rel="noopener">更新日志</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>支持</h4>
+                    <h4>资源</h4>
                     <ul>
-                        <li><a href="#">帮助中心</a></li>
-                        <li><a href="#">API 文档</a></li>
-                        <li><a href="#">联系我们</a></li>
-                        <li><a href="#">隐私协议</a></li>
+                        <li><a href="https://github.com/lcz1219/freemix" target="_blank" rel="noopener">GitHub 仓库</a></li>
+                        <li><a href="https://github.com/lcz1219/freemix/issues" target="_blank" rel="noopener">问题反馈</a></li>
+                        <li><a href="https://github.com/lcz1219/freemix/releases" target="_blank" rel="noopener">版本发布</a></li>
+                        <li><a href="https://gofreemix.com/#/login" target="_blank" rel="noopener">Web 版</a></li>
                     </ul>
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2023-2024 FreeMix Team. All rights reserved.</p>
+                <!-- <p>&copy; 2023-2024 FreeMix Team. All rights reserved.</p> -->
             </div>
         </div>
     </footer>
@@ -1195,6 +2229,60 @@
                 })
                 .catch(err => console.error('获取下载配置失败:', err));
         });
+
+        // 6. 界面模型：四个系统页面自动轮播 + 侧边栏联动
+        (function () {
+            const stage = document.querySelector('.app-stage');
+            if (!stage) return;
+
+            const pages = stage.querySelectorAll('.app-page');
+            const navItems = document.querySelectorAll('.app-sidebar .sidebar-item[data-page]');
+            // 只有页面时才需要轮播
+            if (pages.length < 2) return;
+
+            let current = 0;
+            let timer = null;
+
+            // 切换到第 index 页：页面显隐与侧边栏高亮同步，两者下标一一对应
+            function goTo(index) {
+                current = (index + pages.length) % pages.length;
+                pages.forEach((page, i) => page.classList.toggle('active', i === current));
+                navItems.forEach((item, i) => item.classList.toggle('active', i === current));
+            }
+
+            function stopAutoPlay() {
+                if (timer) {
+                    clearInterval(timer);
+                    timer = null;
+                }
+            }
+
+            // 每 4 秒自动切到下一页
+            function startAutoPlay() {
+                stopAutoPlay();
+                timer = setInterval(() => goTo(current + 1), 2000);
+            }
+
+            // 点击侧边栏立即切换，并重置计时（避免刚点完就被自动切走）
+            navItems.forEach((item, i) => {
+                item.addEventListener('click', () => {
+                    goTo(i);
+                    startAutoPlay();
+                });
+            });
+
+            // 鼠标停在窗口上时暂停轮播，方便看清当前页面细节
+            const windowEl = document.querySelector('.app-window');
+            if (windowEl) {
+                windowEl.addEventListener('mouseenter', stopAutoPlay);
+                windowEl.addEventListener('mouseleave', startAutoPlay);
+            }
+
+            // 尊重「减少动态效果」的无障碍偏好，此时不自动轮播，但点击切换仍可用
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                startAutoPlay();
+            }
+        })();
     </script>
 </body>
 </html>

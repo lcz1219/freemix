@@ -30,6 +30,7 @@ import MobileScanConfirm from '@/views/mobile/mobile-scan-confirm.vue'
 import MobileScan from '@/views/mobile/mobile-scan.vue'
 import MobileLoginLog from '@/views/mobile/mobile-login-log.vue'
 import MobileNotifications from '@/views/mobile/mobile-notifications.vue'
+import MobileRecurringGoals from '@/views/mobile/mobile-recurring-goals.vue'
 import { isDesktop } from '@/utils/device.js'
 // import { getLocalStorageDesktopToken, getToken } from '@/utils/desktopToken.js';
 import { getToken } from '@/utils/tokenUtils.js'; // 导入token工具函数
@@ -112,7 +113,7 @@ const routes = [
   { 
     path: '/recurring-goals', 
     name: 'RecurringGoals', 
-    component: () => import('@/views/RecurringGoals.vue') 
+    component: getComponent(() => import('@/views/RecurringGoals.vue'), MobileRecurringGoals) 
   },
   { 
     path: '/settings', 

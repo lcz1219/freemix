@@ -197,7 +197,7 @@
                                 </div>
                                 <div class="empty-table-content">
                                     <div class="file-icon">
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#333"
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="1.5">
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                             <polyline points="14 2 14 8 20 8"></polyline>
@@ -224,36 +224,62 @@
 <style scoped>
 /* 容器背景，用于展示窗口效果 */
 .window-container {
-    background-color: #000;
+    /* 模拟界面局部配色变量：这里写的是亮色主题的默认值，
+       暗色主题通过下面 :global(html.dark-theme) 的规则整体覆盖，
+       组件内所有颜色都引用这些变量，因此切换主题时无需改结构 */
+    --sim-outside: #eef1f4;   /* 窗口外底色 */
+    --sim-window: #ffffff;    /* 窗口本体底色 */
+    --sim-sidebar: #f5f7f9;   /* 侧边栏底色 */
+    --sim-panel: #ffffff;     /* 主内容底色 */
+    --sim-card: #f7f9fa;      /* 卡片/面板底色 */
+    --sim-border: rgba(0, 0, 0, 0.07); /* 分割线/描边 */
+    --sim-text: #1f1f1f;      /* 主文字 */
+    --sim-text-sub: #8b939c;  /* 次要文字 */
+    --sim-hover: rgba(0, 0, 0, 0.045); /* 悬停/浅底 */
+
+    background-color: var(--sim-outside);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     /* padding: 20px; */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #fff;
+    color: var(--sim-text);
+}
+
+/* 暗色主题：整体覆盖上面的局部变量（主题类由 App.vue 挂在 html 上） */
+:global(html.dark-theme) .window-container {
+    --sim-outside: #000000;
+    --sim-window: #050505;
+    --sim-sidebar: #0a0a0a;
+    --sim-panel: #050505;
+    --sim-card: #0f0f0f;
+    --sim-border: #1a1a1a;
+    --sim-text: #ffffff;
+    --sim-text-sub: #666666;
+    --sim-hover: #1a1a1a;
 }
 
 /* 主窗口框架 */
 .app-window {
     width: 1200px;
     height: 800px;
-    background-color: #050505;
+    background-color: var(--sim-window);
     border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
     display: flex;
     overflow: hidden;
-    border: 1px solid #222;
+    border: 1px solid var(--sim-border);
 }
 
 /* -------------------- 侧边栏 -------------------- */
 .sidebar {
     width: 240px;
-    background-color: #0a0a0a;
+    background-color: var(--sim-sidebar);
     display: flex;
     flex-direction: column;
     padding: 20px;
-    border-right: 1px solid #1a1a1a;
+    border-right: 1px solid var(--sim-border);
 }
 
 .window-controls {
@@ -281,7 +307,7 @@
 }
 
 .app-title {
-    color: #666;
+    color: var(--sim-text-sub);
     font-size: 13px;
     margin-bottom: 30px;
     padding-left: 5px;
@@ -300,23 +326,23 @@
     gap: 12px;
     padding: 10px 15px;
     border-radius: 8px;
-    color: #888;
+    color: var(--sim-text-sub);
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s;
 }
 
 .nav-item:hover {
-    background-color: #1a1a1a;
-    color: #fff;
+    background-color: var(--sim-hover);
+    color: var(--sim-text);
 }
 
 .nav-item.active {
-    background-color: #0f291e;
-    /* 深绿色背景 */
-    color: #10b981;
-    /* 亮绿色文字 */
-    border-left: 3px solid #10b981;
+    background-color: rgba(0, 201, 167, 0.12);
+    /* 品牌色浅底 */
+    color: #00c9a7;
+    /* 品牌色文字 */
+    border-left: 3px solid #00c9a7;
     padding-left: 12px;
     /* 调整因border增加的偏移 */
 }
@@ -326,14 +352,14 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    border-top: 1px solid #1a1a1a;
+    border-top: 1px solid var(--sim-border);
     padding-top: 20px;
 }
 
 /* -------------------- 主内容区 -------------------- */
 .main-content {
     flex: 1;
-    background-color: #050505;
+    background-color: var(--sim-panel);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -346,7 +372,7 @@
     top: 50px;
     bottom: 50px;
     width: 6px;
-    background-color: #1a1a1a;
+    background-color: var(--sim-border);
     border-radius: 3px;
     z-index: 10;
 }
@@ -355,7 +381,7 @@
     width: 100%;
     height: 100px;
     /* 模拟长度 */
-    background-color: #444;
+    background-color: var(--sim-text-sub);
     border-radius: 3px;
 }
 
@@ -380,7 +406,7 @@
 }
 
 .subtitle {
-    color: #666;
+    color: var(--sim-text-sub);
     font-size: 14px;
     margin-bottom: 30px;
     max-width: 600px;
@@ -406,23 +432,24 @@
 }
 
 .btn-dark {
-    background-color: #262626;
-    color: #fff;
+    background-color: var(--sim-hover);
+    color: var(--sim-text);
+    border: 1px solid var(--sim-border);
     transition: background 0.2s;
 }
 
 .btn-dark:hover {
-    background-color: #333;
+    background-color: var(--sim-border);
 }
 
 .btn-primary {
-    background-color: #10b981;
-    color: #000;
+    background-color: #00c9a7;
+    color: #04211d;
     font-weight: 600;
 }
 
 .btn-primary:hover {
-    background-color: #059669;
+    background-color: #00b195;
 }
 
 /* 统计卡片 Grid */
@@ -434,8 +461,8 @@
 }
 
 .stat-card {
-    background-color: #0f0f0f;
-    border: 1px solid #1a1a1a;
+    background-color: var(--sim-card);
+    border: 1px solid var(--sim-border);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -452,23 +479,24 @@
     justify-content: center;
 }
 
+/* 图标底色统一用品牌色的半透明版本，明暗主题下都能自然融合 */
 .stat-icon-bg.gray {
-    background-color: #262626;
-    color: #888;
+    background-color: var(--sim-hover);
+    color: var(--sim-text-sub);
 }
 
 .stat-icon-bg.green {
-    background-color: #064e3b;
-    color: #10b981;
+    background-color: rgba(0, 201, 167, 0.15);
+    color: #00c9a7;
 }
 
 .stat-icon-bg.yellow {
-    background-color: #451a03;
+    background-color: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
 }
 
 .stat-icon-bg.red {
-    background-color: #450a0a;
+    background-color: rgba(239, 68, 68, 0.15);
     color: #ef4444;
 }
 
@@ -480,7 +508,7 @@
 
 .stat-label {
     font-size: 12px;
-    color: #666;
+    color: var(--sim-text-sub);
 }
 
 /* 底部面板 */
@@ -492,8 +520,8 @@
 }
 
 .panel {
-    background-color: #0f0f0f;
-    border: 1px solid #1a1a1a;
+    background-color: var(--sim-card);
+    border: 1px solid var(--sim-border);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -503,7 +531,7 @@
     padding: 15px 20px;
     font-size: 14px;
     font-weight: 600;
-    border-bottom: 1px solid #1a1a1a;
+    border-bottom: 1px solid var(--sim-border);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -516,7 +544,7 @@
 
 .arrow-icon {
     margin-left: auto;
-    color: #666;
+    color: var(--sim-text-sub);
     font-size: 12px;
 }
 
@@ -536,12 +564,12 @@
 .dashed-border {
     width: 100%;
     height: 100%;
-    border: 1px dashed #333;
+    border: 1px dashed var(--sim-border);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #444;
+    color: var(--sim-text-sub);
     font-size: 14px;
 }
 
@@ -549,10 +577,10 @@
 .table-header-row {
     display: flex;
     justify-content: space-between;
-    background-color: #1a1a1a;
+    background-color: var(--sim-hover);
     padding: 10px 15px;
     border-radius: 6px;
-    color: #666;
+    color: var(--sim-text-sub);
     font-size: 12px;
     margin-bottom: 40px;
 }
@@ -562,12 +590,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #444;
+    color: var(--sim-text-sub);
     height: 120px;
 }
 
 .file-icon {
     margin-bottom: 10px;
+    /* 让内部 SVG 用 currentColor 取到这里的文字色 */
+    color: var(--sim-text-sub);
 }
 
 .empty-text {

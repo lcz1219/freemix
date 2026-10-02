@@ -224,44 +224,44 @@ const initLogicFlow = () => {
   lf.extension.menu.addMenuConfig({
 
     nodeMenu: [
-      {
-        text: "分享",
-        callback() {
-          alert("分享成功！");
-        },
-      },
-      {
-        text: "属性",
-        callback(node) {
-          alert(`
-          节点id：${node.id}
-          节点类型：${node.type}
-          节点坐标：(x: ${node.x}, y: ${node.y})`);
-        },
-      },
+      // {
+      //   text: "分享",
+      //   callback() {
+      //     alert("分享成功！");
+      //   },
+      // },
+      // {
+      //   text: "属性",
+      //   callback(node) {
+      //     alert(`
+      //     节点id：${node.id}
+      //     节点类型：${node.type}
+      //     节点坐标：(x: ${node.x}, y: ${node.y})`);
+      //   },
+      // },
     ],
-    edgeMenu: [
-      {
-        text: "属性",
-        className: "lf-menu-item",
-        callback(edge) {
-          alert(`
-          边id：${edge.id}
-          边类型：${edge.type}
-          边坐标：(x: ${edge.x}, y: ${edge.y})
-          源节点id：${edge.sourceNodeId}
-          目标节点id：${edge.targetNodeId}`);
-        },
-      },
-    ],
-    graphMenu: [
-      {
-        text: "分享",
-        callback() {
-          alert("分享成功！");
-        },
-      },
-    ],
+    // edgeMenu: [
+    //   {
+    //     text: "属性",
+    //     className: "lf-menu-item",
+    //     callback(edge) {
+    //       alert(`
+    //       边id：${edge.id}
+    //       边类型：${edge.type}
+    //       边坐标：(x: ${edge.x}, y: ${edge.y})
+    //       源节点id：${edge.sourceNodeId}
+    //       目标节点id：${edge.targetNodeId}`);
+    //     },
+    //   },
+    // ],
+    // graphMenu: [
+    //   {
+    //     text: "分享",
+    //     callback() {
+    //       alert("分享成功！");
+    //     },
+    //   },
+    // ],
   });
 
 
@@ -289,7 +289,7 @@ const initLogicFlow = () => {
       console.error('无法获取 edge 对象', event);
       return;
     }
-    if (edge.sourceNodeId != rootnode.value.id) {
+    if (edge.sourceNodeId != rootnode.value.id&&connections.value.size>0) {
       message.warning("只支持根结点开始连接😁")
       lf.deleteEdge(edge.id);
       return
@@ -303,6 +303,15 @@ const initLogicFlow = () => {
       source: edge.sourceNodeId,
       target: edge.targetNodeId
     });
+  });
+   lf.on('edge:delete', (event) => {
+    console.log("edge:delete", event);
+    const edge = event.data || event.edge || event;
+    connections.value = connections.value.filter(
+    conn => conn.source != edge.sourceNodeId && conn.target != edge.targetNodeId
+  );
+    console.log("edge:delete connections", connections.value);
+
   });
 
   lf.on('node:delete', ({ data }) => {
@@ -549,6 +558,7 @@ const saveNode = () => {
 
 // 删除节点
 const deleteNode = (id) => {
+  console.log("deleteNode", id);
   // 删除节点
   nodes.value = nodes.value.filter(node => node.id !== id);
 
@@ -584,9 +594,13 @@ const saveStructure = async () => {
   };
   const res = await postM("saveGoalStructure", structure);
 
-
-  message.success('结构保存成功');
-  getGoals()
+    if(isSuccess(res)){
+    message.success('结构保存成功');
+      getGoals()
+    }else{
+      message.error(res.data.msg);
+    }
+  
 };
 
 // 切换主题

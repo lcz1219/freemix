@@ -216,6 +216,9 @@ const formatDateTime = (dateString) => {
 // 业务逻辑
 const searchLoginLogs = () => {
   currentPage.value = 1
+  filter.value.startDate = new Date(filter.value.startDate)
+  filter.value.endDate = new Date(filter.value.endDate)
+  
   fetchLoginLogs()
 }
 
@@ -228,7 +231,13 @@ const resetFilter = () => {
   currentPage.value = 1
   fetchLoginLogs()
 }
-
+function toLocalDateStr(val) {
+  const d = val instanceof Date ? val : new Date(val)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 const fetchLoginLogs = async () => {
   if (!currentUser.value?.id) return
   
@@ -241,11 +250,13 @@ const fetchLoginLogs = async () => {
     }
 
     let response
+   
+    
     if (filter.value.startDate && filter.value.endDate) {
       response = await getM('api/login-log/date-range', {
         ...params,
-        startDate: filter.value.startDate.toISOString().split('T')[0],
-        endDate: filter.value.endDate.toISOString().split('T')[0]
+        startDate: toLocalDateStr(filter.value.startDate),
+        endDate: toLocalDateStr(filter.value.endDate)
       })
     } else {
       response = await getM('api/login-log/user', params)
