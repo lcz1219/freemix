@@ -15,7 +15,8 @@
               <n-icon :component="Copy" />
             </template>
           </n-button>
-          <n-button quaternary circle @click="editGoal" v-if="!isEditing">
+          <div v-if="isInProcess">
+<n-button quaternary circle @click="editGoal" v-if="!isEditing">
             <template #icon>
               <n-icon :component="Pencil" />
             </template>
@@ -25,6 +26,8 @@
               <n-icon :component="Eye" />
             </template>
           </n-button>
+          </div>
+          
         </n-space>
       </template>
       <div style="overflow-y: auto; height: calc(85vh - 46px); width: 100%;">
@@ -431,6 +434,9 @@ const props = defineProps({
 const fileupload = ref(false);
 const showCollaboratorsModal = ref(false);
 const avatarUrl = ref('');
+const isInProcess=computed(()=>{
+  return props.goal.status === 'in-progress';
+})
 
 // 判断当前用户是否为目标所有者
 const isGoalOwner = computed(() => {

@@ -16,6 +16,7 @@
     <div class="editor-main">
       <n-input
         v-model:value="content"
+        :disabled="!isCurrentGoalInProgress"
         type="textarea"
         placeholder="在此输入笔记内容..."
         :autosize="{ minRows: 10, maxRows: 20 }"
@@ -38,6 +39,10 @@ const props = defineProps({
   status: {
     type: String,
     default: 'saved' // 'saved', 'saving', 'unsaved'
+  },
+  isCurrentGoalInProgress:{
+    type:Boolean,
+    default:true
   }
 });
 

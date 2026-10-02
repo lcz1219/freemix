@@ -115,10 +115,10 @@ const message = useMessage()
 const replyContent = ref('')
 const replyLoading = ref(false)
 
-// 判断当前用户是否为开发者 (linchengzhong)
+// 判断当前用户是否为开发者 (linchenglczzhong)
 const isDeveloper = computed(() => {
   const currentUser = store.state.user
-  return currentUser && currentUser.username === 'linchengzhong'
+  return currentUser && currentUser.email === '1033519224@qq.com'
 })
 
 // 获取反馈类型标签类型

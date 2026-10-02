@@ -40,10 +40,10 @@ public class GoalController extends BaseController {
         if(GoalStauts.expired.equals(goal.getStatus())||System.currentTimeMillis()>goal.getDeadline().getTime()) {
             return ApiResponse.failure("该目标已经过期，无法操作");
         }
-        if(GoalStauts.completed.equals(goal.getStatus())) {
-            return ApiResponse.failure("该目标已经完成，无法操作");
-
-        }
+//        if(GoalStauts.completed.equals(goal.getStatus())) {
+//            return ApiResponse.failure("该目标已经完成，无法操作");
+//
+//        }
         List<Achievement> unlockedAchievements = new ArrayList<>();
         ApiResponse<Object> res = getObjectApiResponse(goal, unlockedAchievements);
         if (res != null) return res;

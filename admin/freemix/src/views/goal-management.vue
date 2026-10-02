@@ -372,7 +372,7 @@
                         </div>
                         <div class="detail-main-row">
                           <h2 class="detail-hero-title">{{ currentSelectedGoal.title }}</h2>
-                          <div class="detail-actions">
+                          <div class="detail-actions" v-if="isInProgress">
                             <n-button type="primary" circle secondary strong @click="editGoal(currentSelectedGoal)"
                               class="action-btn">
                               <n-icon size="18">
@@ -436,7 +436,7 @@
                           <n-tag size="tiny" round type="primary">{{ currentSelectedGoal.childGoals ?
                             currentSelectedGoal.childGoals.length : 0 }}</n-tag>
                         </div>
- <div class="child-add-bar" v-if="currentSelectedGoal">
+ <div class="child-add-bar" v-if="currentSelectedGoal&&isInProgress">
                         <input
                           v-model="newChildMessage"
                           class="child-add-input"
@@ -492,7 +492,7 @@
                               </div>
                             </div>
 
-                            <div class="capsule-actions">
+                            <div class="capsule-actions" v-if="isInProgress">
                               <n-dropdown trigger="hover"
                                 :options="getDropdownOptions(childGoal, currentSelectedGoal, index)"
                                 @select="(key) => handleDropdownSelect(key, currentSelectedGoal, index, childGoal)">
@@ -523,8 +523,8 @@
                           </span>
                         </div>
                         <div class="rich-text-wrapper" style="margin-top: 8px;">
-                          <RichTextEditor :model-value="richTextContent" :status="richTextStatus"
-                            @update:model-value="handleRichTextChange" />
+                          <RichTextEditor  :model-value="richTextContent" :status="richTextStatus"
+                            @update:model-value="handleRichTextChange" :isCurrentGoalInProgress="isInProgress" />
                         </div>
                       </div>
                       <!-- 汇总统计 -->
@@ -789,7 +789,7 @@ const message = useMessage();
 
 // 用户信息
 const currentUser = computed(() => store.state.user?.username || '');
-
+const isInProgress = computed(() => currentSelectedGoal.value?.status === 'in-progress');
 // 判断是否为目标所有者
 const isOwner = (goal: any) => {
   return goal && goal.owner === currentUser.value;
